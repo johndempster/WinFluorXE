@@ -1,0 +1,50 @@
+1 WinFluor
+2 Main Features=IDH_IntroductionMF
+2 Using WinFluor=IDH_IntroductionUW
+1 File
+2 Creating New Data Files=IDH_File_NDF
+2 Opening an Existing Data File=IDH_File_ODF
+2 Closing Data Files=IDH_File_CDF
+2 Saving Images as TIFF Files=IDH_File_SAT
+2 Creating AVI Movies=IDH_File_CAVI
+2 Importing Images=IDH_File_IMP
+2 Exporting
+3 Exporting Images=IDH_File_EXPI
+3 Exporting Analogue Signals=IDH_File_EXPS
+2 Printing Images=IDH_File_PI
+2 Printing Graphs=IDH_File_PG
+1 Recording Live Images
+2 Recording (Continuous)=IDH_Recording_CIR
+2 Recording (Time Lapse)=IDH_ Recording_TLIR
+2 Camera Exposure Time=IDH_ ImageCapture_ET
+2 Full && Sub-Area Image Capture=IDH_ ImageCapture_FSC
+2 Pixel Binning=IDH_ ImageCapture_PB
+2 Display Colour Palette=IDH_ Display_CP
+2 Display Magnification=IDH_ Display:_Z
+2 Display Contrast=IDH_ Display_LUTIR
+2 Fluorescence Excitation Light Control=IDH_ ExcitationLight_SME
+2 Applying Stimulus Pulse Waveforms=IDH_ Stimulator_ASPW
+2 Marking Events=IDH_ Markers_ME
+1 Viewing Stored Images && Signals
+2 Selecting Images=IDH_ Stored_DI
+2 Display Colour Palette=IDH_ Stored_CP
+2 Display Magnification=IDH_ StoredImages_Z
+2 Display Contrast=IDH_StoredImagesLUTIR
+2 Regions of Interest
+3 Regions of Interest=IDH_StoredImages_ROI
+3 Creating ROIs=IDH_StoredImages_CROI
+3 Deleting ROIs=IDH_StoredImages_DROI
+3 Saving/Loading ROIs=IDH_StoredImages_SLROI
+1 Analysis
+2 Plotting Image Intensity Time Courses=IDH_AnalysisTCS
+2 Plotting Wavelength Ratio and Ion Concentration Time Course=IDH_AnalysisTCR
+2 Pixel Intensity Histograms=IDH_AnalysisPI
+2 Creating Relative Intensity Change Images=IDH_AnalysisRII
+2 Line Intensity Profiles=IDH_AnalysisLP
+2 Frame Averaging=IDH_AnalysisFA
+2 Creating Ratio && Ion Concentration Images=IDH_AnalysisRI
+2 Event Detection & Analysis
+3 Detecting Events=IDH_AnalysisDET
+3 Displaying Detected Events=IDH_AnalysisDETDSP
+3 Averaging Detected Events=IDH_AnalysisDETAVG
+3 Plotting Measurements from Detected Events=IDH_AnalysisDETPLT

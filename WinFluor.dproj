@@ -1,0 +1,346 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <ProjectGuid>{79AD0383-EF20-41A7-BAD3-C9CD5EBD274D}</ProjectGuid>
+        <MainSource>WinFluor.dpr</MainSource>
+        <Base>True</Base>
+        <Config Condition="'$(Config)'==''">Debug</Config>
+        <TargetedPlatforms>1</TargetedPlatforms>
+        <AppType>Application</AppType>
+        <FrameworkType>VCL</FrameworkType>
+        <ProjectVersion>14.4</ProjectVersion>
+        <Platform Condition="'$(Platform)'==''">Win32</Platform>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Base' or '$(Base)'!=''">
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Base)'=='true') or '$(Base_Win32)'!=''">
+        <Base_Win32>true</Base_Win32>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win64' and '$(Base)'=='true') or '$(Base_Win64)'!=''">
+        <Base_Win64>true</Base_Win64>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Release' or '$(Cfg_1)'!=''">
+        <Cfg_1>true</Cfg_1>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Config)'=='Debug' or '$(Cfg_2)'!=''">
+        <Cfg_2>true</Cfg_2>
+        <CfgParent>Base</CfgParent>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="('$(Platform)'=='Win32' and '$(Cfg_2)'=='true') or '$(Cfg_2_Win32)'!=''">
+        <Cfg_2_Win32>true</Cfg_2_Win32>
+        <CfgParent>Cfg_2</CfgParent>
+        <Cfg_2>true</Cfg_2>
+        <Base>true</Base>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base)'!=''">
+        <DCC_S>false</DCC_S>
+        <DCC_SymbolReferenceInfo>1</DCC_SymbolReferenceInfo>
+        <DCC_E>false</DCC_E>
+        <DCC_N>true</DCC_N>
+        <DCC_Namespace>Vcl;Vcl.Imaging;Vcl.Touch;Vcl.Samples;Vcl.Shell;System;Xml;Data;Datasnap;Web;Soap;Winapi;Web.Win;System.Win;Xml.Win;$(DCC_Namespace)</DCC_Namespace>
+        <DCC_UNSAFE_CODE>true</DCC_UNSAFE_CODE>
+        <DCC_K>false</DCC_K>
+        <DCC_ImageBase>00400000</DCC_ImageBase>
+        <DCC_UNSAFE_CAST>true</DCC_UNSAFE_CAST>
+        <VerInfo_Release>5</VerInfo_Release>
+        <VerInfo_Locale>2057</VerInfo_Locale>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Keys>CompanyName=Strathclyde Electrophysiology Software;FileDescription=WinFluor - Image / Signal Capture Program;FileVersion=3.4.5.0;InternalName=WinFluor;LegalCopyright=(c) J. Dempster, University of Strathclyde;LegalTrademarks=;OriginalFilename=WinFluor;ProductName=WinFluor;ProductVersion=3.2.26;Comments=</VerInfo_Keys>
+        <DCC_F>false</DCC_F>
+        <VerInfo_MinorVer>4</VerInfo_MinorVer>
+        <VerInfo_MajorVer>3</VerInfo_MajorVer>
+        <DCC_UsePackage>vcl;rtl;vclx;indy;vclie;xmlrtl;inetdbbde;inet;inetdbxpress;dbrtl;soaprtl;dsnap;VclSmp;dbexpress;vcldb;dbxcds;inetdb;bdertl;vcldbx;adortl;teeui;teedb;tee;ibxpress;visualclx;visualdbclx;vclactnband;vclshlctrls;IntrawebDB_50_70;Intraweb_50_70;Rave50CLX;Rave50VCL;dclOffice2k;SESCamPak;$(DCC_UsePackage)</DCC_UsePackage>
+        <DCC_UNSAFE_TYPE>true</DCC_UNSAFE_TYPE>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win32)'!=''">
+        <Manifest_File>$(BDS)\bin\default_app.manifest</Manifest_File>
+        <Icon_MainIcon>WinFluor_Icon.ico</Icon_MainIcon>
+        <DCC_Namespace>Data.Win;Datasnap.Win;Soap.Win;Bde;$(DCC_Namespace)</DCC_Namespace>
+        <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=1.0.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Base_Win64)'!=''">
+        <Icon_MainIcon>WinFluor_Icon.ico</Icon_MainIcon>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_1)'!=''">
+        <DCC_SymbolReferenceInfo>0</DCC_SymbolReferenceInfo>
+        <DCC_DebugInformation>false</DCC_DebugInformation>
+        <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
+        <DCC_Define>RELEASE;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2)'!=''">
+        <DCC_GenerateStackFrames>true</DCC_GenerateStackFrames>
+        <DCC_Optimize>false</DCC_Optimize>
+        <DCC_Define>DEBUG;$(DCC_Define)</DCC_Define>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
+        <VerInfo_MinorVer>5</VerInfo_MinorVer>
+        <VerInfo_Locale>1033</VerInfo_Locale>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=3.5.0.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Release>0</VerInfo_Release>
+    </PropertyGroup>
+    <ItemGroup>
+        <DelphiCompile Include="$(MainSource)">
+            <MainSource>MainSource</MainSource>
+        </DelphiCompile>
+        <DCCReference Include="MAIN.PAS">
+            <Form>MainFrm</Form>
+        </DCCReference>
+        <DCCReference Include="about.pas">
+            <Form>AboutBox</Form>
+        </DCCReference>
+        <DCCReference Include="RecUnit.pas">
+            <Form>RecordFrm</Form>
+        </DCCReference>
+        <DCCReference Include="ViewUnit.pas">
+            <Form>ViewFrm</Form>
+        </DCCReference>
+        <DCCReference Include="SetupUnit.pas">
+            <Form>SetupFrm</Form>
+        </DCCReference>
+        <DCCReference Include="LabIOUnit.pas">
+            <Form>LabIO</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="HistogramUnit.pas">
+            <Form>HistogramFrm</Form>
+        </DCCReference>
+        <DCCReference Include="FileIOUnit.pas">
+            <Form>FileIO</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="StimSetupUnit.pas">
+            <Form>StimSetupFrm</Form>
+        </DCCReference>
+        <DCCReference Include="ExcSetupUnit.pas">
+            <Form>ExcSetupFrm</Form>
+        </DCCReference>
+        <DCCReference Include="TimeCourseUnit.pas">
+            <Form>TimeCourseFrm</Form>
+        </DCCReference>
+        <DCCReference Include="Printgra.pas">
+            <Form>PrintGraphFrm</Form>
+        </DCCReference>
+        <DCCReference Include="SETAXES.PAS">
+            <Form>SetAxesFrm</Form>
+        </DCCReference>
+        <DCCReference Include="AmpModule.pas">
+            <Form>Amplifier</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="nidaqcns.pas"/>
+        <DCCReference Include="SEALTEST.PAS">
+            <Form>SealTestFrm</Form>
+        </DCCReference>
+        <DCCReference Include="AverageUnit.pas">
+            <Form>AverageFrm</Form>
+        </DCCReference>
+        <DCCReference Include="LineProfileUnit.pas">
+            <Form>LineProfileFrm</Form>
+        </DCCReference>
+        <DCCReference Include="RatioUnit.pas">
+            <Form>RatioFrm</Form>
+        </DCCReference>
+        <DCCReference Include="SetupADCUnit.pas">
+            <Form>SetupADCFrm</Form>
+        </DCCReference>
+        <DCCReference Include="SetupIonUnit.pas">
+            <Form>SetupIonFrm</Form>
+        </DCCReference>
+        <DCCReference Include="PRINTREC.PAS">
+            <Form>PrintRecFrm</Form>
+        </DCCReference>
+        <DCCReference Include="RecADCOnlyUnit.pas">
+            <Form>RecADCOnlyFrm</Form>
+        </DCCReference>
+        <DCCReference Include="AVIUnit.pas">
+            <Form>AVIFrm</Form>
+        </DCCReference>
+        <DCCReference Include="exportAnalogueUnit.pas">
+            <Form>ExportAnalogueFrm</Form>
+        </DCCReference>
+        <DCCReference Include="ViewLineUnit.pas">
+            <Form>ViewLineFrm</Form>
+        </DCCReference>
+        <DCCReference Include="WinFluor_TLB.pas"/>
+        <DCCReference Include="AutoUnit.pas">
+            <CoClasses>AUTO</CoClasses>
+        </DCCReference>
+        <DCCReference Include="LogUnit.pas">
+            <Form>LogFrm</Form>
+        </DCCReference>
+        <DCCReference Include="LightSourceUnit.pas">
+            <Form>LightSource</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="ExportImagesUnit.pas">
+            <Form>ExportImagesFrm</Form>
+        </DCCReference>
+        <DCCReference Include="WAVGEN.PAS">
+            <Form>WavGenFrm</Form>
+        </DCCReference>
+        <DCCReference Include="StimModule.pas">
+            <Form>Stimulator</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="EventAnalysisUnit.pas">
+            <Form>EventAnalysisFrm</Form>
+        </DCCReference>
+        <DCCReference Include="ExportADCEventsUnit.pas">
+            <Form>ExportEventsFrm</Form>
+        </DCCReference>
+        <DCCReference Include="FilePropsUnit.pas">
+            <Form>FilePropsFrm</Form>
+        </DCCReference>
+        <DCCReference Include="PlotSETAXES.PAS">
+            <Form>PlotSetAxesFrm</Form>
+        </DCCReference>
+        <DCCReference Include="SaveAsFileUnit.pas">
+            <Form>SaveAsFileFrm</Form>
+        </DCCReference>
+        <DCCReference Include="nidaqlib.pas"/>
+        <DCCReference Include="UltimaUnit.pas">
+            <Form>Ultima</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="ViewPlotUnit.pas">
+            <Form>ViewPlotFrm</Form>
+        </DCCReference>
+        <DCCReference Include="RecPlotUnit.pas">
+            <Form>RecPlotFrm</Form>
+        </DCCReference>
+        <DCCReference Include="StimulusDefaultsUnit.pas">
+            <Form>StimulusDefaultsFrm</Form>
+        </DCCReference>
+        <DCCReference Include="SetCCDReadoutUnit.pas">
+            <Form>SetCCDReadoutFrm</Form>
+        </DCCReference>
+        <DCCReference Include="AVITypes.pas"/>
+        <DCCReference Include="SpectrumUnit.pas">
+            <Form>SpectrumFrm</Form>
+        </DCCReference>
+        <DCCReference Include="SetLasersUnit.pas">
+            <Form>SetLasersFrm</Form>
+        </DCCReference>
+        <DCCReference Include="EditROIUnit.pas">
+            <Form>EditROIFrm</Form>
+        </DCCReference>
+        <DCCReference Include="..\Source\Vcl\Graphics.pas"/>
+        <DCCReference Include="SnapUnit.pas">
+            <Form>SnapFrm</Form>
+        </DCCReference>
+        <DCCReference Include="PhotoStimUnit.pas">
+            <Form>PhotoStimFrm</Form>
+        </DCCReference>
+        <DCCReference Include="MATFileWriterUnit.pas"/>
+        <DCCReference Include="SmoothDifferentiateUnit.pas">
+            <Form>SmoothDifferentiateFrm</Form>
+        </DCCReference>
+        <DCCReference Include="CameraSettingsUnit.pas">
+            <Form>CameraSettingsFrm</Form>
+        </DCCReference>
+        <DCCReference Include="PhotoStimSetupUnit.pas">
+            <Form>PhotoStimSetupFrm</Form>
+        </DCCReference>
+        <DCCReference Include="DynamicProtocolSetupUnit.pas">
+            <Form>DynamicProtocolSetupFrm</Form>
+        </DCCReference>
+        <DCCReference Include="PhotoStimModule.pas">
+            <Form>PhotoStimulator</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="ExportROITImeCourseUnit.pas">
+            <Form>ExportROITimeCourseFrm</Form>
+        </DCCReference>
+        <DCCReference Include="PlaybackStimModule.pas">
+            <Form>PlaybackStimulator</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <DCCReference Include="PlaybackSetupUnit.pas">
+            <Form>PlaybackSetupFrm</Form>
+        </DCCReference>
+        <DCCReference Include="DigitalFilterUnit.pas">
+            <Form>DigitalFilterFrm</Form>
+        </DCCReference>
+        <DCCReference Include="DirectControlUnit.pas">
+            <Form>DirectControlFrm</Form>
+        </DCCReference>
+        <DCCReference Include="..\SESComponents\Maths.pas"/>
+        <DCCReference Include="ZStageUnit.pas">
+            <Form>ZStage</Form>
+            <DesignClass>TDataModule</DesignClass>
+        </DCCReference>
+        <RidlCompile Include="WinFluor.ridl"/>
+        <BuildConfiguration Include="Debug">
+            <Key>Cfg_2</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Base">
+            <Key>Base</Key>
+        </BuildConfiguration>
+        <BuildConfiguration Include="Release">
+            <Key>Cfg_1</Key>
+            <CfgParent>Base</CfgParent>
+        </BuildConfiguration>
+    </ItemGroup>
+    <ProjectExtensions>
+        <Borland.Personality>Delphi.Personality.12</Borland.Personality>
+        <Borland.ProjectType/>
+        <BorlandProject>
+            <Delphi.Personality>
+                <Source>
+                    <Source Name="MainSource">WinFluor.dpr</Source>
+                </Source>
+                <VersionInfo>
+                    <VersionInfo Name="IncludeVerInfo">True</VersionInfo>
+                    <VersionInfo Name="AutoIncBuild">False</VersionInfo>
+                    <VersionInfo Name="MajorVer">3</VersionInfo>
+                    <VersionInfo Name="MinorVer">4</VersionInfo>
+                    <VersionInfo Name="Release">5</VersionInfo>
+                    <VersionInfo Name="Build">0</VersionInfo>
+                    <VersionInfo Name="Debug">False</VersionInfo>
+                    <VersionInfo Name="PreRelease">False</VersionInfo>
+                    <VersionInfo Name="Special">False</VersionInfo>
+                    <VersionInfo Name="Private">False</VersionInfo>
+                    <VersionInfo Name="DLL">False</VersionInfo>
+                    <VersionInfo Name="Locale">2057</VersionInfo>
+                    <VersionInfo Name="CodePage">1252</VersionInfo>
+                </VersionInfo>
+                <VersionInfoKeys>
+                    <VersionInfoKeys Name="CompanyName">Strathclyde Electrophysiology Software</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileDescription">WinFluor - Image / Signal Capture Program</VersionInfoKeys>
+                    <VersionInfoKeys Name="FileVersion">3.4.5.0</VersionInfoKeys>
+                    <VersionInfoKeys Name="InternalName">WinFluor</VersionInfoKeys>
+                    <VersionInfoKeys Name="LegalCopyright">(c) J. Dempster, University of Strathclyde</VersionInfoKeys>
+                    <VersionInfoKeys Name="LegalTrademarks"/>
+                    <VersionInfoKeys Name="OriginalFilename">WinFluor</VersionInfoKeys>
+                    <VersionInfoKeys Name="ProductName">WinFluor</VersionInfoKeys>
+                    <VersionInfoKeys Name="ProductVersion">3.2.26</VersionInfoKeys>
+                    <VersionInfoKeys Name="Comments"/>
+                </VersionInfoKeys>
+                <Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dcloffice2k170.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
+                    <Excluded_Packages Name="$(BDSBIN)\dclofficexp170.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
+                </Excluded_Packages>
+            </Delphi.Personality>
+            <Platforms>
+                <Platform value="Win32">True</Platform>
+                <Platform value="Win64">False</Platform>
+            </Platforms>
+            <ActiveXProjectInfo>
+                <version>1</version>
+            </ActiveXProjectInfo>
+        </BorlandProject>
+        <ProjectFileVersion>12</ProjectFileVersion>
+    </ProjectExtensions>
+    <Import Project="$(BDS)\Bin\CodeGear.Delphi.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Delphi.Targets')"/>
+    <Import Project="$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj" Condition="Exists('$(APPDATA)\Embarcadero\$(BDSAPPDATABASEDIR)\$(PRODUCTVERSION)\UserTools.proj')"/>
+</Project>

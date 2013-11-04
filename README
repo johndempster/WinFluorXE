@@ -1,0 +1,37 @@
+
+WinFluor - Fluorescence Image Capture & Analysis Software
+---------------------------------------------------------
+
+The Embarcadero Delphi XE Integrated Development Environment is required to build this package.
+
+This package also requires the shared set components (SESComponentsXE) used by the Strathclyde Electrophysiology software to be installed first. If it is not already installed on the Delphi toolbar, install it by ...
+
+1) Extract the components from the johndempster/SESComponents GitHub repository to the folder ....\Libraries\Documents\RadStudio\Projects\SESComponentsXE
+
+2) Add the folder to the Delphi XE library path.
+
+Select Delphi XE Tools/Options
+Select the "Delphi Options: Library" panel
+Click "..." at the right of Library Path, click the Add button and add "....\Libraries\Documents\RadStudio\Projects\SESComponentsXE" to the library 
+
+3) Build and install the SESComponents package of components on the Delphi toolbar.
+
+Select File/Open Project
+Select Files of Type "*.dpk"
+Select the "SESComponentsXE" Folder
+Select "SESComponents.dpk"
+Select Project/Build SESComponents
+Select Components/Install Packages, click the ADD button and select the file ..\Libraries\Documents\RAD Studio\10.0\BPL\SESComponents.BBL
+
+To open the WinFluor project:
+
+1) Extract the WinFluor project from the johndempster/WinFluor GitHub repository to the folder ..\Libraries\Documents\RAD Studio\WinFluor
+
+2) To open the WinFluor project
+
+Select File/Open Project
+Select Files of Type "*.dpr"
+Select the "WinFluor" Folder
+Select "WinFluor"
+Click the Open button
+

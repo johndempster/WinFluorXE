@@ -1,0 +1,6 @@
+IF (Minimum.Checked <> False)  THEN  Least.Visible := True;
+IF (Personalized.Checked <> False)  THEN  Some.Visible := True;
+IF (Complete.Checked = True)  THEN  All.Visible := True;
+IF (Minimum.Checked = False)  THEN  Least.Visible := False;
+IF (Personalized.Checked = False)  THEN  Some.Visible := False;
+IF (Complete.Checked <> True)  THEN  All.Visible := False;

@@ -1,0 +1,48 @@
+XY Series
+
+Set size/zoom/orientation  of image with control panel
+
+Display XY Images window
+
+Select Triggering panel, Tick Enabled box Select Trigger Once
+
+Select Time Series panel, Cycle Time = 0
+
+Run WinFluor Record/Record (LSM)
+
+Run WinFLuor XY Series
+
+Enter file name
+
+Info
+No. frames to acquire
+
+Pane # to br exported
+
+Click OK
+
+
+Line scan
+
+Set size/zoom/orientation  of image with control panel
+
+Display Line Scan window
+
+Select Triggering panel, Tick Enable Trigger (Trigger Once) box Select Trigger Once
+
+Select Line Scan panel, ENter scan line
+
+Run WinFluor Record/Record (LSM)
+
+Run WinFLuor Line Scan
+
+Enter file name
+
+Info
+No. lines to acquire
+
+Enter scan line
+
+Pane # to br exported
+
+Click OK

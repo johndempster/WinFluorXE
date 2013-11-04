@@ -1,0 +1,2 @@
+IF (License.MaxLength <> 2147483647)  THEN  Next.Enabled := False;
+IF (License.MaxLength = 2147483647)  THEN  Next.Enabled := True;

@@ -1,0 +1,4 @@
+[AutoRun]
+icon=WinFluor V3.5.0 Setup.exe,0
+label=WinFluor Setup
+open=WinFluor V3.5.0 Setup.exe

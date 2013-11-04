@@ -1,0 +1,315 @@
+#####################################################################
+#                                                                   #
+# Copyright (c) Imaging Technology Incorporated 1998                #
+#                                                                   #
+# The following is being provided for informational content only,   #
+# and is not warrantied by ITI. We expect that the user needs to    #
+# make certain modifications to this software to meet specific      #
+# system specifications.                                            #
+#                                                                   #
+#####################################################################
+#
+#    File: C:\ITEX41\CONFIG\CCIR.TXT
+#    Date: 2/27/2003  -  13:12:13
+#
+#
+ 
+[SYSTEM:0]
+[PCVision:0]
+      Latency = 248
+      IRQ_Line = 0
+      Mailbox1 = 0x0
+      Mailbox2 = 0x0
+      Mailbox3 = 0x0
+      Mailbox4 = 0x0
+      
+      Frame_Count = 1
+      Start_Field = Next_even_field
+      Pixsz_Override = 0
+      YCRCB_Mono_Disable
+      
+[AM-V:0]
+      Slot_Number = 0
+      Startup_Port = 0
+[CameraPort:0]
+      Name = "CCIR720x574P0"
+      Camera_Structure = Create_Structure
+      CCIR
+      HTotal = 454
+      HSync_Low = 67
+      HEqual_End = 32
+      Serration_Total = 388
+      VTotal = 524
+      VSync_Low = 5
+      HSync_Pol_Lo
+      VSync_Pol_Lo
+      VGate_Start = 518
+      VGate_End = 11
+      HOffset = 150
+      HActive = 868
+      VOffset = 21
+      VActive = 308
+      Strobe_Delay = 0
+      LEN_Polarity_Lo
+      FEN_Polarity_Lo
+      FRST_Offset_Delay = 0
+      FRST_Disable
+      FRST_Active_Hi
+      FRST_FROFF_Period
+      FRST_Vsync_Disable
+      PTG_HSYNC_Select
+      CHSYNCEN_Disable
+      VSYNCEN_Disable
+      PLL_Mode
+      LPF_Enable
+      VSCAN_Disable
+      Scale_1.5
+      VClk_Normal
+      Interlaced
+      FLDSHFT_Disable
+      Trig_Disable
+      Ext_Trigger
+      Trigger_Active_Lo
+      Strobe_Fast
+      Strobe_Enable
+      Strobe_Active_Hi
+      Skip_Field_Disable
+      Clamp_Delay = 0
+      Clamp_Src_Sync_Strip
+      Clamp_On_LEN_Fall
+      PRef = 192
+      NRef = 0
+      PLL_FDIV = 895
+      PLL_LO = 0
+      PLL_HI = 0
+      PLL_RDIV = 0
+      PLL_REFPOL_Hi
+      PLL_VCO = 6
+      PLL_PFD = 3
+      PLL_PDEN_Hi
+      PLL_INTFLT_Lo
+      PLL_INTVCO_Hi
+      PLL_CLKSEL_Hi
+      PLL_Internal_Feedback
+      PLL_FBKPOL_Hi
+      PLL_ADD_Lo
+      PLL_SWLW_Lo
+      PLL_PDA = 2
+      PLL_PDB = 3
+      PLL_LDLG_Hi
+      PLL_FINEEN_Lo
+      PLL_LCOUNT = 5
+      PLL_OMUX1_Lo
+      PLL_Ext_Ref_Mode
+[CameraPort:1]
+      Name = "CCIR720x574P1"
+      Camera_Structure = Create_Structure
+      CCIR
+      HTotal = 454
+      HSync_Low = 67
+      HEqual_End = 32
+      Serration_Total = 388
+      VTotal = 524
+      VSync_Low = 5
+      HSync_Pol_Lo
+      VSync_Pol_Lo
+      VGate_Start = 518
+      VGate_End = 11
+      HOffset = 150
+      HActive = 868
+      VOffset = 21
+      VActive = 308
+      Strobe_Delay = 0
+      LEN_Polarity_Lo
+      FEN_Polarity_Lo
+      FRST_Offset_Delay = 0
+      FRST_Disable
+      FRST_Active_Hi
+      FRST_FROFF_Period
+      FRST_Vsync_Disable
+      PTG_HSYNC_Select
+      CHSYNCEN_Disable
+      VSYNCEN_Disable
+      PLL_Mode
+      LPF_Enable
+      VSCAN_Disable
+      Scale_1.5
+      VClk_Normal
+      Interlaced
+      FLDSHFT_Disable
+      Trig_Disable
+      Ext_Trigger
+      Trigger_Active_Lo
+      Strobe_Fast
+      Strobe_Enable
+      Strobe_Active_Hi
+      Skip_Field_Disable
+      Clamp_Delay = 0
+      Clamp_Src_Sync_Strip
+      Clamp_On_LEN_Fall
+      PRef = 192
+      NRef = 0
+      PLL_FDIV = 895
+      PLL_LO = 0
+      PLL_HI = 0
+      PLL_RDIV = 0
+      PLL_REFPOL_Hi
+      PLL_VCO = 6
+      PLL_PFD = 3
+      PLL_PDEN_Hi
+      PLL_INTFLT_Lo
+      PLL_INTVCO_Hi
+      PLL_CLKSEL_Hi
+      PLL_Internal_Feedback
+      PLL_FBKPOL_Hi
+      PLL_ADD_Lo
+      PLL_SWLW_Lo
+      PLL_PDA = 2
+      PLL_PDB = 3
+      PLL_LDLG_Hi
+      PLL_FINEEN_Lo
+      PLL_LCOUNT = 5
+      PLL_OMUX1_Lo
+      PLL_Ext_Ref_Mode
+[CameraPort:2]
+      Name = "DEF2 RS512x480 PLL"
+      Camera_Structure = Create_Structure
+      RS170
+      HTotal = 454
+      HSync_Low = 67
+      HEqual_End = 32
+      Serration_Total = 388
+      VTotal = 524
+      VSync_Low = 5
+      HSync_Pol_Lo
+      VSync_Pol_Lo
+      VGate_Start = 518
+      VGate_End = 11
+      HOffset = 94
+      HActive = 604
+      VOffset = 15
+      VActive = 255
+      Strobe_Delay = 0
+      LEN_Polarity_Lo
+      FEN_Polarity_Lo
+      FRST_Offset_Delay = 0
+      FRST_Disable
+      FRST_Active_Hi
+      FRST_FROFF_Period
+      FRST_Vsync_Disable
+      PTG_HSYNC_Select
+      CHSYNCEN_Disable
+      VSYNCEN_Disable
+      PLL_Mode
+      LPF_Enable
+      VSCAN_Disable
+      Scale_1.5
+      VClk_Normal
+      Interlaced
+      FLDSHFT_Enable
+      Trig_Disable
+      Ext_Trigger
+      Trigger_Active_Lo
+      Strobe_Fast
+      Strobe_Enable
+      Strobe_Active_Hi
+      Skip_Field_Disable
+      Clamp_Delay = 0
+      Clamp_Src_Sync_Strip
+      Clamp_On_LEN_Fall
+      PRef = 140
+      NRef = 0
+      PLL_FDIV = 622
+      PLL_LO = 0
+      PLL_HI = 0
+      PLL_RDIV = 0
+      PLL_REFPOL_Hi
+      PLL_VCO = 5
+      PLL_PFD = 3
+      PLL_PDEN_Hi
+      PLL_INTFLT_Lo
+      PLL_INTVCO_Hi
+      PLL_CLKSEL_Hi
+      PLL_Internal_Feedback
+      PLL_FBKPOL_Hi
+      PLL_ADD_Lo
+      PLL_SWLW_Lo
+      PLL_PDA = 2
+      PLL_PDB = 3
+      PLL_LDLG_Hi
+      PLL_FINEEN_Lo
+      PLL_LCOUNT = 7
+      PLL_OMUX1_Lo
+      PLL_Ext_Ref_Mode
+[CameraPort:3]
+      Name = "DEF3 RS512x480 PLL"
+      Camera_Structure = Create_Structure
+      RS170
+      HTotal = 454
+      HSync_Low = 67
+      HEqual_End = 32
+      Serration_Total = 388
+      VTotal = 524
+      VSync_Low = 5
+      HSync_Pol_Lo
+      VSync_Pol_Lo
+      VGate_Start = 518
+      VGate_End = 11
+      HOffset = 94
+      HActive = 604
+      VOffset = 15
+      VActive = 255
+      Strobe_Delay = 0
+      LEN_Polarity_Lo
+      FEN_Polarity_Lo
+      FRST_Offset_Delay = 0
+      FRST_Disable
+      FRST_Active_Hi
+      FRST_FROFF_Period
+      FRST_Vsync_Disable
+      PTG_HSYNC_Select
+      CHSYNCEN_Disable
+      VSYNCEN_Disable
+      PLL_Mode
+      LPF_Enable
+      VSCAN_Disable
+      Scale_1.5
+      VClk_Normal
+      Interlaced
+      FLDSHFT_Enable
+      Trig_Disable
+      Ext_Trigger
+      Trigger_Active_Lo
+      Strobe_Fast
+      Strobe_Enable
+      Strobe_Active_Hi
+      Skip_Field_Disable
+      Clamp_Delay = 0
+      Clamp_Src_Sync_Strip
+      Clamp_On_LEN_Fall
+      PRef = 140
+      NRef = 0
+      PLL_FDIV = 622
+      PLL_LO = 0
+      PLL_HI = 0
+      PLL_RDIV = 0
+      PLL_REFPOL_Hi
+      PLL_VCO = 5
+      PLL_PFD = 3
+      PLL_PDEN_Hi
+      PLL_INTFLT_Lo
+      PLL_INTVCO_Hi
+      PLL_CLKSEL_Hi
+      PLL_Internal_Feedback
+      PLL_FBKPOL_Hi
+      PLL_ADD_Lo
+      PLL_SWLW_Lo
+      PLL_PDA = 2
+      PLL_PDB = 3
+      PLL_LDLG_Hi
+      PLL_FINEEN_Lo
+      PLL_LCOUNT = 7
+      PLL_OMUX1_Lo
+      PLL_Ext_Ref_Mode
+[AT-PCI]
+      Safe_Access_Mode

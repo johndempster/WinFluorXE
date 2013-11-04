@@ -1,0 +1,66 @@
+#####################################################################
+#                                                                   #
+# Copyright (c) Imaging Technology Incorporated 1998                #
+#                                                                   #
+# The following is being provided for informational content only,   #
+# and is not warrantied by ITI. We expect that the user needs to    #
+# make certain modifications to this software to meet specific      #
+# system specifications.                                            #
+#                                                                   #
+#####################################################################
+#
+#    File: C:\ITEX41\config\camdb\hamc4880.TXT
+#    Date: 10/24/2005  -  10:1:2
+#
+#
+ 
+[SYSTEM:0]
+[IC-PCI:0]
+      Latency = 248
+      IRQ_Line = 0
+      Mailbox1 = 0x0
+      Mailbox2 = 0x0
+      Mailbox3 = 0x0
+      Mailbox4 = 0x0
+      
+      Frame_Count = 1
+      Start_Field = Next_even_field
+      Pixsz_Override = 0
+      YCRCB_Mono_Disable
+      
+[AM-DIG:0]
+      Slot_Number = 0
+      Name = "HAMAMATSU C4880"
+      Camera_Structure = Create_Structure
+      Horizontal_Active = 652
+      Horizontal_Offset = 0
+      Vertical_Active = 493
+      Vertical_Offset = 0
+      NonInterlaced
+      NonInterleaved_Pixels
+      Area_Scan
+      LEN_Wide
+      No_LineMiss_Mode
+      Normal_FIFO_Mode
+      Pixel_Size_10
+      CCLK_14.32MHz
+      CCLK_Div1
+      ExtSync_Mode = FEN_Trigger
+      EXSCLK_14.32_Div2048
+      EXSync_Counter_Enable
+      EXSCLK_CounterPreset = 1021
+      Trigger_Gen_Disable
+      Trigger_Source = External
+      Xillix_Mode_Disable
+      Camera_Mode = 0
+      PRI_Active_Low
+      AM_OutputA = Low_Byte
+      AM_OutputB = High_Byte
+      AM_OutputC = Low_Byte
+      PCLK_NoInvert
+      LEN_NoInvert
+      FEN_NoInvert
+      FLD_Invert
+      EXSYNC_Pulse_Active_Low
+[AT-PCI]
+      Safe_Access_Mode

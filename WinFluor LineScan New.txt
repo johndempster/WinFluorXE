@@ -1,0 +1,201 @@
+
+' =================
+' WinFluor LineScan
+' =================
+' Line scan recording synchronised with analogue channels 
+' (c) J. Dempster, University of Strathclyde 2004
+' V1.0 6/6/04
+' V1.1 6/9/04
+' V1.2 9/9/04 Settings now saved in INI file
+' v1.3 15/9/04 PIC file can now be created with trailing _nnn
+' V1.
+
+sub Main
+	' Correction factor for Lasersharp line scanning
+	LineScanSpeedCorrectionFactor = 0.9977
+	LineScanInitialDelaySLope = 0.941
+	LineScanInitialDelayIntercept = 6.7372E-3
+
+	' Create file system object
+	Set FSO = CreateObject("Scripting.FileSystemObject")
+	
+	' Create WinFluor program object
+	Set WINFLUOR = CreateObject("WINFLUOR.AUTO")
+
+	'Create a new instance of the Bio-Rad Helper Class
+	Set  Br = New BioRadHelper
+
+	'Get the current live experiment
+	Set LivePic = Br.LivePic
+
+	' Name of temporary PIC file for line scans
+	TempFileName = "c:\experiments\lstemp.pic"
+
+	' Default settings
+	FileName = "c:\Experiments\LSDataFile.idr"
+	ExperimentID = "" 
+	NumLines = 1000
+	ScanLine = 256
+	
+
+	' Load from INI file
+	INIFileName = "c:\Experiments\winfluor Linescan.ini"
+	if FSO.FileExists(INIFileName) then
+	       	Set INIFile = FSO.OpenTextFile(INIFileName,1)
+		FileName = INIFile.ReadLine
+		ExperimentID = INIFile.ReadLine
+		NumLines = Cint(INIFile.ReadLine)
+		ScanLine = Cint(INIFile.ReadLine)
+		INIFile.Close
+		Set INIFile = Nothing
+	end if
+
+	' Create new file name (with index number)
+	WinFluor.NewFile FileName
+	FileName = WinFluor.FileName
+
+	'Get user input
+	Dim mib
+	Set mib = CreateObject("LS2KScriptingUI.MultipleInputBox")
+	
+	mib.numInputs = 4
+	mib.InputCaption(1) = "WinFluor Filename"
+	mib.InputText(1) = FileName
+
+	mib.InputCaption(2) = "Experiment Info"
+	mib.InputText(2) = ExperimentID
+
+	mib.InputCaption(3) = "Scan Line"
+	mib.InputMin(3) = 0
+	mib.InputMax(3) = 1024
+	mib.InputDecimalPlaces(3) = 0
+	mib.InputText(3) = ScanLine
+
+	mib.InputCaption(4) = "Number of Lines"
+	mib.InputMin(4) = 0
+	mib.InputMax(4) = 32000
+	mib.InputDecimalPlaces(4) = 0
+	mib.InputText(4) = NumLines
+
+	' Display box and wait until box is closed
+	mib.Show
+	Do until mib.closed
+	Loop
+ 
+	' Get parameters
+
+	' Name of WinFluor data file
+	if FileName <> mib.InputText(1) then
+		' Re-create file
+		FileName = mib.InputText(1)	
+		WinFluor.NewFile FileName
+	end if
+
+	WinFluor.ExperimentID = mib.InputText(2)
+
+	' Image line # to be scanned
+	ScanLine = CInt(mib.InputText(3))
+
+	' No. of lines to be acquired
+	NumLines = CInt(mib.InputText(4))
+
+
+	' Acquire single XY image
+
+	Pos = InStr( 1, LCase(WinFluor.FileName), ".idr")
+	XYFileName = Left(WinFluor.FileName,Pos-1)
+
+	StatusBar.SImpleText = "Acquiring XY Image " 
+	Instrument.ScanStart 1
+	Instrument.WaitForScriptAcqToStop
+
+	Call Br.SavePic(LivePic, XYFileName & ".pic")
+	StatusBar.SImpleText = "XY Image saved to: " & XYFileName
+
+	' Set up line scan 
+	Instrument.ScanSetLineScan 0,ScanLine,NumLines
+
+	' Start scan
+	Instrument.ScanStart 6
+
+	' Report status
+	s = "Scan Started: "
+	s = s & Cint(NumLines)
+	s = s & " lines @" & CInt(Instrument.ScanBaseSpeed) & " lps"
+	s = s & " (" & Numlines/Instrument.ScanBaseSpeed & "s )"
+        StatusBar.SimpleText = s
+
+	' Wait 500 ms
+	Node.Sleep 500
+
+	' Start WinFluor analogue recording
+
+	RecordingTime = NumLines/(Instrument.ScanBaseSpeed*LineScanSpeedCorrectionFactor)
+	ImageStartDelay = (LineScanInitialDelaySLope/Instrument.ScanBaseSpeed) + LineScanInitialDelayIntercept
+
+	WINFLUOR.RECORDLSM RecordingTime,NumLines,ImageStartDelay,1
+
+	' Wait for completion of line scanning
+	Instrument.WaitForScriptAcqToStop
+
+        StatusBar.SimpleText =  "Copying line scan data to WinFluor"
+
+	' Save line scan images
+	' Note. a single wavelength image is saved as LStemp.pic
+	' Multi-wavelength images as LStemp01.pic, LStemp02.pic, etc.
+	Call Br.SavePic(LivePic, TempFileName & ".pic" )
+
+	'Import line scan image file(s) into WinFluor
+
+	' Save single em wavelength image (if it exists)
+	FName = TempFileName & ".pic"
+        if FSO.FileExists( FName ) WINFLUOR.ImportImageFile FName
+
+	' Save em wavelength #1 (if it exists)
+	FName = TempFileName & "01.pic"
+        if FSO.FileExists( FName ) WINFLUOR.ImportImageFile FName
+
+	' Save em wavelength #2 (if it exists)
+	FName = TempFileName & "02.pic"
+        if FSO.FileExists( FName ) WINFLUOR.ImportImageFile FName
+
+	' Save em wavelength #3 (if it exists)
+	FName = TempFileName & "03.pic"
+        if FSO.FileExists( FName ) WINFLUOR.ImportImageFile FName
+
+	' Save settings to INI file
+	if FSO.FileExists(INIFileName) then 
+          FSO.DeleteFile(INIFileName)'
+	end if
+        Set INIFile = FSO.CreateTextFile(INIFileName,TRUE)
+	INIFile.WriteLine(WinFluor.FileName)
+	INIFile.WriteLine(ExperimentID)
+	INIFile.WriteLine(NumLines)
+	INIFile.WriteLine(ScanLine)
+	INIFile.Close
+	Set INIFile = Nothing
+
+	Set WinFluor = Nothing
+
+        StatusBar.SimpleText = "End of Script"
+
+
+end sub
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

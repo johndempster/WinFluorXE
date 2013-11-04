@@ -1,0 +1,26 @@
+*.arm
+*.cmd
+*.gxc
+*.arn
+*.zip
+*.dcu
+*.tmp
+*.~*~
+*~
+*.local
+*.identcache
+__history
+*.drc
+*.map
+*.exe
+*.dll
+./bin/*
+./temp/*.*
+./vprot/*.*
+./pprot/*.*
+./data/*.*
+./HelpSmith Files/*.*
+
+/WinFluor Setup Project/
+/data/
+
