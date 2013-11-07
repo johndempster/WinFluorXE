@@ -32,6 +32,7 @@ welcome.dfm.miaf
 wizard.dfm
 wizard.dfm.miaf
 $
+license.rtf
 $
 
 
@@ -341,14 +342,31 @@ $
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 $
 $
-0
+1
 4
 TRUE
 
 Strathclyde Electrophysiology Software
-WinFluor Setup
+WinFluor
 {42CDCAEE-ED4E-4721-9E90-11CC1424FF53}
 {5B9FFEA0-55DE-4A0B-9DC2-B372AD732427}
 3.5.0
@@ -357,14 +375,14 @@ WinFluor Setup
 WinFluor Setup Installation
 Strathclyde Electrophysiology Software
 All rights reserved
-{77BA0123-8164-4034-A069-D20A59176BB2}
+{8B2ADB77-8F5E-4A72-AEE3-E0D1968E0D5D}
 My Company
 My Company
 http://www.mywebsite.com/
 http://www.mywebsite.com/
 All rights reserved
 FALSE
-
+WinFluor V3.5.0 Setup
 TRUE
 FALSE
 

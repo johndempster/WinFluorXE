@@ -46,6 +46,7 @@ unit FileIOUnit;
 // 29.01.13 .... JD Z stage settings added to INI file ZStage.SaveSettings(), ZStage.ReadSettings();
 // 24.04.13 .... JD If VProtDirectory in INI file does not exist, use default directory (\winfluor\vprot
 // 27.09.13 .... JD 'LSSCHTIME=', LightSource.ShutterChangeTime added to INI file
+// 07.11.13 .... JD 'CAMADCGN=', MainFrm.Cam1.ADCGain and 'CAMVSS=', MainFrm.Cam1.CCDVerticalShiftSpeed added
 
 interface
 
@@ -195,6 +196,12 @@ begin
      AppendFloat( Header, 'CAMTEMPSET=', MainFrm.Cam1.CameraTemperatureSetPoint ) ;
 
      AppendFloat( Header, 'CAMADDRT=', MainFrm.Cam1.AdditionalReadoutTime ) ;
+
+     // Camera readout A/D converter gain
+     AppendINT( Header, 'CAMADCGN=', MainFrm.Cam1.ADCGain ) ;
+
+     // Camera CCD vertical line shift speed
+     AppendINT( Header, 'CAMVSS=', MainFrm.Cam1.CCDVerticalShiftSpeed ) ;
 
      AppendFloat( Header, 'LENSMAG=', MainFrm.Cam1.LensMagnification ) ;
 
@@ -597,7 +604,15 @@ begin
      ReadFloat( Header, 'CAMADDRT=', fValue ) ;
      MainFrm.Cam1.AdditionalReadoutTime := fValue ;
 
-     AppendFloat( Header, 'CAMADDRT=', MainFrm.Cam1.AdditionalReadoutTime ) ;
+     // Camera CCD readout A/D convert gain
+     iValue := 0 ;
+     ReadINT( Header, 'CAMADCGN=', iValue ) ;
+     MainFrm.Cam1.ADCGain := iValue ;
+
+     // Camera CCD vertical line shift speed
+     iValue := -1 ;
+     ReadINT( Header, 'CAMVSS=', iValue ) ;
+     MainFrm.Cam1.CCDVerticalShiftSpeed := iValue ;
 
      fValue := 0.0 ;
      ReadFloat( Header, 'LENSMAG=', fValue ) ;

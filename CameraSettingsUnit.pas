@@ -4,6 +4,7 @@ unit CameraSettingsUnit;
 // Additional Camera Settings
 // --------------------------
 // 20-5-9
+// 16.08
 
 interface
 
@@ -22,7 +23,10 @@ type
     cbFanMode: TComboBox;
     Label1: TLabel;
     SpecialGrp: TGroupBox;
-    ckDisableEMCCD: TCheckBox;
+    cbADCGain: TComboBox;
+    Label2: TLabel;
+    Label3: TLabel;
+    cbCCDVerticalShiftSpeed: TComboBox;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
@@ -38,7 +42,7 @@ var
 
 implementation
 
-uses Main;
+uses Main, RecUnit, SnapUnit;
 
 {$R *.dfm}
 
@@ -69,7 +73,12 @@ begin
     cbFanMode.Items.Add('High') ;
     cbFanMode.ItemIndex := Min(Max(MainFrm.Cam1.CameraFanMode,0),cbFanMode.Items.Count-1) ;
 
-    ckDisableEMCCD.Checked := MainFrm.Cam1.DisableEMCCD ;
+    MainFrm.Cam1.GetADCGainList( cbADCGain.Items ) ;
+    cbADCGain.ItemIndex := Min(Max(MainFrm.Cam1.ADCGain,0),cbADCGain.Items.Count-1) ;
+
+    MainFrm.Cam1.GetCCDVerticalShiftSpeedList(cbCCDVerticalShiftSpeed.Items );
+    cbCCDVerticalShiftSpeed.ItemIndex := Min(Max(MainFrm.Cam1.CCDVerticalShiftSpeed,0),
+                                         cbCCDVerticalShiftSpeed.Items.Count-1) ;
 
     ClientWidth := SpecialGrp.Left + SpecialGrp.Width + 5 ;
     ClientHeight := bOK.Top + bOK.Height + 5 ;
@@ -86,7 +95,17 @@ begin
     MainFrm.Cam1.CameraTemperatureSetPoint := edTemperatureSetPoint.Value ;
     MainFrm.Cam1.CameraCoolingOn := ckCameraCooling.Checked ;
     MainFrm.Cam1.CameraFanMode := cbFanMode.ItemIndex ;
-    MainFrm.Cam1.DisableEMCCD := ckDisableEMCCD.Checked ;
+    MainFrm.Cam1.ADCGain := cbADCGain.ItemIndex ;
+    MainFrm.Cam1.CCDVerticalShiftSpeed := cbCCDVerticalShiftSpeed.ItemIndex ;
+
+    // Request a timing cycle change
+    if MainFrm.FormExists( 'RecordFrm') then begin
+       if RecordFrm.CameraRunning then RecordFrm.RestartCamera ;
+       end ;
+    if MainFrm.FormExists( 'SnapFrm') then begin
+       if SnapFrm.CameraRunning then SnapFrm.RestartCamera ;
+       end ;
+
     close ;
 
     end;

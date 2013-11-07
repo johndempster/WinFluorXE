@@ -142,6 +142,13 @@ unit Main;
 //                 Stimulus Start on Record is ticked but no stimulus is available. Voltage protocol folder now selected using SelectDirectory
 // 09.07.13 V3.4.9 NI cards: Number of DMA channels now correctly identified with PCI-6035E cards
 // 24.07-13 V3.5.0 JD Now compiles unders Delphi XE2/3 as well as 7.
+// 07-11-13 V3.52  JD Light source shutter: Shutter opening time can now be defined in setup allowing
+//                   shutter to be opened at preset time before exposure in time lapse mode.
+//                   LED Light Source: LED on/off voltages can now be set when using digital outputs (On=5V, Off=0V for active high LEDS, On=0V, Off=5V for active low LEDS).
+//                   Z stage: Z stage movements now take place AFTER image (or series of images in
+//                   multi-wavelength mode) are acquired in time lapse recording mode. In continuous recording mode, Z stage is moved at preset time before end of image acquisition frame. Illumination can be turned off or exposure terminated during Z stage movement period. Z step time defined in Z stage setup.
+//                  Andor Ixon Cameras: Camera readout noise can now be optimised by
+//                  adjusting Readout A/D gain and vertical shift timing in Setup/Extra Camera Settings.
 
 interface
 
