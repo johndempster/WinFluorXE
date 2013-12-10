@@ -1,9 +1,9 @@
 object RatioFrm: TRatioFrm
   Left = 626
   Top = 349
-  Width = 287
-  Height = 302
   Caption = 'Create Ratio/Ion Conc. Image'
+  ClientHeight = 275
+  ClientWidth = 279
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -161,7 +161,6 @@ object RatioFrm: TRatioFrm
         Height = 21
         Hint = 'Region of interest used to compute background intensity level'
         Style = csDropDownList
-        ItemHeight = 13
         ParentShowHint = False
         ShowHint = True
         TabOrder = 0
@@ -209,7 +208,6 @@ object RatioFrm: TRatioFrm
         Height = 21
         Hint = 'Numerator frame type used in ratio image'
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 0
       end
       object cbDenominator: TComboBox
@@ -219,7 +217,6 @@ object RatioFrm: TRatioFrm
         Height = 21
         Hint = 'Denominator frame type'
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 1
       end
       object cbEquation: TComboBox
@@ -229,7 +226,6 @@ object RatioFrm: TRatioFrm
         Height = 21
         Hint = 'Binding equation used to compute ion concentration from ratio'
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 2
       end
       object ckUseEquation: TCheckBox
@@ -268,7 +264,6 @@ object RatioFrm: TRatioFrm
         Height = 21
         Hint = 'Frame type to be '
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 0
       end
       object GroupBox7: TGroupBox
@@ -312,7 +307,7 @@ object RatioFrm: TRatioFrm
           Font.Name = 'Arial'
           Font.Style = []
           ShowHint = True
-          Text = ' 1 - 1 '
+          Text = ' 1.00 - 1.00 '
           LoValue = 1.000000000000000000
           HiValue = 1.000000000000000000
           LoLimit = 1.000000000000000000
@@ -446,6 +441,8 @@ object RatioFrm: TRatioFrm
     FrameWidth = 0
     FrameHeight = 0
     PixelDepth = 1
+    NumZSections = 1
+    ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
     ADCNumScansInFile = 0

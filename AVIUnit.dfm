@@ -227,9 +227,9 @@ object AVIFrm: TAVIFrm
     Caption = ' Plot Channels '
     TabOrder = 5
     object Label4: TLabel
-      Left = 242
+      Left = 243
       Top = 252
-      Width = 49
+      Width = 48
       Height = 15
       Alignment = taRightJustify
       Caption = 'Plot Area'
@@ -274,7 +274,6 @@ object AVIFrm: TAVIFrm
           Width = 89
           Height = 23
           Style = csDropDownList
-          ItemHeight = 15
           TabOrder = 0
           OnChange = cbSubtractROIChange
         end
@@ -300,7 +299,6 @@ object AVIFrm: TAVIFrm
         Width = 95
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         TabOrder = 3
       end
       object mePlotList: TMemo
@@ -511,7 +509,6 @@ object AVIFrm: TAVIFrm
           Height = 23
           Hint = 'Numerator frame type '
           Style = csDropDownList
-          ItemHeight = 15
           TabOrder = 0
         end
         object cbDenWave: TComboBox
@@ -521,7 +518,6 @@ object AVIFrm: TAVIFrm
           Height = 23
           Hint = 'Denominator frame type'
           Style = csDropDownList
-          ItemHeight = 15
           TabOrder = 1
         end
         object edRatioExclusionThreshold: TValidatedEdit

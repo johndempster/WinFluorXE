@@ -1,9 +1,9 @@
 object DigitalFilterFrm: TDigitalFilterFrm
   Left = 272
   Top = 199
-  Width = 276
-  Height = 232
   Caption = 'Filter Analog Signals'
+  ClientHeight = 205
+  ClientWidth = 268
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -69,6 +69,10 @@ object DigitalFilterFrm: TDigitalFilterFrm
       object LPFilter: TTabSheet
         Caption = 'LPFilter'
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label1: TLabel
           Left = 1
           Top = 2
@@ -94,6 +98,10 @@ object DigitalFilterFrm: TDigitalFilterFrm
         Caption = 'HPFilter'
         ImageIndex = 1
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label2: TLabel
           Left = 0
           Top = 0
@@ -106,7 +114,6 @@ object DigitalFilterFrm: TDigitalFilterFrm
           Top = 18
           Width = 89
           Height = 21
-          ItemHeight = 0
           TabOrder = 0
           Text = 'cbHPFilter'
         end
@@ -114,6 +121,10 @@ object DigitalFilterFrm: TDigitalFilterFrm
       object NFFilter: TTabSheet
         ImageIndex = 2
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label4: TLabel
           Left = 1
           Top = 2
@@ -139,6 +150,10 @@ object DigitalFilterFrm: TDigitalFilterFrm
         Caption = 'NoneTab'
         ImageIndex = 3
         TabVisible = False
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
       end
     end
     object rbNotchFilter: TRadioButton

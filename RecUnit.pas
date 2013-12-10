@@ -135,7 +135,7 @@ unit RecUnit;
 // 30.10.13 JD In continuous recording mode, if Zstack enabled, excitation now turned off at end of frame
 //             during movement of Z positioner. Z positioner command voltage updated ZStage.StepTime
 //             BEFORE end of frame. In time lapse mode, Z positioner update at end of wavelength seqence.
-
+// 12.13.13 JD NumADCScans made Int64
 {$DEFINE USECONT}
 
 
@@ -4095,7 +4095,7 @@ procedure TRecordFrm.bRecordClick(Sender: TObject);
 // ---------------------------------
 var
      i : Integer ;
-     NumADCScans : Integer ;
+     NumADCScans : Int64 ;
 begin
 
      // Close other forms to avoid possible interruption of recording
@@ -4304,7 +4304,7 @@ begin
         NumADCScans := Round( (MainFrm.IDRFile.NumFrames*MainFrm.IDRFile.FrameInterval) /
                                MainFrm.IDRFile.ADCScanInterval ) ;
         EDRFilePointer := cNumEDRHeaderBytes +
-                          Int64(NumADCScans*MainFrm.ADCNumChannels*2) ;
+                          (NumADCScans*MainFrm.ADCNumChannels*2) ;
         FileSeek(MainFrm.IDRFile.EDRFileHandle, EDRFilePointer, 0 ) ;
         end ;
 

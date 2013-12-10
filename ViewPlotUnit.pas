@@ -24,6 +24,7 @@ unit ViewPlotUnit;
 // 30.07.12 JD Size of ROITimeCourseBuf now allocated to number of ROIs in use
 // 17.09.12 JD ROITimeCourseBuf size increased to hold MainFrm.IDRFile.MaxROIInUse+1 ROIs
 //             (rather than MainFrm.IDRFile.MaxROIInUse) to avoid memory access violations
+// 13.11.12 ... .LOADADC() now uses 64 bit scan counter
 
 interface
 
@@ -344,6 +345,11 @@ begin
      MainFrm.ADCDisplayWindow := edTDisplay.Value ;
      scFLDisplay.MaxPoints := Round( MainFrm.ADCDisplayWindow/
                                    (scFLDisplay.NumChannels*MainFrm.IDRFile.FrameInterval)) ;
+     if MainFrm.IDRFile.ADCNumChannels > 0 then begin
+        edTDisplay.HiLimit := MainFrm.IDRFile.ADCSCanInterval*1000000 ;
+        end
+     else edTDisplay.HiLimit := MainFrm.IDRFile.FrameInterval*1000000 ;
+
      edTDisplay.Value := MainFrm.ADCDisplayWindow ;
      scFLDisplay.NumPoints := 0 ;
 
@@ -477,9 +483,9 @@ var
     NumSamplesPerBuf : Integer ;
     NumScansRead : Integer ;
     NumScansToRead : Integer ;
-    BufStartScan : Integer ;
+    BufStartScan : Int64 ;
     NumSamplesRead : Integer ;
-    StartScan : Integer ;
+    StartScan : Int64 ;
     CursorScan : Integer ;
     BlockCount : Integer ;
     NumPoints : Integer ;
@@ -737,6 +743,7 @@ procedure TViewPlotFrm.SetDisplayUnits ;
 var
     TFrameGroupInterval : Single ;
 begin
+
     if rbTDisplayUnitsSecs.Checked then begin
        edTDisplay.Units := 's' ;
        edTDisplay.Scale := 1.0 ;

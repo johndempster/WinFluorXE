@@ -149,6 +149,7 @@ unit Main;
 //                   multi-wavelength mode) are acquired in time lapse recording mode. In continuous recording mode, Z stage is moved at preset time before end of image acquisition frame. Illumination can be turned off or exposure terminated during Z stage movement period. Z step time defined in Z stage setup.
 //                  Andor Ixon Cameras: Camera readout noise can now be optimised by
 //                  adjusting Readout A/D gain and vertical shift timing in Setup/Extra Camera Settings.
+// 09-12-13 V3.5.4 JD ITEX.PAS updated to compiled under XE3. Hamamatsu C4880 camera should now work again (since V3.5.0)
 
 interface
 

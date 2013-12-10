@@ -8,6 +8,7 @@ unit AverageUnit;
 // 7.3.07 ... A/D data now copied correctly when sub-range of frames selected
 // 09.05.08 ... Dual-rate, multiwavelength support added
 // 10.09.09 ... Frame differences added
+// 13.11.12 ... A/D data now copied by 1 Mbyte buffers and using 64 bit scan counter ADCCopy()
 
 interface
 
@@ -44,6 +45,11 @@ type
 
     procedure AverageFrames ;
     procedure DifferentiateFrames ;
+    procedure CopyADC(
+          StartAtFrame : Integer ;
+          EndAtFrame  : Integer
+          ) ;
+
 
   public
     { Public declarations }
@@ -99,25 +105,19 @@ procedure TAverageFrm.AverageFrames ;
 // ------------------------------------
 // Create averaged/reduced frame series
 // ------------------------------------
-
 var
-
     StartAtFrame : Integer ;
     EndAtFrame : Integer ;
     Frame : Integer ;
     OutFrame : Integer ;
     ftype : Integer ;
     NumAveraged : Array[0..MaxFrameType] of Integer ;
-
     Done : Boolean ;
     OK : Boolean ;
     i : Integer ;
     iEnd : Integer ;
     FileName : String ;
     s : String ;
-    StartScan, NumScans : Integer ;
-    TStart,TEnd : Single ;
-    ADCBuf : PSmallIntArray ;
     NumFramesTotal : Integer ;
 begin
 
@@ -213,23 +213,8 @@ begin
      IDRAvg.ADCNumScansPerFrame := Round( (IDRAvg.ADCNumScansPerFrame*IDRAvg.FrameInterval) /
                                           MainFrm.IDRFile.FrameInterval ) ;
 
-     // Copy A/D data (if available)
-     if MainFrm.IDRFile.ADCNumChannels > 0 then begin
-        TStart := (StartAtFrame-1)*MainFrm.IDRFile.FrameInterval ;
-        TEnd := (EndAtFrame)*MainFrm.IDRFile.FrameInterval ;
-        StartScan := Round(TStart/MainFrm.IDRFile.ADCScanInterval) ;
-        NumScans := Min( Round((TEnd-TStart)/MainFrm.IDRFile.ADCScanInterval),
-                         MainFrm.IDRFile.ADCNumScansInFile ) ;
-        // Create A/D buffer
-        GetMem( ADCBuf, NumScans*MainFrm.IDRFile.ADCNumChannels*2 ) ;
-        // Copy A/D samples
-        MainFrm.IDRFile.LoadADC( StartScan, NumScans, ADCBuf^ ) ;
-        IDRAvg.SaveADC( 0, NumScans, ADCBuf^ ) ;
-        FreeMem( ADCBuf ) ;
-        // Update output file
-        IDRAvg.ADCNumScansInFile :=  NumScans ;
-        IDRAvg.ADCNumScansPerFrame := MainFrm.IDRFile.ADCNumScansPerFrame div IDRAvg.NumFrames ;
-        end ;
+     // Copy A/D samples
+     CopyADC( StartAtFrame, EndAtFrame ) ;
 
      // Close files
      IDRAvg.CloseFile ;
@@ -258,6 +243,49 @@ begin
 
      end;
 
+procedure TAverageFrm.CopyADC(
+          StartAtFrame : Integer ;
+          EndAtFrame  : Integer
+          ) ;
+// ----------------------------
+// Copy A/D data (if available)
+// ----------------------------
+var
+    StartScan,NumScans,NumScansToCopy,OutScan,NumCopy : Int64 ;
+    TStart,TEnd : Single ;
+    ADCBuf : PSmallIntArray ;
+begin
+     if MainFrm.IDRFile.ADCNumChannels <= 0 then Exit ;
+
+     TStart := (StartAtFrame-1)*MainFrm.IDRFile.FrameInterval ;
+     TEnd := (EndAtFrame)*MainFrm.IDRFile.FrameInterval ;
+     StartScan := Round(TStart/MainFrm.IDRFile.ADCScanInterval) ;
+     NumScans := Min( Round((TEnd-TStart)/MainFrm.IDRFile.ADCScanInterval),
+                      MainFrm.IDRFile.ADCNumScansInFile ) ;
+
+     // Copy A/D samples
+
+     NumCopy := 1000000 ;
+     GetMem( ADCBuf, NumCopy*MainFrm.IDRFile.ADCNumChannels ) ;
+     NumScansToCopy := NumScans ;
+     OutScan := 0 ;
+
+     while NumScansToCopy > 0 do begin
+          NumCopy := Min(NumScansToCopy,NumCopy) ;
+          MainFrm.IDRFile.LoadADC( StartScan, NumCopy, ADCBuf^ ) ;
+          IDRAvg.SaveADC( OutScan, NumCopy, ADCBuf^ ) ;
+          NumScansToCopy := NumScansToCopy - NumCopy ;
+          OutScan := OutScan + NumCopy ;
+          end;
+
+     FreeMem( ADCBuf ) ;
+
+     // Update output file
+     IDRAvg.ADCNumScansInFile :=  NumScans ;
+     IDRAvg.ADCNumScansPerFrame := MainFrm.IDRFile.ADCNumScansPerFrame div IDRAvg.NumFrames ;
+
+     end ;
+
 
 procedure TAverageFrm.DifferentiateFrames ;
 // ----------------------------------------------------------
@@ -278,9 +306,6 @@ var
     iEnd,iTemp : Integer ;
     FileName : String ;
     s : String ;
-    StartScan, NumScans : Integer ;
-    TStart,TEnd : Single ;
-    ADCBuf : PSmallIntArray ;
 begin
 
      bOK.Enabled := False ;
@@ -351,22 +376,7 @@ begin
          end ;
 
      // Copy A/D data (if available)
-     if MainFrm.IDRFile.ADCNumChannels > 0 then begin
-        TStart := (StartAtFrame + MainFrm.IDRFile.NumFrameTypes-1)*MainFrm.IDRFile.FrameInterval ;
-        TEnd := (EndAtFrame)*MainFrm.IDRFile.FrameInterval ;
-        StartScan := Round(TStart/MainFrm.IDRFile.ADCScanInterval) ;
-        NumScans := Min( Round((TEnd-TStart)/MainFrm.IDRFile.ADCScanInterval),
-                         MainFrm.IDRFile.ADCNumScansInFile ) ;
-        // Create A/D buffer
-        GetMem( ADCBuf, NumScans*MainFrm.IDRFile.ADCNumChannels*2 ) ;
-        // Copy A/D samples
-        MainFrm.IDRFile.LoadADC( StartScan, NumScans, ADCBuf^ ) ;
-        IDRAvg.SaveADC( 0, NumScans, ADCBuf^ ) ;
-        FreeMem( ADCBuf ) ;
-        // Update output file
-        IDRAvg.ADCNumScansInFile :=  NumScans ;
-        IDRAvg.ADCNumScansPerFrame := MainFrm.IDRFile.ADCNumScansPerFrame div IDRAvg.NumFrames ;
-        end ;
+     CopyADC( StartAtFrame, EndAtFrame ) ;
 
      // Close files
      IDRAvg.CloseFile ;

@@ -6,6 +6,7 @@ unit SaveAsFileUnit;
 // 21.02.07 ... Updated to support 9 frame types
 //              Error in number of frames exports when more than one frametype fixed
 // 09.05.08 ... Dual-rate, multiwavelength support added
+// 13.11.12 ... .LOADADC() now uses 64 bit scan counter
 
 interface
 
@@ -268,7 +269,7 @@ var
     iEndFrame : Integer ;     // Last frame to save
     StartADCScan : Integer ;  // First A/D scan to save
     EndADCScan : Integer ;    // Last A/D scan
-    InScan, OutScan, NumScansToCopy : Integer ;
+    InScan,OutScan, NumScansToCopy : Int64 ;
     NumScansToRead, NumScansRead : Integer ;
     UseChannel : Array[0..MaxChannel] of Boolean ;
     UseFrameType : Array[0..MaxFrameType] of Boolean ;

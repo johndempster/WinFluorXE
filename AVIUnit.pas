@@ -19,6 +19,8 @@ unit AVIUnit;
 // 30.07.07 .. Fluorescence ratio plots can now be display in movie
 // 08.05.08 .. Dual-rate multi-wavelength frames now supported
 // 10.09.09 .. JD Pixel Exclusion facility removed from MeanROIIntensity
+// 13.11.12 ... .LOADADC() now uses 64 bit scan counter
+
 {$O-}
 interface
 
@@ -1077,6 +1079,7 @@ var
      NumScansToPlot : Integer ;
      Row : Integer ;
      s : String ;
+     StartScan : Int64 ;
 begin
 
      //if (EndFrame mod 2) = 0 then EndFrame := EndFrame + 1 ;
@@ -1124,7 +1127,8 @@ begin
      // Allocate buffer
      GetMem( ADCBuf, NumScansToPlot*MainFrm.IDRFile.ADCNumChannels*2 ) ;
      // Load buffer
-     MainFrm.IDRFile.LoadADC( Frame*NumScansPerFrame,
+     StartScan := Int64(Frame) + Int64(NumScansPerFrame) ;
+     MainFrm.IDRFile.LoadADC( StartScan,
                               NumScansToPlot,
                               ADCBuf^ ) ;
 

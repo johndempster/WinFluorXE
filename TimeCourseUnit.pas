@@ -919,7 +919,7 @@ var
     dt : Single ;                   // Inter-scan time interval
     tStep : Single ;                // Inter-point time interval on plot
     // File read buffer
-    BufStartScan : Integer ;
+    BufStartScan : Int64 ;
     NumScansRead : Integer ;
     NumSamplesRead : Integer ;
     iSample : Integer ;              // Sample index

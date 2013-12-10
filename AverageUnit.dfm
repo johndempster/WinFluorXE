@@ -113,9 +113,9 @@ object AverageFrm: TAverageFrm
       Height = 103
       TabOrder = 0
       object Label1: TLabel
-        Left = 8
+        Left = 32
         Top = 66
-        Width = 85
+        Width = 61
         Height = 15
         Alignment = taRightJustify
         Caption = 'No. frames'
@@ -226,6 +226,8 @@ object AverageFrm: TAverageFrm
     FrameWidth = 0
     FrameHeight = 0
     PixelDepth = 1
+    NumZSections = 1
+    ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
     ADCNumScansInFile = 0
@@ -233,10 +235,35 @@ object AverageFrm: TAverageFrm
     ADCNumScansPerFrame = 0
     ADCMaxValue = 0
     LineScan = False
+    LSTimeCoursePixel = 0
+    LSTimeCourseNumAvg = 1
+    LSTimeCourseBackgroundPixel = 0
+    LSSubtractBackground = False
     LineScanIntervalCorrectionFactor = 1.000000000000000000
     WriteEnabled = False
     SpectralDataFile = False
     EventDisplayDuration = 1.000000000000000000
+    EventDeadTime = 1.000000000000000000
+    EventDetectionThreshold = 1000.000000000000000000
+    EventDetectionThresholdPolarity = 0
+    EventDetectionSource = 0
+    EventROI = 0
+    EventBackgROI = 0
+    EventFixedBaseline = True
+    EventRollingBaselinePeriod = 1.000000000000000000
+    EventBaselineLevel = 0
+    EventRatioExclusionThreshold = 0
+    EventRatioTop = 0
+    EventRatioBottom = 1
+    EventRatioDisplayMax = 10.000000000000000000
+    EventRatioRMax = 1.000000000000000000
+    EventFLWave = 0
+    EventF0Wave = 0
+    EventF0Start = 1
+    EventF0End = 1
+    EventF0UseConstant = False
+    EventF0DisplayMax = 10.000000000000000000
+    EventF0SubtractF0 = False
     Left = 72
     Top = 144
   end

@@ -1,7 +1,6 @@
 object SmoothDifferentiateFrm: TSmoothDifferentiateFrm
   Left = 308
   Top = 171
-  AutoScroll = False
   Caption = 'Smooth / Differentiate'
   ClientHeight = 694
   ClientWidth = 859
@@ -60,6 +59,7 @@ object SmoothDifferentiateFrm: TSmoothDifferentiateFrm
     NumBytesPerSample = 2
     FixZeroLevels = False
     DisplaySelected = True
+    FontSize = 8
   end
   object LabelChannel: TLabel
     Left = 16
@@ -87,7 +87,6 @@ object SmoothDifferentiateFrm: TSmoothDifferentiateFrm
     Top = 32
     Width = 121
     Height = 21
-    ItemHeight = 13
     TabOrder = 0
   end
   object btnUpdate: TButton

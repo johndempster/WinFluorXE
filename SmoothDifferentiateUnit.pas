@@ -4,6 +4,7 @@ unit SmoothDifferentiateUnit;
 // SmoothDifferentiateUnit
 // by Nicholas Schwarz
 //----------------------------------------------------------------------------//
+// 13.11.12 ... JD .LOADADC() now uses 64 bit scan counter
 
 interface
 
@@ -103,8 +104,8 @@ uses Main, PrintRec, Printgra;
 
 procedure TSmoothDifferentiateFrm.btnUpdateClick(Sender: TObject);
 var
-  ch: Integer;                      // Channel index
-  i: Integer;                       // Loop index
+  i,ch: Integer;                      // Channel index
+  i64: Int64 ;                       // Loop index
   sample: Array[0..7] of SmallInt;  // Array of one sample
   scaleFactorG: Double;
   scaleFactorR: Double;
@@ -152,10 +153,11 @@ begin
 
 
   // Load sample data for selected channel
-  for i := 0 to MainFrm.IDRFile.ADCNumScansInFile - 1 do
-  begin
-    MainFrm.IDRFile.LoadADC(i, 1, sample);
-    m_Data[i] := Round(sample[ch]);
+  i64 := 0 ;
+  while i64 < MainFrm.IDRFile.ADCNumScansInFile do begin
+    MainFrm.IDRFile.LoadADC(i64, 1, sample);
+    m_Data[i64] := Round(sample[ch]);
+    Inc(i64) ;
   end;
 
 

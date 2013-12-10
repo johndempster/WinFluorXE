@@ -1,9 +1,9 @@
 object ViewLineFrm: TViewLineFrm
   Left = 364
   Top = 126
-  Width = 840
-  Height = 812
   Caption = 'View Line Scans'
+  ClientHeight = 785
+  ClientWidth = 832
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -129,7 +129,6 @@ object ViewLineFrm: TViewLineFrm
         Width = 113
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         TabOrder = 3
         OnChange = cbFrameNumChange
       end
@@ -207,7 +206,7 @@ object ViewLineFrm: TViewLineFrm
         OnKeyPress = edDisplayIntensityRangeKeyPress
         AutoSize = False
         ShowHint = True
-        Text = ' 4096 - 4096 '
+        Text = ' 4096.00 - 4096.00 '
         LoValue = 4096.000000000000000000
         HiValue = 4096.000000000000000000
         HiLimit = 1.000000015047466E30
@@ -221,7 +220,6 @@ object ViewLineFrm: TViewLineFrm
         Height = 23
         Hint = 'Display colour mapping'
         Style = csDropDownList
-        ItemHeight = 15
         TabOrder = 3
         OnChange = cbPaletteChange
       end
@@ -232,7 +230,6 @@ object ViewLineFrm: TViewLineFrm
         Height = 23
         Hint = 'Set display magification '
         Style = csDropDownList
-        ItemHeight = 15
         ParentShowHint = False
         ShowHint = True
         TabOrder = 4
@@ -479,7 +476,6 @@ object ViewLineFrm: TViewLineFrm
           Height = 23
           Hint = 'Ratio numerator wavelength'
           Style = csDropDownList
-          ItemHeight = 15
           ParentShowHint = False
           ShowHint = True
           TabOrder = 0
@@ -492,7 +488,6 @@ object ViewLineFrm: TViewLineFrm
           Height = 23
           Hint = 'Ratio denominator wavelength'
           Style = csDropDownList
-          ItemHeight = 15
           ParentShowHint = False
           ShowHint = True
           TabOrder = 1

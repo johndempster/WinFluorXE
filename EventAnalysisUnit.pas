@@ -24,6 +24,7 @@ unit EventAnalysisUnit;
 // 29.11.12 JD TDecay,T90,Frequency variables now plotted correctly
 //             Cursor readout on plot now shows values
 //
+// 13.11.12 ... .LOADADC() now uses 64 bit scan counter
 
 interface
 
@@ -1224,9 +1225,9 @@ begin
             // Read data for A/D channel into display buffer
            ADCChan := cbDetectionSource.ItemIndex - ADCChannelSources ;
            GetMem( InBuf, scDetDisplay.MaxPoints*MainFrm.IDRFile.ADCNumChannels*2) ;
-           NumScansRead := MainFrm.IDRFile.LoadADC( sbDetDisplay.Position,
+           NumScansRead := MainFrm.IDRFile.LoadADC( Int64(sbDetDisplay.Position),
                                                     scDetDisplay.MaxPoints,
-                                                   InBuf^ ) ;
+                                                    InBuf^ ) ;
            j := MainFrm.IDRFile.ADCChannel[ADCChan].ChannelOffset ;
            for i := 0 to NumScansRead-1 do begin
                DetBuf[i] := InBuf[j] ;
@@ -1418,7 +1419,7 @@ procedure TEventAnalysisFrm.DisplayADCChannels(
 // --------------------------------------
 var
    iEventStart : Integer ;
-   iDisplayStart : Integer ;
+   iDisplayStart : Int64 ;
    NumAvg : Integer ;
    NumSamples : Integer ;
    EventNum : Integer ;

@@ -12,6 +12,7 @@ unit exportAnalogueUnit;
   1/12/03 .... Export now uses TADCDataFile component
   24/09/06 ... Fixing export to WCP files
   19/01/10 ... Export to Igor binary wave added
+  13.11.12 ... .LOADADC() now uses 64 bit scan counter
   }
 interface
 
@@ -139,7 +140,7 @@ var
    UseChannel : Array[0..ChannelLimit] of Boolean ;
    InBuf : Array[0..NumScansPerBuf*(ChannelLimit+1)-1] of SmallInt ;
    OutBuf : Array[0..NumScansPerBuf*(ChannelLimit+1)-1] of SmallInt ;
-   InScan : Integer ;
+   InScan : Int64 ;
    OutScan : Integer ;
    NumScansToCopy : Integer ;
    NumScansToRead : Integer ;

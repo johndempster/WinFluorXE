@@ -1,9 +1,9 @@
 object TimeCourseFrm: TTimeCourseFrm
   Left = 548
   Top = 61
-  Width = 588
-  Height = 644
   Caption = 'Time Course Analysis'
+  ClientHeight = 617
+  ClientWidth = 580
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -151,7 +151,6 @@ object TimeCourseFrm: TTimeCourseFrm
         Height = 21
         Hint = 'Region of interest to be plotted'
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 0
         OnChange = cbSourceChange
       end
@@ -162,7 +161,6 @@ object TimeCourseFrm: TTimeCourseFrm
         Height = 21
         Hint = 'Background region of interest to be subtracted '
         Style = csDropDownList
-        ItemHeight = 13
         TabOrder = 1
       end
       object ExcludePanel: TPanel
@@ -211,7 +209,6 @@ object TimeCourseFrm: TTimeCourseFrm
           Height = 21
           Hint = 'Y Axis number to be plotted on'
           Style = csDropDownList
-          ItemHeight = 13
           TabOrder = 1
         end
         object bAddAllROIs: TButton
@@ -275,7 +272,6 @@ object TimeCourseFrm: TTimeCourseFrm
           Height = 21
           Hint = 'Y Axis number to be plotted on'
           Style = csDropDownList
-          ItemHeight = 13
           TabOrder = 5
         end
         object bSetAxes: TButton
@@ -316,6 +312,10 @@ object TimeCourseFrm: TTimeCourseFrm
           object FTab: TTabSheet
             Caption = 'Fluor'
             TabVisible = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label3: TLabel
               Left = 5
               Top = 2
@@ -331,7 +331,6 @@ object TimeCourseFrm: TTimeCourseFrm
               Height = 21
               Hint = 'Frame type to be displayed'
               Style = csDropDownList
-              ItemHeight = 0
               TabOrder = 0
             end
           end
@@ -339,6 +338,10 @@ object TimeCourseFrm: TTimeCourseFrm
             Caption = 'F/F0'
             ImageIndex = 1
             TabVisible = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label6: TLabel
               Left = 5
               Top = 2
@@ -379,7 +382,7 @@ object TimeCourseFrm: TTimeCourseFrm
               Font.Name = 'Arial'
               Font.Style = []
               ShowHint = True
-              Text = ' 1 - 1 '
+              Text = ' 1.00 - 1.00 '
               LoValue = 1.000000000000000000
               HiValue = 1.000000000000000000
               LoLimit = 1.000000000000000000
@@ -426,7 +429,6 @@ object TimeCourseFrm: TTimeCourseFrm
               Height = 21
               Hint = 'Frame type to be displayed'
               Style = csDropDownList
-              ItemHeight = 13
               ParentShowHint = False
               ShowHint = True
               TabOrder = 4
@@ -485,6 +487,10 @@ object TimeCourseFrm: TTimeCourseFrm
             ImageIndex = 2
             ParentFont = False
             TabVisible = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Shape2: TShape
               Left = 56
               Top = 27
@@ -528,7 +534,6 @@ object TimeCourseFrm: TTimeCourseFrm
               Height = 22
               Hint = 'Numerator frame type '
               Style = csDropDownList
-              ItemHeight = 0
               TabOrder = 0
             end
             object cbDenomWave: TComboBox
@@ -538,7 +543,6 @@ object TimeCourseFrm: TTimeCourseFrm
               Height = 22
               Hint = 'Denominator frame type'
               Style = csDropDownList
-              ItemHeight = 0
               TabOrder = 1
             end
             object edRatioExclusionThreshold: TValidatedEdit
@@ -593,7 +597,6 @@ object TimeCourseFrm: TTimeCourseFrm
                 Height = 22
                 Hint = 'Binding equation used to compute ion concentration from ratio'
                 Style = csDropDownList
-                ItemHeight = 0
                 TabOrder = 1
               end
               object ckUseEquation: TCheckBox
@@ -628,7 +631,6 @@ object TimeCourseFrm: TTimeCourseFrm
           Top = 16
           Width = 134
           Height = 21
-          ItemHeight = 13
           TabOrder = 1
           Text = 'cbFluorescence'
           OnChange = cbFluorescenceChange

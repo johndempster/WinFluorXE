@@ -23,6 +23,7 @@ unit ViewLineUnit;
 // 06.03.13 DE Made FL and R displays behave more like ADC channels (times would
 //          not agree, and half-range button would stop at a limit based on
 //          window width)
+// 13.11.12 ... .LOADADC() now uses 64 bit scan counter
 
 interface
 
@@ -1199,7 +1200,7 @@ var
 
     NumADCSamplesPerBuf : Integer ;
     NumADCScansRead : Integer ;
-    BufStartScan : Integer ;
+    BufStartScan : Int64 ;
     NumSamplesRead : Integer ;
     StartScan : Integer ;
     CursorScan : Integer ;

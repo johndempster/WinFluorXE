@@ -4,6 +4,7 @@ unit PlaybackSetupUnit;
 // PlaybackSetupUnit
 // by Nicholas Schwarz
 //------------------------------------------------------------------------------
+// 13.11.12 ... .LOADADC() now uses 64 bit scan counter
 
 interface
 
@@ -436,8 +437,8 @@ end;
 
 procedure TPlaybackSetupFrm.cbChannelChange(Sender: TObject);
 var
-  ch : Integer;                     // Selected channel
-  i : Integer;                      // Loop index
+  i,ch : Integer;                     // Selected channel
+  i64 : Int64 ;                      // Loop index
   sample: Array[0..7] of SmallInt;  // Array of one sample
 begin
 
@@ -445,11 +446,12 @@ begin
   ch := cbChannel.ItemIndex;
 
   // Load sample data for channel 0
-  for i := 0 to IDRFile.ADCNumScansInFile - 1 do
-  begin
-    IDRFile.LoadADC(i, 1, sample);
-    m_Data[i] := Round(sample[ch]);
-  end;
+  i64 := 0 ;
+  while i64 < IDRFile.ADCNumScansInFile do begin
+    IDRFile.LoadADC(i64, 1, sample);
+    m_Data[i64] := Round(sample[ch]);
+    Inc(i64) ;
+    end;
 
   // Set up channel in A/D signals display window
   sdDisplay.MaxADCValue := IDRFile.ADCMaxValue;

@@ -4,6 +4,7 @@ unit DigitalFilterUnit;
 // ----------------------------------------------
 // 21.10.10
 // 27.07.12 Cancel now closes window
+// 13.11.12 ... .LOADADC() now uses 64 bit scan counter
 
 interface
 
@@ -211,7 +212,7 @@ var
    NumSamples : Integer ;          { Maximum sample in filter work buffer }
    NumCoeffs : Integer ;           { Maximum filter coefficient index }
    FirstBuffer : Boolean ;
-   InBlockStart,OutBlockStart : Integer ;
+   InBlockStart,OutBlockStart : Int64 ;
    iStart : Integer ;
    FilterOp : String ;
    NumBlocksPerBuffer : Integer ;
@@ -408,7 +409,7 @@ const
 
 var
     i,j,ch : Integer ;
-    iScan : Integer ;
+    iScan : Int64 ;
     NumScansPerBlock : Integer ;
     NumScansRead : Integer ;
     Buf : Array[0..NumScansPerBuf*(MaxADCChannels)-1] of SmallInt ;
@@ -482,7 +483,7 @@ begin
 
      FileSeek( TempHandle1, 0,0) ;
      iScan := 0 ;
-     While iScan < (MainFrm.IDRFile.ADCNumScansInFile-1) do begin
+     While iScan < MainFrm.IDRFile.ADCNumScansInFile do begin
 
          // Read A/D data from source file
          NumScansRead := MainFrm.IDRFile.LoadADC( iScan,NumScansPerBuf,Buf ) ;
@@ -517,7 +518,8 @@ begin
 
      FileSeek( TempHandle1, 0, 0 ) ;
      FileSeek( TempHandle2, 0, 0 ) ;
-     for iScan := 0 to MainFrm.IDRFile.ADCNumScansInFile-1 do begin
+     iScan := 0 ;
+     while iScan < MainFrm.IDRFile.ADCNumScansInFile do begin
 
           for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do begin
 
@@ -539,6 +541,7 @@ begin
              '%s Applying forward filter %.3g%%',
              [FilterOp,(100.0*iScan)/MainFrm.IDRFile.ADCNumScansInFile]) ;
 
+          Inc(iScan) ;
           end ;
 
      // Reverse filter pass from to temp file #2 to #1
@@ -557,7 +560,8 @@ begin
          end ;
 
      // Apply filter
-     for iScan := MainFrm.IDRFile.ADCNumScansInFile - MainFrm.IDRFile.ADCNumChannels downto 0 do begin
+     iScan := MainFrm.IDRFile.ADCNumScansInFile - MainFrm.IDRFile.ADCNumChannels ;
+     while iScan >= 0 do begin
          for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1do begin
              // Read value
              FilePointer := ((iScan*MainFrm.IDRFile.ADCNumChannels) + ch)*FPSize ;
@@ -579,6 +583,7 @@ begin
             '%s Applying reverse filter %.3g%%',
             [FilterOp,(100.0*iScan)/MainFrm.IDRFile.ADCNumScansInFile]) ;
 
+         Dec(iScan) ;
          end ;
 
      // Copy results to output EDR data file
@@ -586,7 +591,7 @@ begin
 
      FileSeek( TempHandle1, 0,0) ;
      iScan := 0 ;
-     While iScan < (MainFrm.IDRFile.ADCNumScansInFile-1) do begin
+     While iScan < MainFrm.IDRFile.ADCNumScansInFile do begin
 
          // Read A/D data from source file
          NumScansRead := MainFrm.IDRFile.LoadADC( iScan,NumScansPerBuf,Buf ) ;
@@ -636,7 +641,7 @@ const
 
 var
     i,j,ch,k : Integer ;
-    iScan : Integer ;
+    iScan : Int64 ;
     NumScansRead : Integer ;
     Buf : Array[0..NumScansPerBuf*MaxADCChannels-1] of SmallInt ;
     FBuf : Array[0..NumScansPerBuf*MaxADCChannels-1] of Extended ;
@@ -698,7 +703,7 @@ begin
      // -------------------------------------------
      FileSeek( TempHandle1, 0,0) ;
      iScan := 0 ;
-     While iScan < (MainFrm.IDRFile.ADCNumScansInFile-1) do begin
+     While iScan < MainFrm.IDRFile.ADCNumScansInFile do begin
 
          // Read A/D data from source file
          NumScansRead := MainFrm.IDRFile.LoadADC( iScan,NumScansPerBuf,Buf ) ;
@@ -745,7 +750,8 @@ begin
 
      FileSeek( TempHandle1, 0, 0 ) ;
      FileSeek( TempHandle2, 0, 0 ) ;
-     for iScan := 0 to MainFrm.IDRFile.ADCNumScansInFile-1 do begin
+     iScan := 0 ;
+     while iScan < MainFrm.IDRFile.ADCNumScansInFile do begin
 
           for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do begin
 
@@ -772,8 +778,9 @@ begin
                FileClose( TempHandle2 ) ;
                Exit ;
                end ;
+            end ;
 
-             end ;
+          Inc(iScan) ;
 
           end ;
 
@@ -793,8 +800,10 @@ begin
          end ;
 
      // Apply filter
-     for iScan := MainFrm.IDRFile.ADCNumScansInFile - MainFrm.IDRFile.ADCNumChannels downto 0 do begin
-         for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1do begin
+     iScan := MainFrm.IDRFile.ADCNumScansInFile - MainFrm.IDRFile.ADCNumChannels ;
+     while iScan >= 0 do begin
+
+         for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do begin
              // Read value
              FilePointer := ((iScan*MainFrm.IDRFile.ADCNumChannels) + ch)*FPSize ;
              FileSeek( TempHandle2, FilePointer, 0 ) ;
@@ -819,9 +828,10 @@ begin
                FileClose( TempHandle1 ) ;
                FileClose( TempHandle2 ) ;
                Exit ;
+               end;
             end ;
 
-            end ;
+          Dec(iScan) ;
 
           end ;
 
@@ -830,7 +840,7 @@ begin
 
      FileSeek( TempHandle1, 0,0) ;
      iScan := 0 ;
-     While iScan < (MainFrm.IDRFile.ADCNumScansInFile-1) do begin
+     While iScan < MainFrm.IDRFile.ADCNumScansInFile do begin
 
          // Read A/D data from source file
          NumScansRead := MainFrm.IDRFile.LoadADC( iScan,NumScansPerBuf,Buf ) ;
@@ -884,7 +894,8 @@ procedure TDigitalFilterFrm.InvertSignal ;
 const
     NumScansPerBuf = 256 ;
 var
-    iScan,ch,j,i,NumScansRead : Integer ;
+    iScan : Int64 ;
+    ch,j,i,NumScansRead : Integer ;
     Buf : Array[0..NumScansPerBuf*MaxADCChannels-1] of SmallInt ;
 begin
 

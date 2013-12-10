@@ -66,6 +66,7 @@ object PlaybackSetupFrm: TPlaybackSetupFrm
     NumBytesPerSample = 2
     FixZeroLevels = False
     DisplaySelected = True
+    FontSize = 8
   end
   object LabelStart: TLabel
     Left = 8
@@ -189,7 +190,6 @@ object PlaybackSetupFrm: TPlaybackSetupFrm
     Top = 64
     Width = 113
     Height = 21
-    ItemHeight = 13
     TabOrder = 3
     OnChange = cbChannelChange
   end
@@ -437,6 +437,8 @@ object PlaybackSetupFrm: TPlaybackSetupFrm
     FrameWidth = 0
     FrameHeight = 0
     PixelDepth = 1
+    NumZSections = 1
+    ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
     ADCNumScansInFile = 0

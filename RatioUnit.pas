@@ -6,6 +6,7 @@ unit RatioUnit;
 // 07.03.07 ... Now copies A/D data correctly when frame sub-ranges selected
 // 09.05.08 ... Dual-rate, multiwavelength support added
 // 21.011000ssssCaimagenowworks
+// 13.11.12 ... A/D data now copied by 1 Mbyte buffers and using 64 bit scan counter ADCCopy()
 
 interface
 
@@ -69,6 +70,11 @@ type
                                FrameBuf : PIntArray ;
                                zExclusionThreshold : Integer
                                ) : Single ;
+
+    procedure CopyADC(
+              StartAtFrame : Integer ;
+              EndAtFrame  : Integer
+              ) ;
 
   public
     { Public declarations }
@@ -232,10 +238,6 @@ var
     MaxValue : Single ;       // Output image max. value
     Scale : Single ;          // Output image pixel scaling factor
     ActualFrame : Integer ;
-
-    StartScan, NumScans : Integer ;
-    TStart,TEnd : Single ;
-    ADCBuf : PSmallIntArray ;
 
 begin
 
@@ -478,22 +480,7 @@ begin
         end ;
 
      // Copy A/D data (if available)
-     if MainFrm.IDRFile.ADCNumChannels > 0 then begin
-        TStart := (StartAtFrame-1)*MainFrm.IDRFile.FrameInterval ;
-        TEnd := (EndAtFrame)*MainFrm.IDRFile.FrameInterval ;
-        StartScan := Round(TStart/MainFrm.IDRFile.ADCScanInterval) ;
-        NumScans := Min( Round((TEnd-TStart)/MainFrm.IDRFile.ADCScanInterval),
-                         MainFrm.IDRFile.ADCNumScansInFile ) ;
-        // Create A/D buffer
-        GetMem( ADCBuf, NumScans*MainFrm.IDRFile.ADCNumChannels*2 ) ;
-        // Copy A/D samples
-        MainFrm.IDRFile.LoadADC( StartScan, NumScans, ADCBuf^ ) ;
-        IDROut.SaveADC( 0, NumScans, ADCBuf^ ) ;
-        FreeMem( ADCBuf ) ;
-        // Update output file
-        IDROut.ADCNumScansInFile :=  NumScans ;
-        IDROut.ADCNumScansPerFrame := MainFrm.IDRFile.ADCNumScansPerFrame div IDROut.NumFrames ;
-        end ;
+     CopyADC( StartAtFrame, EndAtFrame ) ;
 
      // Close files
      IDROut.CloseFile ;
@@ -514,6 +501,50 @@ begin
      Close ;
 
      end;
+
+
+procedure TRatioFrm.CopyADC(
+          StartAtFrame : Integer ;
+          EndAtFrame  : Integer
+          ) ;
+// ----------------------------
+// Copy A/D data (if available)
+// ----------------------------
+var
+    StartScan,NumScans,NumScansToCopy,OutScan,NumCopy : Int64 ;
+    TStart,TEnd : Single ;
+    ADCBuf : PSmallIntArray ;
+begin
+     if MainFrm.IDRFile.ADCNumChannels <= 0 then Exit ;
+
+     TStart := (StartAtFrame-1)*MainFrm.IDRFile.FrameInterval ;
+     TEnd := (EndAtFrame)*MainFrm.IDRFile.FrameInterval ;
+     StartScan := Round(TStart/MainFrm.IDRFile.ADCScanInterval) ;
+     NumScans := Min( Round((TEnd-TStart)/MainFrm.IDRFile.ADCScanInterval),
+                      MainFrm.IDRFile.ADCNumScansInFile ) ;
+
+     // Copy A/D samples
+
+     NumCopy := 1000000 ;
+     GetMem( ADCBuf, NumCopy*MainFrm.IDRFile.ADCNumChannels ) ;
+     NumScansToCopy := NumScans ;
+     OutScan := 0 ;
+
+     while NumScansToCopy > 0 do begin
+          NumCopy := Min(NumScansToCopy,NumCopy) ;
+          MainFrm.IDRFile.LoadADC( StartScan, NumCopy, ADCBuf^ ) ;
+          IDROut.SaveADC( OutScan, NumCopy, ADCBuf^ ) ;
+          NumScansToCopy := NumScansToCopy - NumCopy ;
+          OutScan := OutScan + NumCopy ;
+          end;
+
+     FreeMem( ADCBuf ) ;
+
+     // Update output file
+     IDROut.ADCNumScansInFile :=  NumScans ;
+     IDROut.ADCNumScansPerFrame := MainFrm.IDRFile.ADCNumScansPerFrame div IDROut.NumFrames ;
+
+     end ;
 
 
 function TRatioFrm.MeanROIIntensity(
