@@ -13,7 +13,7 @@ __history
 *.drc
 *.map
 *.exe
-*.dll
+at*.dll
 ./bin/*
 ./temp/*.*
 ./vprot/*.*
