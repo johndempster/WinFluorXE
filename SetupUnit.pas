@@ -29,6 +29,7 @@ unit SetupUnit;
 // 03.06.13 JD LED/laser 2 & 3 settings now only visible if enough DAC control lines selected
 // 27.09.13 JD ShutterChangeTime field added to shutter group
 // 25.10.13 JD Z stage step time added
+// 16.12.13 JD CheckSettings added to check input and output channels for missing and multiple channels
 
 interface
 
@@ -277,6 +278,7 @@ type
     procedure NewInterfaceCards ;
     procedure DisplayLightSourceSettingsPanels ;
     procedure ShowLaserSettings ;
+    procedure CheckSettings ;
   public
     { Public declarations }
   end;
@@ -1021,6 +1023,8 @@ begin
      MainFrm.IOConfig.ZStageControl :=
                          Integer(cbZStageControl.Items.Objects[cbZStageControl.ItemIndex]) ;
 
+     CheckSettings ;
+
 
     // Update relevant forms if they are active
     if MainFrm.FormExists('TimeCourseFrm') then TimeCourseFrm.UpdateSettings ;
@@ -1223,5 +1227,79 @@ procedure TSetupFrm.cbLSLaserStartChange(Sender: TObject);
 begin
     ShowLaserSettings ;
     end;
+
+
+procedure TSetupFrm.CheckSettings ;
+// -----------------------------------------------------
+// Check I/O settings for conflicts and missing settings
+// -----------------------------------------------------
+var
+    OK : Boolean ;
+    i,j : Integer ;
+    ResCount : Array[0..MaxResources-1] of Integer ;
+begin
+     OK := False ;
+     for i := 0 to High(LabIO.Resource) do if LabIO.Resource[i].ResourceType = ADCIn then begin
+         if MainFrm.IOConfig.ADCIn = i then OK := True ;
+         end;
+     if not OK then ShowMessage('SETUP: Warning! No Analog input channels assigned!');
+
+     // Check analog outputs
+
+     for i := 0 to High(LabIO.Resource) do ResCount[i] := 0 ;
+     for i := 0 to High(LabIO.Resource) do if LabIO.Resource[i].ResourceType = DACOut then begin
+         if MainFrm.IOConfig.CameraStart = i then  Inc(ResCount[i]);
+         for j := 0 to High(MainFrm.IOConfig.VCommand) do
+             if MainFrm.IOConfig.VCommand[j] = i then  Inc(ResCount[i]);
+         for j := MainFrm.IOConfig.LSWavelengthStart to MainFrm.IOConfig.LSWavelengthEnd do
+             if j = i then  Inc(ResCount[i]);
+         for j := MainFrm.IOConfig.LSLaserStart to MainFrm.IOConfig.LSLaserEnd do
+             if j = i then  Inc(ResCount[i]);
+         for j := MainFrm.IOConfig.DigitalStimStart to MainFrm.IOConfig.DigitalStimEnd do
+             if j = i then  Inc(ResCount[i]);
+         if MainFrm.IOConfig.PhotoStimX = i then  Inc(ResCount[i]);
+         if MainFrm.IOConfig.PhotoStimY = i then  Inc(ResCount[i]);
+         if MainFrm.IOConfig.PhotoStimI1 = i then  Inc(ResCount[i]);
+         if MainFrm.IOConfig.PhotoStimI2 = i then  Inc(ResCount[i]);
+         if MainFrm.IOConfig.PhotoStimI3 = i then  Inc(ResCount[i]);
+         if MainFrm.IOConfig.PhotoStimShutter = i then  Inc(ResCount[i]);
+         if MainFrm.IOConfig.ZStageControl = i then  Inc(ResCount[i]);
+         end;
+
+      // At least one analog channel required
+      OK := False ;
+      for i := 0 to High(ResCount) do if ResCount[i] > 0 then OK := True ;
+      if not OK then ShowMessage('SETUP: Warning! No analog output channels assigned! At least one is required to enable timing.');
+
+      // Check for multiple analog output channel selection
+      for i := 0 to High(ResCount) do if ResCount[i] >= 2 then begin
+          ShowMessage(format('SETUP: Warning! Channel Device%d:DAC%d selected more than once!',
+                  [LabIO.Resource[i].Device,LabIO.Resource[i].StartChannel]));
+          end;
+
+     // Check digital outputs
+
+     for i := 0 to High(LabIO.Resource) do ResCount[i] := 0 ;
+     for i := 0 to High(LabIO.Resource) do if LabIO.Resource[i].ResourceType = DIGOut then begin
+         if MainFrm.IOConfig.CameraStart = i then  Inc(ResCount[i]);
+         if MainFrm.IOConfig.LSShutter = i then  Inc(ResCount[i]);
+         for j := MainFrm.IOConfig.LSWavelengthStart to MainFrm.IOConfig.LSWavelengthEnd do
+             if j = i then  Inc(ResCount[i]);
+         for j := MainFrm.IOConfig.LSLaserStart to MainFrm.IOConfig.LSLaserEnd do
+             if j = i then  Inc(ResCount[i]);
+         for j := MainFrm.IOConfig.DigitalStimStart to MainFrm.IOConfig.DigitalStimEnd do
+             if j = i then  Inc(ResCount[i]);
+         if MainFrm.IOConfig.PhotoStimShutter = i then  Inc(ResCount[i]);
+         end;
+
+      // Check for multiple digital output channel selection
+      for i := 0 to High(ResCount) do if ResCount[i] >= 2 then begin
+          ShowMessage(format('SETUP: Warning! Channel Device%d:DIG%d selected more than once!',
+                  [LabIO.Resource[i].Device,LabIO.Resource[i].StartChannel]));
+          end;
+
+
+      end ;
+
 
 end.

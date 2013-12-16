@@ -28,6 +28,8 @@ unit SnapUnit;
 //             intermittent blank frames produced by QImaging Bolt, but not checked yet)
 //             QCAM NumFramesInBuffer now defined by MainFrm.Cam1.MaxFramesInBuffer (increased to 64)
 // 26.11.12 JD Zoom combo box moved to top of image area
+// 13.12.13 JD DCAM NumFramesInBuffer set to hold 1 second history or are minimum of 8
+// 16.12.13 JD .StartCapture Now returns False if unable to allocate enough frame buffer memory
 
 interface
 
@@ -531,8 +533,10 @@ begin
 
    // Start frame capture
    MainFrm.StatusBar.SimpleText := 'Wait ... Starting camera' ;
-   MainFrm.Cam1.StartCapture ;
-
+   if not MainFrm.Cam1.StartCapture then begin
+      MainFrm.StatusBar.SimpleText := 'Aborted ... Unable to start camera (not enough memory)!' ;
+      Exit ;
+      end;
 
    // Update exposure interval in case camera has changed it
    edFrameInterval.Value := MainFrm.Cam1.FrameInterval ;
@@ -729,8 +733,8 @@ begin
            end ;
 
         DCAM : begin
-           NumFramesInBuffer :=  (40000000 div
-                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
+           NumFramesInBuffer := (Round(1.0/edFrameInterval.Value) div 2)*2 ;
+           NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
            end ;
 
         IMAQ : begin

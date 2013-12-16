@@ -29,7 +29,7 @@ object AboutBox: TAboutBox
       Top = 8
       Width = 354
       Height = 16
-      Caption = 'WinFluor - Fluorescence Image Capture Program V3.5.3'
+      Caption = 'WinFluor - Fluorescence Image Capture Program V3.5.5'
       Font.Charset = ANSI_CHARSET
       Font.Color = clBlack
       Font.Height = -13

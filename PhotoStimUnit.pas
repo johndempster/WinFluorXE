@@ -2176,7 +2176,7 @@ begin
      { Correct for use of comma/period as decimal separator }
      {$IF CompilerVersion > 7.0} dsep := formatsettings.DECIMALSEPARATOR ;
      {$ELSE} dsep := DECIMALSEPARATOR ;
-     {$ENDIF}
+     {$IFEND}
      if dsep = '.' then NumAsString := ANSIReplaceText(NumAsString ,',',dsep);
      if dsep = ',' then NumAsString := ANSIReplaceText(NumAsString, '.',dsep);
 

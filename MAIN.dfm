@@ -2,8 +2,8 @@ object MainFrm: TMainFrm
   Left = 489
   Top = 49
   Caption = 
-    'WinFluor : Fluorescence Image Capture & Analysis Program V3.5.4 ' +
-    '09-12-13'
+    'WinFluor : Fluorescence Image Capture & Analysis Program V3.5.5 ' +
+    '16-12-13'
   ClientHeight = 667
   ClientWidth = 988
   Color = clAppWorkSpace
@@ -310,7 +310,7 @@ object MainFrm: TMainFrm
     Left = 104
     Top = 200
     Bitmap = {
-      494C010112003400340010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C0101120034003C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -996,7 +996,6 @@ object MainFrm: TMainFrm
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
-    ADCNumScansInFile = 0
     ADCNumChannels = 1
     ADCNumScansPerFrame = 0
     ADCMaxValue = 0
@@ -1049,6 +1048,8 @@ object MainFrm: TMainFrm
     DisableEMCCD = False
     CameraMode = 0
     CameraADC = 0
+    ADCGain = 0
+    CCDVerticalShiftSpeed = 0
     Left = 40
     Top = 112
   end

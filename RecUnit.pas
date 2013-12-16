@@ -136,6 +136,9 @@ unit RecUnit;
 //             during movement of Z positioner. Z positioner command voltage updated ZStage.StepTime
 //             BEFORE end of frame. In time lapse mode, Z positioner update at end of wavelength seqence.
 // 12.13.13 JD NumADCScans made Int64
+// 13.12.13 JD DCAM NumFramesInBuffer set to hold 1 second history or are minimum of 8
+// 16.12.13 JD .StartCapture Now returns False if unable to allocate enough frame buffer memory
+
 {$DEFINE USECONT}
 
 
@@ -1149,7 +1152,10 @@ begin
 
    // Start frame capture
    MainFrm.StatusBar.SimpleText := 'Wait ... Starting camera' ;
-   MainFrm.Cam1.StartCapture ;
+   if not MainFrm.Cam1.StartCapture then begin
+      MainFrm.StatusBar.SimpleText := 'Aborted ... Unable to start camera (not enough memory)!' ;
+      Exit ;
+      end;
 
    // Update exposure interval in case camera has changed it
    edFrameInterval.Value := MainFrm.Cam1.FrameInterval ;
@@ -1259,6 +1265,8 @@ procedure TRecordFrm.InitialiseImage ;
 // ------------------------------------------------------
 // Re-initialise size of memory buffers and image bitmaps
 // ------------------------------------------------------
+const
+    MaxBufferSize = 500000000 ;
 var
      i,FT : Integer ;
      WVNum : Integer ;
@@ -1402,8 +1410,12 @@ begin
            end ;
 
         DCAM : begin
-           NumFramesInBuffer :=  (40000000 div
-                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
+           NumFramesInBuffer := Round(2.0/edFrameInterval.Value) ;
+           NumFramesInBuffer := Min( NumFramesInBuffer,
+                                     MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel));
+           NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
+           NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
+
            end ;
 
         IMAQ : begin
