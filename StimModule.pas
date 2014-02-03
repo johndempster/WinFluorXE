@@ -12,7 +12,8 @@ unit StimModule;
               (fixes memory exception when using long digital pulse stimuli)
               Ptrain1 (Incrementing series of pulse trains removed
   04.10.09 .. NS Added third DAC channel, Vout2
-  23.07.12 .. JD 
+  23.07.12 .. JD
+// 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
   }
 
 interface
@@ -776,7 +777,7 @@ procedure TStimulator.LoadProgram(
   Load a voltage program from file
   --------------------------------}
 var
-   FileHandle : Integer ;
+   FileHandle : THandle ;
    OldProg : TWaveformOld ;
    V3216Prog : TWaveformV3216 ;
    i, j : Integer ;

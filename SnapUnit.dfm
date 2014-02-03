@@ -22,13 +22,6 @@ object SnapFrm: TSnapFrm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 14
-  object Label9: TLabel
-    Left = 336
-    Top = 376
-    Width = 32
-    Height = 14
-    Caption = 'Label9'
-  end
   object ControlGrp: TGroupBox
     Left = 2
     Top = 0
@@ -305,10 +298,6 @@ object SnapFrm: TSnapFrm
         object SlidersTab: TTabSheet
           Caption = 'Sliders'
           ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object Label5: TLabel
             Left = 14
             Top = 0

@@ -151,6 +151,7 @@ unit Main;
 //                  adjusting Readout A/D gain and vertical shift timing in Setup/Extra Camera Settings.
 // 09-12-13 V3.5.4 JD ITEX.PAS updated to compiled under XE3. Hamamatsu C4880 camera should now work again (since V3.5.0)
 // 16-12-13 V3.5.5 JD Support for Hamamatsu FLASH 4.0 added. Setup now checks for missing multiple control outputs
+// 31.01.14 V3.5.6 JD Updated to Compile under both 32/64 bits (File handle now THandle)
 
 interface
 

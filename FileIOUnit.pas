@@ -47,6 +47,7 @@ unit FileIOUnit;
 // 24.04.13 .... JD If VProtDirectory in INI file does not exist, use default directory (\winfluor\vprot
 // 27.09.13 .... JD 'LSSCHTIME=', LightSource.ShutterChangeTime added to INI file
 // 07.11.13 .... JD 'CAMADCGN=', MainFrm.Cam1.ADCGain and 'CAMVSS=', MainFrm.Cam1.CCDVerticalShiftSpeed added
+// 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 
 interface
 
@@ -154,7 +155,8 @@ procedure TFileIO.SaveInitialisationFile(
 // ------------------------
 var
    Header : array[1..cNumIDRHeaderBytes] of ANSIchar ;
-   i,iSeq,iWav,ch,INIFileHandle : Integer ;
+   i,iSeq,iWav,ch : Integer ;
+   INIFileHandle : THandle ;
    Dev : Integer ;
 begin
 
@@ -522,7 +524,8 @@ procedure TFileIO.LoadInitialisationFile(
 // ------------------------
 var
    Header : array[1..cNumIDRHeaderBytes] of ANSIchar ;
-   i,iWav,iSeq,ch,INIFileHandle : Integer ;
+   i,iWav,iSeq,ch : Integer ;
+   INIFileHandle : THandle ;
    iValue : Integer ;
    fValue : Single ;
    bValue : Boolean ;

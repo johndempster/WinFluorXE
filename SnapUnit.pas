@@ -30,6 +30,7 @@ unit SnapUnit;
 // 26.11.12 JD Zoom combo box moved to top of image area
 // 13.12.13 JD DCAM NumFramesInBuffer set to hold 1 second history or are minimum of 8
 // 16.12.13 JD .StartCapture Now returns False if unable to allocate enough frame buffer memory
+// 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 
 interface
 
@@ -97,7 +98,6 @@ type
     Label7: TLabel;
     edShadeCorNumFramesAveraged: TValidatedEdit;
     Splitter1: TSplitter;
-    Label9: TLabel;
     cbShadeCorNormalisation: TComboBox;
     Label15: TLabel;
     sbShadeCorShowSettings: TSpeedButton;
@@ -617,6 +617,13 @@ procedure TSnapFrm.InitialiseImage ;
 // ------------------------------------------------------
 // Re-initialise size of memory buffers and image bitmaps
 // ------------------------------------------------------
+const
+    {$IFDEF WIN32}
+      MaxBufferSize = 500000000 ;
+    {$ELSE}
+      MaxBufferSize = 1000000000 ;
+    {$IFEND}
+
 var
      i : Integer ;
      MaxBuffers : Integer ;
@@ -718,12 +725,8 @@ begin
            end ;
 
         AndorSDK3 : begin
-           NumFramesInBuffer :=  (20000000 div
-                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
-           if NumFramesInBuffer > 36 then NumFramesInBuffer := 36 ;
-           NumFramesInBuffer := 16 ;
-           NumFramesInBuffer := Min( (Round(2.0/edFrameInterval.Value) div 2)*2,
-                                      (200000000 div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
+           NumFramesInBuffer := Min( (Round(4.0/edFrameInterval.Value) div 2)*2,
+                                      (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
 
            end ;
 

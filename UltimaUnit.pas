@@ -18,6 +18,7 @@ unit UltimaUnit;
 //          in cycle number from SEQUENTIAL_ON message sent over TCP/IP by PraireView.
 //          PraireView log file is now named prairieview.log rather than prarieview.log as in pre V4.3 versions
 //          Old name is used if unable to open new name
+// 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 
 interface                              
 
@@ -558,7 +559,7 @@ function TUltima.GetLSDFileParameters(
 // Note Buf is left unchsnged if LSDFileName does not exists
 // -------------------------------
 var
-   FileHandle : Integer ;
+   FileHandle : THandle ;
    NumBytesInFile : Integer ;
    i : Integer ;
 begin
@@ -599,7 +600,7 @@ function TUltima.ImportImageFile : Boolean ;
 // Import line scan image data
 // ---------------------------
 var
-    FileHandle : Integer ;
+    FileHandle : THandle ;
 begin
 
     if FileExists( XMLFileName ) then begin
@@ -815,7 +816,7 @@ var
     NewNameEDR : string ;
     TempFileNameEDR : string ;
     TempFileName : String ;
-    FileHandle : Integer ;
+    FileHandle : THandle ;
     NumCycles,NumChannels,NumFrames,NumLines  : Integer ;
     iCycle,iChan,ch : Integer ;
     FrameWidth : Integer ;
@@ -1069,8 +1070,6 @@ var
     PFrameBuf,PBufPointer : Pointer ; // Image frame buffer pointer
     PImageBuf : PIntArray ; // Image frame buffer pointer
     iFrame : Integer ;     // Frame counter
-    NumFramesImported : Integer ;
-    NumFiles : Integer ;
     InterLineTime : Single ;
     PMTChannels : Array[0..MaxUltimaChannels] of Integer ;
     NewNameIDR : string ;
@@ -1486,7 +1485,7 @@ procedure TUltima.GetStateXMLSettings(
 // Get latest Prairie-View single image folder
 // ------------------------------------------
 var
-    FileHandle : Integer ;
+    FileHandle : THandle ;
     PVStateNode : IXMLNode ;
     KeyValue : String ;
     FilePath : String ;

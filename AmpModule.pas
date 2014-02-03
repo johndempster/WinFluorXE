@@ -59,6 +59,7 @@ unit AmpModule;
 //          Amplifier number now stored as object in amplifier list rather than index
 //          Allowing amplifiers to be listed in a better order.
 // 05.08.08 Optopatch checked now working correctly
+// 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 
 interface
 
@@ -326,7 +327,7 @@ PMC_TELEGRAPH_DATA = ^TMC_TELEGRAPH_DATA ;
 
 TCED1902 = record
            ComPort : LongInt ;
-           ComHandle : Integer ;
+           ComHandle : THandle ;
            Input : LongInt ;
            InputName : string[16] ;
            Gain : LongInt ;
@@ -862,7 +863,7 @@ begin
      CED1902.ACCoupled := 0 ;
      CED1902.NotchFilter := 0 ;
      CED1902.ComPort := 1 ;
-     CEd1902.ComHandle := -1 ;
+     CEd1902.ComHandle := THandle(-1) ;
      CED1902.DCOffset := 0 ;
      CED1902.AmplifierSet := False ;
 
@@ -3584,7 +3585,7 @@ procedure TAmplifier.CloseCED1902 ;
 begin
 //   Ensure CED 1902 COM link is open
      if CED1902.ComHandle >= 0 then CloseHandle( CED1902.ComHandle ) ;
-     CED1902.ComHandle := -1 ;
+     CED1902.ComHandle := THandle(-1) ;
      end ;
 
 

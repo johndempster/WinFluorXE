@@ -8,7 +8,7 @@ interface
 uses
   SysUtils, Windows, WinTypes, WinProcs, Messages, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ExtCtrls, StdCtrls, RangeEdit, ComCtrls, IDRFile,
-  math, ValidatedEdit, ImageFile, GraphicEx, Grids, strutils, mmsystem,
+  math, ValidatedEdit, ImageFile, {GraphicEx,} Grids, strutils, mmsystem,
   FileCtrl, SHared, SESCam, Menus;
 
 const

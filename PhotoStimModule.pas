@@ -6,7 +6,7 @@ unit PhotoStimModule;
 //------------------------------------------------------------------------------
 // JD 21.12.10 .CreateWaveform() now ignores D/A outputs DACI and DACS if they
 //              are not defined (DACI or DACS <0)
-
+// 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 
 interface
 
@@ -507,7 +507,7 @@ end;
 
 procedure TPhotoStimulator.LoadProgram(const Name : String);
 var
-  FileHandle : Integer;
+  FileHandle : THandle ;
   FileName : String;
   NumBytes : Integer;
 begin
@@ -567,7 +567,7 @@ end;
 
 procedure TPhotoStimulator.SaveProgram(const Name : String);
 var
-  FileHandle : Integer;
+  FileHandle : THandle ;
 begin
 
   // Create file

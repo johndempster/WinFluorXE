@@ -43,7 +43,7 @@ unit LabIOUnit;
 // 02.05.13 JD .... InternalBufferDuration added defining duration of internal NIDAQmx DAC and digital waveform buffer
 // 09.07.13 JD .... PCI-6035E and PCI-6036E and now identified as having only one DMA channel (for A/D)
 //                  PCI-6052E identified as having 2 DMA channels.
-
+// 03.02.14 JD .... ClearNIBoardSettings added to _InitialiseBoards
 interface
 
 uses
@@ -286,6 +286,7 @@ type
           ) : Integer ;
 
   procedure SetNIDAQAPI( Value : Integer ) ;
+  procedure ClearNIBoardSettings ;
 
   procedure Wait( Delay : Single ) ;
 
@@ -495,8 +496,6 @@ procedure TLabIO.DataModuleCreate(Sender: TObject);
 // --------------------------------------
 // Initialisations when module is created
 // --------------------------------------
-var
-    i,j : Integer ;
 begin
 
     BoardsInitialised := False ;
@@ -505,6 +504,21 @@ begin
 
     FNIDAQAPI := NIDAQ ;
 
+    // Clear A/D, D/A channels available
+    ClearNiBoardSettings ;
+    {$ifdef win32} InternalBufferDuration := 2.0 ;
+    {$ELSE} InternalBufferDuration := 5.0;
+    {$IFEND}
+
+    end;
+
+procedure TLabIO.ClearNiBoardSettings ;
+// -----------------------------------------
+// Clear board A/D, D/A and digital channels
+// ------------------------------------------
+var
+    i,j : Integer ;
+begin
     for i := 1 to MaxDevices do DeviceBoardName[i] := '' ;
     for i := 1 to MaxDevices do DigitalWaveformCapable[i] := False ;
     for i := 1 to MaxDevices do DeviceName[i] := '' ;
@@ -516,7 +530,7 @@ begin
     for i := 1 to MaxDevices do ADCVoltageRangeAtX1Gain[i] := 1.0 ;
     for i := 1 to MaxDevices do for j := 0 to MaxDACs-1 do DACOutState[i,j] := 0.0 ;
     NumResources := 0 ;
-    InternalBufferDuration := 2.0 ;
+    NumDevices := 0 ;
 
     end;
 
@@ -525,6 +539,8 @@ procedure TLabIO.SetNIDAQAPI( Value : Integer ) ;
 // ------------------------------------------
 // Set National Instrument interface API type
 // ------------------------------------------
+var
+    i : Integer ;
 begin
 
     // Shut down system to allow change of API
@@ -1002,6 +1018,7 @@ begin
 
    // Clear number of devices
    NumDevices := 0 ;
+   ClearNIBoardSettings ;
 
    { Clear A/D and D/A in progress flags }
 
@@ -2443,6 +2460,8 @@ var
     i : Integer ;
     BrdType : Integer;
 begin
+
+        ClearNIBoardSettings ;
 
         BoardName[0] :=  'AT-MIO-16L-9' ;
         BoardName[1] :=  'AT-MIO-16L-15' ;

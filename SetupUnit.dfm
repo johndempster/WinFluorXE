@@ -532,6 +532,10 @@ object SetupFrm: TSetupFrm
     object LightSourceTab: TTabSheet
       Caption = 'Light Source'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LightSourceGrp: TGroupBox
         Left = 8
         Top = 0
@@ -972,6 +976,10 @@ object SetupFrm: TSetupFrm
               Font.Name = 'Arial'
               Font.Style = [fsBold]
               ParentFont = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label7: TLabel
                 Left = 9
                 Top = 4
@@ -1103,6 +1111,10 @@ object SetupFrm: TSetupFrm
               Font.Style = [fsBold]
               ImageIndex = 1
               ParentFont = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label9: TLabel
                 Left = 9
                 Top = 4
@@ -1234,6 +1246,10 @@ object SetupFrm: TSetupFrm
               Font.Style = [fsBold]
               ImageIndex = 2
               ParentFont = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label30: TLabel
                 Left = 9
                 Top = 4
@@ -1514,6 +1530,10 @@ object SetupFrm: TSetupFrm
     object TabSheet1: TTabSheet
       Caption = 'Stimulus Outputs'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox11: TGroupBox
         Left = 8
         Top = 0
@@ -1695,6 +1715,10 @@ object SetupFrm: TSetupFrm
             Font.Name = 'Arial'
             Font.Style = [fsBold]
             ParentFont = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label55: TLabel
               Left = 26
               Top = 30
@@ -1749,6 +1773,10 @@ object SetupFrm: TSetupFrm
             Font.Style = [fsBold]
             ImageIndex = 1
             ParentFont = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label51: TLabel
               Left = 11
               Top = 6
@@ -1804,6 +1832,10 @@ object SetupFrm: TSetupFrm
             Font.Style = [fsBold]
             ImageIndex = 2
             ParentFont = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label52: TLabel
               Left = 20
               Top = 6
@@ -1888,6 +1920,10 @@ object SetupFrm: TSetupFrm
           object MeterTab: TTabSheet
             Caption = 'Meter'
             ImageIndex = 3
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label44: TLabel
               Left = 44
               Top = 6
@@ -1917,6 +1953,10 @@ object SetupFrm: TSetupFrm
     object AnalogInputTab: TTabSheet
       Caption = 'Analog Inputs && Timing'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object ADCGrp: TGroupBox
         Left = 8
         Top = 0
@@ -2040,6 +2080,10 @@ object SetupFrm: TSetupFrm
     object ZStageTab: TTabSheet
       Caption = 'Z Stage'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox13: TGroupBox
         Left = 3
         Top = 0

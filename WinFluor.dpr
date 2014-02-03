@@ -50,7 +50,6 @@ uses
   SpectrumUnit in 'SpectrumUnit.pas' {SpectrumFrm},
   SetLasersUnit in 'SetLasersUnit.pas' {SetLasersFrm},
   EditROIUnit in 'EditROIUnit.pas' {EditROIFrm},
-  Graphics in '..\Source\Vcl\Graphics.pas',
   SnapUnit in 'SnapUnit.pas' {SnapFrm},
   PhotoStimUnit in 'PhotoStimUnit.pas' {PhotoStimFrm},
   MATFileWriterUnit in 'MATFileWriterUnit.pas',
@@ -64,8 +63,8 @@ uses
   PlaybackSetupUnit in 'PlaybackSetupUnit.pas' {PlaybackSetupFrm},
   DigitalFilterUnit in 'DigitalFilterUnit.pas' {DigitalFilterFrm},
   DirectControlUnit in 'DirectControlUnit.pas' {DirectControlFrm},
-  Maths in '..\SESComponents\Maths.pas',
-  ZStageUnit in 'ZStageUnit.pas' {ZStage: TDataModule};
+  ZStageUnit in 'ZStageUnit.pas' {ZStage: TDataModule},
+  Maths in '..\SESComponentsXE\Maths.pas';
 
 {$R *.TLB}
 

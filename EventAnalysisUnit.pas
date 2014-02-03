@@ -25,6 +25,7 @@ unit EventAnalysisUnit;
 //             Cursor readout on plot now shows values
 //
 // 13.11.12 ... .LOADADC() now uses 64 bit scan counter
+// 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 
 interface
 
@@ -1252,7 +1253,7 @@ procedure TEventAnalysisFrm.SaveEventList ;
 var
    EventListFileName : String ;
    i : Integer ;
-   FileHandle : Integer ;
+   FileHandle : THandle ;
 begin
 
      // Create event list file
@@ -1287,7 +1288,7 @@ procedure TEventAnalysisFrm.LoadEventList ;
 var
    EventListFileName : String ;
    i : Integer ;
-   FileHandle : Integer ;
+   FileHandle : THandle ;
 begin
 
      // Create event list file

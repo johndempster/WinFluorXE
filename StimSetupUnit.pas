@@ -5,6 +5,7 @@ unit StimSetupUnit;
 // 11/4/02
 // 30.8.02 Stimulus repeat period and delay now in seconds.
 // 26.9.03 Voltage pulse stimulus added
+// 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 
 interface
 
@@ -461,7 +462,8 @@ procedure TStimSetupFrm.LoadStimulusProgram(
 // Load stimulus program from file
 // -------------------------------
 var
-     i, FileHandle : Integer ;
+     i : Integer ;
+     FileHandle : THandle ;
      TextBuf : Array[1..TextBufSize] of ANSIchar ;
      Path : string ;
 begin
@@ -518,7 +520,8 @@ procedure TStimSetupFrm.SaveStimulusProgram(
 // Save stimulus program to file
 // -------------------------------
 var
-     FileHandle, i : Integer ;
+     i : Integer ;
+     FileHandle : THandle ;
      TextBuf : Array[1..TextBufSize] of ANSIchar ;
      Path : String ;
 begin

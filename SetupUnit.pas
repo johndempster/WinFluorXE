@@ -1239,6 +1239,8 @@ var
     ResCount : Array[0..MaxResources-1] of Integer ;
 begin
      OK := False ;
+     if LabIO.NumDevices <= 0 then Exit ;
+
      for i := 0 to High(LabIO.Resource) do if LabIO.Resource[i].ResourceType = ADCIn then begin
          if MainFrm.IOConfig.ADCIn = i then OK := True ;
          end;

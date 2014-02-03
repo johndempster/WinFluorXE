@@ -138,6 +138,7 @@ unit RecUnit;
 // 12.13.13 JD NumADCScans made Int64
 // 13.12.13 JD DCAM NumFramesInBuffer set to hold 1 second history or are minimum of 8
 // 16.12.13 JD .StartCapture Now returns False if unable to allocate enough frame buffer memory
+// 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 
 {$DEFINE USECONT}
 
@@ -1266,7 +1267,12 @@ procedure TRecordFrm.InitialiseImage ;
 // Re-initialise size of memory buffers and image bitmaps
 // ------------------------------------------------------
 const
-    MaxBufferSize = 500000000 ;
+    {$IFDEF WIN32}
+      MaxBufferSize = 500000000 ;
+    {$ELSE}
+      MaxBufferSize = 2000000000 ;
+    {$IFEND}
+
 var
      i,FT : Integer ;
      WVNum : Integer ;
@@ -1399,8 +1405,11 @@ begin
            end ;
 
         AndorSDK3 : begin
-           NumFramesInBuffer :=  (100000000 div
-                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
+           NumFramesInBuffer := Round(5.0/edFrameInterval.Value) ;
+           NumFramesInBuffer := Min( NumFramesInBuffer,
+                                     MaxBufferSize div (Int64(NumPixelsPerFrame)*Int64(MainFrm.Cam1.NumBytesPerPixel)));
+           NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
+           NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
 
            end ;
 
@@ -4488,7 +4497,7 @@ begin
         bRecord.Click ;
         end
      else begin
-        Beep ;
+        //Beep ;
         if StimulusRequired then StimulusRequired := False ;
         StopCamera ;
         if ckExcitationOnWhenRecording.Checked then begin

@@ -1708,6 +1708,7 @@ object RecordFrm: TRecordFrm
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
+    ADCNumScansInFile = 0
     ADCNumChannels = 0
     ADCNumScansPerFrame = 0
     ADCMaxValue = 0
@@ -1754,6 +1755,7 @@ object RecordFrm: TRecordFrm
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
+    ADCNumScansInFile = 0
     ADCNumChannels = 0
     ADCNumScansPerFrame = 0
     ADCMaxValue = 0
