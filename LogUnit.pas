@@ -5,6 +5,7 @@ unit LogUnit;
 // 08.07.04
 // 21.06.05 ... Log file updated every time a line is added
 // 25.10.13 ... Log text now written to TextFile
+// 03.02.14 ... SaveLogToFile now only called when form is created or destroyed
 
 interface
 
@@ -45,7 +46,7 @@ procedure TLogFrm.AddLine( LineText : String );
 // ---------------
 begin
     meLog.Lines.Add(TimeToStr(Time) + ' ' + LineText ) ;
-    SaveLogToFile ;
+    //SaveLogToFile ;
     end;
 
 
@@ -55,7 +56,7 @@ procedure TLogFrm.AddLineNoTime( LineText : String );
 // -------------------------------
 begin
     meLog.Lines.Add( LineText ) ;
-    SaveLogToFile ;
+    //SaveLogToFile ;
     end;
 
 

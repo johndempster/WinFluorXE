@@ -621,7 +621,7 @@ const
     {$IFDEF WIN32}
       MaxBufferSize = 500000000 ;
     {$ELSE}
-      MaxBufferSize = 1000000000 ;
+      MaxBufferSize = 2000000000 ;
     {$IFEND}
 
 var
@@ -725,7 +725,7 @@ begin
            end ;
 
         AndorSDK3 : begin
-           NumFramesInBuffer := Min( (Round(4.0/edFrameInterval.Value) div 2)*2,
+           NumFramesInBuffer := Min( (Round(8.0/edFrameInterval.Value) div 2)*2,
                                       (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
 
            end ;
