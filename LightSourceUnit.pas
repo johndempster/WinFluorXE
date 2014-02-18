@@ -29,6 +29,7 @@ unit LightSourceUnit;
 // 31.05.13 JD Monochromator + Laser/LED light source added
 // 03.06.13 JD Monochromator + Laser/LED light source now working
 // 27.09.13 JD .ShutterChangeTime property added
+// 18.02.14 JD Now used osLibrary64.dll and osLibrary32.dll
 
 interface
 
@@ -647,7 +648,7 @@ procedure TLightSource.OptoScanWavelengthToVoltage(
 var
      DValue : Double ;
      NumLines : DWord ;
-     FileName : String ;
+     FileName : ANSIString ;
      VOffset : Double ;
 begin
 
@@ -657,7 +658,7 @@ begin
      NumVControl := Min(NumVControl,3) ;
 
      FileName := MainFrm.ProgramDirectory + 'oslibrary.ini' ;
-     os_Load_Interface_Defaults( PChar(FileName));
+     os_Load_Interface_Defaults( PANSIChar(FileName));
 
      // Set lines/mm of grating
      case DeviceType of
@@ -709,7 +710,7 @@ begin
      VControl[2].Name := format('Optoscan: Output slit: Dev%d:AO%d ',
                          [VControl[2].Device,VControl[2].Chan]) ;
 
-//      outputdebugString(PChar(format('V0=%.4g V1=%.4g V2=%.4g',[VControl[0],VControl[1],VControl[2]]))) ;
+//      outputdebugString(PANSIChar(format('V0=%.4g V1=%.4g V2=%.4g',[VControl[0],VControl[1],VControl[2]]))) ;
 
      end;
 

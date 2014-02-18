@@ -20,7 +20,9 @@ unit AVIUnit;
 // 08.05.08 .. Dual-rate multi-wavelength frames now supported
 // 10.09.09 .. JD Pixel Exclusion facility removed from MeanROIIntensity
 // 13.11.12 ... .LOADADC() now uses 64 bit scan counter
-
+// 17.02.13 ... 'AVIFileOpenA' & 'AVIFileCreateStreamA';changed to 'AVIFileOpenW' and 'AVIFileCreateStreamW'
+//              now runs correctly when compiled by Delphi XEn
+//
 {$O-}
 interface
 
@@ -350,9 +352,9 @@ var
     procedure AVIFileInit; stdcall ; external 'avifil32.dll' name 'AVIFileInit';
     procedure AVIFileExit; stdcall ; external 'avifil32.dll' name 'AVIFileExit';
     function AVIFileOpen(var ppfile: PAVIFile; szFile: PChar; uMode: UINT; lpHandler: pointer): HResult;
-         stdcall; external 'avifil32.dll' name 'AVIFileOpenA';
+         stdcall; external 'avifil32.dll' name 'AVIFileOpenW';
 function AVIFileCreateStream(pfile: PAVIFile; var ppavi: PAVISTREAM; var psi: TAVIStreamInfo): HResult;
-         stdcall ; external 'avifil32.dll' name 'AVIFileCreateStreamA';
+         stdcall ; external 'avifil32.dll' name 'AVIFileCreateStreamW';
 function AVIStreamSetFormat(pavi: PAVIStream; lPos: LongInt; lpFormat: pointer; cbFormat: LongInt): HResult;
          stdcall; external 'avifil32.dll' name 'AVIStreamSetFormat';
 function AVIStreamReadFormat(pavi: PAVIStream; lPos: LongInt; lpFormat: pointer; var cbFormat: LongInt): HResult;
