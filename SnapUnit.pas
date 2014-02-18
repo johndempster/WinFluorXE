@@ -31,6 +31,7 @@ unit SnapUnit;
 // 13.12.13 JD DCAM NumFramesInBuffer set to hold 1 second history or are minimum of 8
 // 16.12.13 JD .StartCapture Now returns False if unable to allocate enough frame buffer memory
 // 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
+// 18.02.14 DCAM NumFramesInBuffer now same as Andor SDK3
 
 interface
 
@@ -736,8 +737,10 @@ begin
            end ;
 
         DCAM : begin
-           NumFramesInBuffer := (Round(1.0/edFrameInterval.Value) div 2)*2 ;
-           NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
+//           NumFramesInBuffer := (Round(1.0/edFrameInterval.Value) div 2)*2 ;
+//           NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
+           NumFramesInBuffer := Min( (Round(8.0/edFrameInterval.Value) div 2)*2,
+                                      (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
            end ;
 
         IMAQ : begin

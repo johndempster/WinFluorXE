@@ -152,6 +152,8 @@ unit Main;
 // 09-12-13 V3.5.4 JD ITEX.PAS updated to compiled under XE3. Hamamatsu C4880 camera should now work again (since V3.5.0)
 // 16-12-13 V3.5.5 JD Support for Hamamatsu FLASH 4.0 added. Setup now checks for missing multiple control outputs
 // 31.01.14 V3.5.6 JD Updated to Compile under both 32/64 bits (File handle now THandle)
+// 18.02.14 V3.5.7 JD Problems with Create Movie and Time Course window fixed
+//                    now separate 32 and 64 bit versions of oslibrary.dll
 
 interface
 
@@ -717,6 +719,13 @@ procedure TMainFrm.FormShow(Sender: TObject);
 var
      i,ch : Integer ;
 begin
+
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.5.7 18-2-14 ' ;
+{$IFDEF WIN64}
+    Caption := Caption + '(64 bit) ';
+{$ELSE}
+    Caption := Caption + '(32 bit) ';
+{$IFEND}
 
     EXCAvailable := True ;
 

@@ -489,7 +489,6 @@ var
     CursorScan : Integer ;
     BlockCount : Integer ;
     NumPoints : Integer ;
-    FilePointer : Integer ;
     iDisp : Integer ;
     Done : Boolean ;
     yMin : Array[0..MaxADCChannels-1] of Integer ;
@@ -498,9 +497,7 @@ var
     yMaxAt : Array[0..MaxADCChannels-1] of Integer ;
     Buf : Array[0..(NumScansPerBuf*MaxADCChannels)-1] of SmallInt ;
     i,ch,y : Integer ;
-    MarkerTime : Single ;
     MarkerAt : Integer ;
-    TimeScale : Single ;
     TMarkerScale : Single ;
     CursorTime,StartTime : Single ;
 begin
@@ -740,8 +737,6 @@ procedure TViewPlotFrm.SetDisplayUnits ;
 // ----------------------
 // Set display time units
 // ----------------------
-var
-    TFrameGroupInterval : Single ;
 begin
 
     if rbTDisplayUnitsSecs.Checked then begin
@@ -827,11 +822,7 @@ procedure TViewPlotFrm.DisplayTimeCourse(
 // Display section of fluorescence time course
 // -------------------------------------------
 var
-    FrameType : Integer ;
-    NumPoints : Integer ;
-    OK : Boolean ;
     i,j : Integer ;
-    y : Single ;
     iROI,iSubROI : Integer ;
     StartGroup : Integer ;
     CursorGroup : Integer ;
@@ -912,10 +903,7 @@ procedure TViewPlotFrm.DisplayRatio(
 // Display fluorescence ratio time course
 // ---------------------------------------
 var
-    FrameType : Integer ;
-    NumPoints : Integer ;
-    OK : Boolean ;
-    i,j,jOffset : Integer ;
+    i,jOffset : Integer ;
     yNum,yDen,YScale : Single ;
     iROI,iSubROI : Integer ;
     jROINum,jSubNum, jROIDen, jSubDen : Integer ;
@@ -1021,7 +1009,7 @@ function TViewPlotFrm.MeanROIIntensity(
 // and exceeding exclusion limit
 // --------------------------------------------------------
 var
-     xPix,yPix,i,ix,iy,NumPixels,iXLeft,iXRight : Integer ;
+     xPix,yPix,i,ix,iy,NumPixels : Integer ;
      z : Integer ;
      Sum : Single ;
      nSum : Integer ;
@@ -1030,7 +1018,6 @@ var
      YStart, YEnd : single ; // Y limits of line
      XStep, YStep : Single ;
      X, Y : Single ; // line coordinates
-     Slope : Single ; // Slope of line
      D : Single ;    // Distance along line
      DStart : Single ; // Start of line segment
      DEnd : Single ;   // Length of line segment
@@ -1571,10 +1558,7 @@ procedure TViewPlotFrm.scADCDisplayCursorChange(Sender: TObject);
 // Update cursor labels when readout cursor moved
 // ----------------------------------------------
 var
-    i,ch : Integer ;
-    CursorPos : Integer ;
-    yValue : Single ;
-    s : String ;
+    ch : Integer ;
     Channel : TChannel ;
 begin
 

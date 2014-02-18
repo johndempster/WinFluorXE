@@ -1003,7 +1003,7 @@ var
    P : Pointer ;
 begin
      P := GetProcAddress(Hnd,PChar(Name)) ;
-     if Integer(P) = 0 then begin
+     if P = Nil then begin
         ShowMessage(format('NIDAQ32.DLL- %s not found',[Name])) ;
         end ;
      Result := P ;

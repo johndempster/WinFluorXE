@@ -3694,7 +3694,7 @@ var
 
 begin
      P := GetProcAddress(Hnd,PChar(Name)) ;
-     if {Integer(P) = Null} P = Nil then begin
+     if P = Nil then begin
         SHowMessage(format('DLL- %s not found',[Name])) ;
         end ;
      Result := P ;

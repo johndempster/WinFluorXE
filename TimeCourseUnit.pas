@@ -897,10 +897,10 @@ const
     NumScansPerBuf = 512 ;
 var
     iChan : Integer ;                // Channel # selected for plotting
-    StartScan : Integer ;            // Start plot scan #
-    EndScan : Integer ;              // End plot scan #
-    NumScans : Integer ;             // No. of channel scans in plot
-    iScan : Integer ;                // Scan index
+    StartScan : Int64 ;            // Start plot scan #
+    EndScan : Int64 ;              // End plot scan #
+    NumScans : Int64 ;          // No. of channel scans in plot
+    iScan : Int64 ;               // Scan index
 
     // Compression block variables
     BlockCount : Integer ;           // No. of scans in block index
@@ -958,7 +958,7 @@ begin
      BlockCount := NumScansPerBlock ;
      NumScansRead := NumScansPerBuf ;
      iSample := NumScansRead*MainFrm.IDRFile.ADCNumChannels ;
-     BufStartScan := StartScan ;
+     BufStartScan := Int64(StartScan) ;
      iScan := StartScan ;
      NumPoints := 0 ;
      Done := False ;
@@ -1021,7 +1021,7 @@ begin
         Inc(iScan) ;
         if (iScan > EndScan) or
            ( NumScansRead <= 0) or
-           (NumPoints > (MaxPlotPoints*2)) then Done := True ;
+           (NumPoints >= (MaxPlotPoints*2)) then Done := True ;
 
         end ;
      end ;

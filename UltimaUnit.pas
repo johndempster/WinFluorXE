@@ -979,7 +979,7 @@ begin
                 // Import frames from this file
 
                 if ImageFile.LoadFrame( 1, PBufpointer ) then begin
-                   PBufpointer := Pointer( Integer(PBufpointer)
+                   PBufpointer := Pointer( NativeInt(PBufpointer)
                                            + (ImageFile.NumPixelsPerFrame*2) ) ;
                    MainFrm.StatusBar.SimpleText := format(
                    'Ultima: Importing: %s',
