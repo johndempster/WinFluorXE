@@ -272,7 +272,6 @@ else
   Create Shortcut $DESKTOPDIR$\WinFluor to $TARGETDIR$\WinFluor.exe
   Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor.chm to $TARGETDIR$
   Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor User Guide.pdf to $TARGETDIR$
-  Install Files E:\Delphi XE3 Projects\WinFluorXE\osLibrary.dll to $TARGETDIR$
   Install Files E:\Delphi XE3 Projects\WinFluorXE\itxco10.dll to $TARGETDIR$
   Install Files E:\Delphi XE3 Projects\WinFluorXE\ccir.TXT to $TARGETDIR$
   Install Files E:\Delphi XE3 Projects\WinFluorXE\Hamc4880.txt to $TARGETDIR$
@@ -282,6 +281,8 @@ else
   Install Files E:\Delphi XE3 Projects\WinFluorXE\ccir.CNF to $TARGETDIR$
   Install Files E:\Delphi XE3 Projects\WinFluorXE\Hamc4880.CNF to $TARGETDIR$
   Install Files E:\Delphi XE3 Projects\WinFluorXE\ixon.cof to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\osLibrary32.dll to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\osLibrary64.dll to $TARGETDIR$
   [DEFINE WEB MEDIA WinFluor Setup]
   Get Component WinFluor Setup Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE

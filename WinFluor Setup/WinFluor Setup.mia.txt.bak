@@ -26,11 +26,11 @@ end
 [DEFINE REGION: Install Application Pre-Requisites]
 Comment: Install setup pre-requisites
 if Variable PREREQ not Equals FALSE
-  Display Dialog: prereq, wait for dialog to return (modal)
+  Comment: Display Dialog: prereq, wait for dialog to return (modal)
   if Variable WIZARD Equals CANCEL
     Terminate Installation
   end
-  Display Dialog: progressprereq, use as progress dialog (non-modal)
+  Comment: Display Dialog: progressprereq, use as progress dialog (non-modal)
   [compiler if Variable BUILDMODE not Equals PATCH]
   if Variable NEEDSUPGRADE Equals TRUE
     Set Variable REMOVEOLD to 
@@ -138,7 +138,7 @@ else
   end
 end
 label: ReadMe Information
-Display Dialog: readme, wait for dialog to return (modal)
+Comment: Display Dialog: readme, wait for dialog to return (modal)
 if Variable WIZARD Equals BACK
   GoTo Label: License Check
 else
@@ -147,7 +147,7 @@ else
   end
 end
 label: User Registration
-Display Dialog: registration, wait for dialog to return (modal)
+Comment: Display Dialog: registration, wait for dialog to return (modal)
 if Variable WIZARD Equals BACK
   GoTo Label: ReadMe Information
 else
@@ -156,7 +156,7 @@ else
   end
 end
 label: Setup Type
-Display Dialog: setuptype, wait for dialog to return (modal)
+Comment: Display Dialog: setuptype, wait for dialog to return (modal)
 if Variable WIZARD Equals BACK
   GoTo Label: User Registration
 else
@@ -173,7 +173,7 @@ else
   end
 end
 label: Custom Setup
-Display Dialog: componentstree (if variable PERSONALIZED is TRUE), wait for dialog to return (modal)
+Comment: Display Dialog: componentstree (if variable PERSONALIZED is TRUE), wait for dialog to return (modal)
 if Variable WIZARD Equals BACK
   GoTo Label: Setup Type
 else
@@ -191,7 +191,7 @@ else
   end
 end
 label: Start Menu
-Display Dialog: startmenu, wait for dialog to return (modal)
+Comment: Display Dialog: startmenu, wait for dialog to return (modal)
 if Variable WIZARD Equals BACK
   GoTo Label: Destination Directory
 else
@@ -215,8 +215,8 @@ end
 label: Maintenance
 Comment: Maintenance Install/Uninstall
 wizard loop
-Display Dialog: maintenance, wait for dialog to return (modal)
-Display Dialog: componentstree (if variable MODIFY is TRUE), wait for dialog to return (modal)
+Comment: Display Dialog: maintenance, wait for dialog to return (modal)
+Comment: Display Dialog: componentstree (if variable MODIFY is TRUE), wait for dialog to return (modal)
 Display Dialog: startinstallation, wait for dialog to return (modal)
 end
 [END REGION]
@@ -267,6 +267,21 @@ else
   Comment: Install/Re-Install product
   Create Shortcut $SHORTCUTFOLDER$\Uninstall #TITLE# to $UNINSTALLLINK$
   [OFFLINE CONTENT]
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor.exe to $TARGETDIR$
+  Create Shortcut $SHORTCUTFOLDER$\WinFluor to $TARGETDIR$\WinFluor.exe, Pin to Start Menu, Pin to Taskbar
+  Create Shortcut $DESKTOPDIR$\WinFluor to $TARGETDIR$\WinFluor.exe
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor.chm to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor User Guide.pdf to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\osLibrary.dll to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\itxco10.dll to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\ccir.TXT to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\Hamc4880.txt to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor LineScan.txt to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor XY Series.txt to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor Test.vbs to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\ccir.CNF to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\Hamc4880.CNF to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\ixon.cof to $TARGETDIR$
   [DEFINE WEB MEDIA WinFluor Setup]
   Get Component WinFluor Setup Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE
@@ -278,6 +293,7 @@ else
   if Variable ADVERTISE Equals TRUE
     Apply Advertised (get result into variable SUCCESS)
   else
+    Create File Type IDR with extensions  and associate with program $TARGETDIR$\WinFluor.exe
     Apply Install (get result into variable SUCCESS)
   end
   [compiler end]
@@ -299,6 +315,7 @@ if Variable SILENT Equals FALSE
   if Variable RUNAPP Equals TRUE
     if Variable REMOVE Equals FALSE
       if Variable SUCCESS Equals COMPLETE
+        Run Program $TARGETDIR$\WinFluor.exe 
         Comment: TO-DO: Insert command that starts your application here
       end
     end
