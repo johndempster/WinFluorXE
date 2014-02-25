@@ -728,7 +728,6 @@ begin
         AndorSDK3 : begin
            NumFramesInBuffer := Min( (Round(8.0/edFrameInterval.Value) div 2)*2,
                                       (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
-
            end ;
 
         RS_PVCAM : begin
@@ -749,7 +748,10 @@ begin
            end ;
 
         IMAQDX : begin
-           NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
+//           NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
+           NumFramesInBuffer := Min( (Round(8.0/edFrameInterval.Value) div 2)*2,
+                                      (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
+
            end ;
 
         DTOL : begin

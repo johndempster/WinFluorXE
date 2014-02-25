@@ -1432,8 +1432,6 @@ begin
            NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
            NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
 
-
-
            end ;
 
         IMAQ : begin
@@ -1442,7 +1440,13 @@ begin
            end ;
 
         IMAQDX : begin
-           NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
+//           NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
+           NumFramesInBuffer := Round(5.0/edFrameInterval.Value) ;
+           NumFramesInBuffer := Min( NumFramesInBuffer,
+                                     MaxBufferSize div (Int64(NumPixelsPerFrame)*Int64(MainFrm.Cam1.NumBytesPerPixel)));
+           NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
+           NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
+
            end ;
 
         DTOL : begin
