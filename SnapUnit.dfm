@@ -2,7 +2,7 @@ object SnapFrm: TSnapFrm
   Left = 809
   Top = 531
   Caption = 'Record Image'
-  ClientHeight = 849
+  ClientHeight = 746
   ClientWidth = 685
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET

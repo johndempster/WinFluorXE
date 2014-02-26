@@ -5,7 +5,7 @@ object AboutBox: TAboutBox
   BorderStyle = bsDialog
   Caption = 'About'
   ClientHeight = 342
-  ClientWidth = 532
+  ClientWidth = 790
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -19,9 +19,9 @@ object AboutBox: TAboutBox
   TextHeight = 13
   object Panel: TPanel
     Left = 4
-    Top = 4
-    Width = 525
-    Height = 301
+    Top = 8
+    Width = 765
+    Height = 297
     BevelOuter = bvLowered
     TabOrder = 0
     object ProductName: TLabel
@@ -40,14 +40,17 @@ object AboutBox: TAboutBox
     end
     object meCameraInfo: TMemo
       Left = 1
-      Top = 40
-      Width = 523
+      Top = 36
+      Width = 763
       Height = 260
       Align = alBottom
       Lines.Strings = (
         'meCameraInfo')
       ScrollBars = ssVertical
       TabOrder = 0
+      ExplicitLeft = 4
+      ExplicitTop = 44
+      ExplicitWidth = 523
     end
   end
   object OKButton: TButton

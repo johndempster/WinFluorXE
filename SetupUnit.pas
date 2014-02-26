@@ -755,7 +755,7 @@ begin
 
      if (cbCamera.ItemIndex <> MainFrm.CameraType) or
         (cbAuxCamera.ItemIndex <> MainFrm.AuxCameraType) or
-        (cbCameraPort.ItemIndex <> (MainFrm.Cam1.ComPort-1))  then begin
+        (cbCameraPort.ItemIndex <> (MainFrm.Cam1.ComPort-1)) then begin
 
         Screen.Cursor := crHourglass ;
         MainFrm.StatusBar.SimpleText := ' WAIT: Initialising camera ... ' ;
@@ -1204,7 +1204,8 @@ begin
      if cbReadoutSpeed.Items.Count > 0 then ReadoutSpeedPanel.Visible := True
                                        else ReadoutSpeedPanel.Visible := False ;
 
-     CameraOpenRequired :=  True ;
+     //CameraOpenRequired :=  True ;
+     //NewCamera ;
 
      end;
 

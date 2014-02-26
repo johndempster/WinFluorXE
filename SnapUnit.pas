@@ -748,9 +748,9 @@ begin
            end ;
 
         IMAQDX : begin
-//           NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
-           NumFramesInBuffer := Min( (Round(8.0/edFrameInterval.Value) div 2)*2,
-                                      (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
+                   NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
+      //     NumFramesInBuffer := Min( (Round(8.0/edFrameInterval.Value) div 2)*2,
+      //                                (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
 
            end ;
 
