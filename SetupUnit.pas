@@ -30,6 +30,7 @@ unit SetupUnit;
 // 27.09.13 JD ShutterChangeTime field added to shutter group
 // 25.10.13 JD Z stage step time added
 // 16.12.13 JD CheckSettings added to check input and output channels for missing and multiple channels
+// 27.02.13 JD Emission filter control settings added to Light Source page
 
 interface
 
@@ -257,6 +258,20 @@ type
     edZStageMinStepSize: TValidatedEdit;
     ckZStepExcitationOffDuringStep: TCheckBox;
     ckZStepEndExposureAtStep: TCheckBox;
+    EmFilterGrp: TGroupBox;
+    EmFilterControlGrp: TGroupBox;
+    Label72: TLabel;
+    cbEMFilterStart: TComboBox;
+    Label73: TLabel;
+    cbEmFilterEnd: TComboBox;
+    Label74: TLabel;
+    edEmFilterChangeTime: TValidatedEdit;
+    SplitImageGrp: TGroupBox;
+    edSplitImageUpper: TEdit;
+    Label75: TLabel;
+    Label76: TLabel;
+    edSplitImageLower: TEdit;
+    ckBulbExposureMode: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure bOKClick(Sender: TObject);
@@ -336,6 +351,9 @@ begin
      // Get CCD post-exposure readout setting
      ckPostExposureReadout.Checked := MainFrm.Cam1.CCDPostExposureReadout ;
 
+     // Get bulb exposure mode (exposure trigger pulse duration determines camera exposure time)
+     ckBulbExposureMode.Checked := MainFrm.BulbExposureMode ;
+
      // Hardware in use
 
      edCalibrationBarSize.Value := MainFrm.CalibrationBarSize ;
@@ -391,6 +409,8 @@ begin
      edShutterBlankingPeriod.Value := LightSource.ShutterBlankingPeriod ;
      edShutterChangeTime.Value := LightSource.ShutterChangeTime ;
 
+     edEmFilterChangeTime.Value := LightSource.EmFilterChangeTime ;
+
      edADCInterval.Value := MainFrm.ADCScanInterval ;
 
      // Calibration settings
@@ -417,6 +437,9 @@ begin
      edZStageStepTime.Value := ZStage.StepTime ;
      ckZStepExcitationOffDuringStep.Checked := ZStage.ExcitationOffDuringStep ;
      ckZStepEndExposureAtStep.Checked := ZStage.EndExposureAtStep ;
+
+     edSplitImageUpper.Text := MainFrm.SplitImageName[0] ;
+     edSplitImageLower.Text := MainFrm.SplitImageName[1] ;
 
      ClientWidth := TabPage.Left + TabPage.Width + 5 ;
      ClientHeight := bOk.Top + bOk.Height + 5 ;
@@ -601,6 +624,28 @@ begin
         cbLSLaserStart.Items.IndexOfObject(TObject(MainFrm.IOConfig.LSLaserStart))) ;
     cbLSLaserEnd.ItemIndex := Max( 0,
         cbLSLaserEnd.Items.IndexOfObject(TObject(MainFrm.IOConfig.LSLaserEnd))) ;
+
+    // Emission filter control lines
+    // -----------------------------
+
+     cbEMFilterStart.Clear ;
+     cbEMFilterStart.Items.AddObject('None',TObject(MaxResources+1)) ;
+     for i := 0 to LabIO.NumResources-1 do begin
+         if (LabIO.Resource[i].ResourceType = DIGOut) and
+                 LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
+                 // Digital outputs
+                 s := format('Device %d: DIG%d',
+                     [LabIO.Resource[i].Device,
+                      LabIO.Resource[i].StartChannel]) ;
+                cbEMFilterStart.Items.AddObject(s,TObject(i))
+            end ;
+         end ;
+    cbEMFilterEnd.Items.Assign(cbEMFilterStart.Items) ;
+
+    cbEMFilterStart.ItemIndex := Max( 0,
+        cbEMFilterStart.Items.IndexOfObject(TObject(MainFrm.IOConfig.EmFilterStart))) ;
+    cbEMFilterEnd.ItemIndex := Max( 0,
+        cbEMFilterEnd.Items.IndexOfObject(TObject(MainFrm.IOConfig.EmFilterEnd))) ;
 
     // Digital stimulus output channels (both digital and DAC)
     cbDigitalStimStart.Clear ;
@@ -865,6 +910,9 @@ begin
      // Get CCD post-exposure readout setting
     MainFrm.Cam1.CCDPostExposureReadout := ckPostExposureReadout.Checked ;
 
+    // Get bulb exposure mode (exposure trigger pulse duration determines camera exposure time)
+    MainFrm.BulbExposureMode := ckBulbExposureMode.Checked ;
+
     // Command voltage O/P lines 1 & 2
 
     MainFrm.IOConfig.VCommand[0] :=
@@ -888,11 +936,17 @@ begin
 
     // Laser control lines
     MainFrm.IOConfig.LSLaserStart :=
-    Integer(cbLSLaserStart.Items.Objects[cbLSLaserStart.ItemIndex]) ;
+      Integer(cbLSLaserStart.Items.Objects[cbLSLaserStart.ItemIndex]) ;
     MainFrm.IOConfig.LSLaserEnd :=
-    Integer(cbLSLaserEnd.Items.Objects[cbLSLaserEnd.ItemIndex]) ;
+      Integer(cbLSLaserEnd.Items.Objects[cbLSLaserEnd.ItemIndex]) ;
     MainFrm.IOConfig.DigitalStimStart :=
-    Integer(cbDigitalStimStart.Items.Objects[cbDigitalStimStart.ItemIndex]) ;
+      Integer(cbDigitalStimStart.Items.Objects[cbDigitalStimStart.ItemIndex]) ;
+
+    // Emission filter wavelength control lines
+    MainFrm.IOConfig.EmFilterStart :=
+      Integer(cbEmFilterStart.Items.Objects[cbEmFilterStart.ItemIndex]) ;
+    MainFrm.IOConfig.EmFilterEnd :=
+      Integer(cbEmFilterEnd.Items.Objects[cbEmFilterEnd.ItemIndex]) ;
 
     MainFrm.IOConfig.DigitalStimEnd :=
     Integer(cbDigitalStimEnd.Items.Objects[cbDigitalStimEnd.ItemIndex]) ;
@@ -990,7 +1044,10 @@ begin
     LightSource.ShutterBlankingPeriod := Max(LightSource.ShutterBlankingPeriod,0.0) ;
     LightSource.ShutterChangeTime := edShutterChangeTime.Value ;
 
+    LightSource.EMFilterChangeTime := edEMFilterChangeTime.Value ;
+
     MainFrm.ADCScanInterval := edADCInterval.Value ;
+
 
     // Camera video mode
     MainFrm.Cam1.CameraMode := cbCameraMode.ItemIndex ;
@@ -1022,6 +1079,11 @@ begin
 
      MainFrm.IOConfig.ZStageControl :=
                          Integer(cbZStageControl.Items.Objects[cbZStageControl.ItemIndex]) ;
+
+     MainFrm.SplitImageName[0] := edSplitImageUpper.Text ;
+     MainFrm.SplitImageName[1] := edSplitImageLower.Text ;
+
+
 
      CheckSettings ;
 

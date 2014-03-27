@@ -156,6 +156,8 @@ type
     TIRFOn: Array[1..lsMaxTIRFGalvos] of Single ;  // TIRF position
     TIRFWF: Array[1..lsMaxTIRFGalvos] of Single ;  // Wide field position
 
+    EMFilterChangeTime : single ;                 // Emission filter change time (s)
+
     // Get list of supported light source devices
     procedure GetList( List : TStrings ) ;
 
@@ -1278,6 +1280,8 @@ begin
 
      LEDOffVoltage := 0.0 ;
      LEDMaxVoltage := 5.0 ;
+
+     EMFilterChangeTime := 0.1 ;
 
      end;
 

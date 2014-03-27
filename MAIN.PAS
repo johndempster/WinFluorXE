@@ -154,6 +154,7 @@ unit Main;
 // 31.01.14 V3.5.6 JD Updated to Compile under both 32/64 bits (File handle now THandle)
 // 18.02.14 V3.5.7 JD Problems with Create Movie and Time Course window fixed
 //                    now separate 32 and 64 bit versions of oslibrary.dll
+// 27.02.14 V3.5.8 JD Emission filter control added to light control
 
 interface
 
@@ -201,7 +202,10 @@ type
   TEXCWavelength = record
          Centre : Integer ;
          Width : Integer ;
+         EmFilter : Integer ;
+         EmName : string ;
          Bits : Word ;
+         FractionalExposure : single ;
          end ;
 
   TIOConfig = record
@@ -215,6 +219,8 @@ type
       LSWavelengthEnd : Integer ;
       LSLaserStart : Integer ; // 9/3/7 Separate laser control line range
       LSLaserEnd : Integer ;   // 9/3/7
+      EmFilterStart : Integer ;   // 27.2.14 Emission filter control lines
+      EmFilterEnd : Integer ;     // 27.2.14
       DigitalStimStart : Integer ;
       DigitalStimEnd : Integer ;
       PhotoStimX : Integer ;
@@ -520,6 +526,9 @@ type
     TScale : Single ;        // Time scaling factor
     TUnits : String ;        // Time units (s/ms)
 
+    SplitImageName : Array[0..1] of string ;  // CCD name
+    SplitImage : Boolean ;
+
     CalibrationBarSize : Single ; // Spatial calibration bar size
     CalibrationBarThickness : Single ; // Spatial calibration bar thickness
     
@@ -537,6 +546,7 @@ type
     TimeLapseInterval : Single ;     // Time lapse interval
     BurstDuration : Single ;         // Duration of high speed bursts (T. Lapse + Burst mode)
     BurstInterval : Single ;         // Interval between high speed bursts (T. Lapse + Burst mode)
+    BulbExposureMode : Boolean ;     // Bulb exposure mode: exposure trigger pulse duration determines camera exposure time
 
     ProgramDirectory : String ;      // Program directory
     DataDirectory : string ;         // Current data directory
@@ -609,9 +619,10 @@ type
     EXCWavelengths : Array[0..MaxEXCWavelengths-1] of TEXCWavelength ;
 
     EXCSpectrumStartWavelength : Single ; // Start wavelength
-    EXCSpectrumEndWavelength : Single ; // End Wavelength
-    EXCSpectrumStepSize : Single ;       // Number of steps
-    EXCSpectrumBandwidth : Single ;     // Bandwidth (nm)
+    EXCSpectrumEndWavelength : Single ;   // End Wavelength
+    EXCSpectrumStepSize : Single ;        // Number of steps
+    EXCSpectrumBandwidth : Single ;       // Bandwidth (nm)
+    EXCSpectrumEMFilter : Integer ;               // Emission filter #
 
     //EXCNewSettings :Boolean ;         // Flag indicating that settings have been changed
 
@@ -720,7 +731,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.5.7 18-2-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.5.8 5-3-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
@@ -764,6 +775,13 @@ begin
     ROIX := 0 ;
     LiveWindowWavelength := 0 ;
 
+    // Split image settings
+    SplitImageName[0] := 'A' ;
+    SplitImageName[0] := 'B' ;
+    SplitImage := False ;
+
+    BulbExposureMode := False ;
+
     // Time display units/scaling factor
     TScale := 1.0 ;
     TUnits := 's' ;
@@ -790,13 +808,17 @@ begin
 
     for i := 0 to High(EXCWavelengths) do begin
         EXCWavelengths[i].Centre := 0 ;
-        EXCWavelengths[0].Width := 0 ;
+        EXCWavelengths[i].Width := 0 ;
+        EXCWavelengths[i].EmFilter := 0 ;
+        EXCWavelengths[i].EmName := '' ;
+        EXCWavelengths[i].FractionalExposure := 1.0 ;
         end ;
 
     EXCSpectrumStartWavelength := 400 ;
     EXCSpectrumEndWavelength := 500 ;
     EXCSpectrumBandwidth := 10.0 ;
     EXCSpectrumStepSize := 10.0 ;
+    EXCSpectrumEMFilter := 0 ;
     ExcitationOnWhenRecording := True ;
 
     // Interface hardware I/O configuration
@@ -810,6 +832,8 @@ begin
     IOConfig.LSWavelengthEnd := -1 ;
     IOConfig.LSLaserStart := -1 ;
     IOConfig.LSLaserEnd := -1 ;
+    IOConfig.EmFilterStart := -1 ;
+    IOConfig.EmFilterEnd := -1 ;
     IOConfig.DigitalStimStart := -1 ;
     IOConfig.DigitalStimEnd := -1 ;
     IOConfig.PhotoStimX := -1 ;

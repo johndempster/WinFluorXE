@@ -236,6 +236,430 @@ object RecordFrm: TRecordFrm
     Width = 213
     Height = 937
     TabOrder = 1
+    object LightStimGrp: TGroupBox
+      Left = 5
+      Top = 484
+      Width = 204
+      Height = 273
+      Caption = ' Light / Stimulator  '
+      TabOrder = 5
+      object sbLightStimShowSettings: TSpeedButton
+        Left = 8
+        Top = 16
+        Width = 16
+        Height = 16
+        AllowAllUp = True
+        GroupIndex = 1
+        Flat = True
+        Glyph.Data = {
+          3E010000424D3E010000000000007600000028000000280000000A0000000100
+          040000000000C800000000000000000000001000000000000000000000000000
+          8000008000000080800080000000800080008080000080808000C0C0C0000000
+          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
+          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFF00FFFFF00FFFF00FF00FFF
+          F00FFFF0000FFFFFF0000FFFFF00FF00FFFF00FF00FFFF00FF00FFFF00FF00FF
+          FFF0000FFFFFF0000FFFF00FFFF00FF00FFFF00FFFFF00FFFFFFFF00FFFFFFFF
+          00FFFFFFFF00FFFFF00FFFF00FF00FFFF00FFFF0000FFFFFF0000FFFFF00FF00
+          FFFF00FF00FFFF00FF00FFFF00FF00FFFFF0000FFFFFF0000FFFF00FFFF00FF0
+          0FFFF00FFFFF00FFFFFFFF00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
+          FFFF}
+        NumGlyphs = 4
+        OnClick = sbLightStimShowSettingsClick
+      end
+      object LightStimPage: TPageControl
+        Left = 24
+        Top = 16
+        Width = 170
+        Height = 250
+        ActivePage = ExcitationLightTab
+        MultiLine = True
+        TabOrder = 0
+        object ExcitationLightTab: TTabSheet
+          Caption = 'Excitation Light'
+          object GroupBox6: TGroupBox
+            Left = 2
+            Top = 0
+            Width = 154
+            Height = 28
+            TabOrder = 0
+            object rbEXCShutterOpen: TRadioButton
+              Left = 8
+              Top = 8
+              Width = 49
+              Height = 17
+              Hint = 'Turn excitation light source on'
+              Caption = 'On'
+              Font.Charset = ANSI_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ParentFont = False
+              TabOrder = 0
+              OnClick = rbEXCShutterOpenClick
+            end
+            object rbEXCShutterClosed: TRadioButton
+              Left = 56
+              Top = 8
+              Width = 43
+              Height = 17
+              Hint = 'Turn excitation light source off'
+              Caption = 'Off'
+              Checked = True
+              Font.Charset = ANSI_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ParentFont = False
+              TabOrder = 1
+              TabStop = True
+              OnClick = rbEXCShutterClosedClick
+            end
+          end
+          object WavelengthGrp: TGroupBox
+            Left = 2
+            Top = 52
+            Width = 154
+            Height = 124
+            Caption = ' Wavelength '
+            TabOrder = 1
+            object rbSingleWavelength: TRadioButton
+              Left = 6
+              Top = 16
+              Width = 73
+              Height = 17
+              Hint = 'Single excitation wavelength'
+              Caption = 'Single '
+              Checked = True
+              Font.Charset = ANSI_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ParentFont = False
+              TabOrder = 0
+              TabStop = True
+              OnClick = rbSingleWavelengthClick
+            end
+            object rbMultipleWavelengths: TRadioButton
+              Left = 6
+              Top = 58
+              Width = 123
+              Height = 17
+              Hint = 'Multiple, sequential wavelength excitation'
+              Caption = 'Multi-wavelength'
+              Font.Charset = ANSI_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ParentFont = False
+              TabOrder = 1
+              OnClick = rbMultipleWavelengthsClick
+            end
+            object cbWavelength: TComboBox
+              Left = 25
+              Top = 32
+              Width = 124
+              Height = 22
+              Hint = 'Selected single excitation wavelength'
+              TabOrder = 2
+              Text = 'cbWavelength'
+              OnChange = cbWavelengthChange
+            end
+            object rbSpectrum: TRadioButton
+              Left = 6
+              Top = 100
+              Width = 91
+              Height = 17
+              Hint = 'Use sequence of excitatiion wavelengths'
+              Caption = 'Spectrum'
+              Font.Charset = ANSI_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'Arial'
+              Font.Style = [fsBold]
+              ParentFont = False
+              TabOrder = 3
+              OnClick = rbMultipleWavelengthsClick
+            end
+            object cbSequence: TComboBox
+              Left = 25
+              Top = 74
+              Width = 124
+              Height = 22
+              Hint = 'Selected single excitation wavelength'
+              TabOrder = 4
+              Text = 'cbWavelength'
+              OnChange = cbSequenceChange
+            end
+          end
+          object bSetLaserIntensity: TButton
+            Left = 2
+            Top = 182
+            Width = 153
+            Height = 17
+            Caption = 'Set Laser Intensity'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 2
+            OnClick = bSetLaserIntensityClick
+          end
+          object ckExcitationOnWhenRecording: TCheckBox
+            Left = 2
+            Top = 32
+            Width = 156
+            Height = 16
+            Hint = 
+              'Turn on excitation during recording to file, turn off when recor' +
+              'ding stops'
+            Caption = 'Turn on when recording'
+            Checked = True
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
+            State = cbChecked
+            TabOrder = 3
+            OnClick = ckExcitationOnWhenRecordingClick
+          end
+        end
+        object StimulatorTab: TTabSheet
+          Caption = 'Stimulator'
+          ImageIndex = 1
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
+          object cbStimProgram: TComboBox
+            Left = 2
+            Top = 0
+            Width = 151
+            Height = 22
+            Hint = 'Stimulation program in current use'
+            TabOrder = 0
+            Text = 'cbStimProgram'
+            OnChange = cbStimProgramChange
+          end
+          object bStartStimulus: TButton
+            Left = 2
+            Top = 26
+            Width = 87
+            Height = 17
+            Hint = 'Start stimulation program'
+            Caption = 'Start'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+            OnClick = bStartStimulusClick
+          end
+          object bStopStimulus: TButton
+            Left = 98
+            Top = 26
+            Width = 54
+            Height = 17
+            Hint = 'Stop stimulation program'
+            Caption = 'Stop'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 2
+            OnClick = bStopStimulusClick
+          end
+          object VHoldGrp: TGroupBox
+            Left = 2
+            Top = 64
+            Width = 151
+            Height = 73
+            Caption = ' V Hold (Default)'
+            TabOrder = 3
+            object VHold0Panel: TPanel
+              Left = 11
+              Top = 16
+              Width = 134
+              Height = 25
+              BevelOuter = bvNone
+              TabOrder = 0
+              object lbVHold0: TLabel
+                Left = 5
+                Top = 2
+                Width = 38
+                Height = 15
+                Caption = 'VOut 0'
+                Font.Charset = ANSI_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -12
+                Font.Name = 'Arial'
+                Font.Style = [fsBold]
+                ParentFont = False
+              end
+              object edVHold0: TValidatedEdit
+                Left = 60
+                Top = 2
+                Width = 69
+                Height = 20
+                Hint = 'Patch clamp cell holding voltage'
+                OnKeyPress = edVHold0KeyPress
+                AutoSize = False
+                ShowHint = True
+                Text = ' 0 mV'
+                Scale = 1000.000000000000000000
+                Units = 'mV'
+                NumberFormat = '%.4g'
+                LoLimit = -1.000000015047466E29
+                HiLimit = 1.000000015047466E29
+              end
+            end
+            object VHold1Panel: TPanel
+              Left = 11
+              Top = 42
+              Width = 134
+              Height = 25
+              BevelOuter = bvNone
+              TabOrder = 1
+              object Label7: TLabel
+                Left = 5
+                Top = 2
+                Width = 38
+                Height = 15
+                Caption = 'VOut 1'
+                Font.Charset = ANSI_CHARSET
+                Font.Color = clWindowText
+                Font.Height = -12
+                Font.Name = 'Arial'
+                Font.Style = [fsBold]
+                ParentFont = False
+              end
+              object edVHold1: TValidatedEdit
+                Left = 60
+                Top = 2
+                Width = 69
+                Height = 20
+                Hint = 'Patch clamp cell holding voltage'
+                OnKeyPress = edVHold0KeyPress
+                AutoSize = False
+                ShowHint = True
+                Text = ' 0 mV'
+                Scale = 1000.000000000000000000
+                Units = 'mV'
+                NumberFormat = '%.4g'
+                LoLimit = -1.000000015047466E29
+                HiLimit = 1.000000015047466E29
+              end
+            end
+          end
+          object bSetSubFolder: TButton
+            Left = 2
+            Top = 148
+            Width = 151
+            Height = 17
+            Caption = 'Set Stim. Folder'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clBlack
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 4
+            OnClick = bSetSubFolderClick
+          end
+          object ckStartStimOnRecord: TCheckBox
+            Left = 0
+            Top = 44
+            Width = 113
+            Height = 17
+            Hint = 'Start stimulus program automatically when Record button pressed'
+            Caption = 'Start on Record'
+            Checked = True
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
+            State = cbChecked
+            TabOrder = 5
+            OnClick = ckStartStimOnRecordClick
+          end
+        end
+        object PhotoStimTab: TTabSheet
+          Caption = 'Photo Stim.'
+          ImageIndex = 2
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
+          object cbPhotoStimProgram: TComboBox
+            Left = 2
+            Top = 0
+            Width = 151
+            Height = 22
+            Hint = 'Stimulation program in current use'
+            TabOrder = 0
+            Text = 'cbStimProgram'
+            OnChange = cbPhotoStimProgramChange
+          end
+          object bStartPhotoStimulus: TButton
+            Left = 2
+            Top = 26
+            Width = 87
+            Height = 17
+            Hint = 'Start stimulation program'
+            Caption = 'Start'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+            OnClick = bStartPhotoStimulusClick
+          end
+          object bStopPhotoStimulus: TButton
+            Left = 98
+            Top = 26
+            Width = 54
+            Height = 17
+            Hint = 'Stop stimulation program'
+            Caption = 'Stop'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 2
+            OnClick = bStopPhotoStimulusClick
+          end
+        end
+      end
+    end
     object DisplayGrp: TGroupBox
       Left = 5
       Top = 344
@@ -764,7 +1188,7 @@ object RecordFrm: TRecordFrm
       Left = 5
       Top = 176
       Width = 204
-      Height = 171
+      Height = 162
       Caption = ' Image Capture '
       TabOrder = 3
       object lbReadoutTime: TLabel
@@ -824,31 +1248,31 @@ object RecordFrm: TRecordFrm
         Left = 8
         Top = 54
         Width = 188
-        Height = 113
+        Height = 100
         BevelOuter = bvNone
         TabOrder = 1
-        object Label8: TLabel
-          Left = 75
-          Top = 86
-          Width = 22
-          Height = 14
-          Alignment = taRightJustify
-          Caption = 'Gain'
-        end
         object CCDAreaGrp: TGroupBox
           Left = 0
           Top = 0
           Width = 188
-          Height = 82
+          Height = 98
           Caption = 'CCD Area '
           TabOrder = 0
           object Label4: TLabel
-            Left = 104
+            Left = 102
             Top = 16
             Width = 35
-            Height = 28
-            Caption = 'Pixel Binning'
+            Height = 14
+            Caption = 'Binning'
             WordWrap = True
+          end
+          object Label8: TLabel
+            Left = 102
+            Top = 34
+            Width = 22
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'Gain'
           end
           object bFullFrame: TButton
             Left = 6
@@ -883,7 +1307,7 @@ object RecordFrm: TRecordFrm
             OnClick = bSelectedRegionClick
           end
           object edBinFactor: TValidatedEdit
-            Left = 142
+            Left = 146
             Top = 16
             Width = 33
             Height = 20
@@ -913,16 +1337,32 @@ object RecordFrm: TRecordFrm
             TabOrder = 3
             OnClick = bEnterCCDAreaClick
           end
-        end
-        object cbCameraGain: TComboBox
-          Left = 99
-          Top = 86
-          Width = 89
-          Height = 22
-          Hint = 'Selected single excitation wavelength'
-          Style = csDropDownList
-          TabOrder = 1
-          OnChange = cbCameraGainChange
+          object cbCameraGain: TComboBox
+            Left = 102
+            Top = 50
+            Width = 80
+            Height = 22
+            Hint = 'Selected single excitation wavelength'
+            Style = csDropDownList
+            TabOrder = 4
+            OnChange = cbCameraGainChange
+          end
+          object ckSplitCCDImage: TCheckBox
+            Left = 8
+            Top = 76
+            Width = 169
+            Height = 17
+            Hint = 'Acquire upper and lower halves of CCD as separate frames'
+            Caption = 'Split CCD image '
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            TabOrder = 5
+            OnClick = ckSplitCCDImageClick
+          end
         end
       end
     end
@@ -1064,430 +1504,6 @@ object RecordFrm: TRecordFrm
           Height = 22
           TabOrder = 2
           Text = 'cbShadeCorNormalisation'
-        end
-      end
-    end
-    object LightStimGrp: TGroupBox
-      Left = 5
-      Top = 484
-      Width = 204
-      Height = 253
-      Caption = ' Light / Stimulator  '
-      TabOrder = 5
-      object sbLightStimShowSettings: TSpeedButton
-        Left = 8
-        Top = 16
-        Width = 16
-        Height = 16
-        AllowAllUp = True
-        GroupIndex = 1
-        Flat = True
-        Glyph.Data = {
-          3E010000424D3E010000000000007600000028000000280000000A0000000100
-          040000000000C800000000000000000000001000000000000000000000000000
-          8000008000000080800080000000800080008080000080808000C0C0C0000000
-          FF0000FF000000FFFF00FF000000FF00FF00FFFF0000FFFFFF00FFFFFFFFFFFF
-          FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00FFFFFFFF00FFFFF00FFFF00FF00FFF
-          F00FFFF0000FFFFFF0000FFFFF00FF00FFFF00FF00FFFF00FF00FFFF00FF00FF
-          FFF0000FFFFFF0000FFFF00FFFF00FF00FFFF00FFFFF00FFFFFFFF00FFFFFFFF
-          00FFFFFFFF00FFFFF00FFFF00FF00FFFF00FFFF0000FFFFFF0000FFFFF00FF00
-          FFFF00FF00FFFF00FF00FFFF00FF00FFFFF0000FFFFFF0000FFFF00FFFF00FF0
-          0FFFF00FFFFF00FFFFFFFF00FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF
-          FFFF}
-        NumGlyphs = 4
-        OnClick = sbLightStimShowSettingsClick
-      end
-      object LightStimPage: TPageControl
-        Left = 24
-        Top = 16
-        Width = 170
-        Height = 230
-        ActivePage = ExcitationLightTab
-        MultiLine = True
-        TabOrder = 0
-        object ExcitationLightTab: TTabSheet
-          Caption = 'Excitation Light'
-          object GroupBox6: TGroupBox
-            Left = 2
-            Top = 0
-            Width = 154
-            Height = 28
-            TabOrder = 0
-            object rbEXCShutterOpen: TRadioButton
-              Left = 8
-              Top = 8
-              Width = 49
-              Height = 17
-              Hint = 'Turn excitation light source on'
-              Caption = 'On'
-              Font.Charset = ANSI_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -12
-              Font.Name = 'Arial'
-              Font.Style = [fsBold]
-              ParentFont = False
-              TabOrder = 0
-              OnClick = rbEXCShutterOpenClick
-            end
-            object rbEXCShutterClosed: TRadioButton
-              Left = 56
-              Top = 8
-              Width = 43
-              Height = 17
-              Hint = 'Turn excitation light source off'
-              Caption = 'Off'
-              Checked = True
-              Font.Charset = ANSI_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -12
-              Font.Name = 'Arial'
-              Font.Style = [fsBold]
-              ParentFont = False
-              TabOrder = 1
-              TabStop = True
-              OnClick = rbEXCShutterClosedClick
-            end
-          end
-          object WavelengthGrp: TGroupBox
-            Left = 2
-            Top = 52
-            Width = 154
-            Height = 105
-            Caption = ' Wavelength '
-            TabOrder = 1
-            object rbSingleWavelength: TRadioButton
-              Left = 6
-              Top = 16
-              Width = 73
-              Height = 17
-              Hint = 'Single excitation wavelength'
-              Caption = 'Single '
-              Checked = True
-              Font.Charset = ANSI_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -12
-              Font.Name = 'Arial'
-              Font.Style = [fsBold]
-              ParentFont = False
-              TabOrder = 0
-              TabStop = True
-              OnClick = rbSingleWavelengthClick
-            end
-            object rbMultipleWavelengths: TRadioButton
-              Left = 6
-              Top = 42
-              Width = 123
-              Height = 17
-              Hint = 'Multiple, sequential wavelength excitation'
-              Caption = 'Multi-wavelength'
-              Font.Charset = ANSI_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -12
-              Font.Name = 'Arial'
-              Font.Style = [fsBold]
-              ParentFont = False
-              TabOrder = 1
-              OnClick = rbMultipleWavelengthsClick
-            end
-            object cbWavelength: TComboBox
-              Left = 64
-              Top = 16
-              Width = 81
-              Height = 22
-              Hint = 'Selected single excitation wavelength'
-              TabOrder = 2
-              Text = 'cbWavelength'
-              OnChange = cbWavelengthChange
-            end
-            object rbSpectrum: TRadioButton
-              Left = 6
-              Top = 82
-              Width = 91
-              Height = 17
-              Hint = 'Use sequence of excitatiion wavelengths'
-              Caption = 'Spectrum'
-              Font.Charset = ANSI_CHARSET
-              Font.Color = clWindowText
-              Font.Height = -12
-              Font.Name = 'Arial'
-              Font.Style = [fsBold]
-              ParentFont = False
-              TabOrder = 3
-              OnClick = rbMultipleWavelengthsClick
-            end
-            object cbSequence: TComboBox
-              Left = 21
-              Top = 58
-              Width = 124
-              Height = 22
-              Hint = 'Selected single excitation wavelength'
-              TabOrder = 4
-              Text = 'cbWavelength'
-              OnChange = cbSequenceChange
-            end
-          end
-          object bSetLaserIntensity: TButton
-            Left = 2
-            Top = 162
-            Width = 151
-            Height = 17
-            Caption = 'Set Laser Intensity'
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'Arial'
-            Font.Style = [fsBold]
-            ParentFont = False
-            TabOrder = 2
-            OnClick = bSetLaserIntensityClick
-          end
-          object ckExcitationOnWhenRecording: TCheckBox
-            Left = 2
-            Top = 32
-            Width = 156
-            Height = 16
-            Hint = 
-              'Turn on excitation during recording to file, turn off when recor' +
-              'ding stops'
-            Caption = 'Turn on when recording'
-            Checked = True
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -11
-            Font.Name = 'Arial'
-            Font.Style = [fsBold]
-            ParentFont = False
-            ParentShowHint = False
-            ShowHint = True
-            State = cbChecked
-            TabOrder = 3
-            OnClick = ckExcitationOnWhenRecordingClick
-          end
-        end
-        object StimulatorTab: TTabSheet
-          Caption = 'Stimulator'
-          ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
-          object cbStimProgram: TComboBox
-            Left = 2
-            Top = 0
-            Width = 151
-            Height = 22
-            Hint = 'Stimulation program in current use'
-            TabOrder = 0
-            Text = 'cbStimProgram'
-            OnChange = cbStimProgramChange
-          end
-          object bStartStimulus: TButton
-            Left = 2
-            Top = 26
-            Width = 87
-            Height = 17
-            Hint = 'Start stimulation program'
-            Caption = 'Start'
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'Arial'
-            Font.Style = [fsBold]
-            ParentFont = False
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 1
-            OnClick = bStartStimulusClick
-          end
-          object bStopStimulus: TButton
-            Left = 98
-            Top = 26
-            Width = 54
-            Height = 17
-            Hint = 'Stop stimulation program'
-            Caption = 'Stop'
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'Arial'
-            Font.Style = [fsBold]
-            ParentFont = False
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 2
-            OnClick = bStopStimulusClick
-          end
-          object VHoldGrp: TGroupBox
-            Left = 2
-            Top = 64
-            Width = 151
-            Height = 73
-            Caption = ' V Hold (Default)'
-            TabOrder = 3
-            object VHold0Panel: TPanel
-              Left = 11
-              Top = 16
-              Width = 134
-              Height = 25
-              BevelOuter = bvNone
-              TabOrder = 0
-              object lbVHold0: TLabel
-                Left = 5
-                Top = 2
-                Width = 38
-                Height = 15
-                Caption = 'VOut 0'
-                Font.Charset = ANSI_CHARSET
-                Font.Color = clWindowText
-                Font.Height = -12
-                Font.Name = 'Arial'
-                Font.Style = [fsBold]
-                ParentFont = False
-              end
-              object edVHold0: TValidatedEdit
-                Left = 60
-                Top = 2
-                Width = 69
-                Height = 20
-                Hint = 'Patch clamp cell holding voltage'
-                OnKeyPress = edVHold0KeyPress
-                AutoSize = False
-                ShowHint = True
-                Text = ' 0 mV'
-                Scale = 1000.000000000000000000
-                Units = 'mV'
-                NumberFormat = '%.4g'
-                LoLimit = -1.000000015047466E29
-                HiLimit = 1.000000015047466E29
-              end
-            end
-            object VHold1Panel: TPanel
-              Left = 11
-              Top = 42
-              Width = 134
-              Height = 25
-              BevelOuter = bvNone
-              TabOrder = 1
-              object Label7: TLabel
-                Left = 5
-                Top = 2
-                Width = 38
-                Height = 15
-                Caption = 'VOut 1'
-                Font.Charset = ANSI_CHARSET
-                Font.Color = clWindowText
-                Font.Height = -12
-                Font.Name = 'Arial'
-                Font.Style = [fsBold]
-                ParentFont = False
-              end
-              object edVHold1: TValidatedEdit
-                Left = 60
-                Top = 2
-                Width = 69
-                Height = 20
-                Hint = 'Patch clamp cell holding voltage'
-                OnKeyPress = edVHold0KeyPress
-                AutoSize = False
-                ShowHint = True
-                Text = ' 0 mV'
-                Scale = 1000.000000000000000000
-                Units = 'mV'
-                NumberFormat = '%.4g'
-                LoLimit = -1.000000015047466E29
-                HiLimit = 1.000000015047466E29
-              end
-            end
-          end
-          object bSetSubFolder: TButton
-            Left = 2
-            Top = 148
-            Width = 151
-            Height = 17
-            Caption = 'Set Stim. Folder'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clBlack
-            Font.Height = -12
-            Font.Name = 'Arial'
-            Font.Style = [fsBold]
-            ParentFont = False
-            TabOrder = 4
-            OnClick = bSetSubFolderClick
-          end
-          object ckStartStimOnRecord: TCheckBox
-            Left = 0
-            Top = 44
-            Width = 113
-            Height = 17
-            Hint = 'Start stimulus program automatically when Record button pressed'
-            Caption = 'Start on Record'
-            Checked = True
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -11
-            Font.Name = 'Arial'
-            Font.Style = [fsBold]
-            ParentFont = False
-            ParentShowHint = False
-            ShowHint = True
-            State = cbChecked
-            TabOrder = 5
-            OnClick = ckStartStimOnRecordClick
-          end
-        end
-        object PhotoStimTab: TTabSheet
-          Caption = 'Photo Stim.'
-          ImageIndex = 2
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
-          object cbPhotoStimProgram: TComboBox
-            Left = 2
-            Top = 0
-            Width = 151
-            Height = 22
-            Hint = 'Stimulation program in current use'
-            TabOrder = 0
-            Text = 'cbStimProgram'
-            OnChange = cbPhotoStimProgramChange
-          end
-          object bStartPhotoStimulus: TButton
-            Left = 2
-            Top = 26
-            Width = 87
-            Height = 17
-            Hint = 'Start stimulation program'
-            Caption = 'Start'
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'Arial'
-            Font.Style = [fsBold]
-            ParentFont = False
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 1
-            OnClick = bStartPhotoStimulusClick
-          end
-          object bStopPhotoStimulus: TButton
-            Left = 98
-            Top = 26
-            Width = 54
-            Height = 17
-            Hint = 'Stop stimulation program'
-            Caption = 'Stop'
-            Font.Charset = ANSI_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'Arial'
-            Font.Style = [fsBold]
-            ParentFont = False
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 2
-            OnClick = bStopPhotoStimulusClick
-          end
         end
       end
     end

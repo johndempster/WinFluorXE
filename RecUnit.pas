@@ -1,7 +1,7 @@
 unit RecUnit;
-// =====================================================================================
+// =====================================================================================                ise
 // WinFluor - Image Recording Module (c) J. Dempster, University of Strathclydcbsee 2001-03
-// =====================================================================================
+// =====================================================================================                     st
 // All Rights Reserved
 // 1/8/01
 // 27.8.02
@@ -23,7 +23,7 @@ unit RecUnit;
 // 4.12.03 ... Zero divide error when display duration=1 sample fixed
 //             -10412 error when clicking record immediately after stop fixed
 // 23.3.04 ... VHold box now works
-//             Open SealTest window now closed when recording starts
+//             Open SealTest window now closed when recording starts                    fra
 //             A/D sampling is re-started when switching from seal test to record window
 // 02.09.04 Digital pulse stimulus added
 // 09.09.04 Pauses within recording now indicated by // markers
@@ -140,6 +140,9 @@ unit RecUnit;
 // 16.12.13 JD .StartCapture Now returns False if unable to allocate enough frame buffer memory
 // 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 // 18.02.14 DCAM NumFramesInBuffer now same as Andor SDK3
+// 28.02.14 Emission filter control added and position of shading group moved to below light source group
+// 05.03.14 50/50 top/bottom split Image mode added
+//          Bulb exposure mode added
 
 {$DEFINE USECONT}
 
@@ -153,7 +156,6 @@ uses
   Menus, Buttons, filectrl, Types ;
 
 const
-    cMaxSamplesInADCBuffer = 100000 ;
     cMaxBytesInDACBuffer = 10000000 ;
     cADCWriteBufferDuration = 10.0 ; //5.0 ;
     MaxDisplayScans = 2000 ;
@@ -219,14 +221,12 @@ type
     Label3: TLabel;
     edFrameInterval: TValidatedEdit;
     ImageCaptureSettingsPanel: TPanel;
-    Label8: TLabel;
     CCDAreaGrp: TGroupBox;
     Label4: TLabel;
     bFullFrame: TButton;
     bSelectedRegion: TButton;
     edBinFactor: TValidatedEdit;
     bEnterCCDArea: TButton;
-    cbCameraGain: TComboBox;
     DisplaySettingsPanel: TPanel;
     ContrastPage: TPageControl;
     RangeTab: TTabSheet;
@@ -313,6 +313,9 @@ type
     edZNumSteps: TValidatedEdit;
     ckZStackEnabled: TCheckBox;
     sbZPosition: TScrollBar;
+    cbCameraGain: TComboBox;
+    Label8: TLabel;
+    ckSplitCCDImage: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -395,6 +398,7 @@ type
     procedure edZStartPosKeyPress(Sender: TObject; var Key: Char);
     procedure edZStepSizeKeyPress(Sender: TObject; var Key: Char);
     procedure edZNumStepsKeyPress(Sender: TObject; var Key: Char);
+    procedure ckSplitCCDImageClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -423,13 +427,15 @@ type
     FilterNums : Array[0..MaxLightSourceCycleLength-1] of Integer ;
     Wavelengths : Array[0..MaxLightSourceCycleLength-1] of Single ;
     Bandwidths : Array[0..MaxLightSourceCycleLength-1] of Single ;
+    FractionalExposure : Array[0..MaxLightSourceCycleLength-1] of Single ;
+    EMFilters : Array[0..MaxLightSourceCycleLength-1] of Integer ;
     FrameTypeCycleLength : Integer ;
     FrameTypeCycle : Array[0..MaxLightSourceCycleLength-1] of Integer ;
     FrameTypeCycleCounter : Integer ;
     LatestFrames : Array[0..MaxFrameType] of Integer ;
-    LatestFramesDisplayed : Array[0..MaxFrameType] of Boolean ;
+    //LatestFramesDisplayed : Array[0..MaxFrameType] of Boolean ;
     MaxFramesPerCycle : Integer ;  // Max. no. of frames per D/A update cycle
-
+    NumFramesPerCCD : Integer ;
 
     // Image capture double buffer
     FirstFrameInLowerBuffer : Integer ;  // Start of lower half of buffer
@@ -461,7 +467,6 @@ type
     TimerProcBusy : Boolean ;              // TRUE = scheduled timer code executing
     InitialisationComplete : Boolean ;     // TRUE = formshow initialisations done
     FormClosing : Boolean ;                // TRUE = form is closing
-    OptimiseContrastNeeded : Boolean ;     // TRUE = display contrast needs to be updated
 
     ContinuedRecording : Boolean ;         // TRUE = Continuation of previous recording
 
@@ -477,7 +482,7 @@ type
     ADCNumWriteBuffers : Integer ;            // Total no. of write buffers in ADCBuf
     ADCWriteBuffer : Integer ;                // No. of next buffer to be written to file
     ADCActiveBuffer : Integer ;               // No. of sub-buffer being filled
-    ADCBuf : Array[0..cMaxSamplesInADCBuffer-1] of SmallInt ; // A/D sample input buffer pointer
+    ADCBuf : PBig16BitArray ;                 // A/D sample input buffer pointer
 
     ADCEmptyPointer : Integer ;
     ADCOldestScan : Integer ;               //
@@ -538,10 +543,8 @@ type
     TimeDiff : Integer ;
     TimeDiffMax : Integer ;
 
-    OptimiseContrastAtFrameNum : Integer ;  // Next frame # when contrast is to be optimised
-    OptimiseContrastInterval : Integer ;    // Contrast optimisation interval (frames)
-
     NumCloseClicks : Integer ;
+    OptimiseContrastCount : Integer ;
 
     procedure StopRecording ;
     procedure FillBufferWithEmptyFlags( StartAt : Integer ; EndAt : Integer ) ;
@@ -588,6 +591,7 @@ type
     procedure UpdateExcitationWavelengths ;
     procedure UpdateLightSourceShutter ;
     procedure UpdatePhotoStimulus(StimulusEnabled : Boolean);
+    procedure UpdateEMFilter ;
 
     procedure AddMarker( MarkerText : String ) ;
     procedure Wait( Delay : Single ) ;
@@ -715,6 +719,7 @@ begin
 
      PWorkBuf := Nil ;
      PTimeLapseBuf := Nil ;
+     ADCBuf := Nil ;
 
      // D/A waveform buffers
      for i := 0 to High(DACBufs) do DACBufs[i] := Nil ;
@@ -750,6 +755,7 @@ procedure TRecordFrm.FormShow(Sender: TObject);
 // --------------------------------------
 var
      i : Integer ;
+     s : string ;
 begin
 
      NumCloseClicks := 0 ;
@@ -767,6 +773,8 @@ begin
 
      // Stop live imaging form (if it is running)
      if MainFrm.FormExists('SnapFrm')then SnapFrm.StopLiveImaging ;
+
+     ckSplitCCDImage.Checked := MainFrm.SplitImage ;
 
      // Set form at top left of MDI window
      Top := 20 ;
@@ -886,11 +894,16 @@ begin
 
      // Create list of excitation wavelengths
      cbWaveLength.Clear ;
+
      for i := 0 to High(MainFrm.EXCWavelengths) do begin
-         cbWaveLength.Items.Add( format('%d: %d (%d)',
-         [i,
-          MainFrm.EXCWavelengths[i].Centre,
-          MainFrm.EXCWavelengths[i].Width] )) ;
+         s := format('EX%d ',[MainFrm.EXCWavelengths[i].Centre]) ;
+         if MainFrm.EXCWavelengths[i].Width <> 0.0 then begin
+            s := s + format('(%d) ',[MainFrm.EXCWavelengths[i].Width]) ;
+            end;
+         if MainFrm.EXCWavelengths[i].EMName <> '' then begin
+            s := s + 'EM' + MainFrm.EXCWavelengths[i].EMName ;
+            end;
+         cbWaveLength.Items.Add( s ) ;
          end ;
      cbWaveLength.ItemIndex := Min(Max(MainFrm.EXCSingleWavelengthNum,
                                0),cbWaveLength.Items.Count-1) ;
@@ -945,7 +958,7 @@ begin
      bMark.Enabled := False ;
 
      // Display contrast optimisation
-     OptimiseContrastNeeded := True ;
+     OptimiseContrastCount := NumFrameTypes*2 ;
      ckAutoOptimise.Checked := MainFrm.ContrastAutoOptimise ;
      ckChangeAllFrameTypes.Checked := MainFrm.ContrastChangeAllFrameTypes ;
      ckContrast6SDOnly.Checked := MainFrm.Contrast6SD ;
@@ -1040,24 +1053,26 @@ begin
      ADCNumSamplesInWriteBuffer := Round( cADCWriteBufferDuration /
                                           DACUpdateInterval)*MainFrm.ADCNumChannels ;
      ADCNumSamplesInWriteBuffer := Max( ADCNumSamplesInWriteBuffer,MainFrm.ADCNumChannels*8 ) ;
-     ADCNumSamplesInWriteBuffer := Min( ADCNumSamplesInWriteBuffer,cMaxSamplesInADCBuffer div 2 ) ;
+     //ADCNumSamplesInWriteBuffer := Min( ADCNumSamplesInWriteBuffer,cMaxSamplesInADCBuffer div 2 ) ;
      ADCNumSamplesInWriteBuffer := (ADCNumSamplesInWriteBuffer div MainFrm.ADCNumChannels)
                                    * MainFrm.ADCNumChannels ;
-     ADCNumWriteBuffers := cMaxSamplesInADCBuffer div ADCNumSamplesInWriteBuffer ;
+     ADCNumWriteBuffers := 2 ;
      ADCNumSamplesInBuffer := ADCNumWriteBuffers*ADCNumSamplesInWriteBuffer ;
+     if ADCBuf <> Nil then FreeMem(ADCBuf) ;
+     GetMem(ADCBuf,ADCNumSamplesInBuffer*2) ;
 
      // Fill circular buffer with empty flags
      i := 0 ;
      while i < ADCNumSamplesInBuffer do begin
-         ADCBuf[i] := EmptyFlag ;
+         ADCBuf^[i] := EmptyFlag ;
          Inc(i) ;
-         ADCBuf[i] := -EmptyFlag ;
+         ADCBuf^[i] := -EmptyFlag ;
          Inc(i) ;
          end ;
 
      // Start A/D sampling
      LabIO.ADCToMemoryExtScan( ADCDevice,
-                               ADCBuf,
+                               ADCBuf^,
                                MainFrm.ADCNumChannels,
                                ADCNumSamplesInBuffer div MainFrm.ADCNumChannels,
                                MainFrm.ADCVoltageRange,
@@ -1074,7 +1089,7 @@ begin
 
      // Initialise (and erase) display
      if (NumFramesDone = 0) then begin
-        RecPlotFrm.ADCInitialiseDisplay( @ADCBuf,
+        RecPlotFrm.ADCInitialiseDisplay( ADCBuf,
                                          LabIO.ADCMaxValue[ADCDevice],
                                          DACUpdateInterval
                                          ) ;
@@ -1116,6 +1131,18 @@ begin
    // Stop camera (if it is running)
    StopCamera ;
 
+   // If in split image mode, ensure full height of CCD in use and is divisable by 2
+   if ckSplitCCDImage.Checked then begin
+      i := 1 ;
+      repeat
+         MainFrm.Cam1.SetCCDArea( MainFrm.Cam1.FrameLeft,
+                                  0,
+                                  MainFrm.Cam1.FrameRight,
+                                  MainFrm.Cam1.FrameHeightMax-i);
+         Inc(i) ;
+         until ((MainFrm.Cam1.FrameHeight mod 2) = 0) or (i>16) ;
+      end;
+
    Timer.Enabled := False ;
 
    MainFrm.StatusBar.SimpleText := 'Wait ... Starting camera' ;
@@ -1143,10 +1170,14 @@ begin
       MainFrm.Cam1.ShortenExposureBy := 0.0 ;
       end;
 
+   // If emission filter in use shorten exposure by emission filter change time
+   if not MainFrm.IOResourceAvailable(MainFrm.IOConfig.EMFilterStart) then begin
+      MainFrm.Cam1.ShortenExposureBy := Max(MainFrm.Cam1.ShortenExposureBy,LightSource.EMFilterChangeTime) ;
+      end;
+
    // Set exposure interval
    MainFrm.Cam1.FrameInterval := edFrameInterval.Value ;
    edFrameInterval.Value := MainFrm.Cam1.FrameInterval ;
-
 
    // Set image/display panels
    MainFrm.StatusBar.SimpleText := 'Wait ... Initialising image' ;
@@ -1172,8 +1203,6 @@ begin
 
    TStart := TimeGetTime ;
    FrameRateCounter := 0 ;
-   OptimiseContrastAtFrameNum := 0 ;
-   OptimiseContrastInterval := Round( 1.0 / MainFrm.Cam1.FrameInterval ) ;
 
    Timer.Enabled := True ;
 
@@ -1185,8 +1214,8 @@ begin
    for i := 0 to NumFrameTypes-1 do begin
        FrameTypeCounter[i] := 0 ;
        //FrameDisplayed[i] := -1 ;
-       LatestFrames[i] := 0 ;             // Index into frame buffer
-       LatestFramesDisplayed[i] := True ; // Mark all as displayed
+       LatestFrames[i] := -1 ;             // Index into frame buffer
+//       LatestFramesDisplayed[i] := True ; // Mark all as displayed
        LatestROIValue[i] := 0 ;
        end ;
    FrameTypeToBeDisplayed := 0 ;
@@ -1235,18 +1264,23 @@ procedure TRecordFrm.RestartCamera ;
 // ----------------
 var
     i, OldIndex : Integer ;
+    s : string ;
 begin
     StopCamera ;
 
     // Update excitation wavelength list
     OldIndex := cbWaveLength.ItemIndex ;
-       cbWaveLength.Clear ;
-       for i := 0 to High(MainFrm.EXCWavelengths) do begin
-           cbWaveLength.Items.Add( format('%d: %d (%d)',
-           [i+1,
-            MainFrm.EXCWavelengths[i].Centre,
-            MainFrm.EXCWavelengths[i].Width] )) ;
-           end ;
+    cbWaveLength.Clear ;
+    for i := 0 to High(MainFrm.EXCWavelengths) do begin
+        s := format('EX%d ',[MainFrm.EXCWavelengths[i].Centre]) ;
+        if MainFrm.EXCWavelengths[i].Width <> 0.0 then begin
+            s := s + format('(%d) ',[MainFrm.EXCWavelengths[i].Width]) ;
+            end;
+        if MainFrm.EXCWavelengths[i].EMName <> '' then begin
+            s := s + 'EM' + MainFrm.EXCWavelengths[i].EMName ;
+            end;
+        cbWaveLength.Items.Add( s ) ;
+        end ;
     cbWaveLength.ItemIndex := OldIndex ;
 
     // Update multi-wavelength sequence list
@@ -1277,18 +1311,32 @@ const
 var
      i,FT : Integer ;
      WVNum : Integer ;
+     CCDName : Array[0..1] of string ;
 begin
 
+    // Select split CCD option
+    if MainFrm.SplitImage then begin
+       NumFramesPerCCD := 2 ;
+       CCDName[0] := MainFrm.SplitImageName[0] ;
+       CCDName[1] := MainFrm.SplitImageName[1] ;
+       end
+    else begin
+       NumFramesPerCCD := 1 ;
+       CCDName[0] := '' ;
+       CCDName[1] := '' ;
+       end;
+
     // No. of pixels per frame
-    FrameWidth := MainFrm.Cam1.FrameWidth ;
-    FrameHeight := MainFrm.Cam1.FrameHeight ;
+    FrameWidth := MainFrm.Cam1.FrameWidth;
+    FrameHeight := MainFrm.Cam1.FrameHeight  div NumFramesPerCCD ;
     NumPixelsPerFrame := FrameWidth*FrameHeight ;
 
     // Number of excitation wavelengths in use
     // (Each displayed as a separate image)
-    if MainFrm.EXCSingleWaveLength then
-       NumFrameTypes := 1
+    // When split CCD selected, no. of frames is doubled
+    if MainFrm.EXCSingleWaveLength then NumFrameTypes := 1
     else NumFrameTypes := Max(MainFrm.EXCNumWavelengths[MainFrm.EXCSequenceNum],1) ;
+    NumFrameTypes := NumFrameTypes*NumFramesPerCCD ;
 
      // Dispose of existing display buffers and create new ones
      for i := 0 to High(PDisplayBufs) do if PDisplayBufs[i] <> Nil then begin
@@ -1351,28 +1399,14 @@ begin
 
      // Create display labels for each frame
      if MainFrm.EXCSingleWaveLength then begin
-         if MainFrm.EXCWavelengths[MainFrm.EXCSingleWavelengthNum].Width >= 0.0 then begin
-            FrameTypes[0] := format('%d (%d)',
-                          [MainFrm.EXCWavelengths[MainFrm.EXCSingleWavelengthNum].Centre,
-                           MainFrm.EXCWavelengths[MainFrm.EXCSingleWavelengthNum].Width]) ;
-            end
-         else begin
-            FrameTypes[0] := format('%dL',
-                          [MainFrm.EXCWavelengths[MainFrm.EXCSingleWavelengthNum].Centre]) ;
-            end ;
+         for i := 0 to NumFrameTypes-1 do begin
+             FrameTypes[i] := CCDName[i mod NumFramesPerCCD] + ' ' + cbWavelength.Items[MainFrm.EXCSingleWavelengthNum] ;
+             end ;
          end
      else begin
          for i := 0 to NumFrameTypes-1 do begin
-             WVNum := MainFrm.EXCSequence[i,MainFrm.EXCSequenceNum].WavelengthNum ;
-             if MainFrm.EXCWavelengths[WVNum].Width >= 0.0 then begin
-                FrameTypes[i] := format('%d (%d)',
-                                 [MainFrm.EXCWavelengths[WVNum].Centre,
-                                  MainFrm.EXCWavelengths[WVNum].Width] ) ;
-                end
-             else begin
-                FrameTypes[i] := format('%dL',
-                                 [MainFrm.EXCWavelengths[WVNum].Centre] ) ;
-                end ;
+             WVNum := MainFrm.EXCSequence[i div NumFramesPerCCD,MainFrm.EXCSequenceNum].WavelengthNum ;
+             FrameTypes[i] := CCDName[i mod NumFramesPerCCD] + ' ' + cbWavelength.Items[WvNum] ;
              end ;
          end ;
 
@@ -1391,8 +1425,7 @@ begin
      case MainFrm.CameraType of
         RS_PVCAM_PENTAMAX : Begin
           // Pentamax has limited buffer size
-          NumFramesInBuffer :=  (4194304 div
-                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
+          NumFramesInBuffer :=  (4194304 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
           NumFramesInBuffer := Min( NumFramesInBuffer, 36) ;
           end ;
 
@@ -1401,22 +1434,20 @@ begin
           end ;
 
         Andor : begin
-           NumFramesInBuffer :=  (20000000 div
-                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
+           NumFramesInBuffer :=  (20000000 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
            end ;
 
         AndorSDK3 : begin
            NumFramesInBuffer := Round(5.0/edFrameInterval.Value) ;
            NumFramesInBuffer := Min( NumFramesInBuffer,
-                                     MaxBufferSize div (Int64(NumPixelsPerFrame)*Int64(MainFrm.Cam1.NumBytesPerPixel)));
+                                     MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
            NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
            NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
 
            end ;
 
         RS_PVCAM : begin
-           NumFramesInBuffer :=  (20000000 div
-                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
+           NumFramesInBuffer :=  (20000000 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
            end ;
 
         DCAM : begin
@@ -1428,25 +1459,23 @@ begin
 
            NumFramesInBuffer := Round(5.0/edFrameInterval.Value) ;
            NumFramesInBuffer := Min( NumFramesInBuffer,
-                                     MaxBufferSize div (Int64(NumPixelsPerFrame)*Int64(MainFrm.Cam1.NumBytesPerPixel)));
+                                     MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
            NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
            NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
 
            end ;
 
         IMAQ : begin
-           NumFramesInBuffer :=  (20000000 div
-                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
+           NumFramesInBuffer :=  (20000000 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
            end ;
 
         IMAQDX : begin
 //           NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
            NumFramesInBuffer := Round(5.0/edFrameInterval.Value) ;
            NumFramesInBuffer := Min( NumFramesInBuffer,
-                                     MaxBufferSize div (Int64(NumPixelsPerFrame)*Int64(MainFrm.Cam1.NumBytesPerPixel)));
+                                     MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
            NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
            NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
-
            end ;
 
         DTOL : begin
@@ -1466,19 +1495,21 @@ begin
      NumFramesInBuffer := Min( NumFramesInBuffer, Round(8.0/MainFrm.Cam1.FrameInterval) ) ;
      // Ensure buffer is divisible by 2
      NumFramesInBuffer := NumFramesInBuffer - (NumFramesInBuffer mod 2) ;
-     // Set camere buffer
+
+     // Set camera buffer
      MainFrm.Cam1.NumFramesInBuffer := NumFramesInBuffer ;
-     NumFramesInBuffer :=  MainFrm.Cam1.NumFramesInBuffer ;
+     NumFramesInBuffer := MainFrm.Cam1.NumFramesInBuffer*NumFramesPerCCD ;
 
      FirstFrameInLowerBuffer := 0 ;
      LastFrameInLowerBuffer := (NumFramesInBuffer div 2) - 1 ;
      FirstFrameInUpperBuffer := LastFrameInLowerBuffer + 1 ;
      LastFrameInUpperBuffer := NumFramesInBuffer  - 1 ;
 
-     NumPixelsPerFrame := MainFrm.Cam1.FrameWidth*MainFrm.Cam1.FrameHeight ;
+//     NumPixelsPerFrame := MainFrm.Cam1.FrameWidth*MainFrm.Cam1.FrameHeight ;
      NumBytesPerFrame := NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel ;
      NumBytesPerHalfFrameBuffer := (NumFramesInBuffer div 2)*MainFrm.Cam1.NumBytesPerPixel*NumPixelsPerFrame ;
 
+     //MainFrm.Cam1.FrameRight := MainFrm.Cam1.FrameRight ;
      MainFrm.Cam1.GetFrameBufferPointer( PFrameBuf ) ;
 
      // Set byte/word image flag
@@ -1499,8 +1530,8 @@ begin
      edBinFactor.Value := MainFrm.Cam1.BinFactor ;
 
      // Pixel intensity readout cursor
-     ROIs[0].X := Min(Max(ROIs[0].X,0),MainFrm.Cam1.FrameWidth-1) ;
-     ROIs[0].Y := Min(Max(ROIs[0].Y,0),MainFrm.Cam1.FrameHeight-1) ;
+     ROIs[0].X := Min(Max(ROIs[0].X,0),FrameWidth-1) ;
+     ROIs[0].Y := Min(Max(ROIs[0].Y,0),FrameHeight-1) ;
 
      end ;
 
@@ -1571,9 +1602,9 @@ begin
                              - ((ImageRows+1)*MarginPixels),2) ;
 
      BitMaps[0].Width := Max(Min( ImageAreaWidth div ImageColumns,
-                                  Round(MainFrm.Cam1.FrameWidth*DisplayZoom)),2) ;
+                                  Round(FrameWidth*DisplayZoom)),2) ;
      BitMaps[0].Height := Max(Min( ImageAreaHeight div ImageRows,
-                                   Round(MainFrm.Cam1.FrameHeight*DisplayZoom)),2) ;
+                                   Round(FrameHeight*DisplayZoom)),2) ;
 
      RightEdge := 0 ;
      BottomEdge := 0 ;
@@ -1621,8 +1652,8 @@ begin
      sbYScroll.Height := BottomEdge - sbYScroll.Top ;
 
      // Image scroll bar range
-     sbXScroll.Max := Max(MainFrm.Cam1.FrameWidth - Round(Images[0].Width/DisplayZoom),1);
-     sbYScroll.Max := Max(MainFrm.Cam1.FrameHeight - Round(Images[0].Height/DisplayZoom),1);
+     sbXScroll.Max := Max(FrameWidth - Round(Images[0].Width/DisplayZoom),1);
+     sbYScroll.Max := Max(FrameHeight - Round(Images[0].Height/DisplayZoom),1);
 
      CaptureRegion.Left := 0 ;
      CaptureRegion.Right := BitMaps[0].Width - 1 ;
@@ -1666,6 +1697,7 @@ begin
 
      for i := StartAt to EndAt do begin
          iFlag := i*NumPixelsPerFrame ;
+         outputdebugstring(pchar(format('%d/%d',[i,endat])));
          if ByteImage then begin
             PByteArray(PFrameBuf)^[iFlag] := ByteLoValue ;
             PByteArray(PFrameBuf)^[iFlag+1] := ByteHiValue ;
@@ -1703,7 +1735,7 @@ var
 begin
 
     // Default frame type cycle (if no light source)
-    FrameTypeCycleLength := 1 ;
+    FrameTypeCycleLength := NumFramesPerCCD ;
     for i := 0 to FrameTypeCycleLength-1 do FrameTypeCycle[i] := i ;
     FrameTypeCycleCounter := 0 ;
 
@@ -1856,11 +1888,15 @@ begin
          for i := 0 to NumDACPointsPerCycle-1 do DigBufs[Device]^[i] := LabIO.DigOutState[Device] ;
          end ;
 
-     // Create camera exposure start pulse waveform
-     UpdateCameraStartWaveform ;
-
      // Update excitation light source wavelength
      UpdateLightSource ;
+
+     // Create camera exposure start pulse waveform
+     // (Must come after UpdateLightSource since it now uses FractionalExposure defined in UpdateLightSource)
+     UpdateCameraStartWaveform ;
+
+     // Update emission filters
+     UpdateEMFilter ;
 
      // Update light source shutter
      UpdateLightSourceShutter ;
@@ -1996,7 +2032,7 @@ var
      NumCamTriggerOffsetIntervals : Integer ;
      DACChannel : Integer ;
      NumDACChannels : Integer ;
-     i,j : Integer ;
+     i,j,k,iStart,iEnd,iWavelength,ShortenBy : Integer ;
 begin
 
      // Exit if no output channelconfigured
@@ -2053,11 +2089,39 @@ begin
             j := j + NumDACChannels ;
             end ;
 
-        j := NumCamTriggerOffsetIntervals*NumDACChannels + DACChannel ;
-        for i := 0 to NumFramesPerCycle-1 do begin
-            DACBufs[Device]^[j] := OnState ;
-            j := j + NumDACPointsPerFrame*NumDACChannels ;
-            end ;
+        if not MainFrm.BulbExposureMode then begin
+           // Exposure start mode: DACUpdateInterval pulse triggers start of exposure
+           j := NumCamTriggerOffsetIntervals*NumDACChannels + DACChannel ;
+           for i := 0 to NumFramesPerCycle-1 do begin
+               DACBufs[Device]^[j] := OnState ;
+               j := j + NumDACPointsPerFrame*NumDACChannels ;
+               end ;
+           end
+        else begin
+           // Bulb mode: Pulse duration defines exposure time
+           iStart := Round(MainFrm.CameraTriggerOffset/DACUpdateInterval) ;
+           iStart := Max( Min(iStart,NumDACPointsPerFrame-1),0);
+           iWavelength := 0 ;
+           for i := 0 to NumFramesPerCycle-1 do begin
+               // Shorten exposure time to 90% of frame interval
+               ShortenBy := Max(Round(0.1*NumDACPointsPerFrame),1) ;
+               // Additional reduction in exposure
+               ShortenBy := Max(ShortenBy,Round(MainFrm.Cam1.ShortenExposureBy/DACUpdateInterval)) ;
+               // Reduce exposure time to fraction request for selected wavelength
+               ShortenBy := Max(ShortenBy,Round(1.0-FractionalExposure[iWavelength]/DACUpdateInterval)) ;
+               iEnd := iStart + Max(NumDACPointsPerFrame - ShortenBy,iStart) ;
+               k := (i*NumDACPointsPerFrame + iStart)*NumDACChannels ;
+               for j := iStart to iEnd do begin
+                  DACBufs[Device]^[k] := OnState ;
+                  k := k + NumDACChannels ;
+                  end;
+
+               // Next frame type
+               Inc(iWaveLength) ;
+               if iWaveLength = NumFramesPerWavelengthCycle then iWaveLength := 0 ;
+
+               end ;
+           end ;
 
         // Set off-state value for this channel
         LabIO.DACOutState[Device][DACChannel] := OffState/LabIO.DACScale[Device] ;
@@ -2090,14 +2154,42 @@ begin
             DIGBufs[Device]^[i] := (DIGBufs[Device]^[i] and BitMask) or OffState ;
             end ;
 
-        j := NumCamTriggerOffsetIntervals ;
-        for i := 0 to NumFramesPerCycle-1 do begin
-            if j < NumDacPointsPerCycle then begin
-               DIGBufs[Device]^[j] := (DIGBufs[Device]^[j] and BitMask) or OnState ;
+        if not MainFrm.BulbExposureMode then begin
+           // Exposure start mode: DACUpdateInterval pulse triggers start of exposure
+           j := NumCamTriggerOffsetIntervals ;
+           for i := 0 to NumFramesPerCycle-1 do begin
+               if j < NumDacPointsPerCycle then begin
+                  DIGBufs[Device]^[j] := (DIGBufs[Device]^[j] and BitMask) or OnState ;
+                  end ;
+               j := j + NumDACPointsPerFrame ;
                end ;
-            j := j + NumDACPointsPerFrame ;
-            end ;
+            end
+        else begin
+           // Bulb mode: Pulse duration defines exposure time
+           iStart := Round(MainFrm.CameraTriggerOffset/DACUpdateInterval) ;
+           iStart := Max( Min(iStart,NumDACPointsPerFrame-1),0);
+           iWavelength := 0 ;
+           for i := 0 to NumFramesPerCycle-1 do begin
+               // Shorten exposure time to 90% of frame interval
+               ShortenBy := Max(Round(0.1*NumDACPointsPerFrame),1) ;
+               // Additional reduction in exposure
+               ShortenBy := Max(ShortenBy,Round(MainFrm.Cam1.ShortenExposureBy/DACUpdateInterval)) ;
+               // Reduce exposure time to fraction request for selected wavelength
+               ShortenBy := Max(ShortenBy,Round(1.0-FractionalExposure[iWavelength]/DACUpdateInterval)) ;
+               iEnd := iStart + Max(NumDACPointsPerFrame - ShortenBy,iStart) ;
+               k := (i*NumDACPointsPerFrame + iStart) ;
+               for j := iStart to iEnd do begin
+                  DIGBufs[Device]^[j] := (DIGBufs[Device]^[j] and BitMask) or OnState ;
+                  k := k + 1 ;
+                  end;
 
+               // Next frame type
+               Inc(iWaveLength) ;
+               if iWaveLength = NumFramesPerWavelengthCycle then iWaveLength := 0 ;
+
+               end ;
+
+            end;
         // Set off-state value for this channel
         LabIO.DigOutState[Device] := (LabIO.DigOutState[Device] and BitMask) or OffState ;
         end ;
@@ -2116,7 +2208,7 @@ var
 begin
 
      // Default frame type cycle (if no light source)
-     FrameTypeCycleLength := 1 ;
+     FrameTypeCycleLength := NumFramesPerCCD ;
 
      for i := 0 to FrameTypeCycleLength-1 do FrameTypeCycle[i] := i ;
      FrameTypeCycleCounter := 0 ;
@@ -2133,9 +2225,11 @@ begin
          FilterNums[0] := MainFrm.EXCSingleWavelengthNum ;
          Wavelengths[0] :=MainFrm.EXCWavelengths[MainFrm.EXCSingleWavelengthNum].Centre ;
          Bandwidths[0] :=  MainFrm.EXCWavelengths[MainFrm.EXCSingleWavelengthNum].Width ;
+         FractionalExposure[0] :=  MainFrm.EXCWavelengths[MainFrm.EXCSingleWavelengthNum].FractionalExposure ;
+         EMFilters[0] :=  MainFrm.EXCWavelengths[MainFrm.EXCSingleWavelengthNum].EMFilter ;
          NumFramesPerWavelengthCycle := 1 ;
-         FrameTypeCycle[0] := 0 ;
-         FrameTypeCycleLength := 1 ;
+         FrameTypeCycleLength := NumFramesPerCCD ;
+         for i := 0 to FrameTypeCycleLength-1 do FrameTypeCycle[i] := i ;
          FrameTypeCycleCounter := 0 ;
          end
      else if rbSpectrum.Checked then begin
@@ -2149,13 +2243,15 @@ begin
             FilterNums[NumFramesPerWavelengthCycle] :=
                   MainFrm.EXCSequence[NumFramesPerWavelengthCycle,MainFrm.EXCSequenceNum].WavelengthNum ;
             Wavelengths[NumFramesPerWavelengthCycle] := W ;
-            Bandwidths[NumFramesPerWavelengthCycle] :=  MainFrm.EXCSpectrumBandwidth ;
+            Bandwidths[NumFramesPerWavelengthCycle] := MainFrm.EXCSpectrumBandwidth ;
+            FractionalExposure[NumFramesPerWavelengthCycle] :=  1.0 ;
+            EMFilters[NumFramesPerWavelengthCycle] := MainFrm.EXCSpectrumEMFilter ;
             Inc(NumFramesPerWavelengthCycle) ;
             W := W + MainFrm.EXCSpectrumStepSize ;
             until (NumFramesPerWavelengthCycle >= NumFramesPerSpectrum) ;
 
-         FrameTypeCycle[0] := 0 ;
-         FrameTypeCycleLength := 1 ;
+         FrameTypeCycleLength := NumFramesPerCCD ;
+         for i := 0 to FrameTypeCycleLength-1 do FrameTypeCycle[i] := i ;
          FrameTypeCycleCounter := 0 ;
          end
      else begin
@@ -2179,6 +2275,8 @@ begin
              FrameTypeCycle[NumFramesPerWavelengthCycle] := i ;
              Wavelengths[NumFramesPerWavelengthCycle] := MainFrm.EXCWavelengths[WVNum].Centre ;
              Bandwidths[NumFramesPerWavelengthCycle] :=  MainFrm.EXCWavelengths[WVNum].Width ;
+             FractionalExposure[NumFramesPerWavelengthCycle] :=  MainFrm.EXCWavelengths[WVNum].FractionalExposure ;
+             EMFilters[NumFramesPerWavelengthCycle] := MainFrm.EXCWavelengths[WVNum].EMFilter ;
              Inc(NumFramesPerWavelengthCycle) ;
              end ;
 
@@ -2191,6 +2289,8 @@ begin
                  FrameTypeCycle[NumFramesPerWavelengthCycle] := i ;
                  Wavelengths[NumFramesPerWavelengthCycle] := MainFrm.EXCWavelengths[WVNum].Centre ;
                  Bandwidths[NumFramesPerWavelengthCycle] :=  MainFrm.EXCWavelengths[WVNum].Width ;
+                 FractionalExposure[NumFramesPerWavelengthCycle] :=  MainFrm.EXCWavelengths[WVNum].FractionalExposure ;
+                 EMFilters[NumFramesPerWavelengthCycle] :=  MainFrm.EXCWavelengths[WVNum].EMFilter ;
                  Inc(NumFramesPerWavelengthCycle) ;
                  end ;
              Inc(ActualDivideFactor) ;
@@ -2200,7 +2300,9 @@ begin
             end ;
 
          MainFrm.EXCSequence[0,MainFrm.EXCSequenceNum].DivideFactor := ActualDivideFactor ;
-         FrameTypeCycleLength := NumFramesPerWavelengthCycle ;
+         for i := 0 to NumFramesPerWavelengthCycle*NumFramesPerCCD-1 do FrameTypeCycle[i] := i ;
+
+         FrameTypeCycleLength := NumFramesPerWavelengthCycle*NumFramesPerCCD ; ;
          FrameTypeCycleCounter := 0 ;
          end ;
 
@@ -2494,6 +2596,81 @@ begin
          end ;
      BitMask := not BitMask ;
      LabIO.DigOutState[VControl[0].Device] := (LabIO.DigOutState[VControl[0].Device] and BitMask) or BitWord ;
+
+     end ;
+
+
+procedure TRecordFrm.UpdateEMFilter ;
+// ------------------------
+// Update emission filter
+// ------------------------
+var
+     Device : Integer ;
+     iFrame : Integer ;
+     i,j,iBit : Integer ;
+     NumPointsPerCycle : Integer ;
+     Bit : Word ;
+     BitWord  : Word ;
+     BitMask  : Word ;
+     iStartBit,iEndBit  : Word ;
+     EMFilterBits : Integer ;
+     PDigBuf : PBig32bitArray ;
+     iWavelength : Integer ;
+begin
+
+     if not MainFrm.IOResourceAvailable(MainFrm.IOConfig.EMFilterStart) then Exit ;
+     if not MainFrm.IOResourceAvailable(MainFrm.IOConfig.EMFilterEnd) then Exit ;
+
+     // D/A output device
+     Device :=  LabIO.Resource[MainFrm.IOConfig.EMFilterStart].Device ;
+     if Device <= 0 then Exit ;
+     Device :=  LabIO.Resource[MainFrm.IOConfig.EMFilterEnd].Device ;
+     if Device <= 0 then Exit ;
+     if DigBufs[Device] = Nil Then Exit ;
+
+     PDigBuf := DigBufs[Device] ;      // Digital O/P buffer
+     DeviceDIGsInUse[Device] := True ;
+     NumPointsPerCycle := NumDACPointsPerFrame*NumFramesPerCycle ;
+
+     if (NumDACPointsPerCycle mod NumDACPointsPerFrame) <> 0 then
+        ShowMessage( 'Cycle period is not a multiple of frame duration') ;
+
+     iStartBit := LabIO.Resource[MainFrm.IOConfig.EmFilterStart].StartChannel ;
+     iEndBit := LabIO.Resource[MainFrm.IOConfig.EmFilterEnd].EndChannel ;
+
+     // Create bit mask for EMFilter control line bits
+     BitMask := 0 ;
+     for iBit := iStartBit to iEndBit do begin
+         Bit := LabIO.BitMask(iBit) ;
+         BitMask := BitMask or Bit ;
+         end ;
+     BitMask := not BitMask ;
+
+     // Update filter bits in digital output buffer
+
+     iWaveLength := 0 ;
+     for iFrame := 0 to NumFramesPerCycle-1 do begin
+
+         EMFilterBits := EMFilters[iWaveLength] shl iStartBit ;
+
+         // Start of frame in cycle buffer
+         j := iFrame*NumDACPointsPerFrame - Max(Round(LightSource.EMFilterChangeTime/DACUpdateInterval),0) ;
+         if j < 0 then j := j + NumPointsPerCycle ;
+         for i := 1 to NumDACPointsPerFrame do begin
+             pDigBuf^[j] := (pDigBuf^[j] and BitMask) or EMFilterBits ;
+             Inc(j) ;
+             if j >= NumPointsPerCycle then j := 0 ;
+             end ;
+
+         // Next frame type
+         Inc(iWaveLength) ;
+         if iWaveLength = NumFramesPerWavelengthCycle then iWaveLength := 0 ;
+
+         end ;
+
+     // Set off-state value for this channel (first filter setting)
+     EMFilterBits := EMFilters[0] shl iStartBit ;
+     LabIO.DigOutState[Device] := (LabIO.DigOutState[Device] and BitMask) or EMFilterBits ;
 
      end ;
 
@@ -2960,19 +3137,19 @@ begin
      // Erase display and initialise live display counters
      // --------------------------------------------------
      if RecPlotFrm.ADCDisplayFull then begin
-        RecPlotFrm.ADCInitialiseDisplay( @ADCBuf,
+        RecPlotFrm.ADCInitialiseDisplay( ADCBuf,
                                          LabIO.ADCMaxValue[Device],
                                          DACUpdateInterval
                                          ) ;
         end ;
 
      // Load latest A/D samples into ADCBuf
-     LabIO.GetADCSamples( ADCDevice, ADCBuf ) ;
+     LabIO.GetADCSamples( ADCDevice, ADCBuf^ ) ;
 
      // Find latest A/D samples
      nCount := 0 ;
-     While ((ADCBuf[ADCEmptyPointer] <> EmptyFlag) or
-            (ADCBuf[ADCEmptyPointer+1] <> -EmptyFlag)) and
+     While ((ADCBuf^[ADCEmptyPointer] <> EmptyFlag) or
+            (ADCBuf^[ADCEmptyPointer+1] <> -EmptyFlag)) and
            (nCount < ADCNumSamplesInWriteBuffer) do begin
            ADCEmptyPointer := ADCEmptyPointer + MainFrm.ADCNumChannels*2 ;
            if ADCEmptyPointer >= ADCNumSamplesInBuffer then
@@ -3015,16 +3192,16 @@ begin
         if RecordingMode <= rmStopADCRecording then begin
            FileSeek( MainFrm.IDRFile.EDRFileHandle,EDRFilePointer,0) ;
            NumBytesWritten := FileWrite( MainFrm.IDRFile.EDRFileHandle,
-                                         ADCBuf[BufStart],
+                                         ADCBuf^[BufStart],
                                          ADCNumSamplesInWriteBuffer*2 ) ;
            EDRFilePointer := EDRFilePointer +  Int64(NumBytesWritten) ;
            end ;
         // Re-fill buffer with empty flag
         i := BufStart ;
         while i < BufStart+ADCNumSamplesInWriteBuffer do begin
-          ADCBuf[i] := EmptyFlag ;
+          ADCBuf^[i] := EmptyFlag ;
           Inc(i) ;
-          ADCBuf[i] := -EmptyFlag ;
+          ADCBuf^[i] := -EmptyFlag ;
           Inc(i) ;
           end ;
 
@@ -3123,8 +3300,8 @@ begin
        if not MainFrm.IDRFile.Open then bRecord.Enabled := False
        else if MainFrm.IDRFile.NumFrames > 0 then begin
           // Frame sizes differ
-          if (MainFrm.IDRFile.FrameWidth <> MainFrm.Cam1.FrameWidth) or
-             (MainFrm.IDRFile.FrameHeight <> MainFrm.Cam1.FrameHeight) or
+          if (MainFrm.IDRFile.FrameWidth <> FrameWidth) or
+             (MainFrm.IDRFile.FrameHeight <> FrameHeight) or
              ((MainFrm.IDRFile.NumFrameTypes <> NumFrameTypes) and not MainFrm.IDRFile.SpectralDataFile)
              then  bRecord.Enabled := False ;
 
@@ -3152,6 +3329,8 @@ begin
        (FrameRateCounter >= StartIllumination) then begin
        BurstIlluminationOn := True ;
        UpdateLightSource ;
+       // Update emission filters
+       UpdateEMFilter ;
        end ;
 
      // Update D/A output buffer
@@ -3221,7 +3400,7 @@ begin
 
               // Most recent available frames (indexed by type)
               LatestFrames[FrameType] := FrameNum  ;
-              LatestFramesDisplayed[FrameType] := False  ;
+//              LatestFramesDisplayed[FrameType] := False  ;
 
               // Increment frame pointer
               Inc(FrameNum) ;
@@ -3259,7 +3438,7 @@ begin
                                  [FrameRate,
                                   FrameNum+1,
                                   NumFramesInBuffer,
-                                  Round(Ceil(FrameRate*FrameInterval*100.0))
+                                  Round(Ceil(FrameRate*FrameInterval*100.0/NumFramesPerCCD))
                                   ]) ;
 
            if RecordingMode = rmRecordingInProgress then begin
@@ -3299,20 +3478,21 @@ begin
            // Display frame
            if (cbRecordingMode.ItemIndex = rmContinuous) or
               (RecordingMode <> rmRecordingInProgress) then begin
-              if not LatestFramesDisplayed[FrameTypeToBeDisplayed] then begin
+              if LatestFrames[FrameTypeToBeDisplayed] > 0 then begin
                  DisplayImage( LatestFrames[FrameTypeToBeDisplayed]*NumPixelsPerFrame,
                                FrameTypeToBeDisplayed,
                                MainFrm.LUTs[FrameTypeToBeDisplayed*LUTSize],
                                BitMaps[FrameTypeToBeDisplayed],
                                Images[FrameTypeToBeDisplayed] ) ;
-                 //outputdebugstring(pchar(format('%d',[LatestFrames[FrameTypeToBeDisplayed]])));
-                 //FrameDisplayed[LatestFrames[FrameTypeToBeDisplayed]] := LatestFrames[FrameTypeToBeDisplayed] ;
-                 LatestFramesDisplayed[FrameTypeToBeDisplayed] := True ;
+                 LatestFrames[FrameTypeToBeDisplayed] := -1 ;
+//                 LatestFramesDisplayed[FrameTypeToBeDisplayed] := True ;
+                 Inc(FrameTypeToBeDisplayed) ;
+                 Dec(OptimiseContrastCount) ;
+                 if FrameTypeToBeDisplayed >= NumFrameTypes then FrameTypeToBeDisplayed := 0 ;
                  end ;
 
               // Select next frame type to display
-              Inc(FrameTypeToBeDisplayed) ;
-              if FrameTypeToBeDisplayed >= NumFrameTypes then FrameTypeToBeDisplayed := 0 ;
+
 
               RecPlotFrm.FLUpdateDisplay( rbSpectrum.Checked ) ;
 
@@ -3354,7 +3534,7 @@ begin
                                                   @PByteArray(PFrameBuf)[iStart]) ;
                  NumFramesDone :=  NumFramesDone + NumFramesToSave ;
                  if NumFramesDone >= NumFramesRequired then RecordingMode := rmStopFrameRecording ;
-                 //outputdebugstring(pchar(format('MainFrm.IDRFile.NumFrames=%d',[MainFrm.IDRFile.NumFrames])));
+                 outputdebugstring(pchar(format('istart=%d,NumBytesPerFrame=%d',[istart,NumBytesPerFrame])));
                  end
               else begin
 
@@ -3390,9 +3570,9 @@ begin
                        IDRFileBurst.FrameInterval := MainFrm.Cam1.FrameInterval ;
                        NumBurstFramesDone := 0 ;
                        NumBurstFramesRequired := Max( Round(edBurstDuration.Value/MainFrm.Cam1.FrameInterval),
-                                                      NumFrameTypes) ;
+                                                      NumFrameTypes)*NumFramesPerCCD ; ;
                        StartBurstAtFrame := StartBurstAtFrame +
-                                            Max( Round(edBurstInterval.Value/MainFrm.Cam1.FrameInterval),
+                                            Max( Round(edBurstInterval.Value/MainFrm.Cam1.FrameInterval)*NumFramesPerCCD,
                                                  NumFramesInHalfBuffer ) ;
 
                        IDRFileBurst.Ident := MainFrm.IDRFile.Ident +
@@ -3400,6 +3580,8 @@ begin
                        LogFrm.AddLine( MainFrm.IDRFile.Ident + BurstFileName ) ;
                        BurstIlluminationOn := False ;
                        UpdateLightSource ;
+                       // Update emission filters
+                       UpdateEMFilter ;
                        end ;
 
                     end ;
@@ -3466,14 +3648,10 @@ begin
 
            end ;
 
-        if ckAutoOptimise.Checked then begin
-           if FrameRateCounter >= OptimiseContrastAtFrameNum then OptimiseContrastNeeded := True ;
-           end ;
-
         // Optimise contrast if required
-        if OptimiseContrastNeeded and (FrameRateCounter > 2*NumFrameTypes) then begin
+        if OptimiseContrastCount = 0 then begin
            bMaxContrast.Click ;
-           OptimiseContrastAtFrameNum := FrameRateCounter + OptimiseContrastInterval ;
+           if ckAutoOptimise.Checked then OptimiseContrastCount := Max(Round(2.0/FrameInterval),NumFrameTypes) ;
            end ;
 
         if (RecordingMode = rmRecordingInProgress) and
@@ -3545,8 +3723,8 @@ begin
      iX0 := Max(ROIs[RecPlotFrm.SelectedROI].X - ROISize div 2,0) ;
      iX1 := Min(iX0 + ROISize - 1,MainFrm.Cam1.FrameWidth-1) ;
      iY0 := Max(ROIs[RecPlotFrm.SelectedROI].Y - ROISize div 2,0) ;
-     iY1 := Min(iY0 + ROISize - 1,MainFrm.Cam1.FrameHeight-1) ;
-     iStart := (FrameNum*NumPixelsPerFrame) + iY0*MainFrm.Cam1.FrameWidth + iX0 ;
+     iY1 := Min(iY0 + ROISize - 1,FrameHeight-1) ;
+     iStart := (FrameNum*NumPixelsPerFrame) + iY0*FrameWidth + iX0 ;
 
      // Average ROI
      Sum := 0.0 ;
@@ -3569,8 +3747,8 @@ begin
         iX0 := Max(ROIs[RecPlotFrm.SelectedSubROI].X - ROISize div 2,0) ;
         iX1 := Min(iX0 + ROISize - 1,MainFrm.Cam1.FrameWidth-1) ;
         iY0 := Max(ROIs[RecPlotFrm.SelectedSubROI].Y - ROISize div 2,0) ;
-        iY1 := Min(iY0 + ROISize - 1,MainFrm.Cam1.FrameHeight-1) ;
-        iStart := (FrameNum*NumPixelsPerFrame) + iY0*MainFrm.Cam1.FrameWidth + iX0 ;
+        iY1 := Min(iY0 + ROISize - 1,FrameHeight-1) ;
+        iStart := (FrameNum*NumPixelsPerFrame) + iY0*FrameWidth + iX0 ;
 
         Sum := 0.0 ;
         nAvg := 0 ;
@@ -3650,8 +3828,8 @@ begin
        // X1 and above display zoom factors
        // ------------------------------
        Ybm := 0 ;
-       StartOfLine := (sbYScroll.Position*MainFrm.Cam1.FrameWidth) + sbXScroll.Position ;
-       for Yim := sbYScroll.Position to MainFrm.Cam1.FrameHeight-1 do begin
+       StartOfLine := (sbYScroll.Position*FrameWidth) + sbXScroll.Position ;
+       for Yim := sbYScroll.Position to FrameHeight-1 do begin
 
            // Create line
            PScanLine := BitMap.ScanLine[Ybm] ;
@@ -3693,7 +3871,7 @@ begin
        Ybm := 0 ;
        Yim := sbYScroll.Position ;
        iStep := Round(1.0/DisplayZoom) ;
-       while (Ybm < BitMap.Height) and (Yim < MainFrm.Cam1.FrameHeight) do begin
+       while (Ybm < BitMap.Height) and (Yim < FrameHeight) do begin
 
           // Get scan line array pointer
           PScanLine := BitMap.ScanLine[Ybm] ;
@@ -3786,7 +3964,7 @@ begin
        Ybm := 0 ;
        StartOfLine := (sbYScroll.Position*MainFrm.Cam1.FrameWidth)
                       + sbXScroll.Position ;
-       for Yim := sbYScroll.Position to MainFrm.Cam1.FrameHeight-1 do begin
+       for Yim := sbYScroll.Position to FrameHeight-1 do begin
 
            // Create line
            PScanLine := BitMap.ScanLine[Ybm] ;
@@ -3828,7 +4006,7 @@ begin
        Ybm := 0 ;
        Yim := sbYScroll.Position ;
        iStep := Round(1.0/DisplayZoom) ;
-       while (Ybm < BitMap.Height) and (Yim < MainFrm.Cam1.FrameHeight) do begin
+       while (Ybm < BitMap.Height) and (Yim < FrameHeight) do begin
 
           // Get scan line array pointer
           PScanLine := BitMap.ScanLine[Ybm] ;
@@ -4004,7 +4182,7 @@ begin
 
     if PDisplayBufs[FrameType] = Nil then Exit ;
 
-    NumPixels := (MainFrm.Cam1.FrameHeight*MainFrm.Cam1.FrameWidth - 4) ;
+    NumPixels := (FrameHeight*FrameWidth - 4) ;
     iStep := Max(NumPixels div PixelSampleSize,1) ;
     if NumPixels < 2 then Exit ;
 
@@ -4149,8 +4327,8 @@ begin
 
      // Recording not allowed if data contains frames of a different size
      if MainFrm.IDRFile.NumFrames > 0 then begin
-        if (MainFrm.IDRFile.FrameWidth <> MainFrm.Cam1.FrameWidth) and
-           (MainFrm.IDRFile.FrameHeight <> MainFrm.Cam1.FrameHeight) then begin
+        if (MainFrm.IDRFile.FrameWidth <> FrameWidth) and
+           (MainFrm.IDRFile.FrameHeight <> FrameHeight) then begin
            MainFrm.StatusBar.SimpleText :=
            ' Record : Unable to record! Camera frame size does not match existing frames in file! ' ;
            Exit ;
@@ -4168,8 +4346,8 @@ begin
      if not MainFrm.IDRFile.WriteEnabled then MainFrm.IDRFile.WriteEnabled := True ;
 
      // Set dimensions of frame stored in file
-     MainFrm.IDRFile.FrameWidth := MainFrm.Cam1.FrameWidth ;
-     MainFrm.IDRFile.FrameHeight := MainFrm.Cam1.FrameHeight ;
+     MainFrm.IDRFile.FrameWidth := FrameWidth ;
+     MainFrm.IDRFile.FrameHeight := FrameHeight ;
      if ckZStackEnabled.Checked and ZStageGrp.Visible then begin
         MainFrm.IDRFile.NumZSections := Round(edZNumSteps.Value) ;
         MainFrm.IDRFile.ZStart := edZStartPos.Value ;
@@ -4214,9 +4392,10 @@ begin
      LowerBufferFilling := True ;
 
      // Set dimensions of frame stored in file
-     MainFrm.IDRFile.FrameWidth := MainFrm.Cam1.FrameWidth ;
-     MainFrm.IDRFile.FrameHeight := MainFrm.Cam1.FrameHeight ;
+     MainFrm.IDRFile.FrameWidth := FrameWidth ;
+     MainFrm.IDRFile.FrameHeight := FrameHeight ;
      MainFrm.IDRFile.PixelDepth := MainFrm.Cam1.PixelDepth ;
+
 
      // Set size of internal asynchronous write buffer
      MainFrm.IDRFile.AsyncWriteBufSize := NumBytesPerHalfFrameBuffer ;
@@ -4270,7 +4449,7 @@ begin
      // Setup for continuous or time lapse recording
      if cbRecordingMode.ItemIndex = rmContinuous then begin
         // ** Continuous recording mode
-        MainFrm.IDRFile.FrameInterval := MainFrm.Cam1.FrameInterval ;
+        MainFrm.IDRFile.FrameInterval := MainFrm.Cam1.FrameInterval / Max(NumFramesPerCCD,1) ;
         TimeLapseMode := False ;
         LogFrm.AddLine( format(
         'Continuous recording started at frame %d (%d frames@%.4gs intervals, %.4gs)',
@@ -4318,11 +4497,11 @@ begin
            BurstFileName := ANSIReplaceText(
                             MainFrm.IDRFile.FileName,'.idr',format('.%d.idr',[BurstCounter])) ;
            IDRFileBurst.CreateFileFrom( BurstFileName,MainFrm.IDRFile,False ) ;
-           IDRFileBurst.FrameInterval := MainFrm.Cam1.FrameInterval ;
+           IDRFileBurst.FrameInterval := MainFrm.Cam1.FrameInterval / Max(NumFramesPerCCD,1);
            BurstCounter := 0 ;
            NumBurstFramesDone := 0 ;
-           NumBurstFramesRequired := Max(Round(edBurstDuration.Value/MainFrm.Cam1.FrameInterval),NumFrameTypes) ;
-           StartBurstAtFrame := Max(Round(edBurstInterval.Value/MainFrm.Cam1.FrameInterval),1) ;
+           NumBurstFramesRequired := NumFramesPerCCD*Max(Round(edBurstDuration.Value/MainFrm.Cam1.FrameInterval),NumFrameTypes) ;
+           StartBurstAtFrame := NumFramesPerCCD*Max(Round(edBurstInterval.Value/MainFrm.Cam1.FrameInterval),1) ;
            IDRFileBurst.Ident := MainFrm.IDRFile.Ident +
                                  format('Burst T=%.5gs Frame=%d',[StartBurstAtFrame*IDRFileBurst.FrameInterval,StartBurstAtFrame]);
            LogFrm.AddLine( IDRFileBurst.Ident + BurstFileName ) ;
@@ -4395,8 +4574,10 @@ begin
      Result := Max( Round( edTimeLapseInterval.Value/
                            (edFrameInterval.Value*NumFrameTypes)),2)*NumFrameTypes ;
      edTimeLapseInterval.Value := edFrameInterval.Value*Result ;
+     Result := Result*NumFramesPerCCD ;
      MainFrm.IDRFile.FrameInterval := edTimeLapseInterval.Value/NumFrameTypes ;
      Mainfrm.TimeLapseInterval :=  edTimeLapseInterval.Value ;
+
      end ;
 
 
@@ -4530,15 +4711,12 @@ procedure TRecordFrm.edFrameIntervalKeyPress(Sender: TObject;
 // --------------------------------
 begin
      if key = #13 then begin
-         OptimiseContrastNeeded := True ;
+         OptimiseContrastCount := NumFrameTypes ;
          StopCamera ;
          StartCamera ;
          // Report minimum readout time
         lbReadoutTime.Caption := format('Min.= %.4g ms',
                               [SecsToMs*MainFrm.Cam1.ReadoutTime]) ;
-
-         // Set lower limit for time lapse
-         //edTimeLapseInterval.LoLimit := edFrameInterval.Value*(NumFrameTypes*4) ;
          end ;
      end;
 
@@ -4584,7 +4762,7 @@ var
 begin
 
      for FT := 0 to NumFrameTypes -1 do
-         if ckChangeAllFrameTypes.Checked or OptimiseContrastNeeded or
+         if ckChangeAllFrameTypes.Checked or (OptimiseContrastCount = 0) or
            (FT = SelectedFrameType) then begin
            CalculateMaxContrast( FT ) ;
 
@@ -4600,7 +4778,7 @@ begin
      SetDisplayIntensityRange( MainFrm.GreyLo[SelectedFrameType],
                                MainFrm.GreyHi[SelectedFrameType] ) ;
 
-     OptimiseContrastNeeded := False ;
+     OptimiseContrastCount := -1 ;
 
      end;
 
@@ -4668,6 +4846,8 @@ begin
                                     TimeLapseMode,
                                     FrameTypes,
                                     NumFrameTypes,
+                                    MainFrm.Cam1.FrameInterval/NumFramesPerCCD,
+                                    MainFrm.TimeLapseInterval,
                                     True ) ;
 
     RecPlotFrm.ClearDisplays ;
@@ -4709,6 +4889,7 @@ procedure TRecordFrm.rbEXCShutterOpenClick(Sender: TObject);
 begin
    if MainFrm.Recording then begin
       UpdateLightSource ;
+      UpdateEMFilter ;
       UpdateLightSourceShutter ;
       end
    else begin
@@ -4730,7 +4911,7 @@ begin
      bDeleteROIs.Click ;
 
      StopCamera ;
-     // Set to full frame
+
      // Set to full frame
      MainFrm.Cam1.SetCCDArea( 0,
                               0,
@@ -5078,6 +5259,7 @@ begin
 
      FreeMem( PWorkBuf ) ;
      PWorkBuf := Nil ;
+     if ADCBuf <> Nil then FreeMem(ADCBuf) ;
 
     // Free bitmaps
     for i := 0 to High(BitMaps) do if BitMaps[i] = Nil then begin
@@ -5358,6 +5540,7 @@ procedure TRecordFrm.rbEXCShutterClosedClick(Sender: TObject);
 begin
    if MainFrm.Recording then begin
       UpdateLightSource ;
+      UpdateEMFilter ;
       UpdateLightSourceShutter ;
       end
    else begin
@@ -5601,8 +5784,6 @@ begin
                                   ImageCaptureSettingsPanel.Height + 5 ;
         end ;
 
-     //ExcitationLightGrp.Top := ShadingGrp.Top + ShadingGrp.Height + 2 ;
-
      end;
 
 
@@ -5623,8 +5804,6 @@ begin
         DisplayGrp.Height := DisplaySettingsPanel.Top +
                              DisplaySettingsPanel.Height + 5 ;
         end ;
-
-     //ExcitationLightGrp.Top := ShadingGrp.Top + ShadingGrp.Height + 2 ;
 
      end;
 
@@ -5648,8 +5827,6 @@ begin
                              ShadeCorSettingsPanel.Height + 5 ;
         end ;
 
-     //ExcitationLightGrp.Top := ShadingGrp.Top + ShadingGrp.Height + 2 ;
-
      end;
 
 
@@ -5671,8 +5848,6 @@ begin
         LightStimGrp.Height := LightStimPage.Top +
                              LightStimPage.Height + 5 ;
         end ;
-
-     //ExcitationLightGrp.Top := ShadingGrp.Top + ShadingGrp.Height + 2 ;
 
      end;
 
@@ -5733,14 +5908,17 @@ procedure TRecordFrm.ResizeControlPanel ;
 begin
      ImageCaptureGrp.Top := RecordingGrp.Top + RecordingGrp.Height + 5 ;
      DisplayGrp.Top := ImageCaptureGrp.Top + ImageCaptureGrp.Height + 5 ;
-     ShadingGrp.Top := DisplayGrp.Top + DisplayGrp.Height + 5 ;
-     LightStimGrp.Top := ShadingGrp.Top + ShadingGrp.Height + 5 ;
-     MarkGrp.Top := LightStimGrp.Top + LightStimGrp.Height + 5 ;
+     //ShadingGrp.Top := DisplayGrp.Top + DisplayGrp.Height + 5 ;
+     LightStimGrp.Top := DisplayGrp.Top + DisplayGrp.Height + 5 ;
+
+//     MarkGrp.Top := LightStimGrp.Top + LightStimGrp.Height + 5 ;
      if ZStageGrp.Visible then begin
         ZStageGrp.Top := LightStimGrp.Top + LightStimGrp.Height + 5 ;
-        MarkGrp.Top := ZStageGrp.Top + ZStageGrp.Height + 5 ;
+        ShadingGrp.Top := ZStageGrp.Top + ZStageGrp.Height + 5 ;
         end
-     else MarkGrp.Top := LightStimGrp.Top + LightStimGrp.Height + 5 ;
+     else ShadingGrp.Top := LightStimGrp.Top + LightStimGrp.Height + 5 ;
+
+     MarkGrp.Top := ShadingGrp.Top + ShadingGrp.Height + 5 ;
      ControlGrp.Height := ClientHeight - ControlGrp.Top - 5 ;
      end ;
 
@@ -5792,8 +5970,8 @@ begin
               // Smooth background frame
               if Round(edShadeCorImageBlockSize.Value) > 1 then begin
                  SmoothImage( PBackgroundBufs[FT],
-                              MainFrm.Cam1.FrameWidth,
-                              MainFrm.Cam1.FrameHeight,
+                              FrameWidth,
+                              FrameHeight,
                               Round(edShadeCorImageBlockSize.Value)) ;
                  end ;
 
@@ -6097,22 +6275,22 @@ begin
      while iScan <> ADCLatestScan do begin
 
             {- Convert the input signals from binary to SI units - }
-            Im := (ADCBuf[iScan+MainFrm.Cap.ImOffset] - MainFrm.Cap.ImZero)*MainFrm.Cap.ImScale ;
+            Im := (ADCBuf^[iScan+MainFrm.Cap.ImOffset] - MainFrm.Cap.ImZero)*MainFrm.Cap.ImScale ;
             if MainFrm.Cap.NewCalculation then MainFrm.Cap.ImSmoothed := Im ;
             MainFrm.Cap.ImSmoothed := 0.02*Im + (1.0 - 0.02)*MainFrm.Cap.ImSmoothed ;
             MainFrm.Cap.ImSmoothed := Im ;
 
             // Real conductance
             if MainFrm.Cap.GRInvert then
-               ADCBuf[iScan+MainFrm.Cap.GROffset] := -(ADCBuf[iScan+MainFrm.Cap.GROffset] - MainFrm.Cap.GRZero)
+               ADCBuf^[iScan+MainFrm.Cap.GROffset] := -(ADCBuf^[iScan+MainFrm.Cap.GROffset] - MainFrm.Cap.GRZero)
                                                + MainFrm.Cap.GRZero ;
-            GR := (ADCBuf[iScan+MainFrm.Cap.GROffset] - MainFrm.Cap.GRZero)*MainFrm.Cap.GRScale ;
+            GR := (ADCBuf^[iScan+MainFrm.Cap.GROffset] - MainFrm.Cap.GRZero)*MainFrm.Cap.GRScale ;
 
             // Imaginary conductance
             if MainFrm.Cap.GIInvert then
-               ADCBuf[iScan+MainFrm.Cap.GIOffset] := -(ADCBuf[iScan+MainFrm.Cap.GIOffset] - MainFrm.Cap.GIZero)
+               ADCBuf^[iScan+MainFrm.Cap.GIOffset] := -(ADCBuf^[iScan+MainFrm.Cap.GIOffset] - MainFrm.Cap.GIZero)
                                                + MainFrm.Cap.GIZero ;
-            GI := (ADCBuf[iScan+MainFrm.Cap.GIOffset] - MainFrm.Cap.GIZero)*MainFrm.Cap.GIScale ;
+            GI := (ADCBuf^[iScan+MainFrm.Cap.GIOffset] - MainFrm.Cap.GIZero)*MainFrm.Cap.GIScale ;
 
             if MainFrm.Cap.CompensationInUse then begin
                if Gdc = MainFrm.Cap.RSeriesComp then Break ;
@@ -6136,7 +6314,7 @@ begin
                end ;
 
 
-            Vm := (ADCBuf[iScan+MainFrm.Cap.VmOffset] - MainFrm.Cap.VmZero)*MainFrm.Cap.VmScale ;
+            Vm := (ADCBuf^[iScan+MainFrm.Cap.VmOffset] - MainFrm.Cap.VmZero)*MainFrm.Cap.VmScale ;
             MainFrm.Cap.VmSmoothed := 0.02*Vm + (1.0 - 0.02)*MainFrm.Cap.VmSmoothed ;
             if MainFrm.Cap.NewCalculation then MainFrm.Cap.VmSmoothed := Vm ;
             //MainFrm.Cap.VmSmoothed := -0.05 ;
@@ -6162,13 +6340,13 @@ begin
                Cm := (Gs*Gs*(GR - Gdc))/((Gs - Gdc)*GI*TwoPi*MainFrm.Cap.Frequency) ;
 
             if MainFrm.Cap.GsOffset >= 0 then
-               ADCBuf[iScan+MainFrm.Cap.GsOffset] := Round(Min(Max(Gs/MainFrm.Cap.GsScale,
+               ADCBuf^[iScan+MainFrm.Cap.GsOffset] := Round(Min(Max(Gs/MainFrm.Cap.GsScale,
                                            0.0),ADCMaxValue-1)) ;
             if MainFrm.Cap.GmOffset >= 0 then
-               ADCBuf[iScan+MainFrm.Cap.GmOffset] := Round(Min(Max(Gm/MainFrm.Cap.GmScale,
+               ADCBuf^[iScan+MainFrm.Cap.GmOffset] := Round(Min(Max(Gm/MainFrm.Cap.GmScale,
                                            0.0),ADCMaxValue-1)) ;
             if MainFrm.Cap.CmOffset >= 0 then
-               ADCBuf[iScan+MainFrm.Cap.CmOffset] := Round(Min(Max(Cm/MainFrm.Cap.CmScale,
+               ADCBuf^[iScan+MainFrm.Cap.CmOffset] := Round(Min(Max(Cm/MainFrm.Cap.CmScale,
                                            -ADCMaxValue),ADCMaxValue-1)) ;
             { Next block of channels }
             iScan := iScan + MainFrm.ADCNumChannels ;
@@ -6246,6 +6424,18 @@ begin
      MainFrm.PhotoStimFileName := Mainfrm.PProtDirectory + cbPhotoStimProgram.Text + '.ppr' ;
 
      end;
+
+
+procedure TRecordFrm.ckSplitCCDImageClick(Sender: TObject);
+// --------------------------
+// Image split option changed
+// --------------------------
+begin
+      MainFrm.SplitImage := ckSplitCCDImage.Checked ;
+      OptimiseContrastCount := NumFrameTypes ;
+      StopCamera ;
+      StartCamera ;
+      end;
 
 
 procedure TRecordFrm.ckStartStimOnRecordClick(Sender: TObject);

@@ -319,8 +319,8 @@ object SetupFrm: TSetupFrm
       end
       object GroupBox14: TGroupBox
         Left = 240
-        Top = 152
-        Width = 225
+        Top = 170
+        Width = 245
         Height = 121
         Caption = ' Calibration '
         Font.Charset = ANSI_CHARSET
@@ -417,10 +417,10 @@ object SetupFrm: TSetupFrm
         end
       end
       object GroupBox9: TGroupBox
-        Left = 240
+        Left = 239
         Top = 0
         Width = 225
-        Height = 147
+        Height = 166
         Caption = ' Exposure Trigger Output '
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
@@ -431,7 +431,7 @@ object SetupFrm: TSetupFrm
         TabOrder = 2
         object Label16: TLabel
           Left = 26
-          Top = 60
+          Top = 106
           Width = 115
           Height = 14
           Alignment = taRightJustify
@@ -440,7 +440,7 @@ object SetupFrm: TSetupFrm
         end
         object Label42: TLabel
           Left = 26
-          Top = 116
+          Top = 130
           Width = 115
           Height = 14
           Alignment = taRightJustify
@@ -474,13 +474,13 @@ object SetupFrm: TSetupFrm
           TabOrder = 2
         end
         object edCameraTriggerOffset: TValidatedEdit
-          Left = 144
-          Top = 60
+          Left = 145
+          Top = 106
           Width = 73
           Height = 20
           Hint = 
-            'Delay between wavelength change and camera exposure triggeradded' +
-            ' to camera trigger'
+            'Delay between wavelength change and camera exposure trigger adde' +
+            'd to camera trigger'
           AutoSize = False
           Text = ' 0 ms'
           Scale = 1000.000000000000000000
@@ -490,8 +490,8 @@ object SetupFrm: TSetupFrm
           HiLimit = 1.000000015047466E30
         end
         object edCameraReadoutTime: TValidatedEdit
-          Left = 144
-          Top = 116
+          Left = 145
+          Top = 130
           Width = 73
           Height = 20
           Hint = 'Extra readout camera readout time (subtracted from exposure)'
@@ -504,9 +504,9 @@ object SetupFrm: TSetupFrm
           HiLimit = 1.000000015047466E30
         end
         object ckCCDClearPreExposure: TCheckBox
-          Left = 32
-          Top = 82
-          Width = 185
+          Left = 24
+          Top = 72
+          Width = 194
           Height = 17
           Hint = 'Clear CCD image area before exposure (triggered exposures only)'
           Alignment = taLeftJustify
@@ -514,9 +514,9 @@ object SetupFrm: TSetupFrm
           TabOrder = 5
         end
         object ckPostExposureReadout: TCheckBox
-          Left = 32
-          Top = 98
-          Width = 185
+          Left = 24
+          Top = 87
+          Width = 194
           Height = 17
           Hint = 
             'Adjust exposure time to account for CCD readout time after expos' +
@@ -526,6 +526,74 @@ object SetupFrm: TSetupFrm
           ParentShowHint = False
           ShowHint = True
           TabOrder = 6
+        end
+        object ckBulbExposureMode: TCheckBox
+          Left = 24
+          Top = 56
+          Width = 194
+          Height = 17
+          Hint = 'Exposure time controlled by trigger output'
+          Alignment = taLeftJustify
+          Caption = 'Bulb exposure mode'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 7
+        end
+      end
+      object SplitImageGrp: TGroupBox
+        Left = 240
+        Top = 296
+        Width = 225
+        Height = 49
+        Caption = ' Split Image Labels '
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 3
+        object Label75: TLabel
+          Left = 6
+          Top = 18
+          Width = 33
+          Height = 14
+          Alignment = taRightJustify
+          Caption = 'Upper'
+        end
+        object Label76: TLabel
+          Left = 115
+          Top = 18
+          Width = 36
+          Height = 14
+          Alignment = taRightJustify
+          Caption = 'Lower'
+        end
+        object edSplitImageUpper: TEdit
+          Left = 45
+          Top = 18
+          Width = 60
+          Height = 22
+          Hint = 
+            'Label of upper half of camera image when split image mode select' +
+            'ed'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 0
+          Text = 'A'
+        end
+        object edSplitImageLower: TEdit
+          Left = 157
+          Top = 18
+          Width = 60
+          Height = 22
+          Hint = 
+            'Label of lower half of camera image when split image mode select' +
+            'ed'
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 1
+          Text = 'B'
         end
       end
     end
@@ -652,7 +720,9 @@ object SetupFrm: TSetupFrm
             Top = 29
             Width = 70
             Height = 20
+            Hint = 'Calibration wavelength #1'
             AutoSize = False
+            ShowHint = True
             Text = ' 0 nm'
             Scale = 1.000000000000000000
             Units = 'nm'
@@ -665,7 +735,9 @@ object SetupFrm: TSetupFrm
             Top = 29
             Width = 69
             Height = 20
+            Hint = 'Calibration voltage #1'
             AutoSize = False
+            ShowHint = True
             Text = ' 0 V'
             Scale = 1.000000000000000000
             Units = 'V'
@@ -678,7 +750,9 @@ object SetupFrm: TSetupFrm
             Top = 55
             Width = 70
             Height = 20
+            Hint = 'Calibration wavelength #2'
             AutoSize = False
+            ShowHint = True
             Text = ' 0 nm'
             Scale = 1.000000000000000000
             Units = 'nm'
@@ -691,7 +765,9 @@ object SetupFrm: TSetupFrm
             Top = 55
             Width = 69
             Height = 20
+            Hint = 'Calibration wavelength #2'
             AutoSize = False
+            ShowHint = True
             Text = ' 0 V'
             Scale = 1.000000000000000000
             Units = 'V'
@@ -1362,7 +1438,10 @@ object SetupFrm: TSetupFrm
             Top = 155
             Width = 110
             Height = 22
+            Hint = 'Start of LED/Laser control AO output range'
             Style = csDropDownList
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 1
             OnChange = cbLSLaserStartChange
           end
@@ -1371,7 +1450,10 @@ object SetupFrm: TSetupFrm
             Top = 155
             Width = 110
             Height = 22
+            Hint = 'End of LED/Laser control AO output range'
             Style = csDropDownList
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 2
             OnChange = cbLSLaserStartChange
           end
@@ -1471,7 +1553,10 @@ object SetupFrm: TSetupFrm
             Top = 19
             Width = 145
             Height = 22
+            Hint = 'Shutter AO/DO control output line.'
             Style = csDropDownList
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 0
           end
           object rbLSShutterActiveHigh: TRadioButton
@@ -1479,8 +1564,11 @@ object SetupFrm: TSetupFrm
             Top = 48
             Width = 89
             Height = 17
+            Hint = 'Use TTL High (5V) to open shutter'
             Caption = 'Active High'
             Checked = True
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 1
             TabStop = True
           end
@@ -1489,7 +1577,12 @@ object SetupFrm: TSetupFrm
             Top = 64
             Width = 89
             Height = 17
+            Hint = 'Use TTL Low (0V) to open shutter'
             Caption = 'Active Low'
+            Color = clBtnFace
+            ParentColor = False
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 2
           end
         end
@@ -1499,6 +1592,110 @@ object SetupFrm: TSetupFrm
           Width = 63
           Height = 20
           Hint = 'Shutter open/close switching time'
+          AutoSize = False
+          ShowHint = True
+          Text = ' 1000 ms'
+          Value = 1.000000000000000000
+          Scale = 1000.000000000000000000
+          Units = 'ms'
+          NumberFormat = '%.4g'
+          LoLimit = -1.000000015047466E30
+          HiLimit = 1.000000015047466E29
+        end
+      end
+      object EmFilterGrp: TGroupBox
+        Left = 280
+        Top = 224
+        Width = 177
+        Height = 169
+        Caption = ' Emission Filter '
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
+        object Label74: TLabel
+          Left = 7
+          Top = 95
+          Width = 89
+          Height = 18
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Change Time'
+          WordWrap = True
+        end
+        object EmFilterControlGrp: TGroupBox
+          Left = 8
+          Top = 16
+          Width = 161
+          Height = 73
+          Caption = ' Filter Control Outputs '
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+          object Label72: TLabel
+            Left = 14
+            Top = 18
+            Width = 28
+            Height = 13
+            Alignment = taRightJustify
+            Caption = 'Start'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object Label73: TLabel
+            Left = 19
+            Top = 44
+            Width = 23
+            Height = 13
+            Alignment = taRightJustify
+            Caption = 'End'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object cbEMFilterStart: TComboBox
+            Left = 48
+            Top = 16
+            Width = 110
+            Height = 22
+            Hint = 'Start of emission filter DO output range'
+            Style = csDropDownList
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 0
+          end
+          object cbEmFilterEnd: TComboBox
+            Left = 48
+            Top = 44
+            Width = 110
+            Height = 22
+            Hint = 'End of emission filter DO output range'
+            Style = csDropDownList
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+          end
+        end
+        object edEmFilterChangeTime: TValidatedEdit
+          Left = 106
+          Top = 95
+          Width = 63
+          Height = 20
+          Hint = 'Emission filter switching time'
           AutoSize = False
           ShowHint = True
           Text = ' 1000 ms'

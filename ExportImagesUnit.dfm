@@ -3,8 +3,8 @@ object ExportImagesFrm: TExportImagesFrm
   Top = 177
   BorderStyle = bsDialog
   Caption = 'Export Images'
-  ClientHeight = 246
-  ClientWidth = 544
+  ClientHeight = 294
+  ClientWidth = 543
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -15,41 +15,9 @@ object ExportImagesFrm: TExportImagesFrm
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 14
-  object GroupBox1: TGroupBox
-    Left = 8
-    Top = 8
-    Width = 529
-    Height = 65
-    Caption = ' Export File Name '
-    TabOrder = 0
-    object edFileName: TEdit
-      Left = 8
-      Top = 16
-      Width = 513
-      Height = 22
-      ReadOnly = True
-      TabOrder = 0
-      Text = 'edFileName'
-    end
-    object bChangeName: TButton
-      Left = 8
-      Top = 40
-      Width = 105
-      Height = 17
-      Caption = 'Change Name'
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -12
-      Font.Name = 'Arial'
-      Font.Style = [fsBold]
-      ParentFont = False
-      TabOrder = 1
-      OnClick = bChangeNameClick
-    end
-  end
   object GroupBox2: TGroupBox
     Left = 8
-    Top = 74
+    Top = 120
     Width = 117
     Height = 121
     Caption = ' Frames '
@@ -59,7 +27,7 @@ object ExportImagesFrm: TExportImagesFrm
     Font.Name = 'Arial'
     Font.Style = []
     ParentFont = False
-    TabOrder = 1
+    TabOrder = 0
     object Label1: TLabel
       Left = 23
       Top = 80
@@ -147,12 +115,12 @@ object ExportImagesFrm: TExportImagesFrm
     end
   end
   object FrameTypeGrp: TGroupBox
-    Left = 245
-    Top = 74
+    Left = 246
+    Top = 120
     Width = 164
     Height = 160
     Caption = ' Wavelengths  '
-    TabOrder = 2
+    TabOrder = 1
     object rbAllFrameTypes: TRadioButton
       Left = 8
       Top = 16
@@ -235,29 +203,25 @@ object ExportImagesFrm: TExportImagesFrm
       Top = 108
       Width = 105
       Height = 22
-      ItemHeight = 14
       TabOrder = 3
       Text = 'cbROI'
     end
   end
   object GroupBox3: TGroupBox
-    Left = 414
-    Top = 74
+    Left = 416
+    Top = 120
     Width = 121
     Height = 160
     Caption = ' Format '
-    TabOrder = 3
+    TabOrder = 2
     object rbBioRad: TRadioButton
       Left = 8
-      Top = 16
+      Top = 50
       Width = 89
       Height = 17
       Hint = 'Export to BioRAD PIC format file'
       Caption = 'BioRad PIC'
-      Checked = True
       TabOrder = 0
-      TabStop = True
-      OnClick = rbBioRadClick
     end
     object rbMetaMorph: TRadioButton
       Left = 8
@@ -267,22 +231,22 @@ object ExportImagesFrm: TExportImagesFrm
       Hint = 'Export to MetaMorph STK format file'
       Caption = 'MetaMorph STK'
       TabOrder = 1
-      OnClick = rbBioRadClick
     end
     object rbTIFF: TRadioButton
       Left = 8
-      Top = 48
+      Top = 16
       Width = 57
       Height = 17
       Hint = 'Export to TIFF format file'
       Caption = 'TIFF'
+      Checked = True
       TabOrder = 2
-      OnClick = rbBioRadClick
+      TabStop = True
     end
   end
   object bOK: TButton
     Left = 8
-    Top = 200
+    Top = 246
     Width = 49
     Height = 25
     Caption = 'OK'
@@ -293,12 +257,12 @@ object ExportImagesFrm: TExportImagesFrm
     Font.Style = [fsBold]
     ModalResult = 1
     ParentFont = False
-    TabOrder = 4
+    TabOrder = 3
     OnClick = bOKClick
   end
   object bCancel: TButton
-    Left = 64
-    Top = 200
+    Left = 66
+    Top = 246
     Width = 49
     Height = 17
     Caption = 'Cancel'
@@ -309,16 +273,16 @@ object ExportImagesFrm: TExportImagesFrm
     Font.Style = [fsBold]
     ModalResult = 2
     ParentFont = False
-    TabOrder = 5
+    TabOrder = 4
     OnClick = bCancelClick
   end
   object GroupBox4: TGroupBox
-    Left = 128
-    Top = 74
+    Left = 130
+    Top = 120
     Width = 113
     Height = 160
     Caption = ' Image '
-    TabOrder = 6
+    TabOrder = 5
     object rbWholeImage: TRadioButton
       Left = 8
       Top = 16
@@ -362,7 +326,6 @@ object ExportImagesFrm: TExportImagesFrm
       Height = 22
       Hint = 'ROI no. to be deleted'
       Style = csDropDownList
-      ItemHeight = 14
       TabOrder = 2
     end
     object rbAllROIs: TRadioButton
@@ -383,16 +346,54 @@ object ExportImagesFrm: TExportImagesFrm
       TabOrder = 3
     end
   end
+  object FilesToExportGrp: TGroupBox
+    Left = 8
+    Top = 4
+    Width = 529
+    Height = 110
+    Caption = ' File to be Exported '
+    TabOrder = 6
+    object bSelectFilesToExport: TButton
+      Left = 10
+      Top = 78
+      Width = 137
+      Height = 17
+      Caption = 'Select Files to Export'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 0
+      OnClick = bSelectFilesToExportClick
+    end
+    object meFiles: TMemo
+      Left = 10
+      Top = 18
+      Width = 511
+      Height = 54
+      Lines.Strings = (
+        'Memo1')
+      ScrollBars = ssVertical
+      TabOrder = 1
+    end
+  end
   object ImageFile: TImageFile
     XResolution = 1.000000000000000000
     YResolution = 1.000000000000000000
     ZResolution = 1.000000000000000000
     TResolution = 1.000000000000000000
-    Left = 168
-    Top = 224
+    Left = 170
+    Top = 270
   end
   object SaveDialog: TSaveDialog
-    Left = 200
-    Top = 224
+    Left = 202
+    Top = 270
+  end
+  object OpenDialog: TOpenDialog
+    Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]
+    Left = 264
+    Top = 254
   end
 end

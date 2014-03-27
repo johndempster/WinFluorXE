@@ -1,9 +1,9 @@
 object RecPlotFrm: TRecPlotFrm
   Left = 662
   Top = 272
-  Width = 468
-  Height = 566
   Caption = 'Time Course Plots (Live)'
+  ClientHeight = 539
+  ClientWidth = 460
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -345,7 +345,6 @@ object RecPlotFrm: TRecPlotFrm
       Width = 65
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 0
       OnChange = cbROIChange
     end
@@ -355,7 +354,6 @@ object RecPlotFrm: TRecPlotFrm
       Width = 65
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 1
       OnChange = cbSubROIChange
     end
@@ -480,7 +478,6 @@ object RecPlotFrm: TRecPlotFrm
       Width = 85
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 1
       OnChange = cbDenominatorChange
     end
@@ -490,7 +487,6 @@ object RecPlotFrm: TRecPlotFrm
       Width = 85
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 2
       OnChange = cbNumeratorChange
     end

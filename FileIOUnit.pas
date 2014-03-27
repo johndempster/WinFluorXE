@@ -48,6 +48,18 @@ unit FileIOUnit;
 // 27.09.13 .... JD 'LSSCHTIME=', LightSource.ShutterChangeTime added to INI file
 // 07.11.13 .... JD 'CAMADCGN=', MainFrm.Cam1.ADCGain and 'CAMVSS=', MainFrm.Cam1.CCDVerticalShiftSpeed added
 // 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
+// 27.02.14 .... JD  'EMFCHTIME=', LightSource.EMFilterChangeTime added
+//                    'IOEMFS=', MainFrm.IOConfig.EMFilterStart added
+//                    'IOEMFE=', MainFrm.IOConfig.EMFilterEnd added
+//                    'EXCWEMF%d='MainFrm.EXCWavelengths[iWav].EmFilter added
+//                    'EXCWEMN%d=' MainFrm.EXCWavelengths[iWav].EmName added
+//                    'EXCSPEMFILT=', MainFrm.EXCSpectrumEMFilter added
+// 03.03.04 ......... 'SPLIM0=',MainFrm.SplitImageName[0]
+//                    'SPLIM1=',MainFrm.SplitImageName[1]
+//                    Header, 'SPLIM=',MainFrm.SplitImage
+// 05.03.04 ......... 'BULBEXP=', MainFrm.BulbExposureMode
+//                    'EXCWFEX%d=',[iWav]), MainFrm.EXCWavelengths[iWav].FractionalExposure
+
 
 interface
 
@@ -199,6 +211,8 @@ begin
 
      AppendFloat( Header, 'CAMADDRT=', MainFrm.Cam1.AdditionalReadoutTime ) ;
 
+     AppendLogical( Header, 'BULBEXP=', MainFrm.BulbExposureMode ) ;
+
      // Camera readout A/D converter gain
      AppendINT( Header, 'CAMADCGN=', MainFrm.Cam1.ADCGain ) ;
 
@@ -209,6 +223,10 @@ begin
 
      AppendFloat( Header, 'CALBARSZ=', MainFrm.CalibrationBarSize ) ;
      AppendFloat( Header, 'CALBARTH=', MainFrm.CalibrationBarThickness ) ;
+
+     AppendString(  Header, 'SPLIM0=',MainFrm.SplitImageName[0]);
+     AppendString(  Header, 'SPLIM1=',MainFrm.SplitImageName[1]);
+     AppendLogical( Header, 'SPLIM=',MainFrm.SplitImage) ;
 
      AppendInt( Header, 'RECMODE=', MainFrm.RecordingMode ) ;
      AppendFloat( Header, 'RECPER=', MainFrm.RecordingPeriod ) ;
@@ -240,7 +258,6 @@ begin
          AppendFloat( Header, format('CCF%d=',[ch]), MainFrm.ADCChannel[ch].ADCCalibrationFactor ) ;
          AppendFloat( Header, format('CSC%d=',[ch]), MainFrm.ADCChannel[ch].ADCScale) ;
          end ;
-
 
      // Patch clamp amplifier data
      for i := 1 to 2 do begin
@@ -299,6 +316,9 @@ begin
      // Shutter open/close change time
      AppendFloat( Header, 'LSSCHTIME=', LightSource.ShutterChangeTime ) ;
 
+     // Emission filter
+     AppendFloat( Header, 'EMFCHTIME=', LightSource.EMFilterChangeTime ) ;
+
      // Excitation wavelength settings
      AppendLogical( Header, 'EXCSW=', MainFrm.EXCSingleWavelength ) ;
 
@@ -329,11 +349,15 @@ begin
      for iWav := 0 to High(MainFrm.EXCWavelengths) do begin
          AppendInt( Header, format('EXCWC%d=',[iWav]), MainFrm.EXCWavelengths[iWav].Centre) ;
          AppendInt( Header, format('EXCWW%d=',[iWav]), MainFrm.EXCWavelengths[iWav].Width) ;
+         AppendInt( Header, format('EXCWEMF%d=',[iWav]), MainFrm.EXCWavelengths[iWav].EmFilter) ;
+         AppendString( Header, format('EXCWEMN%d=',[iWav]), MainFrm.EXCWavelengths[iWav].EmName) ;
+         AppendFloat( Header, format('EXCWFEX%d=',[iWav]), MainFrm.EXCWavelengths[iWav].FractionalExposure) ;
          end ;
 
      AppendFloat( Header, 'EXCSPSTARTW=', MainFrm.EXCSpectrumStartWavelength ) ;
      AppendFloat( Header, 'EXCSPENDW=', MainFrm.EXCSpectrumEndWavelength ) ;
      AppendFloat( Header, 'EXCSPBANDW=', MainFrm.EXCSpectrumBandwidth ) ;
+     AppendInt( Header, 'EXCSPEMFILT=', MainFrm.EXCSpectrumEMFilter ) ;
      AppendFloat( Header, 'EXCSPSTEPS=', MainFrm.EXCSpectrumStepSize ) ;
 
      // Stimulus program file
@@ -384,6 +408,11 @@ begin
      AppendInt( Header, 'IOLSWE=', MainFrm.IOConfig.LSWavelengthEnd ) ;
      AppendInt( Header, 'IOLSLS=', MainFrm.IOConfig.LSLaserStart ) ;
      AppendInt( Header, 'IOLSLE=', MainFrm.IOConfig.LSLaserEnd ) ;
+
+     // Emission filter control lines
+     AppendInt( Header, 'IOEMFS=', MainFrm.IOConfig.EMFilterStart ) ;
+     AppendInt( Header, 'IOEMFE=', MainFrm.IOConfig.EMFilterEnd ) ;
+
      AppendInt( Header, 'IODSTA=', MainFrm.IOConfig.DigitalStimStart ) ;
      AppendInt( Header, 'IODEND=', MainFrm.IOConfig.DigitalStimEnd ) ;
      AppendInt( Header, 'IOPSX=', MainFrm.IOConfig.PhotoStimX ) ;
@@ -624,6 +653,11 @@ begin
      ReadFloat( Header, 'CALBARSZ=', MainFrm.CalibrationBarSize ) ;
      ReadFloat( Header, 'CALBARTH=', MainFrm.CalibrationBarThickness ) ;
 
+     ReadString(  Header, 'SPLIM0=',MainFrm.SplitImageName[0]);
+     ReadString(  Header, 'SPLIM1=',MainFrm.SplitImageName[1]);
+     ReadLogical( Header, 'SPLIM=',MainFrm.SplitImage) ;
+
+     ReadLogical( Header, 'BULBEXP=', MainFrm.BulbExposureMode ) ;
 
      iValue := Integer(MainFrm.PaletteType) ;
      ReadInt( Header, 'PAL=', iValue ) ;
@@ -750,6 +784,9 @@ begin
      // Shutter open/close change time
      ReadFloat( Header, 'LSSCHTIME=', LightSource.ShutterChangeTime ) ;
 
+     // Emission filter
+     ReadFloat( Header, 'EMFCHTIME=', LightSource.EMFilterChangeTime ) ;
+
      // Excitation wavelength settings
      ReadLogical( Header, 'EXCSW=', MainFrm.EXCSingleWavelength ) ;
 
@@ -763,6 +800,9 @@ begin
          ReadInt( Header, format('EXCSEQ%d=',[iWav]), MainFrm.EXCSequence[iWav,0].WavelengthNum) ;
          MainFrm.EXCSequence[iWav,0].DivideFactor := 1 ;
          ReadInt( Header, format('EXCSEQDF%d=',[iWav]), MainFrm.EXCSequence[iWav,0].DivideFactor) ;
+         ReadInt( Header, format('EXCWEMF%d=',[iWav]), MainFrm.EXCWavelengths[iWav].EmFilter) ;
+         ReadString( Header, format('EXCWEMN%d=',[iWav]), MainFrm.EXCWavelengths[iWav].EmName) ;
+         ReadFloat( Header, format('EXCWFEX%d=',[iWav]), MainFrm.EXCWavelengths[iWav].FractionalExposure) ;
          end ;
 
      // Excitation multi-wavelength sequence settings
@@ -787,6 +827,7 @@ begin
      ReadFloat( Header, 'EXCSPSTARTW=', MainFrm.EXCSpectrumStartWavelength ) ;
      ReadFloat( Header, 'EXCSPENDW=', MainFrm.EXCSpectrumEndWavelength ) ;
      ReadFloat( Header, 'EXCSBANDW=', MainFrm.EXCSpectrumBandwidth ) ;
+     ReadInt( Header, 'EXCSPEMFILT=', MainFrm.EXCSpectrumEMFilter ) ;
      ReadFloat( Header, 'EXCSPSTEPS=', MainFrm.EXCSpectrumStepSize ) ;
 
      // Stimulus program file
@@ -846,6 +887,11 @@ begin
      ReadInt( Header, 'IOLSWE=', MainFrm.IOConfig.LSWavelengthEnd ) ;
      ReadInt( Header, 'IOLSLS=', MainFrm.IOConfig.LSLaserStart ) ;
      ReadInt( Header, 'IOLSLE=', MainFrm.IOConfig.LSLaserEnd ) ;
+
+     // Emission filter control lines
+     ReadInt( Header, 'IOEMFS=', MainFrm.IOConfig.EMFilterStart ) ;
+     ReadInt( Header, 'IOEMFE=', MainFrm.IOConfig.EMFilterEnd ) ;
+
      ReadInt( Header, 'IODSTA=', MainFrm.IOConfig.DigitalStimStart ) ;
      ReadInt( Header, 'IODEND=', MainFrm.IOConfig.DigitalStimEnd ) ;
      ReadInt( Header, 'IOPSX=', MainFrm.IOConfig.PhotoStimX ) ;

@@ -38,7 +38,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, RangeEdit, ComCtrls, ValidatedEdit, IDRFile,
-  math, SESCam, mmsystem, ImageFile, clipbrd, Buttons ;
+  math, SESCam, mmsystem, ImageFile, clipbrd, Buttons, UITYpes ;
 
 type
   TSnapFrm = class(TForm)
@@ -233,6 +233,7 @@ type
     procedure UpdateLightSource ;
     procedure UpdateLightSourceDAC ;
     procedure UpdateLightSourceDIG ;
+    procedure UpdateEMFilterDIG ;
     procedure UpdateLightSourceShutter ;
 
     procedure ReadCursor(
@@ -355,6 +356,7 @@ procedure TSnapFrm.FormShow(Sender: TObject);
 // --------------------------------------
 var
      i : Integer ;
+     s : string ;
 begin
 
      FirstResize := True ;
@@ -437,10 +439,14 @@ begin
      // Create list of excitation wavelengths
      cbWaveLength.Clear ;
      for i := 0 to High(MainFrm.EXCWavelengths) do begin
-         cbWaveLength.Items.Add( format('%d: %d (%d)',
-         [i,
-          MainFrm.EXCWavelengths[i].Centre,
-          MainFrm.EXCWavelengths[i].Width] )) ;
+         s := format('EX:%d ',[MainFrm.EXCWavelengths[i].Centre]) ;
+         if MainFrm.EXCWavelengths[i].Width <> 0.0 then begin
+            s := s + format('(%d) ',[MainFrm.EXCWavelengths[i].Width]) ;
+            end;
+         if MainFrm.EXCWavelengths[i].EMName <> '' then begin
+            s := s + 'EM:' + MainFrm.EXCWavelengths[i].EMName ;
+            end;
+         cbWaveLength.Items.Add( s ) ;
          end ;
      cbWaveLength.ItemIndex := Min(Max(MainFrm.LiveWindowWavelength,0),
                                cbWaveLength.Items.Count-1);
@@ -563,6 +569,7 @@ begin
 
    UpdateLightSource ;
    UpdateLightSourceShutter ;
+   UpdateEmFilterDig ;
 
    end ;
 
@@ -814,8 +821,6 @@ const
 var
     ImageAreaHeight : Integer ;
     ImageAreaWidth : Integer ;
-    ImageColumns : Integer ;
-    ImageRows : Integer ;
     RightEdge : Integer ;
     BottomEdge : Integer ;
 begin
@@ -832,9 +837,6 @@ begin
      DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.01 ;
 
      // Determine number of image columns and rows
-     ImageRows := 1 ;
-     ImageColumns := 1 ;
-
      ImageGrp.ClientWidth :=  Max( ClientWidth - ImageGrp.Left - 5, 2) ;
      ImageGrp.ClientHeight :=  Max( ClientHeight - ImageGrp.Top - 5, 2) ;
      ControlGrp.ClientHeight := ImageGrp.ClientHeight ;
@@ -849,9 +851,6 @@ begin
                               Round(MainFrm.Cam1.FrameWidth*DisplayZoom)),2) ;
      BitMap.Height := Max(Min( ImageAreaHeight,
                                Round(MainFrm.Cam1.FrameHeight*DisplayZoom)),2) ;
-
-     RightEdge := 0 ;
-     BottomEdge := 0 ;
 
      MainFrm.SetPalette( BitMap, MainFrm.PaletteType ) ;
 
@@ -955,9 +954,8 @@ var
      iFlag : Integer ;               // Empty flag pixel offset within frame
      FirstFrame,LastFrame : Integer ;
      Done,BufferFull : Boolean ;
-     LatestFrame : Pointer ;
      FrameRate : Single ;
-     FrameType : Integer ;
+     //FrameType : Integer ;
      BufferOverFlowMessage : String ;
      RecordingStatus : String ;
 
@@ -968,7 +966,6 @@ begin
     if TimerProcBusy then Exit ;
 
     TimerProcBusy := True ;
-    LatestFrame := Nil ;
 
     // Restart camera if a change to camera settings elsewhere requires is
     if MainFrm.Cam1.CameraRestartRequired then begin
@@ -1018,7 +1015,7 @@ begin
            iFlag := FrameNum*NumPixelsPerFrame ;
 
            // Type of frame
-           FrameType := 0 ;
+           //FrameType := 0 ;
 
            // If image available for this frame, get frame#
            if ByteImage then begin
@@ -1245,7 +1242,6 @@ begin
        // X1 and above display zoom factors
        // ------------------------------
        Ybm := 0 ;
-       Yim := 0 ;
        StartOfLine := (sbYScroll.Position*MainFrm.Cam1.FrameWidth)
                       + sbXScroll.Position ;
        for Yim := sbYScroll.Position to MainFrm.Cam1.FrameHeight-1 do begin
@@ -1423,7 +1419,6 @@ begin
        // X1 and above display zoom factors
        // ------------------------------
        Ybm := 0 ;
-       Yim := 0 ;
        StartOfLine := (sbYScroll.Position*MainFrm.Cam1.FrameWidth)
                       + sbXScroll.Position ;
        for Yim := sbYScroll.Position to MainFrm.Cam1.FrameHeight-1 do begin
@@ -1565,7 +1560,7 @@ const
 var
      i,NumPixels,NAvg,Istep : Integer ;
      z,zMean,zSD,zSum : Single ;
-     iz,ZMin,ZMax,ZLo,ZHi,ZThreshold : Integer ;
+     iz,ZMin,ZMax,ZLo,ZHi : Integer ;
      FrameType : Integer ;
 begin
 
@@ -1589,13 +1584,11 @@ begin
        ZMean := ZSum / nAvg ;
 
        ZSum := 0.0 ;
-       nAvg := 0 ;
        i := 0 ;
        while i < NumPixels do begin
           Z := PDisplayBuf^[i] ;
           ZSum := ZSum + (Z - ZMean)*(Z - ZMean) ;
           i := i + iStep ;
-          Inc(NAvg) ;
           end ;
        ZSD := Sqrt( ZSum / (NumPixels-1) ) ;
 
@@ -1607,8 +1600,6 @@ begin
        // Set contrast range to min-max
        ZMin := MainFrm.Cam1.GreyLevelMax ;
        ZMax := 0 ;
-       ZSum := 0.0 ;
-       nAvg := 0 ;
        i := 0 ;
        while i < NumPixels do begin
           iz := PDisplayBuf^[i]  ;
@@ -1624,7 +1615,7 @@ begin
     ZHi := Min(Round(1.1*ZHi),MainFrm.Cam1.GreyLevelMax) ;
 
     // Update contrast
-    ZThreshold := Max((MainFrm.Cam1.GreyLevelMax div 50),2) ;
+    //ZThreshold := Max((MainFrm.Cam1.GreyLevelMax div 50),2) ;
     if (not ckAutoOptimise.Checked) or
        (Abs(MainFrm.GreyLo[FrameType]- ZLo) > 10) then MainFrm.GreyLo[FrameType] := ZLo ;
     if (not ckAutoOptimise.Checked) or
@@ -1788,6 +1779,7 @@ begin
    //outputdebugString(PChar(format('shutter open click %d',[Numframesdone]))) ;
    UpdateLightSource ;
    UpdateLightSourceShutter ;
+   UpdateEMFilterDig ;
    end;
 
 
@@ -2229,7 +2221,7 @@ var
      Bandwidths : Array[0..lsMaxVControl-1] of Single ;
      VControl : Array[0..lsMaxVControl] of TLSVControl ;
      NumVControl : Integer ;
-     NumWavelengths : Integer ;
+ //    NumWavelengths : Integer ;
 begin
 
      // Exit if no light source or D/A channels configured
@@ -2241,7 +2233,7 @@ begin
      FilterNums[0] := Max(cbWavelength.ItemIndex,0) ;
      Wavelengths[0] :=MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Centre ;
      Bandwidths[0] :=  MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Width ;
-     NumWavelengths := 1 ;
+//     NumWavelengths := 1 ;
 
      // Fill D/A channel buffers with excitation light control voltages
      // for each frame type in use
@@ -2285,7 +2277,6 @@ var
      Bandwidths : Array[0..lsMaxVControl-1] of Single ;
      VControl : Array[0..lsMaxVControl-1] of TLSVControl ;
      NumVControl : Integer ;
-     NumWavelengths : Integer ;
      Bit : Word ;
      BitWord  : Word ;
      BitMask  : Word ;
@@ -2295,7 +2286,6 @@ begin
      FilterNums[0] := Max(cbWavelength.ItemIndex,0) ;
      Wavelengths[0] :=MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Centre ;
      Bandwidths[0] :=  MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Width ;
-     NumWavelengths := 1 ;
 
      if rbEXCShutterOpen.Checked then begin
         // Get voltages for selected wavelength
@@ -2318,7 +2308,6 @@ begin
          Bit := LabIO.BitMask(VControl[iV].Chan) ;
          BitMask := BitMask or Bit ;
          if VControl[iV].V <> 0.0 then BitWord := BitWord or Bit ;
-         Bit := Bit*2 ;
          end ;
      BitMask := not BitMask ;
 
@@ -2326,6 +2315,45 @@ begin
      // (If in use, leave update to existing process)
      Device :=  VControl[0].Device ;
      LabIO.DigOutState[Device] := (LabIO.DigOutState[Device] and BitMask) or BitWord ;
+     if not LabIO.DIGActive[Device] then begin
+        LabIO.WriteToDigitalOutPutPort( Device, LabIO.DigOutState[Device] ) ;
+        end ;
+
+     end ;
+
+
+procedure TSnapFrm.UpdateEMFilterDIG ;
+// ------------------------------------------------------
+// Update emission filter control digital output waveform
+// ------------------------------------------------------
+var
+     Device : Integer ;
+     EMFilter,iStartBit,iEndBit,iBit : Integer ;
+     Bit : Word ;
+     BitMask  : Word ;
+begin
+
+     if not MainFrm.IOResourceAvailable(MainFrm.IOConfig.EMFilterStart) then Exit ;
+     if not MainFrm.IOResourceAvailable(MainFrm.IOConfig.EMFilterEnd) then Exit ;
+
+     // Single wavelength excitatiom
+     EMFilter := MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].EmFilter ;
+
+     Device := LabIO.Resource[MainFrm.IOConfig.EmFilterStart].Device ;
+     iStartBit := LabIO.Resource[MainFrm.IOConfig.EmFilterStart].StartChannel ;
+     iEndBit := LabIO.Resource[MainFrm.IOConfig.EmFilterEnd].EndChannel ;
+
+     // Create bit mask for EMFilter control line bits
+     BitMask := 0 ;
+     for iBit := iStartBit to iEndBit do begin
+         Bit := LabIO.BitMask(iBit) ;
+         BitMask := BitMask or Bit ;
+         end ;
+     BitMask := not BitMask ;
+
+     // Update digital output port state
+     // (If in use, leave update to existing process)
+     LabIO.DigOutState[Device] := (LabIO.DigOutState[Device] and BitMask) or (EMFilter shl iStartBit) ;
      if not LabIO.DIGActive[Device] then begin
         LabIO.WriteToDigitalOutPutPort( Device, LabIO.DigOutState[Device] ) ;
         end ;
@@ -2477,6 +2505,7 @@ begin
    //outputdebugString(PChar(format('shutter open click %d',[Numframesdone]))) ;
    UpdateLightSource ;
    UpdateLightSourceShutter ;
+   UpdateEMFilterDig ;
    end;
 
 
@@ -2487,6 +2516,7 @@ procedure TSnapFrm.cbWavelengthChange(Sender: TObject);
 begin
      MainFrm.LiveWindowWavelength := cbWaveLength.ItemIndex ;
      UpdateLightSource ;
+     UpdateEMFilterDig ;
      end;
 
 
@@ -2579,7 +2609,7 @@ procedure TSnapFrm.SmoothImage(
 // Smooth image using n x n pixel averaging block
 // --------------------------------------------
 var
-    x,y,x0,y0,x1,y1,ix,iy,ix1,iy1 : Integer ;
+    x,y,x0,x1,ix,iy,ix1,iy1 : Integer ;
     i : Integer ;
     NumPixels,Sum,nSum : Integer ;
     PTemp : PIntArray ;
@@ -2596,8 +2626,8 @@ begin
     for y := 0 to FrameHeight-1 do begin
 
         // Keep within image
-        y0 := Max(y-BlockSize,0) ;
-        y1 := Min(y+BlockSize,FrameHeight-1) ;
+        //y0 := Max(y-BlockSize,0) ;
+        //y1 := Min(y+BlockSize,FrameHeight-1) ;
 
         for x := 0 to FrameWidth-1 do begin
 

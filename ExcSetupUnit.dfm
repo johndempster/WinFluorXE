@@ -1,9 +1,9 @@
 object ExcSetupFrm: TExcSetupFrm
   Left = 556
   Top = 115
-  Width = 413
-  Height = 483
   Caption = 'Excitation Light Setup'
+  ClientHeight = 478
+  ClientWidth = 603
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -20,18 +20,18 @@ object ExcSetupFrm: TExcSetupFrm
   TextHeight = 14
   object TableGrp: TGroupBox
     Left = 192
-    Top = 2
-    Width = 209
-    Height = 447
-    Caption = ' Excitation wavelength table '
+    Top = 0
+    Width = 393
+    Height = 446
+    Caption = ' Excitation / emission wavelength table '
     TabOrder = 0
     object WaveTable: TStringGrid
       Left = 8
       Top = 16
-      Width = 193
-      Height = 425
+      Width = 377
+      Height = 409
       Hint = 'Input channel scaling factors and calibration units'
-      ColCount = 3
+      ColCount = 6
       DefaultColWidth = 50
       DefaultRowHeight = 18
       RowCount = 18
@@ -67,7 +67,7 @@ object ExcSetupFrm: TExcSetupFrm
   end
   object bOK: TButton
     Left = 8
-    Top = 424
+    Top = 452
     Width = 57
     Height = 20
     Caption = 'OK'
@@ -82,7 +82,7 @@ object ExcSetupFrm: TExcSetupFrm
   end
   object bCancel: TButton
     Left = 72
-    Top = 424
+    Top = 452
     Width = 49
     Height = 17
     Caption = 'Cancel'
@@ -150,7 +150,6 @@ object ExcSetupFrm: TExcSetupFrm
         Width = 45
         Height = 22
         Hint = 'Wavelength number to be added to sequence'
-        ItemHeight = 14
         ParentShowHint = False
         ShowHint = True
         TabOrder = 1
@@ -212,7 +211,6 @@ object ExcSetupFrm: TExcSetupFrm
       Width = 169
       Height = 22
       Style = csDropDownList
-      ItemHeight = 14
       TabOrder = 4
       OnChange = cbSequenceChange
     end
@@ -221,7 +219,7 @@ object ExcSetupFrm: TExcSetupFrm
     Left = 4
     Top = 314
     Width = 181
-    Height = 103
+    Height = 132
     Caption = ' Spectrum '
     TabOrder = 4
     object Label1: TLabel
@@ -232,7 +230,7 @@ object ExcSetupFrm: TExcSetupFrm
       Caption = 'Range'
     end
     object Label2: TLabel
-      Left = 70
+      Left = 68
       Top = 44
       Width = 46
       Height = 14
@@ -240,12 +238,20 @@ object ExcSetupFrm: TExcSetupFrm
       Caption = 'Step Size'
     end
     object Label3: TLabel
-      Left = 63
-      Top = 72
+      Left = 62
+      Top = 70
       Width = 52
       Height = 14
       Alignment = taRightJustify
       Caption = 'Bandwidth'
+    end
+    object Label5: TLabel
+      Left = 71
+      Top = 96
+      Width = 43
+      Height = 14
+      Alignment = taRightJustify
+      Caption = 'Em. Filter'
     end
     object edSpectrumRange: TRangeEdit
       Left = 46
@@ -254,7 +260,7 @@ object ExcSetupFrm: TExcSetupFrm
       Height = 22
       Hint = 'Start and end wavelengths for excitation spectrum'
       ShowHint = True
-      Text = ' 350 - 750 nm'
+      Text = ' 350.00 - 750.00 nm'
       LoValue = 350.000000000000000000
       HiValue = 750.000000000000000000
       LoLimit = 100.000000000000000000
@@ -264,7 +270,7 @@ object ExcSetupFrm: TExcSetupFrm
       NumberFormat = '%.f - %.f'
     end
     object edSpectrumStepSize: TValidatedEdit
-      Left = 120
+      Left = 118
       Top = 44
       Width = 57
       Height = 20
@@ -280,8 +286,8 @@ object ExcSetupFrm: TExcSetupFrm
       HiLimit = 1000.000000000000000000
     end
     object edSpectrumBandwidth: TValidatedEdit
-      Left = 119
-      Top = 72
+      Left = 118
+      Top = 70
       Width = 57
       Height = 20
       Hint = 'Excitation spectrum bandwidth'
@@ -294,6 +300,21 @@ object ExcSetupFrm: TExcSetupFrm
       NumberFormat = '%.4g'
       LoLimit = 1.000000000000000000
       HiLimit = 1000.000000000000000000
+    end
+    object edSpectrumEMFilter: TValidatedEdit
+      Left = 118
+      Top = 96
+      Width = 57
+      Height = 20
+      Hint = 'Excitation spectrum bandwidth'
+      AutoSize = False
+      ShowHint = True
+      Text = ' 1 '
+      Value = 1.000000000000000000
+      Scale = 1.000000000000000000
+      NumberFormat = '%.0f'
+      LoLimit = -1.000000015047466E30
+      HiLimit = 15.000000000000000000
     end
   end
 end

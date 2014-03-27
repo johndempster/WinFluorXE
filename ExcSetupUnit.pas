@@ -9,6 +9,8 @@ unit ExcSetupUnit;
 // 22.04.08 No. wavelengths increased to 20
 //          Multi-wavelength sequence now multi-rate
 // 21.01
+// 05.03.14 Emission filter control and fractional exposure control added
+
 interface
 
 uses
@@ -51,6 +53,8 @@ type
     edDivideFactor: TValidatedEdit;
     edSequenceName: TEdit;
     cbSequence: TComboBox;
+    Label5: TLabel;
+    edSpectrumEMFilter: TValidatedEdit;
     procedure FormShow(Sender: TObject);
     procedure ClearCycleClick(Sender: TObject);
     procedure bAddWavelengthClick(Sender: TObject);
@@ -65,8 +69,11 @@ type
     NumWavelengths : Array[0..MaxSequences-1] of Integer ;
     Sequence : Array[0..MaxFrameType,0..MaxSequences-1] of TEXCSequence ;
     SequenceName : Array[0..MaxSequences-1] of String ;
-    CentreWavelengths : Array[0..WavelengthTableSize-1] of Integer ;
-    WavelengthWidths : Array[0..WavelengthTableSize-1] of Integer ;
+    CentreWavelengths : Array[0..WavelengthTableSize-1] of Integer ;  // Excitation centre wavelength (nm)
+    WavelengthWidths : Array[0..WavelengthTableSize-1] of Integer ;   // Excitation bandwidth (nm)
+    EMFilter : Array[0..WavelengthTableSize-1] of Integer ;           // Emission filter number
+    EMName : Array[0..WavelengthTableSize-1] of string ;             // Emission filter name
+    FractionalExposure : Array[0..WavelengthTableSize-1] of single ;  // Fractional exposure
     procedure DisplaySequence ;
     procedure UpdateWavelengthsTable ;
   public
@@ -88,7 +95,9 @@ const
      WvNum = 0 ;
      WvCentre = 1 ;
      WvWidth = 2 ;
-
+     WvFractExp = 3 ;
+     WvEmFilter = 4 ;
+     WvEmName = 5 ;
 
 procedure TExcSetupFrm.FormShow(Sender: TObject);
 // ---------------------------------------------
@@ -109,15 +118,17 @@ begin
      for i := 0 to WavelengthTableSize-1 do begin
          CentreWavelengths[i] := MainFrm.EXCWavelengths[i].Centre ;
          WavelengthWidths[i] := MainFrm.EXCWavelengths[i].Width ;
+         EMFilter[i] := MainFrm.EXCWavelengths[i].EMFilter ;
+         EMName[i] := MainFrm.EXCWavelengths[i].EMName ;
+         FractionalExposure[i] := MainFrm.EXCWavelengths[i].FractionalExposure ;
          end ;
      UpdateWavelengthsTable ;
 
-     // Copy current excitation settings into interval work variables
+     // Copy current excitation settings into internal work variables
      for iSeq := 0 to MaxEXCSequences-1 do begin
          NumWavelengths[iSeq] := MainFrm.EXCNumWavelengths[iSeq] ;
          SequenceName[iSeq] := MainFrm.EXCSequenceName[iSeq] ;
-         for i := 0 to NumWavelengths[iSeq]-1 do
-             Sequence[i,iSeq] := MainFrm.EXCSequence[i,iSeq] ;
+         for i := 0 to NumWavelengths[iSeq]-1 do Sequence[i,iSeq] := MainFrm.EXCSequence[i,iSeq] ;
          end ;
 
      // Initial Add Wavelength number
@@ -133,13 +144,11 @@ begin
      edSpectrumRange.LoValue := MainFrm.EXCSpectrumStartWavelength ;
      edSpectrumRange.HiValue := MainFrm.EXCSpectrumEndWavelength ;
      edSpectrumBandwidth.Value := MainFrm.EXCSpectrumBandwidth ;
+     edSpectrumEMFilter.Value := MainFrm.EXCSpectrumEMFilter ;
      edSpectrumStepSize.Value := MainFrm.EXCSpectrumStepSize ;
 
      ClientWidth := TableGrp.Left + TableGrp.Width + 5 ;
      ClientHeight :=  bOK.Top + bOK.Height + 10 ;
-
-//     if NumWavelengths > MaxFrameType then bAddWavelength.Enabled := False
-//                                      else bAddWavelength.Enabled := True ;
 
      end;
 
@@ -153,12 +162,22 @@ begin
      { Set excitation wavelength table }
      WaveTable.cells[WvNum,0] := 'No.' ;
      WaveTable.colwidths[WvNum] := WaveTable.DefaultColWidth div 2 ;
+
      WaveTable.cells[WvCentre,0] := ' Wavelength ' ;
-     WaveTable.colwidths[WvCentre] := {WaveTable.Canvas.TextWidth(
-                                     WaveTable.cells[WvCentre,0])}70 ;
+     WaveTable.colwidths[WvCentre] := 70 ;
+
      WaveTable.cells[WvWidth,0] := ' Bandwidth ' ;
-     WaveTable.colwidths[WvWidth] := {WaveTable.Canvas.TextWidth(
-                                     WaveTable.cells[WvWidth,0])}70 ;
+     WaveTable.colwidths[WvWidth] := 65 ;
+
+     WaveTable.cells[WvFractExp,0] := ' % exposure ' ;
+     WaveTable.colwidths[WvFractExp] := 70 ;
+
+     WaveTable.cells[WvEmFilter,0] := ' Em. Filter ' ;
+     WaveTable.colwidths[WvEmFilter] := 50 ;
+
+     WaveTable.cells[WvEmName,0] := ' Em. Range ' ;
+     WaveTable.colwidths[WvEmName] := 80 ;
+
      WaveTable.options := [goEditing,goHorzLine,goVertLine] ;
      WaveTable.RowCount := WavelengthTableSize+1 ;
      for i := 0 to WavelengthTableSize-1 do begin
@@ -170,6 +189,9 @@ begin
          else begin
             WaveTable.cells[WvWidth,i+1] := format( ' %d %%',[WavelengthWidths[i]]) ;
             end ;
+         WaveTable.cells[WvEmFilter,i+1] := format( ' %d ',[EmFilter[i]]) ;
+         WaveTable.cells[WvEmName,i+1] := EmName[i] ;
+         WaveTable.cells[WvFractExp,i+1] := format( ' %.0f%%',[100.0*FractionalExposure[i]]) ;
          end ;
 
      end ;
@@ -299,6 +321,12 @@ begin
              ExtractFloat(WaveTable.cells[WvCentre,i+1],0.0)) ;
          MainFrm.EXCWavelengths[i].Width := Round(
              ExtractFloat(WaveTable.cells[WvWidth,i+1],0.0));
+         MainFrm.EXCWavelengths[i].EmFilter := Round(
+             ExtractFloat(WaveTable.cells[WvEmFilter,i+1],0.0));
+         MainFrm.EXCWavelengths[i].EmName := WaveTable.cells[WvEmName,i+1] ;
+         MainFrm.EXCWavelengths[i].FractionalExposure :=
+             0.01*ExtractFloat(WaveTable.cells[WvFractExp,i+1],1.0);
+
          end ;
 
      // Excitation spectrum options
@@ -307,6 +335,7 @@ begin
      MainFrm.EXCSpectrumEndWavelength := Max( edSpectrumRange.LoValue,
                                               edSpectrumRange.HiValue ) ;
      MainFrm.EXCSpectrumBandwidth := edSpectrumBandwidth.Value ;
+     MainFrm.EXCSpectrumEMFilter := Round(edSpectrumEMFilter.Value) ;
      MainFrm.EXCSpectrumStepSize := Round(edSpectrumStepSize.Value) ;
 
      // Request a timing cycle change
@@ -338,12 +367,23 @@ var
      i,Num : Integer ;
 begin
      if Key = #13 then begin
+
         // Update wavelengths table
         for i := 0 to WavelengthTableSize-1 do begin
+
             CentreWavelengths[i] := Round(ExtractFloat(WaveTable.cells[WvCentre,i+1],0.0)) ;
             WaveTable.cells[WvCentre,i+1] := format( ' %d nm',[CentreWavelengths[i]]) ;
+
             WavelengthWidths[i] := Round(ExtractFloat(WaveTable.cells[WvWidth,i+1],0.0));
             WaveTable.cells[WvWidth,i+1] := format( ' %d nm',[WavelengthWidths[i]]) ;
+
+            FractionalExposure[i] := 0.01*ExtractFloat(WaveTable.cells[WvFractExp,i+1],0.0);
+            WaveTable.cells[WvFractExp,i+1] := format( ' %.0f%%',[100.0*FractionalExposure[i]]) ;
+
+            EmFilter[i] := Round(ExtractFloat(WaveTable.cells[WvEmFilter,i+1],0.0));
+            WaveTable.cells[WvEmFilter,i+1] := format( ' %d ',[EmFilter[i]]) ;
+
+            EmName[i] := WaveTable.cells[WvEmName,i+1]
             end ;
 
         // Create list of excitation wavelengths

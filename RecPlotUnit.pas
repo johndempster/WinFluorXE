@@ -15,12 +15,14 @@ unit RecPlotUnit;
 // 29.07.10 JD Ratio plot no longer runs at double speed when in time lapse mode
 // 20.10.10 JD Display max. duration limit now 20000s
 // 23.07.12 JD
+// 04.03.14 JD ADCBuf now allocated on Heap and no longer limited to 100000 points
+//             to fix A/D stopping with large numbers of channels.
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ValidatedEdit, ExtCtrls, HTMLLabel, ScopeDisplay, math, IDRFile, strutils ;
+  Dialogs, StdCtrls, ValidatedEdit, ExtCtrls, HTMLLabel, ScopeDisplay, math, IDRFile, strutils, labiounit ;
 
 Const
     GreyLevelLimit = $FFFF ;
@@ -88,15 +90,16 @@ type
   private
     { Private declarations }
 
-
     pFLDisplayBuf : Pointer ;   // Pointer to fluorescence time course data buffer
     FLLatestValues : Array[0..MaxFrameType] of Integer ;
 
     TimeLapseMode : Boolean ;   // Time lapse mode flag
     NumFrameTypes : Integer ;  // No. of excitation light frames types in use
     FrameTypes : Array[0..MaxFrameType] of string ;      // Frame wavelengths
+    FrameInterval : double ;                             // Time interval between frames (s)
+    TimeLapseInterval : single ;                         // Time lapse interval (s)
 
-    pADCBuf : Pointer ;
+    ADCBuf : PBig16BitArray ;
     ADCMaxValue : Integer ;
     DACUpdateInterval : Single ;
 
@@ -160,17 +163,17 @@ type
     procedure MagnifyChannelDisplay( ChanNum : Integer ) ;
     procedure ReduceChannelDisplay( ChanNum : Integer ) ;
     procedure ADCInitialiseDisplay(
-              pADCBufIn : Pointer ;
+              pADCBufIn : PBig16BitArray ;
               ADCMaxValueIn : Integer ;
               DACUpdateIntervalIn : Single
               ) ;
 
     procedure ADCUpdateDisplay(
-          ADCBuf : Array of SmallInt ;
-          ADCNumSamplesInBuffer : Integer ;
-          var ADCOldestScan : Integer ;
-          var ADCLatestScan : Integer
-          ) ;
+              pADCBufIn : PBig16BitArray ;
+              ADCNumSamplesInBuffer : Integer ;
+              var ADCOldestScan : Integer ;
+              var ADCLatestScan : Integer
+              ) ;
 
     procedure ClearDisplays ;
 
@@ -179,6 +182,8 @@ type
               TimeLapseModeIn : Boolean ;
               FrameTypesIn : Array of String ;
               NumFrameTypesIn : Integer ;
+              FrameIntervalIn : double ;
+              TimeLapseIntervalIn : single ;
               UpdateYRange : Boolean
               ) ;
     function FLUpdateDisplay(
@@ -206,7 +211,7 @@ var
 
 implementation
 
-uses Main, LabIOUnit, Recunit, SealTest ;
+uses Main, Recunit, SealTest ;
 
 type
     TIntArray = Array[0..999999] of Integer ;
@@ -368,11 +373,11 @@ begin
 
     if TimeLapseMode then begin
        // Time lapse mode
-        TFrameGroupInterval := MainFrm.TimeLapseInterval  / NumFrameTypes ; // / scFLDisplay.NumChannels 29/7/10;
+        TFrameGroupInterval := TimeLapseInterval  / NumFrameTypes ; // / scFLDisplay.NumChannels 29/7/10;
        end
     else begin
        // Continuous recording
-       TFrameGroupInterval := MainFrm.Cam1.FrameInterval ;
+       TFrameGroupInterval := FrameInterval ;
        end ;
     if TFrameGroupInterval <= 0.0 then Exit ;
 
@@ -398,7 +403,7 @@ begin
 
 
 procedure TRecPlotFrm.ADCInitialiseDisplay(
-          pADCBufIn : Pointer ;
+          pADCBufIn : PBig16BitArray ;
           ADCMaxValueIn : Integer ;
           DACUpdateIntervalIn : Single
           ) ;
@@ -416,7 +421,7 @@ begin
      if (MainFrm.ADCNumChannels <= 0) or (pADCBufIn = Nil) then Exit ;
      if DACUpdateIntervalIn <= 0.0 then Exit ;
 
-     pADCBuf := pADCBufIn ;
+     ADCBuf := pADCBufIn ;
      ADCMaxValue := ADCMaxValueIn ;
      DACUpdateInterval := DACUpdateIntervalIn ;
 
@@ -485,7 +490,7 @@ begin
 
 
 procedure TRecPlotFrm.ADCUpdateDisplay(
-          ADCBuf : Array of SmallInt ;
+          pADCBufIn : PBig16BitArray ;
           ADCNumSamplesInBuffer : Integer ;
           var ADCOldestScan : Integer ;
           var ADCLatestScan : Integer
@@ -499,6 +504,9 @@ var
     y : Integer ;
     s : String ;
 begin
+
+     if pADCBufIn = Nil then Exit ;
+     ADCBuf := pADCBufIn ;
 
      ResizeControls ;
 
@@ -518,7 +526,7 @@ begin
         // Determine min. / max. value & order of samples within compression block
         for ch := 0 to MainFrm.ADCNumChannels-1 do begin
 
-            y := ADCBuf[ADCOldestScan+ch] ;
+            y := ADCBuf^[ADCOldestScan+ch] ;
 
             if y < ADCyMin[ch] then begin
                ADCyMin[ch] := y ;
@@ -577,7 +585,7 @@ begin
      for ch := 0 to MainFrm.ADCNumChannels-1 do begin
          s := s + format('%s=%7.4g %s<br>',
          [MainFrm.ADCChannel[ch].ADCName,
-         ( ADCBuf[ADCLatestScan + MainFrm.ADCChannel[ch].ChannelOffset]
+         ( ADCBuf^[ADCLatestScan + MainFrm.ADCChannel[ch].ChannelOffset]
            - scADCDisplay.HorizontalCursors[ch] )*MainFrm.ADCChannel[ch].ADCScale,
          MainFrm.ADCChannel[ch].ADCUnits]) ;
          end ;
@@ -592,8 +600,14 @@ procedure TRecPlotFrm.ClearDisplays ;
 // --------------------------------
 begin
 
-    FLInitialiseDisplay( pFLDisplayBuf, TimeLapseMode, FrameTypes, NumFrameTypes, False ) ;
-    ADCInitialiseDisplay( pADCBuf,ADCMaxValue,DACUpdateInterval) ;
+    FLInitialiseDisplay( pFLDisplayBuf,
+                         TimeLapseMode,
+                         FrameTypes,
+                         NumFrameTypes,
+                         FrameInterval,
+                         TimeLapseInterval,
+                         False ) ;
+    ADCInitialiseDisplay( ADCBuf,ADCMaxValue,DACUpdateInterval) ;
     SetDisplayUnits ;
 
     end ;
@@ -604,6 +618,8 @@ procedure TRecPlotFrm.FLInitialiseDisplay(
           TimeLapseModeIn : Boolean ;
           FrameTypesIn : Array of String ;
           NumFrameTypesIn : Integer ;
+          FrameIntervalIn : double ;
+          TimeLapseIntervalIn : single ;
           UpdateYRange : Boolean
           ) ;
 // --------------------------------------
@@ -622,6 +638,10 @@ begin
      NumFrameTypes := NumFrameTypesIn ;
      for i := 0 to NumFrameTypesIn-1 do
          FrameTypes[i] := FrameTypesIn[i] ;
+     FrameInterval := FrameIntervalIn ;
+     if FrameInterval <= 0.0 then FrameInterval := 1.0 ;
+     TimeLapseInterval := TimeLapseIntervalIn ;
+     if TimeLapseInterval <= 0.0 then TimeLapseInterval := 1.0 ;
 
      // Set numerator and denominator wavelength lists
      cbNumerator.Clear ;
@@ -646,15 +666,15 @@ begin
     MainFrm.ADCDisplayWindow := edTDisplay.Value ;
     if TimeLapseMode then begin
        // Time lapse mode
-       scFLDisplay.MaxPoints := Round( MainFrm.ADCDisplayWindow/MainFrm.TimeLapseInterval ) ;
-       MainFrm.ADCDisplayWindow := scFLDisplay.MaxPoints*MainFrm.TimeLapseInterval ;
-       scFLDisplay.TScale := MainFrm.TimeLapseInterval / NumFrameTypes ;
+       scFLDisplay.MaxPoints := Round( MainFrm.ADCDisplayWindow/TimeLapseInterval ) ;
+       MainFrm.ADCDisplayWindow := scFLDisplay.MaxPoints*TimeLapseInterval ;
+       scFLDisplay.TScale := TimeLapseInterval / NumFrameTypes ;
        end
     else begin
        // Continuous recording
-       scFLDisplay.MaxPoints := Round( MainFrm.ADCDisplayWindow/(MainFrm.Cam1.FrameInterval) ) ;
-       MainFrm.ADCDisplayWindow := scFLDisplay.MaxPoints*MainFrm.Cam1.FrameInterval ;
-       scFLDisplay.TScale := MainFrm.Cam1.FrameInterval ;
+       scFLDisplay.MaxPoints := Round( MainFrm.ADCDisplayWindow/FrameInterval ) ;
+       MainFrm.ADCDisplayWindow := scFLDisplay.MaxPoints*FrameInterval ;
+       scFLDisplay.TScale := FrameInterval ;
        end ;
     edTDisplay.Value := MainFrm.ADCDisplayWindow ;
 

@@ -16,18 +16,17 @@ unit ExportImagesUnit;
 // 09.05.08 ... Dual-rate, multiwavelength support added
 // 19.05.09 ... '/' replaced in export file names with '-' to avoid
 //              "Unable to create" errors when exporting ratio image files
-
+// 10.03.14 ... Multiple files can now be selected for export
+//              User can no longer changed export name
+//              (n) added to end of files when file name already exists
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, RangeEdit, ImageFile, ExtCtrls, ValidatedEdit, IDRFile, strutils, math ;
+  Dialogs, StdCtrls, RangeEdit, ImageFile, ExtCtrls, ValidatedEdit, IDRFile, strutils, math, UITypes ;
 
 type
   TExportImagesFrm = class(TForm)
-    GroupBox1: TGroupBox;
-    edFileName: TEdit;
-    bChangeName: TButton;
     GroupBox2: TGroupBox;
     rbAllFrames: TRadioButton;
     rbRange: TRadioButton;
@@ -55,14 +54,18 @@ type
     rbSeparate: TRadioButton;
     rbSingleFrameType: TRadioButton;
     cbFrameType: TComboBox;
+    FilesToExportGrp: TGroupBox;
+    bSelectFilesToExport: TButton;
+    OpenDialog: TOpenDialog;
+    meFiles: TMemo;
     procedure FormShow(Sender: TObject);
-    procedure rbBioRadClick(Sender: TObject);
     procedure bOKClick(Sender: TObject);
-    procedure bChangeNameClick(Sender: TObject);
     procedure bCancelClick(Sender: TObject);
     procedure edRangeKeyPress(Sender: TObject; var Key: Char);
+    procedure bSelectFilesToExportClick(Sender: TObject);
   private
     { Private declarations }
+    FileOnDisplay : string ;
     ExportFileExtension : String ;
     function UpdateFileExtension( FileName : String ) : String ;
 
@@ -110,9 +113,14 @@ begin
         end ;
     if cbFrameType.Items.Count > 0 then cbFrameType.ItemIndex := 0 ;
 
+    FileOnDisplay := MainFrm.IDRFile.FileName ;
+
      // Export file name
-     edFileName.Text := UpdateFileExtension(MainFrm.IDRFile.FileName) ;
      bOK.Enabled := True ;
+
+     // Add currently open file to export list
+     meFiles.Clear ;
+     meFiles.Lines.Add(MainFrm.IDRFile.FileName) ;
 
      end;
 
@@ -141,7 +149,6 @@ procedure TExportImagesFrm.ExportFile ;
 var
     FrameNum : Integer ; // Frame counter
     PFrameBuf : PIntArray ; // Image frame buffer pointer
-    PixelDepth : Integer ;
     FrameWidth : Integer ;  // Export frame width (pixels)
     FrameHeight : Integer ; // Export frame height (pixels)
     ROINum : Integer ;      // ROI number in use
@@ -150,227 +157,224 @@ var
     iEndFrame : Integer ;
     iStep : Integer ;
     NumFramesExported : Integer ;
-    FrameType,NumFrameTypeFiles : Integer ;
-    s : String ;
+    NumFrameTypeFiles : Integer ;
+    s,sNew : String ;
     ROIList : Array[0..cMaxROIs+MaxFrameType+1] of Integer ;
     FrameTypeList : Array[0..MaxFrameType+1] of String ;
     FrameTypeListNum : Array[0..MaxFrameType+1] of Integer ;
     iROI,NumROIFiles : Integer ;
-    iFT : Integer ;
-    FileName : String ;
+    iFT,iFile,iRep : Integer ;
+    FileName,ExportFileName : String ;
+
 begin
 
-     // Range of frames to be exported
-     if rbAllFrames.Checked then begin
-        iStartFrame := 1 ;
-        iEndFrame := MainFrm.IDRFile.NumFrames ;
-        end
-     else begin
-        iStartFrame := Round(edRange.LoValue) ;
-        // Ensure frame range starts on frame type 0
-        iStartFrame := (((iStartFrame -1) div MainFrm.IDRFile.FrameTypeCycleLength)*
-                       MainFrm.IDRFile.FrameTypeCycleLength) + 1 ;
-        iEndFrame := Round(edRange.HiValue) ;
-        iEndFrame := (((iEndFrame -1) div MainFrm.IDRFile.FrameTypeCycleLength)*
-                     MainFrm.IDRFile.FrameTypeCycleLength)
-                     + MainFrm.IDRFile.FrameTypeCycleLength ;
-        end ;
+     for iFile := 0 to meFiles.Lines.Count-1 do begin
 
-     // Frame step interval
-     iStep := (Round(edSkip.Value) + 1) ;
+         // Close existing file
+         MainFrm.IDRFile.CloseFile ;
 
-     // Determine if sufficient disk space available
- //    NumFramesExported := 0 ;
- //    for i := 0 to NumFrameTypes-1 do if UseFrameType(i) then begin
- //        NumFramesExported := NumFramesExported + ((iEndFrame - iStartFrame +1) div iStep ) ;
- //        end ;
+         // Open file to export
+         MainFrm.IDRFile.OpenFile( meFiles.Lines[iFile]) ;
+         ExportFileName := UpdateFileExtension(MainFrm.IDRFile.FileName) ;
 
-//     Disabled because not working reliably 24/9/6
-//     if not MainFrm.IDRFile.DiskSpaceAvailable( NumFramesExported ) then begin
-//        ShowMessage( 'Insufficient disk space!' ) ;
-//        Exit ;
-//        end ;
-
-     // Create export file
-
-     // Get width of output image frame
-     if rbWholeImage.Checked then begin
-        // Whole image
-        ROIList[0] := -1 ;
-        NumROIFiles := 1 ;
-        end
-     else if rbAllROIs.Checked then begin
-        // All ROIs
-        NumROIFiles := 0 ;
-        for i := 1 to MainFrm.IDRFile.MaxROI do
-            if MainFrm.IDRFile.ROI[i].InUse then begin
-            ROIList[NumROIFiles] := i ;
-            Inc(NumROIFiles) ;
+         // Range of frames to be exported
+         if rbAllFrames.Checked then begin
+            iStartFrame := 1 ;
+            iEndFrame := MainFrm.IDRFile.NumFrames ;
+            end
+         else begin
+            iStartFrame := Min( Round(edRange.LoValue), MainFrm.IDRFile.NumFrames) ;
+            // Ensure frame range starts on frame type 0
+            iStartFrame := (((iStartFrame -1) div MainFrm.IDRFile.FrameTypeCycleLength)*
+                           MainFrm.IDRFile.FrameTypeCycleLength) + 1 ;
+            iEndFrame := Round(edRange.HiValue) ;
+            iEndFrame := (((iEndFrame -1) div MainFrm.IDRFile.FrameTypeCycleLength)*
+                          MainFrm.IDRFile.FrameTypeCycleLength)
+                          + MainFrm.IDRFile.FrameTypeCycleLength ;
+            iEndFrame := Min( iEndFrame, MainFrm.IDRFile.NumFrames) ;
             end ;
-        end
-     else begin
-        // Selected ROI
-        ROIList[0] := Integer(cbROINum.Items.Objects[cbROINum.ItemIndex]) ;
-        NumROIFiles := 1 ;
-        end ;
 
-     // Number of frame type files to be output
-     // (1 when frames types interleaved, 1 per frame type when separate file)
-     if rbInterleaved.Checked then begin
-        // All frame types (interleaved in single file)
-        FrameTypeList[0] := '' ;
-        for i:= 0 to cbFrameType.Items.Count-1 do begin
-           if i <> 0 then FrameTypeList[0] := FrameTypeList[0] + '-' ;
-           FrameTypeList[0] := FrameTypeList[0] + cbFrameType.Items[i] ;
-           FrameTypeList[0] := ANSIReplaceText(FrameTypeList[0],' nm','') ;
-           FrameTypeList[0] := ANSIReplaceText(FrameTypeList[0],' ','') ;
-           end ;
-        FrameTypeListNum[0] := 0 ;
-        NumFrameTypeFiles := 1 ;
-        end
-     else if rbSingleFrameType.Checked then begin
-        // Single frame type
-        FrameTypeList[0] := cbFrameType.Text ;
-        FrameTypeList[0] := ANSIReplaceText(FrameTypeList[0],' nm','') ;
-        FrameTypeList[0] := ANSIReplaceText(FrameTypeList[0],' ','') ;
-        FrameTypeListNum[0] := cbFrameType.ItemIndex ;
-        NumFrameTypeFiles := 1 ;
-        end
-     else begin
-       // All frame types (separate files)
-       for i:= 0 to cbFrameType.Items.Count-1 do begin
-           FrameTypeList[i] := cbFrameType.Items[i] ;
-           FrameTypeListNum[i] := i ;
-           FrameTypeList[i] := ANSIReplaceText(FrameTypeList[i],' nm','') ;
-           FrameTypeList[i] := ANSIReplaceText(FrameTypeList[i],' ','') ;
-           end ;
-       NumFrameTypeFiles := cbFrameType.Items.Count ;
-       end ;
+         // Frame step interval
+         iStep := (Round(edSkip.Value) + 1) ;
 
-     // Allocate frame buffer
-     GetMem( PFrameBuf, MainFrm.IDRFile.NumPixelsPerFrame*4 ) ;
+         // Create export file
 
-     // Copy frames to file
-     bOK.Enabled := False ;
-
-     for iROI := 0 to NumROIFiles-1 do begin
-
-         for iFT := 0 to NumFrameTypeFiles-1 do begin
-
-             if bOK.Enabled then Break ;
-
-             // ROI to be output
-             ROINum := ROIList[iROI] ;
-
-             // Get size of image
-             if ROINum < 0 then begin
-                // Whole image
-                FrameWidth := MainFrm.IDRFile.FrameWidth ;
-                FrameHeight := MainFrm.IDRFile.FrameHeight ;
-                end
-             else begin
-                // Region of interest
-                FrameWidth := MainFrm.IDRFile.ROI[ROINum].BottomRight.X -
-                              MainFrm.IDRFile.ROI[ROINum].TopLeft.X + 1 ;
-                FrameHeight := MainFrm.IDRFile.ROI[ROINum].BottomRight.Y -
-                               MainFrm.IDRFile.ROI[ROINum].TopLeft.Y + 1 ;
+         // Get width of output image frame
+         if rbWholeImage.Checked then begin
+            // Whole image
+            ROIList[0] := -1 ;
+            NumROIFiles := 1 ;
+            end
+         else if rbAllROIs.Checked then begin
+            // All ROIs
+            NumROIFiles := 0 ;
+            for i := 1 to MainFrm.IDRFile.MaxROI do
+                if MainFrm.IDRFile.ROI[i].InUse then begin
+                ROIList[NumROIFiles] := i ;
+                Inc(NumROIFiles) ;
                 end ;
+            end
+         else begin
+            // Selected ROI
+            ROIList[0] := Integer(cbROINum.Items.Objects[cbROINum.ItemIndex]) ;
+            NumROIFiles := 1 ;
+            end ;
 
-             s := format('[%d-%d_',[iStartFrame,iEndFrame]) ;
-
-             // Frame types used
-             s := s + FrameTypeList[iFT] ;
-
-             if not rbWholeImage.Checked then s := s + format('_ROI%d',[ROINum]) ;
-
-             // Add to end of export file name
-             for i := 1 to 2 do s := ANSIReplaceText( s, '/', '-' ) ;
-             s := s + ']' + ExportFileExtension ;
-             FileName := ANSIReplaceText( edFileName.text, ExportFileExtension, s ) ;
-
-             // Let user cancel if file already exists
-             if FileExists( FileName ) then begin
-             if MessageDlg( format(
-                'File %s already exists! Do you want to overwrite it? ',[edFileName.Text]),
-                mtWarning,[mbYes,mbNo], 0 ) = mrNo then Break ;
+         // Number of frame type files to be output
+         // (1 when frames types interleaved, 1 per frame type when separate file)
+         if rbInterleaved.Checked then begin
+            // All frame types (interleaved in single file)
+            FrameTypeList[0] := '' ;
+            for i:= 0 to cbFrameType.Items.Count-1 do begin
+                if i <> 0 then FrameTypeList[0] := FrameTypeList[0] + '-' ;
+                FrameTypeList[0] := FrameTypeList[0] + cbFrameType.Items[i] ;
+                FrameTypeList[0] := ANSIReplaceText(FrameTypeList[0],' nm','') ;
+                FrameTypeList[0] := ANSIReplaceText(FrameTypeList[0],' ','') ;
                 end ;
-
-             // Create file
-             if not ImageFile.CreateFile( FileName,
-                                          FrameWidth,
-                                          FrameHeight,
-                                          MainFrm.IDRFile.NumBytesPerPixel*8,
-                                          1,
-                                          False ) then begin
-                MainFrm.StatusBar.SimpleText := 'Unable to create : ' + FileName ;
-                Break ;
+            FrameTypeListNum[0] := 0 ;
+            NumFrameTypeFiles := 1 ;
+            end
+         else if rbSingleFrameType.Checked then begin
+            // Single frame type
+            FrameTypeList[0] := cbFrameType.Text ;
+            FrameTypeList[0] := ANSIReplaceText(FrameTypeList[0],' nm','') ;
+            FrameTypeList[0] := ANSIReplaceText(FrameTypeList[0],' ','') ;
+            FrameTypeListNum[0] := cbFrameType.ItemIndex ;
+            NumFrameTypeFiles := 1 ;
+            end
+          else begin
+            // All frame types (separate files)
+            for i:= 0 to cbFrameType.Items.Count-1 do begin
+                FrameTypeList[i] := cbFrameType.Items[i] ;
+                FrameTypeListNum[i] := i ;
+                FrameTypeList[i] := ANSIReplaceText(FrameTypeList[i],' nm','') ;
+                FrameTypeList[i] := ANSIReplaceText(FrameTypeList[i],' ','') ;
                 end ;
+            NumFrameTypeFiles := cbFrameType.Items.Count ;
+            end ;
 
-             FrameNum := iStartFrame ;
-             NumFramesExported := 0 ;
-             While FrameNum <= iEndFrame do begin
+          // Allocate frame buffer
+          GetMem( PFrameBuf, MainFrm.IDRFile.NumPixelsPerFrame*4 ) ;
 
-                 // Export selected frames
-                 if rbInterleaved.Checked or (MainFrm.IDRFile.TypeOfFrame(FrameNum) = FrameTypeListNum[iFT]) then begin
+          // Copy frames to file
+          bOK.Enabled := False ;
 
-                    // Load frame
-                    if not MainFrm.IDRFile.LoadFrame32(FrameNum,PFrameBuf) then break ;
-
-                    // If region of interest selected, extract it
-                    if ROINum >= 0 then begin
-                       i := 0 ;
-                       for y := MainFrm.IDRFile.ROI[ROINum].TopLeft.Y to
-                           MainFrm.IDRFile.ROI[ROINum].BottomRight.Y do
-                           for x := MainFrm.IDRFile.ROI[ROINum].TopLeft.X to
-                               MainFrm.IDRFile.ROI[ROINum].BottomRight.X do begin
-                               PFrameBuf[i] := PFrameBuf[y*MainFrm.IDRFile.FrameWidth + x] ;
-                               Inc(i) ;
-                               end ;
-                       end ;
-
-                    // Save frame
-                    Inc(NumFramesExported) ;
-                    ImageFile.SaveFrame32( NumFramesExported, PFrameBuf ) ;
-
-                    MainFrm.StatusBar.SimpleText := format(
-                    'Exporting %d/%d frames (%d) to %s',
-                    [FrameNum,iEndFrame,NumFramesExported,FileName]) ;
-                    Application.ProcessMessages ;
-
-                    if bOK.Enabled then Break ;
-
+          for iROI := 0 to NumROIFiles-1 do begin
+              for iFT := 0 to NumFrameTypeFiles-1 do begin
+                  if bOK.Enabled then Break ;
+                  // ROI to be output
+                  ROINum := ROIList[iROI] ;
+                 // Get size of image
+                 if ROINum < 0 then begin
+                    // Whole image
+                    FrameWidth := MainFrm.IDRFile.FrameWidth ;
+                    FrameHeight := MainFrm.IDRFile.FrameHeight ;
+                    end
+                  else begin
+                    // Region of interest
+                    FrameWidth := MainFrm.IDRFile.ROI[ROINum].BottomRight.X -
+                                  MainFrm.IDRFile.ROI[ROINum].TopLeft.X + 1 ;
+                    FrameHeight := MainFrm.IDRFile.ROI[ROINum].BottomRight.Y -
+                                  MainFrm.IDRFile.ROI[ROINum].TopLeft.Y + 1 ;
                     end ;
 
-                 FrameNum := FrameNum + iStep ;
+                  s := format('[%d-%d_',[iStartFrame,iEndFrame]) ;
 
-                 end ;
+                  // Frame types used
+                  s := s + FrameTypeList[iFT] ;
 
-             // Close file
-             ImageFile.CloseFile ;
+                  if not rbWholeImage.Checked then s := s + format('_ROI%d',[ROINum]) ;
 
-             // Report
-             s := format( 'Export: %d frames %d-%d exported to %s',
-                         [NumFramesExported,iStartFrame,iEndFrame,FileName]) ;
-             MainFrm.StatusBar.SimpleText := s ;
-             LogFrm.AddLine(s) ;
+                  // Add to end of export file name
+                  for i := 1 to 2 do s := ANSIReplaceText( s, '/', '-' ) ;
+                  s := s + ']' + ExportFileExtension ;
+                  FileName := ANSIReplaceText( ExportFileName, ExportFileExtension, s ) ;
 
-             end ;
-         end ;
+                  // Add (n) to end of file name until no file exists with same  name
+                  s := '' ;
+                  iRep := 1 ;
+                  while FileExists(FileName) do begin
+                       sNew := format('(%d)',[iRep]) ;
+                       FileName := ANSIReplaceText( FileName, s+ExportFileExtension, sNew+ExportFileExtension ) ;
+                       s := sNew ;
+                       Inc(iRep) ;
+                       end;
 
-    FreeMem( PFrameBuf ) ;
+                  // Create file
+                  if not ImageFile.CreateFile( FileName,
+                                               FrameWidth,
+                                               FrameHeight,
+                                               MainFrm.IDRFile.NumBytesPerPixel*8,
+                                               1,
+                                               False ) then begin
+                     MainFrm.StatusBar.SimpleText := 'Unable to create : ' + FileName ;
+                     Break ;
+                     end ;
+
+                  FrameNum := iStartFrame ;
+                  NumFramesExported := 0 ;
+                  While FrameNum <= iEndFrame do begin
+
+                      // Export selected frames
+                      if rbInterleaved.Checked or (MainFrm.IDRFile.TypeOfFrame(FrameNum)
+                         = FrameTypeListNum[iFT]) then begin
+
+                         // Load frame
+                         if not MainFrm.IDRFile.LoadFrame32(FrameNum,PFrameBuf) then break ;
+
+                         // If region of interest selected, extract it
+                         if ROINum >= 0 then begin
+                            i := 0 ;
+                            for y := MainFrm.IDRFile.ROI[ROINum].TopLeft.Y to
+                                MainFrm.IDRFile.ROI[ROINum].BottomRight.Y do
+                                for x := MainFrm.IDRFile.ROI[ROINum].TopLeft.X to
+                                    MainFrm.IDRFile.ROI[ROINum].BottomRight.X do begin
+                                    PFrameBuf[i] := PFrameBuf[y*MainFrm.IDRFile.FrameWidth + x] ;
+                                    Inc(i) ;
+                                    end ;
+                            end ;
+
+                          // Save frame
+                          Inc(NumFramesExported) ;
+                          ImageFile.SaveFrame32( NumFramesExported, PFrameBuf ) ;
+
+                          MainFrm.StatusBar.SimpleText := format(
+                          'Exporting %d/%d frames (%d) to %s',
+                          [FrameNum,iEndFrame,NumFramesExported,FileName]) ;
+                          Application.ProcessMessages ;
+
+                          if bOK.Enabled then Break ;
+
+                          end ;
+
+                     FrameNum := FrameNum + iStep ;
+
+                     end ;
+
+                  // Close file
+                  ImageFile.CloseFile ;
+
+                  // Report
+                  s := format( 'Export: %d frames %d-%d exported to %s',
+                               [NumFramesExported,iStartFrame,iEndFrame,FileName]) ;
+                  MainFrm.StatusBar.SimpleText := s ;
+                  LogFrm.AddLine(s) ;
+
+                  end ;
+               end ;
+
+          FreeMem( PFrameBuf ) ;
+          end;
 
     bOK.Enabled := True ;
 
+    // Close existing file
+    MainFrm.IDRFile.CloseFile ;
+    // Open file to export
+    MainFrm.IDRFile.OpenFile( FileOnDisplay ) ;
+
+
     end ;
-
-
-procedure TExportImagesFrm.rbBioRadClick(Sender: TObject);
-// --------------------------
-// Export file format changed
-// --------------------------
-begin
-     edFileName.Text := UpdateFileExtension(edFileName.Text) ;
-     end;
 
 
 procedure TExportImagesFrm.bOKClick(Sender: TObject);
@@ -382,30 +386,25 @@ begin
      end;
 
 
-procedure TExportImagesFrm.bChangeNameClick(Sender: TObject);
-// -----------------------------------
-// Change name / folder of export file
-// -----------------------------------
+procedure TExportImagesFrm.bSelectFilesToExportClick(Sender: TObject);
+// ----------------------------
+// Select files to be exported
+// ----------------------------
 begin
 
-     SaveDialog.InitialDir := ExtractFilePath( edFileName.Text ) ;
-     SaveDialog.Title := 'Export File ' ;
-     SaveDialog.options := [ofHideReadOnly,ofPathMustExist] ;
-     SaveDialog.DefaultExt := ExtractFileExt( edFileName.Text ) ;
-     SaveDialog.Filter := ' BioRad PIC (*.pic)|*.pic|' +
-                          ' MetaMorph STK (*.stk)|*.stk|' +
-                          ' TIFF (*.tif)|*.tif' ;
+     OpenDialog.InitialDir := ExtractFilePath( FileOnDisplay ) ;
+     OpenDialog.Title := ' Files to be Exported ' ;
+     OpenDialog.options := [ofHideReadOnly,ofPathMustExist,ofAllowMultiSelect] ;
+     OpenDialog.DefaultExt := '.idr' ;
+     OpenDialog.Filter := ' WinFluor (*.idr)|*.idr' ;
 
-     if rbBioRad.Checked then  SaveDialog.FilterIndex := 1
-     else if rbMetaMorph.Checked then  SaveDialog.FilterIndex := 2
-     else SaveDialog.FilterIndex := 3 ;
-
-     SaveDialog.FileName := '' ;
-     if SaveDialog.Execute then begin
-        edFileName.Text := UpdateFileExtension(SaveDialog.FileName) ;
+     OpenDialog.FileName := '' ;
+     if OpenDialog.Execute then begin
+       // edFileName.Text := UpdateFileExtension(OpenDialog.FileName) ;
         end ;
-
+     meFiles.Lines.Assign(OpenDialog.Files);
      end ;
+
 
 procedure TExportImagesFrm.bCancelClick(Sender: TObject);
 begin
