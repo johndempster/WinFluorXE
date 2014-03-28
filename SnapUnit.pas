@@ -715,6 +715,7 @@ begin
      // Determine number of frame within circular buffer
 
      case MainFrm.CameraType of
+
         RS_PVCAM_PENTAMAX : Begin
           // Pentamax has limited buffer size
           NumFramesInBuffer :=  (4194304 div
@@ -738,8 +739,10 @@ begin
            end ;
 
         RS_PVCAM : begin
-           NumFramesInBuffer :=  (20000000 div
-                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
+//           NumFramesInBuffer :=  (20000000 div
+//                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
+           NumFramesInBuffer := Min( (Round(8.0/edFrameInterval.Value) div 2)*2,
+                                      (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
            end ;
 
         DCAM : begin

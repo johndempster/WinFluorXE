@@ -1175,8 +1175,8 @@ begin
       MainFrm.Cam1.ShortenExposureBy := Max(MainFrm.Cam1.ShortenExposureBy,LightSource.EMFilterChangeTime) ;
       end;
 
-   // Set exposure interval
-   MainFrm.Cam1.FrameInterval := edFrameInterval.Value ;
+   // Set exposure interval (ensure it is a multiple of A/D & D/A timing interval)
+   MainFrm.Cam1.FrameInterval := Round(edFrameInterval.Value/MainFrm.ADCScanInterval)*MainFrm.ADCScanInterval ;
    edFrameInterval.Value := MainFrm.Cam1.FrameInterval ;
 
    // Set image/display panels
@@ -1447,7 +1447,12 @@ begin
            end ;
 
         RS_PVCAM : begin
-           NumFramesInBuffer :=  (20000000 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
+           NumFramesInBuffer := Round(5.0/edFrameInterval.Value) ;
+           NumFramesInBuffer := Min( NumFramesInBuffer,
+                                     MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
+           NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
+           NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
+//           NumFramesInBuffer :=  (20000000 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
            end ;
 
         DCAM : begin
@@ -1697,7 +1702,6 @@ begin
 
      for i := StartAt to EndAt do begin
          iFlag := i*NumPixelsPerFrame ;
-         outputdebugstring(pchar(format('%d/%d',[i,endat])));
          if ByteImage then begin
             PByteArray(PFrameBuf)^[iFlag] := ByteLoValue ;
             PByteArray(PFrameBuf)^[iFlag+1] := ByteHiValue ;
@@ -1760,8 +1764,6 @@ begin
 
      // No. of DAC time points per camera frame
      NumDACPointsPerFrame := Round(MainFrm.Cam1.FrameInterval/DACUpdateInterval) ;
-     MainFrm.Cam1.FrameInterval := NumDACPointsPerFrame*DACUpdateInterval ;
-     edFrameInterval.Value := MainFrm.Cam1.FrameInterval ;
 
      // Max. number of frames which can fit into allowed DAC buffer
      MaxDACs := 1 ;
@@ -1859,8 +1861,6 @@ begin
      // Total number of DAC updates in timing cycle
      NumFramesPerCycle := Max(Round(5.0/MainFrm.Cam1.FrameInterval) div NumFramesPerCycle,1)*NumFramesPerCycle ;
      NumDACPointsPerCycle := NumDACPointsPerFrame*NumFramesPerCycle ;
-
-//   outputdebugString(PChar(format('NumFramesPerCycle %d %d',[NumFramesPerCycle,NumDACPointsPerCycle]))) ;
 
      // Allocate D/A waveform buffers
      for Device := 1 to LabIO.NumDevices do begin
@@ -3178,8 +3178,6 @@ begin
      if ADCActiveBuffer < 0 then ADCActiveBuffer := ADCNumSamplesInBuffer - 1 ;
      ADCActiveBuffer := ADCActiveBuffer div ADCNumSamplesInWriteBuffer ;
 //      if RecordingMode <= rmStopADCRecording then
- //     outputdebugString(PChar(format(
-//     '%d %d %d %d %d',[ADCOldestScan,ADCLatestScan,ADCActiveBuffer,ADCWRiteBuffer,ADCEmptyPointer]))) ;
      RecPlotFrm.ADCUpdateDisplay( ADCBuf, ADCNumSamplesInBuffer, ADCOldestScan, ADCLatestScan ) ;
 
      // Write buffer changed
@@ -3397,10 +3395,8 @@ begin
                  end ;
 
               Inc(NumFramesTotal) ;
-
               // Most recent available frames (indexed by type)
               LatestFrames[FrameType] := FrameNum  ;
-//              LatestFramesDisplayed[FrameType] := False  ;
 
               // Increment frame pointer
               Inc(FrameNum) ;
@@ -3534,7 +3530,6 @@ begin
                                                   @PByteArray(PFrameBuf)[iStart]) ;
                  NumFramesDone :=  NumFramesDone + NumFramesToSave ;
                  if NumFramesDone >= NumFramesRequired then RecordingMode := rmStopFrameRecording ;
-                 outputdebugstring(pchar(format('istart=%d,NumBytesPerFrame=%d',[istart,NumBytesPerFrame])));
                  end
               else begin
 
@@ -3621,7 +3616,6 @@ begin
                                                      NumFramesToSave,
                                                      PTimeLapseBuf) ;
                     NumFramesDone :=  NumFramesDone + NumFramesToSave ;
-                    //outputdebugstring(pchar(format('%d %d',[NumFramesDone,NumFramesRequired])));
                     if NumFramesDone >= NumFramesRequired then RecordingMode := rmStopFrameRecording ;
                     end ;
 
