@@ -533,6 +533,8 @@ begin
 
    // Set exposure interval
    MainFrm.Cam1.FrameInterval := edFrameInterval.Value ;
+   // Update exposure interval in case camera has changed it
+   edFrameInterval.Value := MainFrm.Cam1.FrameInterval ;
 
    // Set image/display panels
    MainFrm.StatusBar.SimpleText := 'Wait ... Initialising image' ;
@@ -544,9 +546,6 @@ begin
       MainFrm.StatusBar.SimpleText := 'Aborted ... Unable to start camera (not enough memory)!' ;
       Exit ;
       end;
-
-   // Update exposure interval in case camera has changed it
-   edFrameInterval.Value := MainFrm.Cam1.FrameInterval ;
 
    TStart := TimeGetTime ;
    FrameRateCounter := 0 ;

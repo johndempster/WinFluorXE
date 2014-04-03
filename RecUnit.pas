@@ -142,7 +142,7 @@ unit RecUnit;
 // 18.02.14 DCAM NumFramesInBuffer now same as Andor SDK3
 // 28.02.14 Emission filter control added and position of shading group moved to below light source group
 // 05.03.14 50/50 top/bottom split Image mode added
-//          Bulb exposure mode added
+// 03.04.14 Bulb exposure mode added.
 
 {$DEFINE USECONT}
 
@@ -1150,8 +1150,13 @@ begin
    CameraRunning := False ;
 
    // Set camera trigger mode
-   if MainFrm.IOConfig.CameraStart > MaxResources then MainFrm.Cam1.TriggerMode := CamFreeRun
-                                                  else MainFrm.Cam1.TriggerMode := CamExtTrigger ;
+   if MainFrm.IOConfig.CameraStart > MaxResources then begin
+      MainFrm.Cam1.TriggerMode := CamFreeRun ;
+      end
+   else begin
+      if MainFrm.BulbExposureMode then MainFrm.Cam1.TriggerMode := CamBulbMode
+                                  else MainFrm.Cam1.TriggerMode := CamExtTrigger ;
+   end;
 
    // Set camera gain
    MainFrm.Cam1.AmpGain := cbCameraGain.ItemIndex ;
@@ -2033,6 +2038,7 @@ var
      DACChannel : Integer ;
      NumDACChannels : Integer ;
      i,j,k,iStart,iEnd,iWavelength,ShortenBy : Integer ;
+     ExpTime : Double ;
 begin
 
      // Exit if no output channelconfigured
@@ -2103,14 +2109,10 @@ begin
            iStart := Max( Min(iStart,NumDACPointsPerFrame-1),0);
            iWavelength := 0 ;
            for i := 0 to NumFramesPerCycle-1 do begin
-               // Shorten exposure time to 90% of frame interval
-               ShortenBy := Max(Round(0.1*NumDACPointsPerFrame),1) ;
-               // Additional reduction in exposure
-               ShortenBy := Max(ShortenBy,Round(MainFrm.Cam1.ShortenExposureBy/DACUpdateInterval)) ;
                // Reduce exposure time to fraction request for selected wavelength
-               ShortenBy := Max(ShortenBy,Round(1.0-FractionalExposure[iWavelength]/DACUpdateInterval)) ;
-               iEnd := iStart + Max(NumDACPointsPerFrame - ShortenBy,iStart) ;
-               k := (i*NumDACPointsPerFrame + iStart)*NumDACChannels ;
+               ExpTime := FractionalExposure[iWavelength]*MainFrm.Cam1.ExposureTime ;
+               iEnd := iStart + Max(Round(ExpTime/DACUpdateInterval),0) ;
+               k := (i*NumDACPointsPerFrame + iStart)*NumDACChannels + DACChannel ;
                for j := iStart to iEnd do begin
                   DACBufs[Device]^[k] := OnState ;
                   k := k + NumDACChannels ;
@@ -2170,16 +2172,11 @@ begin
            iStart := Max( Min(iStart,NumDACPointsPerFrame-1),0);
            iWavelength := 0 ;
            for i := 0 to NumFramesPerCycle-1 do begin
-               // Shorten exposure time to 90% of frame interval
-               ShortenBy := Max(Round(0.1*NumDACPointsPerFrame),1) ;
-               // Additional reduction in exposure
-               ShortenBy := Max(ShortenBy,Round(MainFrm.Cam1.ShortenExposureBy/DACUpdateInterval)) ;
-               // Reduce exposure time to fraction request for selected wavelength
-               ShortenBy := Max(ShortenBy,Round(1.0-FractionalExposure[iWavelength]/DACUpdateInterval)) ;
-               iEnd := iStart + Max(NumDACPointsPerFrame - ShortenBy,iStart) ;
+               ExpTime := FractionalExposure[iWavelength]*MainFrm.Cam1.ExposureTime ;
+               iEnd := iStart + Max(Round(ExpTime/DACUpdateInterval),0) ;
                k := (i*NumDACPointsPerFrame + iStart) ;
                for j := iStart to iEnd do begin
-                  DIGBufs[Device]^[j] := (DIGBufs[Device]^[j] and BitMask) or OnState ;
+                  DIGBufs[Device]^[k] := (DIGBufs[Device]^[k] and BitMask) or OnState ;
                   k := k + 1 ;
                   end;
 
