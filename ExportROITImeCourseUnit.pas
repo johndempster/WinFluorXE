@@ -11,7 +11,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ADCDataFile, StdCtrls, RangeEdit, ExtCtrls, math, labiounit,
-  ValidatedEdit ;
+  ValidatedEdit, UITYpes ;
 
 type
   TExportROITimeCourseFrm = class(TForm)
@@ -190,7 +190,6 @@ begin
         StartAt := Round(edRange.LoValue) ;
         EndAt := Round(edRange.HiValue) ;
         end ;
-
 
      // Export file type
 
@@ -396,8 +395,6 @@ function TExportROITimeCourseFrm.AddFileNameTag(
 // ---------------------------------------------------------
 var
     FileTag : String ;
-    i,iFirst,iLast : Integer ;
-    ROIRange : String ;
 begin
 
      FileTag := '[' ;

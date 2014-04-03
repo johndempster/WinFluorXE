@@ -375,6 +375,7 @@ object ExportImagesFrm: TExportImagesFrm
       Height = 54
       Lines.Strings = (
         'Memo1')
+      ReadOnly = True
       ScrollBars = ssVertical
       TabOrder = 1
     end

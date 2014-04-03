@@ -155,6 +155,7 @@ unit Main;
 // 18.02.14 V3.5.7 JD Problems with Create Movie and Time Course window fixed
 //                    now separate 32 and 64 bit versions of oslibrary.dll
 // 27.02.14 V3.5.8 JD Emission filter control added to light control
+//                    Bulb exposure mode added and % exposure in emission light control
 
 interface
 
@@ -731,7 +732,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.5.8 5-3-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.5.8 3-4-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

@@ -302,7 +302,6 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
         Width = 65
         Height = 21
         Hint = 'Subtract this ROI from other ROI signals'
-        ItemHeight = 13
         ParentShowHint = False
         ShowHint = True
         TabOrder = 0
@@ -354,7 +353,6 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       Width = 65
       Height = 21
       Hint = 'ROI to be exported'
-      ItemHeight = 13
       ParentShowHint = False
       ShowHint = True
       TabOrder = 3
@@ -396,7 +394,6 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       Width = 85
       Height = 21
       Hint = 'Wavelength channel in denominator of ratio'
-      ItemHeight = 13
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
@@ -409,7 +406,6 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       Width = 85
       Height = 21
       Hint = 'Wavelength channel in numerator of ratio'
-      ItemHeight = 13
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
@@ -456,7 +452,6 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       Width = 85
       Height = 21
       Hint = 'Fluorescence wavelength channel to be exported'
-      ItemHeight = 13
       ParentShowHint = False
       ShowHint = True
       TabOrder = 4

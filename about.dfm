@@ -29,7 +29,7 @@ object AboutBox: TAboutBox
       Top = 8
       Width = 354
       Height = 16
-      Caption = 'WinFluor - Fluorescence Image Capture Program V3.5.7'
+      Caption = 'WinFluor - Fluorescence Image Capture Program V3.5.8'
       Font.Charset = ANSI_CHARSET
       Font.Color = clBlack
       Font.Height = -13
@@ -48,9 +48,6 @@ object AboutBox: TAboutBox
         'meCameraInfo')
       ScrollBars = ssVertical
       TabOrder = 0
-      ExplicitLeft = 4
-      ExplicitTop = 44
-      ExplicitWidth = 523
     end
   end
   object OKButton: TButton
