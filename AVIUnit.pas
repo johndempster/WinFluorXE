@@ -22,14 +22,15 @@ unit AVIUnit;
 // 13.11.12 ... .LOADADC() now uses 64 bit scan counter
 // 17.02.13 ... 'AVIFileOpenA' & 'AVIFileCreateStreamA';changed to 'AVIFileOpenW' and 'AVIFileCreateStreamW'
 //              now runs correctly when compiled by Delphi XEn
-//
+// 09.04.14 ... Analog traces now plotted correctly, fixing bug introduced 13.11.12
+
 {$O-}
 interface
 
 uses
   Windows, Graphics, Messages, SysUtils, Classes,  Controls, Forms, Dialogs,
   StdCtrls, RangeEdit, ActiveX, ValEdit, SetupUnit, ValidatedEdit, IDRFile,
-  ExtCtrls, math, Grids, mmsystem, strutils ;
+  ExtCtrls, math, Grids, mmsystem, strutils, uitypes ;
 
 // TAVIFileInfo dwFlag values
 const
@@ -573,7 +574,7 @@ procedure TAVIFrm.FormShow(Sender: TObject);
 // Initialisations when form is displayed
 // --------------------------------------
 var
-     i,ch : Integer ;
+     i : Integer ;
 begin
 
      // Get number and types of frames in use
@@ -892,7 +893,6 @@ var
      YBottom : Integer ;
      YTop : Integer ;
      ChannelDisplaySpacing,ChannelDisplayHeight : Integer ;
-     FrameType : Integer ;
      iSubROI : Integer ;
      Row : Integer ;
 begin
@@ -1080,7 +1080,6 @@ var
      ChannelDisplayHeight,ChannelDisplaySpacing : Integer ;
      NumScansToPlot : Integer ;
      Row : Integer ;
-     s : String ;
      StartScan : Int64 ;
 begin
 
@@ -1129,7 +1128,7 @@ begin
      // Allocate buffer
      GetMem( ADCBuf, NumScansToPlot*MainFrm.IDRFile.ADCNumChannels*2 ) ;
      // Load buffer
-     StartScan := Int64(Frame) + Int64(NumScansPerFrame) ;
+     StartScan := Int64(Frame-1)*Int64(NumScansPerFrame) ;
      MainFrm.IDRFile.LoadADC( StartScan,
                               NumScansToPlot,
                               ADCBuf^ ) ;
@@ -1244,8 +1243,7 @@ begin
 
 procedure TAVIFrm.UpdatePlotCalibrationTable ;
 var
-    i,iPlot,Row,iChan : Integer ;
-    RowExists : Boolean ;
+    i,iPlot,Row : Integer ;
     YMin : Array[1..20] of Single ;
     YMax : Array[1..20] of Single ;
 begin
@@ -1492,7 +1490,7 @@ procedure TAVIFrm.bOKClick(Sender: TObject);
 const
     MarginPixels = 2 ;
 var
-     Err,i,l,j,k : Integer ;
+     i,l,j,k : Integer ;
      pLine : Pointer ;
      Frame,FrameStep,iFrameType : Integer ;
      StartAtFrame,EndAtFrame : Integer ;
@@ -1500,8 +1498,6 @@ var
 
      AVIFIle : Pointer ;          // Pointer to AVI file
 
-     BM : TBitMap ;
-//     NumFrameTypes : Integer ;                 // No. of frame types in use
      xLeft,yTop : Integer ;
      Pstream : PAVISTREAM;
      StreamInfo		: TAVIStreamInfo;
@@ -1511,14 +1507,10 @@ var
      BitmapBits		: pointer;
      Samples_Written       : longInt;
      Bytes_Written         : longInt;
-     nstreams              : integer;
-     Streams : APAVISTREAM;
-     CompOptions : APAVICompressOptions;
      refcount  : integer;
      VideoStream    : PAVISTREAM;
      AudioStream    : PAVISTREAM;
 
-     AVIERR  : integer;
      AVIFrame : integer;
      Flags : Cardinal ;
      Done : Boolean ;
@@ -1528,10 +1520,9 @@ var
      PlotHeight : Integer ;
      s : string ;
      ROI : TROI ;
-     NumROIs : Integer ;
      iPlot : Integer ;
      xTimeLabel,yTimeLabel : Integer ;
-     PixelFormat : TPixelFormat ;
+     //PixelFormat : TPixelFormat ;
      Row,Col : Integer ;
      AVIWidth,AVIHeight : Integer ;
      FLPlotTop,FLPlotHeight : Integer ;
@@ -1611,6 +1602,10 @@ begin
      AVIHeight := ImageBitmap.Height*ImageRows + 2 ;
 
      // Set height of plotting area
+     FLPlotTop := 0 ;
+     FLPlotHeight := 0 ;
+     ADCPlotTop := 0 ;
+     ADCPlotHeight := 0 ;
      if (NumROIPlots > 0) or (NumADCPlots > 0) then begin
         PlotHeight := Round(AVIHeight*edPlotArea.Value) ;
         NumPlotsTotal := NumROIPlots + NumADCPlots ;

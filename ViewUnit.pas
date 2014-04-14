@@ -1178,7 +1178,7 @@ procedure TViewFrm.CalculateMaxContrast(
 // Calculate and set display for maximum grey scale contrast
 // ---------------------------------------------------------
 const
-    PixelSampleSize = 2000 ;
+    PixelSampleSize = 10000 ;
 var
      i,NumPixels,NAvg,Istep : Integer ;
      z,zMean,zSD,zSum : Single ;
