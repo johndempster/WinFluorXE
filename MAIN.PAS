@@ -156,6 +156,7 @@ unit Main;
 //                    now separate 32 and 64 bit versions of oslibrary.dll
 // 27.02.14 V3.5.8 JD Emission filter control added to light control
 //                    Bulb exposure mode added and % exposure in emission light control
+// 15.04.14 V3.5.9 JD 64 bit version tested and working with FLASH 4.0 and PVCAM V3.0.1
 
 interface
 
@@ -732,7 +733,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.5.9 8-4-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.5.9 15-4-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
