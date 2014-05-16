@@ -157,7 +157,10 @@ unit Main;
 // 27.02.14 V3.5.8 JD Emission filter control added to light control
 //                    Bulb exposure mode added and % exposure in emission light control
 // 15.04.14 V3.5.9 JD 64 bit version tested and working with FLASH 4.0 and PVCAM V3.0.1
-
+// 16.05.14 V3.6.0 JD PVCAM_GetDLLAddress: in PVCAM.PAS (and other camera libraries)
+//                    Handle now defined as THandle rather than Integer. Possible fix
+//                    for unexplained failures to detect DLL procedures with 64 bit version
+//                    of PVCAM
 interface
 
 uses Windows, SysUtils, Classes, Graphics, Forms, Controls, Menus,
@@ -733,7 +736,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.5.9 15-4-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.0 16-5-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
