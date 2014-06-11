@@ -539,8 +539,6 @@ procedure TLabIO.SetNIDAQAPI( Value : Integer ) ;
 // ------------------------------------------
 // Set National Instrument interface API type
 // ------------------------------------------
-var
-    i : Integer ;
 begin
 
     // Shut down system to allow change of API

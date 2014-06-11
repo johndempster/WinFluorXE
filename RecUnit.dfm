@@ -436,10 +436,6 @@ object RecordFrm: TRecordFrm
         object StimulatorTab: TTabSheet
           Caption = 'Stimulator'
           ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object cbStimProgram: TComboBox
             Left = 2
             Top = 0
@@ -607,10 +603,6 @@ object RecordFrm: TRecordFrm
         object PhotoStimTab: TTabSheet
           Caption = 'Photo Stim.'
           ImageIndex = 2
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object cbPhotoStimProgram: TComboBox
             Left = 2
             Top = 0
@@ -827,10 +819,6 @@ object RecordFrm: TRecordFrm
           object SlidersTab: TTabSheet
             Caption = 'Sliders'
             ImageIndex = 1
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label5: TLabel
               Left = 14
               Top = 0
@@ -1714,7 +1702,6 @@ object RecordFrm: TRecordFrm
     Top = 608
   end
   object IDRBackground: TIDRFile
-    AsyncWriteBufSize = 0
     NumFrames = 0
     NumFrameTypes = 1
     FrameWidth = 0
@@ -1757,11 +1744,10 @@ object RecordFrm: TRecordFrm
     EventF0UseConstant = False
     EventF0DisplayMax = 10.000000000000000000
     EventF0SubtractF0 = False
-    Left = 256
-    Top = 624
+    Left = 424
+    Top = 744
   end
   object IDRFileBurst: TIDRFile
-    AsyncWriteBufSize = 0
     NumFrames = 0
     NumFrameTypes = 1
     FrameWidth = 0
@@ -1804,7 +1790,7 @@ object RecordFrm: TRecordFrm
     EventF0UseConstant = False
     EventF0DisplayMax = 10.000000000000000000
     EventF0SubtractF0 = False
-    Left = 296
-    Top = 624
+    Left = 304
+    Top = 712
   end
 end

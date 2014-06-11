@@ -24,7 +24,6 @@ type
     edRange: TRangeEdit;
     bOK: TButton;
     bCancel: TButton;
-    IDRAvg: TIDRFile;
     GroupBox3: TGroupBox;
     GroupBox1: TGroupBox;
     Label1: TLabel;
@@ -34,6 +33,7 @@ type
     rbAdd: TRadioButton;
     GroupBox4: TGroupBox;
     ckFrameDifferences: TRadioButton;
+    IDRAvg: TIDRFile;
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);

@@ -32,6 +32,8 @@ unit SnapUnit;
 // 16.12.13 JD .StartCapture Now returns False if unable to allocate enough frame buffer memory
 // 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 // 18.02.14 DCAM NumFramesInBuffer now same as Andor SDK3
+// 02.06.14 PVCAM NumFramesInBuffer now a multiple of binfactor^2 to handle
+//          OptiMOS limitation in buffer size
 
 interface
 
@@ -372,6 +374,8 @@ begin
      Top := 20 ;
      Left := 20 ;
 
+     edBinFactor.Value := MainFrm.Cam1.BinFactor ;
+
      // Inter-frame capture interval
      MainFrm.Cam1.ShortenExposureBy := 0.0 ;
      edFrameInterval.Value := MainFrm.Cam1.FrameInterval ;
@@ -632,8 +636,7 @@ const
     {$IFEND}
 
 var
-     i : Integer ;
-     MaxBuffers : Integer ;
+     i,DivF : Integer ;
 begin
 
     // No. of pixels per frame
@@ -713,6 +716,8 @@ begin
 
      // Determine number of frame within circular buffer
 
+     DivF := NumFrameTypes ;
+
      case MainFrm.CameraType of
 
         RS_PVCAM_PENTAMAX : Begin
@@ -738,15 +743,15 @@ begin
            end ;
 
         RS_PVCAM : begin
-//           NumFramesInBuffer :=  (20000000 div
-//                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
-           NumFramesInBuffer := Min( (Round(8.0/edFrameInterval.Value) div 2)*2,
-                                      (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
+           // No. of frames set to multiple of 2*binfactor^2 to avoid OptiMOS failing to
+           // complete buffer
+           DivF := 2*NumFrameTypes*round(edBinFactor.Value)*round(edBinFactor.Value);
+           NumFramesInBuffer := Min( Round(8.0/edFrameInterval.Value),
+                                     (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
+           NumFramesInBuffer := (NumFramesInBuffer div DivF)*DivF ;
            end ;
 
         DCAM : begin
-//           NumFramesInBuffer := (Round(1.0/edFrameInterval.Value) div 2)*2 ;
-//           NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
            NumFramesInBuffer := Min( (Round(8.0/edFrameInterval.Value) div 2)*2,
                                       (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
            end ;
@@ -776,11 +781,7 @@ begin
            end ;
         end ;
 
-     MaxBuffers := NumFramesInBuffer ;
-     NumFramesInBuffer := Max(MaxBuffers div 2,1) ;
-     NumFramesInBuffer := Max((NumFramesInBuffer div NumFrameTypes),1)*NumFrameTypes*2 ;
-     if NumFramesInBuffer > MaxBuffers then NumFramesInBuffer := NumFramesInBuffer div 2 ;
-     //NumFramesInBuffer := Min( NumFramesInBuffer, 36) ;
+     NumFramesInBuffer := Max(NumFramesInBuffer div (NumFrameTypes*DivF),1)*(NumFrameTypes*DivF) ;
      MainFrm.Cam1.NumFramesInBuffer := NumFramesInBuffer ;
      NumFramesInBuffer := MainFrm.Cam1.NumFramesInBuffer ;
 

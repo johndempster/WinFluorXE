@@ -1524,25 +1524,19 @@ procedure TEventAnalysisFrm.DisplayFLIntensity(
 // Display section of ROI time course
 // ----------------------------------
 var
-    FrameType : Integer ;
     NumPoints : Integer ;
-    OK : Boolean ;
-    i,j : Integer ;
+    i : Integer ;
     y : Single ;
-    yNum : Single ;
-    yDen : Single ;
     F0 : Single ;
     iROI : Integer ;
     iBackg : Integer ;
     FDMode : Integer ;
     Group : Integer ;
     StartGroup : Integer ;
-    StartFrame : Integer ;
     EndGroup : Integer ;
     EventNum : Integer ;
     Frame : Integer ;
     NumGroupsInFile : Integer ;
-    CursorGroup : Integer ;
     NumDisplayGroups : Integer ;
     MarkerAt : Integer ;
     TMarkerScale : Single ;

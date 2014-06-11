@@ -39,7 +39,6 @@ type
     edStart: TValidatedEdit;
     edStop: TValidatedEdit;
     OpenDialog: TOpenDialog;
-    IDRFile: TIDRFile;
     Label1: TLabel;
     edStartPS: TValidatedEdit;
     rbVOut0: TRadioButton;
@@ -57,6 +56,7 @@ type
     lblV1: TLabel;
     edVOut2: TValidatedEdit;
     lblV2: TLabel;
+    IDRFile: TIDRFile;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure bCancelClick(Sender: TObject);
     procedure cbChannelChange(Sender: TObject);

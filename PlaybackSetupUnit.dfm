@@ -3,7 +3,7 @@ object PlaybackSetupFrm: TPlaybackSetupFrm
   Top = 194
   BorderStyle = bsDialog
   Caption = 'Playback Setup'
-  ClientHeight = 510
+  ClientHeight = 547
   ClientWidth = 842
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -431,18 +431,17 @@ object PlaybackSetupFrm: TPlaybackSetupFrm
     Top = 472
   end
   object IDRFile: TIDRFile
-    AsyncWriteBufSize = 0
     NumFrames = 0
     NumFrameTypes = 1
     FrameWidth = 0
     FrameHeight = 0
-    PixelDepth = 1
+    PixelDepth = 0
     NumZSections = 1
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
     ADCNumScansInFile = 0
-    ADCNumChannels = 1
+    ADCNumChannels = 0
     ADCNumScansPerFrame = 0
     ADCMaxValue = 0
     LineScan = False
@@ -450,7 +449,6 @@ object PlaybackSetupFrm: TPlaybackSetupFrm
     LSTimeCourseNumAvg = 1
     LSTimeCourseBackgroundPixel = 0
     LSSubtractBackground = False
-    LineScanIntervalCorrectionFactor = 1.000000000000000000
     WriteEnabled = False
     SpectralDataFile = False
     EventDisplayDuration = 1.000000000000000000
@@ -475,7 +473,7 @@ object PlaybackSetupFrm: TPlaybackSetupFrm
     EventF0UseConstant = False
     EventF0DisplayMax = 10.000000000000000000
     EventF0SubtractF0 = False
-    Left = 176
-    Top = 472
+    Left = 232
+    Top = 416
   end
 end

@@ -12,7 +12,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ADCDataFile, StdCtrls, RangeEdit, Math, ScopeDisplay, strutils  ;
+  Dialogs, ADCDataFile, StdCtrls, RangeEdit, Math, ScopeDisplay, strutils, UITypes  ;
 
 type
   TExportEventsFrm = class(TForm)

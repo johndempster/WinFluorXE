@@ -129,7 +129,7 @@ object SetupFrm: TSetupFrm
     Top = 8
     Width = 473
     Height = 425
-    ActivePage = CameraTab
+    ActivePage = ZStageTab
     TabOrder = 3
     object CameraTab: TTabSheet
       Caption = 'Camera'
@@ -1048,6 +1048,10 @@ object SetupFrm: TSetupFrm
               Font.Name = 'Arial'
               Font.Style = [fsBold]
               ParentFont = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label7: TLabel
                 Left = 9
                 Top = 4
@@ -1310,6 +1314,10 @@ object SetupFrm: TSetupFrm
               Font.Style = [fsBold]
               ImageIndex = 2
               ParentFont = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label30: TLabel
                 Left = 9
                 Top = 4
@@ -1892,6 +1900,10 @@ object SetupFrm: TSetupFrm
             Font.Name = 'Arial'
             Font.Style = [fsBold]
             ParentFont = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label55: TLabel
               Left = 26
               Top = 30
@@ -1946,6 +1958,10 @@ object SetupFrm: TSetupFrm
             Font.Style = [fsBold]
             ImageIndex = 1
             ParentFont = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label51: TLabel
               Left = 11
               Top = 6
@@ -2001,6 +2017,10 @@ object SetupFrm: TSetupFrm
             Font.Style = [fsBold]
             ImageIndex = 2
             ParentFont = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label52: TLabel
               Left = 20
               Top = 6

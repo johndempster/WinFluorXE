@@ -3,7 +3,7 @@ object SaveAsFileFrm: TSaveAsFileFrm
   Top = 313
   BorderStyle = bsDialog
   Caption = 'Save As Data File'
-  ClientHeight = 247
+  ClientHeight = 366
   ClientWidth = 466
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -392,7 +392,6 @@ object SaveAsFileFrm: TSaveAsFileFrm
     Top = 424
   end
   object SaveIDRFile: TIDRFile
-    AsyncWriteBufSize = 0
     NumFrames = 0
     NumFrameTypes = 1
     FrameWidth = 0
@@ -403,7 +402,7 @@ object SaveAsFileFrm: TSaveAsFileFrm
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
     ADCNumScansInFile = 0
-    ADCNumChannels = 1
+    ADCNumChannels = 0
     ADCNumScansPerFrame = 0
     ADCMaxValue = 0
     LineScan = False
@@ -411,7 +410,6 @@ object SaveAsFileFrm: TSaveAsFileFrm
     LSTimeCourseNumAvg = 1
     LSTimeCourseBackgroundPixel = 0
     LSSubtractBackground = False
-    LineScanIntervalCorrectionFactor = 1.000000000000000000
     WriteEnabled = False
     SpectralDataFile = False
     EventDisplayDuration = 1.000000000000000000
@@ -437,6 +435,6 @@ object SaveAsFileFrm: TSaveAsFileFrm
     EventF0DisplayMax = 10.000000000000000000
     EventF0SubtractF0 = False
     Left = 88
-    Top = 216
+    Top = 208
   end
 end

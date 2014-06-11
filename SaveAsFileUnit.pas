@@ -34,7 +34,6 @@ type
     SaveDialog: TSaveDialog;
     bCancel: TButton;
     bOK: TButton;
-    SaveIDRFile: TIDRFile;
     ChannelsGrp: TGroupBox;
     ckCh0: TCheckBox;
     ckCh1: TCheckBox;
@@ -49,6 +48,7 @@ type
     ckFrameType6: TCheckBox;
     ckFrameType7: TCheckBox;
     ckFrameType8: TCheckBox;
+    SaveIDRFile: TIDRFile;
     procedure bChangeNameClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);

@@ -3,7 +3,7 @@ object AverageFrm: TAverageFrm
   Top = 222
   BorderStyle = bsDialog
   Caption = 'Average/Subtract Frames'
-  ClientHeight = 176
+  ClientHeight = 212
   ClientWidth = 309
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -220,18 +220,17 @@ object AverageFrm: TAverageFrm
     end
   end
   object IDRAvg: TIDRFile
-    AsyncWriteBufSize = 0
     NumFrames = 0
     NumFrameTypes = 1
     FrameWidth = 0
     FrameHeight = 0
-    PixelDepth = 1
+    PixelDepth = 0
     NumZSections = 1
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
     ADCNumScansInFile = 0
-    ADCNumChannels = 1
+    ADCNumChannels = 0
     ADCNumScansPerFrame = 0
     ADCMaxValue = 0
     LineScan = False
@@ -239,7 +238,6 @@ object AverageFrm: TAverageFrm
     LSTimeCourseNumAvg = 1
     LSTimeCourseBackgroundPixel = 0
     LSSubtractBackground = False
-    LineScanIntervalCorrectionFactor = 1.000000000000000000
     WriteEnabled = False
     SpectralDataFile = False
     EventDisplayDuration = 1.000000000000000000
@@ -264,7 +262,7 @@ object AverageFrm: TAverageFrm
     EventF0UseConstant = False
     EventF0DisplayMax = 10.000000000000000000
     EventF0SubtractF0 = False
-    Left = 72
-    Top = 144
+    Left = 48
+    Top = 160
   end
 end

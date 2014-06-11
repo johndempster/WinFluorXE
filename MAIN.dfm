@@ -310,7 +310,7 @@ object MainFrm: TMainFrm
     Left = 104
     Top = 200
     Bitmap = {
-      494C010112005C005C0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010112005C00600010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -985,19 +985,39 @@ object MainFrm: TMainFrm
     Left = 168
     Top = 200
   end
+  object Cam1: TSESCam
+    ComPort = 1
+    CCDClearPreExposure = False
+    CCDPostExposureReadout = False
+    ReadoutSpeed = 0
+    FrameInterval = 1.000000000000000000
+    TriggerMode = 0
+    AmpGain = 0
+    NumFramesInBuffer = 20
+    LensMagnification = 1.000000000000000000
+    CameraTemperatureSetPoint = -50.000000000000000000
+    CameraCoolingOn = True
+    CameraFanMode = 1
+    DisableEMCCD = False
+    CameraMode = 0
+    CameraADC = 0
+    ADCGain = 0
+    CCDVerticalShiftSpeed = 0
+    Left = 40
+    Top = 112
+  end
   object IDRFile: TIDRFile
-    AsyncWriteBufSize = 0
     NumFrames = 0
     NumFrameTypes = 1
     FrameWidth = 0
     FrameHeight = 0
-    PixelDepth = 1
+    PixelDepth = 0
     NumZSections = 1
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
     ADCNumScansInFile = 0
-    ADCNumChannels = 1
+    ADCNumChannels = 0
     ADCNumScansPerFrame = 0
     ADCMaxValue = 0
     LineScan = False
@@ -1005,7 +1025,6 @@ object MainFrm: TMainFrm
     LSTimeCourseNumAvg = 1
     LSTimeCourseBackgroundPixel = 0
     LSSubtractBackground = False
-    LineScanIntervalCorrectionFactor = 1.000000000000000000
     WriteEnabled = False
     SpectralDataFile = False
     EventDisplayDuration = 1.000000000000000000
@@ -1030,28 +1049,7 @@ object MainFrm: TMainFrm
     EventF0UseConstant = False
     EventF0DisplayMax = 10.000000000000000000
     EventF0SubtractF0 = False
-    Left = 200
-    Top = 200
-  end
-  object Cam1: TSESCam
-    ComPort = 1
-    CCDClearPreExposure = False
-    CCDPostExposureReadout = False
-    ReadoutSpeed = 0
-    FrameInterval = 1.000000000000000000
-    TriggerMode = 0
-    AmpGain = 0
-    NumFramesInBuffer = 20
-    LensMagnification = 1.000000000000000000
-    CameraTemperatureSetPoint = -50.000000000000000000
-    CameraCoolingOn = True
-    CameraFanMode = 1
-    DisableEMCCD = False
-    CameraMode = 0
-    CameraADC = 0
-    ADCGain = 0
-    CCDVerticalShiftSpeed = 0
-    Left = 40
-    Top = 112
+    Left = 240
+    Top = 208
   end
 end

@@ -36,7 +36,6 @@ type
     edLowerLimit: TValidatedEdit;
     edUpperLimit: TValidatedEdit;
     Label6: TLabel;
-    IDROut: TIDRFile;
     RatioGrp: TGroupBox;
     Shape1: TShape;
     Label2: TLabel;
@@ -52,6 +51,7 @@ type
     edF0Range: TRangeEdit;
     rbF0Constant: TRadioButton;
     edF0Constant: TValidatedEdit;
+    IDROut: TIDRFile;
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);

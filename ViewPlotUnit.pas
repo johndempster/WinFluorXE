@@ -959,9 +959,9 @@ begin
 
     // Channel name
     scRDisplay.ChanName[0] :=
-       LeftStr( MainFrm.IDRFile.FrameType[cbNumerator.ItemIndex],3)
+       MainFrm.IDRFile.FrameType[cbNumerator.ItemIndex]
        + '/' +
-       LeftStr( MainFrm.IDRFile.FrameType[cbDenominator.ItemIndex],3) ;
+       MainFrm.IDRFile.FrameType[cbDenominator.ItemIndex] ;
 
     yThreshold := edRatioExclusionThreshold.Value ;
     for i := 0 to MainFrm.IDRFile.NumFrames-1 do begin

@@ -14,6 +14,7 @@ unit StimModule;
   04.10.09 .. NS Added third DAC channel, Vout2
   23.07.12 .. JD
 // 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
+// 29.05.14 FileHandle now THandle in SaveProgram()
   }
 
 interface
@@ -942,7 +943,7 @@ procedure TStimulator.SaveProgram(
   Save voltage program to file
   --------------------------------}
 var
-   FileHandle : Integer ;
+   FileHandle : THandle ;
 begin
 
     // Create file
@@ -951,10 +952,10 @@ begin
     FileHandle := FileCreate( FileName ) ;
 
     if FileWrite(FileHandle,Prog,Sizeof(Prog)) <> Sizeof(Prog) then
-       MessageDlg('SaveProgram : File Write - Failed ',mtWarning,[mbOK],0) ;
+       ShowMessage('SaveProgram : File Write - Failed ') ;
 
     // Close file
-    if FileHandle >=0 then FileClose( FileHandle ) ;
+    if FileHandle <> INVALID_HANDLE_VALUE then FileClose( FileHandle ) ;
 
     Prog.Saved := True ;
     Prog.RecordIntervalChanged := False ;

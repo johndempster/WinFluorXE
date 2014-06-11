@@ -70,7 +70,7 @@ unit ViewUnit;
 // 02.05.13 JD Upper limit of best contrast now correctly constrained to GreyMax of
 //             of image data file, not grey max of camera
 // 04.11.13 JD ROIs now saved to tab-text format .ROI file
-
+// 29.05.14 JD FileHandle now THandle rather than Integer
 interface
 
 uses
@@ -141,7 +141,6 @@ type
     ShadingGrp: TGroupBox;
     ckBackgroundSubtraction: TCheckBox;
     ShadeCorSettingsPanel: TPanel;
-    IDRBackground: TIDRFile;
     PanROITools: TPanel;
     ROIellipse: TImage;
     ROIPolyline: TImage;
@@ -157,6 +156,7 @@ type
     ckAutoOptimise: TCheckBox;
     Label6: TLabel;
     cbDisplayZoom: TComboBox;
+    IDRBackground: TIDRFile;
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -2236,7 +2236,7 @@ procedure TViewFrm.LoadROIsFromFile(
 // Load regions of interest from .ROI file
 // ---------------------------------------
 var
-    FileHandle : Integer ;
+    FileHandle : THandle ;
     i : Integer ;
     ROIs : Array[0..cMaxROIs] of TROI ;         // Regions of interest list (scaled by zoom)
     InF : TextFile ;
@@ -2245,7 +2245,7 @@ begin
 
     // Open file
     FileHandle := FileOpen( FileName, fmOpenRead ) ;
-    if FileHandle < 0 then begin
+    if FileHandle = INVALID_HANDLE_VALUE then begin
        MainFrm.StatusBar.SimpleText := ' Unable to load : ' + FileName ;
        Exit ;
        end ;

@@ -435,18 +435,17 @@ object RatioFrm: TRatioFrm
     end
   end
   object IDROut: TIDRFile
-    AsyncWriteBufSize = 0
     NumFrames = 0
     NumFrameTypes = 1
     FrameWidth = 0
     FrameHeight = 0
-    PixelDepth = 1
+    PixelDepth = 0
     NumZSections = 1
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
     XResolution = 1.000000000000000000
     ADCNumScansInFile = 0
-    ADCNumChannels = 1
+    ADCNumChannels = 0
     ADCNumScansPerFrame = 0
     ADCMaxValue = 0
     LineScan = False
@@ -454,7 +453,6 @@ object RatioFrm: TRatioFrm
     LSTimeCourseNumAvg = 1
     LSTimeCourseBackgroundPixel = 0
     LSSubtractBackground = False
-    LineScanIntervalCorrectionFactor = 1.000000000000000000
     WriteEnabled = False
     SpectralDataFile = False
     EventDisplayDuration = 1.000000000000000000
@@ -480,6 +478,6 @@ object RatioFrm: TRatioFrm
     EventF0DisplayMax = 10.000000000000000000
     EventF0SubtractF0 = False
     Left = 96
-    Top = 208
+    Top = 248
   end
 end

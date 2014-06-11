@@ -143,6 +143,7 @@ unit RecUnit;
 // 28.02.14 Emission filter control added and position of shading group moved to below light source group
 // 05.03.14 50/50 top/bottom split Image mode added
 // 03.04.14 Bulb exposure mode added.
+// 11.06.14 Recording duration now correct when Split Image selected
 
 {$DEFINE USECONT}
 
@@ -278,7 +279,6 @@ type
     Label7: TLabel;
     edVHold1: TValidatedEdit;
     bSetSubFolder: TButton;
-    IDRBackground: TIDRFile;
     sbImageCaptureShowSettings: TSpeedButton;
     sbDisplayShowSettings: TSpeedButton;
     sbShadeCorShowSettings: TSpeedButton;
@@ -297,7 +297,6 @@ type
     edBurstDuration: TValidatedEdit;
     edBurstInterval: TValidatedEdit;
     Label20: TLabel;
-    IDRFileBurst: TIDRFile;
     Label6: TLabel;
     cbDisplayZoom: TComboBox;
     ckExcitationOnWhenRecording: TCheckBox;
@@ -316,6 +315,8 @@ type
     cbCameraGain: TComboBox;
     Label8: TLabel;
     ckSplitCCDImage: TCheckBox;
+    IDRBackground: TIDRFile;
+    IDRFileBurst: TIDRFile;
     procedure FormShow(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -446,6 +447,11 @@ type
     NumBytesPerFrame : Integer ;           // No. of bytes per image frame
     LowerBufferFilling : Boolean ;         // TRUE = Lower half of buffer filling
     LastFrameDisplayed : Integer ;            // Last frame # displayed
+    ReplaceEmptyFlags : Boolean ;          // Buffer empty flag replacement request
+    EmptyFlagsFirst : Integer ;            // First frame to have empty flag restored
+    EmptyFlagsLast : Integer ;             // Last frame to have empty flag restored
+    BufferOverFlowMessage : String ;       // Buffer overflow warning message
+
     EDRFilePointer : Int64 ;               // EDR file pointer
 
     NumFramesDone : Integer ;              // No. of frames recorded so far in this rec. session
@@ -1228,6 +1234,8 @@ begin
    MainFrm.StatusBar.SimpleText := 'Camera started ' ;
 
    CameraRunning := True ;
+   ReplaceEmptyFlags := False ;
+   BufferOverFlowMessage := '' ;
 
     TimeNow := 0 ;
     TimeLast := 0 ;
@@ -1310,13 +1318,15 @@ const
     {$IFDEF WIN32}
       MaxBufferSize = 500000000 ;
     {$ELSE}
-      MaxBufferSize = 2000000000 ;
+      //MaxBufferSize = 2000000000 ;
+        MaxBufferSize = 2000000000 ;
     {$IFEND}
 
 var
      i,FT : Integer ;
      WVNum : Integer ;
      CCDName : Array[0..1] of string ;
+     FrameBufferMultiple : Integer ;
 begin
 
     // Select split CCD option
@@ -1426,20 +1436,24 @@ begin
      for i := 0 to NumFrameTypes-1 do MainFrm.UpdateLUT( i, MainFrm.Cam1.GreyLevelMax );
 
      // Determine number of frame within circular buffer
+     FrameBufferMultiple := 2 ;
 
      case MainFrm.CameraType of
         RS_PVCAM_PENTAMAX : Begin
           // Pentamax has limited buffer size
           NumFramesInBuffer :=  (4194304 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
           NumFramesInBuffer := Min( NumFramesInBuffer, 36) ;
+          FrameBufferMultiple := 2 ;
           end ;
 
         PIXELFLY : begin
           NumFramesInBuffer := 8 ;
+          FrameBufferMultiple := 2 ;
           end ;
 
         Andor : begin
            NumFramesInBuffer :=  (20000000 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
+           FrameBufferMultiple := 2 ;
            end ;
 
         AndorSDK3 : begin
@@ -1447,8 +1461,7 @@ begin
            NumFramesInBuffer := Min( NumFramesInBuffer,
                                      MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
            NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
-           NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
-
+           FrameBufferMultiple := 2 ;
            end ;
 
         RS_PVCAM : begin
@@ -1456,27 +1469,20 @@ begin
            NumFramesInBuffer := Min( NumFramesInBuffer,
                                      MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
            NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
-           NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
-//           NumFramesInBuffer :=  (20000000 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
+           FrameBufferMultiple := 2*MainFrm.Cam1.BinFactor*MainFrm.Cam1.BinFactor ;
            end ;
 
         DCAM : begin
-{           NumFramesInBuffer := Round(2.0/edFrameInterval.Value) ;
-           NumFramesInBuffer := Min( NumFramesInBuffer,
-                                     MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel));
-           NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
-           NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;}
-
            NumFramesInBuffer := Round(5.0/edFrameInterval.Value) ;
            NumFramesInBuffer := Min( NumFramesInBuffer,
                                      MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
            NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
-           NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
-
+           FrameBufferMultiple := 2 ;
            end ;
 
         IMAQ : begin
            NumFramesInBuffer :=  (20000000 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
+           FrameBufferMultiple := 2 ;
            end ;
 
         IMAQDX : begin
@@ -1485,26 +1491,29 @@ begin
            NumFramesInBuffer := Min( NumFramesInBuffer,
                                      MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
            NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
-           NumFramesInBuffer := (NumFramesInBuffer div 2)*2 ;
+           FrameBufferMultiple := 2 ;
            end ;
 
         DTOL : begin
            NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
+           FrameBufferMultiple := 2 ;
            end ;
 
         QCAM : begin
            NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
+           FrameBufferMultiple := 2 ;
            end ;
 
         else begin
            NumFramesInBuffer := 32 ;
+           FrameBufferMultiple := 2 ;
            end ;
         end ;
 
      // Keep duration of frames in buffer to less than 8s
      NumFramesInBuffer := Min( NumFramesInBuffer, Round(8.0/MainFrm.Cam1.FrameInterval) ) ;
-     // Ensure buffer is divisible by 2
-     NumFramesInBuffer := NumFramesInBuffer - (NumFramesInBuffer mod 2) ;
+     // Ensure buffer is divisible by required factor
+     NumFramesInBuffer := (NumFramesInBuffer div FrameBufferMultiple)*FrameBufferMultiple ;
 
      // Set camera buffer
      MainFrm.Cam1.NumFramesInBuffer := NumFramesInBuffer ;
@@ -1527,10 +1536,11 @@ begin
      if MainFrm.Cam1.NumBytesPerPixel = 1 then ByteImage := True
                                           else ByteImage := False ;
 
-     // Add empty flag value to end of each frame
+     // Add empty flag values to each frame
      FrameTypeCycleCounter := 0 ;
      FillBufferWithEmptyFlags( 0, NumFramesInBuffer-1 ) ;
      LowerBufferFilling := True ;
+     ReplaceEmptyFlags := False ;
 
      // Initial setting of last frame displayed
      FrameNum := 0 ; // NumFramesInBuffer - 1 ;
@@ -2037,7 +2047,7 @@ var
      NumCamTriggerOffsetIntervals : Integer ;
      DACChannel : Integer ;
      NumDACChannels : Integer ;
-     i,j,k,iStart,iEnd,iWavelength,ShortenBy : Integer ;
+     i,j,k,iStart,iEnd,iWavelength : Integer ;
      ExpTime : Double ;
 begin
 
@@ -2607,7 +2617,6 @@ var
      i,j,iBit : Integer ;
      NumPointsPerCycle : Integer ;
      Bit : Word ;
-     BitWord  : Word ;
      BitMask  : Word ;
      iStartBit,iEndBit  : Word ;
      EMFilterBits : Integer ;
@@ -3222,31 +3231,19 @@ procedure TRecordFrm.TimerTimer(Sender: TObject);
 // Scheduled timer event supervising recording/display
 // ---------------------------------------------------
 var
-     i,j,x,OldFrameNum,FrameCount,
+     i,j,OldFrameNum,FrameCount,
      iFlag : Integer ;               // Empty flag pixel offset within frame
-     iReadout : Integer ;            // Cursor readout pixel offset within frame
      FirstFrame,LastFrame,FirstFrameToSave,iStart,StartIllumination : Integer ;
      iFrame,jFrame : Integer ;
      Done,BufferFull : Boolean ;
-     LatestFrame : Pointer ;
-
-
-     SelectedFrame : Integer ;
      FrameType : Integer ;
-     Value : Integer ;
-     PanelNum : Integer ;
-     OldIndex : Integer ;
-     NumBytesWritten : Integer ;     // No. of bytes written to file
-     BufferOverFlowMessage : String ;
+
      StimulusStatus : String ;
      RecordingStatus : String ;
      DebugMessage : String ;
      NumFramesInHalfBuffer : Integer ;
      NumFramesToSave : Integer ;
      iFrameType : Integer ;
-     MinFrameCount : Integer ;
-     DisplayFrame : Integer ;
-     DisplayFrameType : Integer ;
 begin
 
     if PFrameBuf = Nil then Exit ;
@@ -3401,7 +3398,7 @@ begin
 
               // Emergency exit when buffer overflow occurs
               Inc(FrameCount) ;
-              if FrameCount >= NumFramesInBuffer then Done := True ;
+              if FrameCount >= (NumFramesInBuffer div 2) then Done := True ;
 
               // Increment total no. of frames acquired since camera start
               Inc(FrameRateCounter) ;
@@ -3424,7 +3421,6 @@ begin
 
            if TimeLast > 0 then TimeDiffMax := Max(TimeDiff,TimeDiffMax) ;
 
-           BufferOverFlowMessage := '' ;
            RecordingStatus := '' ;
 
            RecordingStatus := format( ' %8.2f fps F=%3.3d/%3.3d (%3.3d%%) ',
@@ -3435,8 +3431,6 @@ begin
                                   ]) ;
 
            if RecordingMode = rmRecordingInProgress then begin
-              if MainFrm.IDRFile.AsyncBufferOverflow then BufferOverFlowMessage := ' [BUFFER OVERFLOW!]'
-                                                     else BufferOverFlowMessage := '' ;
               RecordingStatus := RecordingStatus + 'Recording: ' ;
               if TimeLapseMode then  RecordingStatus := RecordingStatus + '[Time lapse] ' ;
 
@@ -3460,7 +3454,7 @@ begin
                           [MainFrm.Cam1.CameraTemperature]) ;
 
            RecordingStatus :=RecordingStatus + StimulusStatus ;
-           RecordingStatus :=RecordingStatus + BufferOverFlowMessage ;
+           RecordingStatus :=RecordingStatus ;
            if RecordingMode = rmRecordingInProgress then  RecordingStatus :=RecordingStatus + DebugMessage ;
            MainFrm.StatusBar.SimpleText := RecordingStatus ;
 
@@ -3485,8 +3479,6 @@ begin
                  end ;
 
               // Select next frame type to display
-
-
               RecPlotFrm.FLUpdateDisplay( rbSpectrum.Checked ) ;
 
               end ;
@@ -3502,7 +3494,7 @@ begin
         //
         If BufferFull then begin
 
-           // Get frame rang of full buffer
+           // Get frame range of full buffer
            if LowerBufferFilling then begin
               FirstFrame := FirstFrameInLowerBuffer ;
               LastFrame := LastFrameInLowerBuffer ;
@@ -3511,6 +3503,16 @@ begin
               FirstFrame := FirstFrameInUpperBuffer ;
               LastFrame := LastFrameInUpperBuffer ;
               end ;
+
+           // If buffer being written to disk has not had empty flags reset do it now
+           if ReplaceEmptyFlags then begin
+              FillBufferWithEmptyFlags( EmptyFlagsFirst, EmptyFlagsLast ) ;
+              BufferOverFlowMessage := ' [BUFFER OVERFLOW!]'
+              end;
+
+           EmptyFlagsFirst := FirstFrame ;
+           EmptyFlagsLast := LastFrame ;
+           ReplaceEmptyFlags := True ;
 
             // Save to file, if in recording mode
            if (RecordingMode = rmRecordingInProgress) or
@@ -3628,9 +3630,6 @@ begin
 
               end ;
 
-           // Reset empty frame flags
-           FillBufferWithEmptyFlags( FirstFrame, LastFrame ) ;
-
            // Force last frame displayed to end of buffer
            if (LastFrameDisplayed >= FirstFrame) and
               (LastFrameDisplayed < LastFrame) then LastFrameDisplayed := LastFrame ;
@@ -3659,6 +3658,13 @@ begin
            end ;
 
         end ;
+
+     // Add empty frame flags to buffer (if required)
+//     outputdebugString(PChar(format('write done %d',[Integer(MainFrm.IDRFile.AsyncWriteInProgress)]))) ;
+     if ReplaceEmptyFlags and (not MainFrm.IDRFile.AsyncWriteInProgress) then begin
+        FillBufferWithEmptyFlags( EmptyFlagsFirst, EmptyFlagsLast ) ;
+        ReplaceEmptyFlags := False ;
+        end;
 
     // Re-enable Start Stimulus button after stimulus is complete
     if (not bStartStimulus.Enabled) and
@@ -4388,9 +4394,6 @@ begin
      MainFrm.IDRFile.PixelDepth := MainFrm.Cam1.PixelDepth ;
 
 
-     // Set size of internal asynchronous write buffer
-     MainFrm.IDRFile.AsyncWriteBufSize := NumBytesPerHalfFrameBuffer ;
-
      // (Ensure that additions to file starts on a multiple of frame types in file)
      MainFrm.IDRFile.NumFrames := MainFrm.IDRFile.NumFrames
                                   - (MainFrm.IDRFile.NumFrames mod Max(FrameTypeCycleLength,1)) ;
@@ -4554,6 +4557,7 @@ begin
       edRecordingPeriod.Value := FrameInterval*Result ;
       if cbRecordingMode.ItemIndex <> rmContinuous then Result := Result*FrameTypeCycleLength ;
       MainFrm.RecordingPeriod := edRecordingPeriod.Value ;
+      Result := Result*NumFramesPerCCD ;
       end ;
 
 

@@ -17,6 +17,7 @@ unit RecPlotUnit;
 // 23.07.12 JD
 // 04.03.14 JD ADCBuf now allocated on Heap and no longer limited to 100000 points
 //             to fix A/D stopping with large numbers of channels.
+// 11.06.14 JD Ratio plot now has same duration as fluoresence plot when recording in time lapse mode
 
 interface
 
@@ -105,9 +106,6 @@ type
 
     ADCDisplayBuf : Array[0..((MaxADCChannels)*MaxDisplayScans*4)-1] of SmallInt ;
 
-    ADCDisplayScansPerPoint : Single ;
-    ADCDisplayCursorUpdated : Boolean ;
-
     ADCNumScansPerBlock : Integer ;  // No. of A/D channel scans per display block
     ADCNumPointsPerBlock : Integer ; // No. of A/D samples per display block
     ADCMaxBlocksDisplayed : Integer ; // Max. no. of blocks in display
@@ -124,12 +122,6 @@ type
     // Fluorescence ratio time course buffers
     RDisplayBuf : Array[0..99999] of Integer ;    // Image time course buffer
     RatioExclusionThreshold : Single ;
-
-    // Display counters
-//    NumScans : Integer ;
-    NumScansPerBlock : Integer ;
-    NumSamplesPerBlock : Integer ;
-    NumPointsPerBlock : Integer ;
 
     ResizeCounter : Integer ;
 
@@ -389,6 +381,10 @@ begin
     edTDisplay.Value := (scFLDisplay.MaxPoints-1)*TFrameGroupInterval ;
     scFLDisplay.XMax := scFLDisplay.MaxPoints ;
 
+    scRDisplay.MaxPoints := scFLDisplay.MaxPoints ;
+    scRDisplay.XMax := scFLDisplay.MaxPoints ;
+    scRDisplay.TScale := scFLDisplay.TScale ;
+
     scFLDisplay.Invalidate ;
 
     // Set A/D channel display
@@ -411,7 +407,6 @@ procedure TRecPlotFrm.ADCInitialiseDisplay(
 // Initialise analogue inputs display
 // ------------------------------
 var
-     i : Integer ;
      NumScans : Integer ;
      ch : Integer ;
      NumSamplesPerBlock : Integer ;
@@ -715,10 +710,14 @@ begin
     scRDisplay.MinADCValue := MainFrm.Cam1.GreyLevelMin ; ;
 
     scRDisplay.MaxPoints := scFLDisplay.MaxPoints ;
-    scRDisplay.MaxPoints := scFLDisplay.MaxPoints ;
     scRDisplay.NumPoints := 0 ;
 
-    scRDisplay.TScale := scFLDisplay.TScale ;
+    if TimeLapseMode then begin
+       scRDisplay.TScale := TimeLapseInterval / NumFrameTypes ;
+       end
+    else begin
+       scRDisplay.TScale := FrameInterval ;
+       end;
     scRDisplay.TUnits := scFLDisplay.TUnits ;
 
     scRDisplay.ClearMarkers ;
@@ -734,7 +733,7 @@ begin
 
     scRDisplay.ChanOffsets[0] := 0 ;
     scRDisplay.ChanUnits[0] := '' ;
-    scRDisplay.ChanName[0] := LeftStr(cbNumerator.Text,3) + '/' + LeftStr(cbDenominator.Text,3) ;
+    scRDisplay.ChanName[0] := cbNumerator.Text + '/' + cbDenominator.Text ;
     scRDisplay.ChanScale[0] := edRDisplayMax.Value / scRDisplay.MaxADCValue ;
     if UpdateYRange then begin
        scRDisplay.yMin[0] := 0 ;
@@ -765,11 +764,9 @@ function TRecPlotFrm.FLUpdateDisplay(
 // Update fluorescence time course display
 // ----------------------------------------
 var
-    Done : Boolean ;
     s : String ;
     i,iFT,iFTNum,iFTDen,j : Integer ;
     yNum,yDen,YScale,R : Single ;
-    y : single ;
 begin
 
    // Resize controls on form (if required)
@@ -807,7 +804,7 @@ begin
            YScale := 1.0 / scRDisplay.ChanScale[0]
         else YScale := 1.0 ;
         scRDisplay.ChanScale[0] := 1.0 / YScale ;
-        scRDisplay.ChanName[0] := LeftStr(cbNumerator.Text,3) + '/' + LeftStr(cbDenominator.Text,3) ;
+        scRDisplay.ChanName[0] := cbNumerator.Text + '/' + cbDenominator.Text ;
         for i := scRDisplay.NumPoints-1 to scFLDisplay.NumPoints-1 do begin
             j := i*NumFrameTypes ;
             yNum := pIntArray(pFLDisplayBuf)^[j+iFTNum] ;
@@ -818,7 +815,9 @@ begin
             end ;
         scRDisplay.DisplayNewPoints( scFLDisplay.NumPoints-1 );
 
-        lbRDisplay.Caption := format('%s=%.3g',[scRDisplay.ChanName[0],R]) ;
+        s := scRDisplay.ChanName[0] ;
+        if ANSIContainsText(s,'/') then s := LeftStr(s,5) + '/' + RightStr(s,5) ;
+        lbRDisplay.Caption := format('%s=%.3g',[s,R]) ;
 
         end ;
 

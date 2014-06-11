@@ -408,7 +408,6 @@ type
     mnImport: TMenuItem;
     mnExport: TMenuItem;
     mnDummy: TMenuItem;
-    IDRFile: TIDRFile;
     mnAverage: TMenuItem;
     mnLineProfile: TMenuItem;
     mnComputedImage: TMenuItem;
@@ -439,6 +438,7 @@ type
     mnDigitalFilter: TMenuItem;
     Cam1: TSESCam;
     mnDirectControl: TMenuItem;
+    IDRFile: TIDRFile;
     procedure FileNew1Execute(Sender: TObject);
     procedure FileOpen1Execute(Sender: TObject);
     procedure HelpAbout1Execute(Sender: TObject);
