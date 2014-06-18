@@ -18,6 +18,8 @@ unit RecPlotUnit;
 // 04.03.14 JD ADCBuf now allocated on Heap and no longer limited to 100000 points
 //             to fix A/D stopping with large numbers of channels.
 // 11.06.14 JD Ratio plot now has same duration as fluoresence plot when recording in time lapse mode
+// 16.06.14 flDisplayBuf now allocated internal to RecPlotUnit.pas add adjusted in size
+//          to match number of points in display
 
 interface
 
@@ -88,10 +90,13 @@ type
     procedure cbNumeratorChange(Sender: TObject);
     procedure cbDenominatorChange(Sender: TObject);
     procedure edROISizeKeyPress(Sender: TObject; var Key: Char);
+    procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
 
-    pFLDisplayBuf : Pointer ;   // Pointer to fluorescence time course data buffer
+    pFLDisplayBuf : PIntArray ;   // Pointer to fluorescence time course data buffer
+    FLDisplayBufMaxPoints : Integer ; // Max. no. of points allowed in buffer
+
     FLLatestValues : Array[0..MaxFrameType] of Integer ;
 
     TimeLapseMode : Boolean ;   // Time lapse mode flag
@@ -170,7 +175,6 @@ type
     procedure ClearDisplays ;
 
     procedure FLInitialiseDisplay(
-              pFLDisplayBufIn : Pointer ;
               TimeLapseModeIn : Boolean ;
               FrameTypesIn : Array of String ;
               NumFrameTypesIn : Integer ;
@@ -180,6 +184,11 @@ type
               ) ;
     function FLUpdateDisplay(
              SpectrumMode : Boolean ) : Boolean ;
+
+    procedure FLDisplayAddPoints(
+          NewPoints : array of Integer ;   // Point values to add
+          NumPoints : Integer              // No. of points to add
+          ) ;
 
     procedure AddMarker( MarkerText : String ) ;
 
@@ -380,6 +389,12 @@ begin
     scFLDisplay.MaxPoints := Round( edTDisplay.Value/TFrameGroupInterval ) + 1 ;
     edTDisplay.Value := (scFLDisplay.MaxPoints-1)*TFrameGroupInterval ;
     scFLDisplay.XMax := scFLDisplay.MaxPoints ;
+
+    // Update fluorescence display buffer
+    if pFLDisplayBuf <> Nil then FreeMem(pFLDisplayBuf) ;
+    FLDisplayBufMaxPoints := scFLDisplay.MaxPoints*NumFrameTypes ;
+    GetMem( pFLDisplayBuf,FLDisplayBufMaxPoints*4) ;
+    scFLDisplay.SetDataBuf( pFLDisplayBuf ) ;
 
     scRDisplay.MaxPoints := scFLDisplay.MaxPoints ;
     scRDisplay.XMax := scFLDisplay.MaxPoints ;
@@ -595,8 +610,7 @@ procedure TRecPlotFrm.ClearDisplays ;
 // --------------------------------
 begin
 
-    FLInitialiseDisplay( pFLDisplayBuf,
-                         TimeLapseMode,
+    FLInitialiseDisplay( TimeLapseMode,
                          FrameTypes,
                          NumFrameTypes,
                          FrameInterval,
@@ -609,7 +623,6 @@ begin
 
 
 procedure TRecPlotFrm.FLInitialiseDisplay(
-          pFLDisplayBufIn : Pointer ;
           TimeLapseModeIn : Boolean ;
           FrameTypesIn : Array of String ;
           NumFrameTypesIn : Integer ;
@@ -624,9 +637,6 @@ var
     i,ch : Integer ;
 begin
 
-     if pFLDisplayBufIn = Nil then Exit ;
-
-     pFLDisplayBuf := pFLDisplayBufIn ;
      TimeLapseMode := TimeLapseModeIn ;
 
      // Update frame types
@@ -701,7 +711,7 @@ begin
         //scFLDisplay.ChanVisible[ch] := True ;
         end ;
 
-    scFLDisplay.SetDataBuf( pFLDisplayBuf ) ;
+    //scFLDisplay.SetDataBuf( pFLDisplayBuf ) ;
     scFLDisplay.NumBytesPerSample := 4 ;
 
     // Set up fluorescence ratio display window
@@ -755,6 +765,27 @@ begin
     ResizeCounter := 1 ;
 
     end ;
+
+
+procedure TRecPlotFrm.FLDisplayAddPoints(
+          NewPoints : array of Integer ;   // Point values to add
+          NumPoints : Integer              // No. of points to add
+          ) ;
+// ----------------------------------------------
+// Add points to fluorescence time course display
+// ----------------------------------------------
+var
+    i : Integer ;
+begin
+    if pFLDisplayBuf = Nil then Exit ;
+
+    for i := 0 to NumPoints-1 do
+        if FLDisplayPointer < FLDisplayBufMaxPoints then begin
+        pFLDisplayBuf^[FLDisplayPointer] := NewPoints[i] ;
+        Inc(FLDisplayPointer) ;
+        end ;
+
+    end;
 
 
 function TRecPlotFrm.FLUpdateDisplay(
@@ -1025,6 +1056,15 @@ begin
      MainFrm.ROISize := Round(edROISize.Value) ;
 
      end;
+
+procedure TRecPlotFrm.FormCreate(Sender: TObject);
+// ------------------------------------
+// Initialisations when form is created
+// ------------------------------------
+begin
+    pFLDisplayBuf := Nil ;
+    FLDisplayBufMaxPoints := 0 ;
+    end;
 
 procedure TRecPlotFrm.ckDisplayFluorescenceClick(Sender: TObject);
 // --------------------------------------------------

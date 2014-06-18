@@ -161,6 +161,9 @@ unit Main;
 //                    Handle now defined as THandle rather than Integer. Possible fix
 //                    for unexplained failures to detect DLL procedures with 64 bit version
 //                    of PVCAM
+// 17.06.14 V3.6.1 JD Support for OptiMOS added
+//                    Disk file writing speed now improved.
+
 interface
 
 uses Windows, SysUtils, Classes, Graphics, Forms, Controls, Menus,
@@ -676,6 +679,8 @@ type
 
     RecordADCSignalsOnly: Boolean;
 
+    ProgramName : string ;
+
     procedure SetPalette( BitMap : TBitMap ; PaletteType : TPaletteType ) ;
 
     procedure UpdateLUT( iFrameType : Integer ;
@@ -736,12 +741,13 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.0 16-5-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.1 17-6-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
     Caption := Caption + '(32 bit) ';
 {$IFEND}
+    ProgramName := Caption ;
 
     EXCAvailable := True ;
 

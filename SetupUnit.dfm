@@ -129,7 +129,7 @@ object SetupFrm: TSetupFrm
     Top = 8
     Width = 473
     Height = 425
-    ActivePage = ZStageTab
+    ActivePage = CameraTab
     TabOrder = 3
     object CameraTab: TTabSheet
       Caption = 'Camera'
@@ -600,6 +600,10 @@ object SetupFrm: TSetupFrm
     object LightSourceTab: TTabSheet
       Caption = 'Light Source'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object LightSourceGrp: TGroupBox
         Left = 8
         Top = 0
@@ -1183,6 +1187,10 @@ object SetupFrm: TSetupFrm
               Font.Style = [fsBold]
               ImageIndex = 1
               ParentFont = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label9: TLabel
                 Left = 9
                 Top = 4
@@ -1719,6 +1727,10 @@ object SetupFrm: TSetupFrm
     object TabSheet1: TTabSheet
       Caption = 'Stimulus Outputs'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox11: TGroupBox
         Left = 8
         Top = 0
@@ -2105,6 +2117,10 @@ object SetupFrm: TSetupFrm
           object MeterTab: TTabSheet
             Caption = 'Meter'
             ImageIndex = 3
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label44: TLabel
               Left = 44
               Top = 6
@@ -2134,6 +2150,10 @@ object SetupFrm: TSetupFrm
     object AnalogInputTab: TTabSheet
       Caption = 'Analog Inputs && Timing'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object ADCGrp: TGroupBox
         Left = 8
         Top = 0

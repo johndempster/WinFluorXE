@@ -71,6 +71,9 @@ unit ViewUnit;
 //             of image data file, not grey max of camera
 // 04.11.13 JD ROIs now saved to tab-text format .ROI file
 // 29.05.14 JD FileHandle now THandle rather than Integer
+// 13.06.14 JD Error in horizontal display scroll position with display zooms <100% fixed
+// 17.06.14 12.5% display zoom added
+
 interface
 
 uses
@@ -396,19 +399,20 @@ begin
 
      // Display magnification factor
      cbDisplayZoom.Clear ;
-     cbDisplayZoom.Items.AddObject( '  25% ', Tobject(25) ) ;
-     cbDisplayZoom.Items.AddObject( '  50% ', Tobject(50) ) ;
-     cbDisplayZoom.Items.AddObject( ' 100% ', Tobject(100)) ;
-     cbDisplayZoom.Items.AddObject( ' 200% ', Tobject(200)) ;
-     cbDisplayZoom.Items.AddObject( ' 300% ', Tobject(300)) ;
-     cbDisplayZoom.Items.AddObject( ' 400% ', Tobject(400)) ;
-     cbDisplayZoom.Items.AddObject( ' 500% ', Tobject(500)) ;
-     cbDisplayZoom.Items.AddObject( ' 600% ', Tobject(600)) ;
-     cbDisplayZoom.Items.AddObject( ' 700% ', Tobject(700)) ;
-     cbDisplayZoom.Items.AddObject( ' 800% ', Tobject(800)) ;
+     cbDisplayZoom.Items.AddObject( '12.5% ', Tobject(125) ) ;
+     cbDisplayZoom.Items.AddObject( '  25% ', Tobject(250) ) ;
+     cbDisplayZoom.Items.AddObject( '  50% ', Tobject(500) ) ;
+     cbDisplayZoom.Items.AddObject( ' 100% ', Tobject(1000)) ;
+     cbDisplayZoom.Items.AddObject( ' 200% ', Tobject(2000)) ;
+     cbDisplayZoom.Items.AddObject( ' 300% ', Tobject(3000)) ;
+     cbDisplayZoom.Items.AddObject( ' 400% ', Tobject(4000)) ;
+     cbDisplayZoom.Items.AddObject( ' 500% ', Tobject(5000)) ;
+     cbDisplayZoom.Items.AddObject( ' 600% ', Tobject(6000)) ;
+     cbDisplayZoom.Items.AddObject( ' 700% ', Tobject(7000)) ;
+     cbDisplayZoom.Items.AddObject( ' 800% ', Tobject(8000)) ;
 
      cbDisplayZoom.ItemIndex := Min(Max(MainFrm.DisplayZoomIndex,0),cbDisplayZoom.Items.Count-1) ;
-     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.01 ;
+     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.001 ;
 
      // Initialise frames counter
      for i := 0 to NumFrameTypes-1 do FrameCounter[i] := 0 ;
@@ -695,7 +699,7 @@ begin
 
      // Set size and pen/brush characteristics of images in use
 
-     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.01 ;
+     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.001 ;
 
      ImageGrp.ClientWidth :=  Max( ClientWidth - ImageGrp.Left - 5, 2) ;
      ImageGrp.ClientHeight :=  Max( ClientHeight - ImageGrp.Top - 5, 2) ;
@@ -950,7 +954,7 @@ begin
       // Copy line to bitmap
       xBm := 0 ;
       XIm := sbXScroll.Position ;
-      i := (Yim*MainFrm.IDRFile.FrameWidth) + XIm*iStep ;
+      i := (Yim*MainFrm.IDRFile.FrameWidth) + XIm ;
       while (Xbm < BitMap.Width) and
             (XIm < MainFrm.IDRFile.FrameWidth) and
             (i < NumPixelsPerFrame) do begin
@@ -2157,7 +2161,7 @@ procedure TViewFrm.cbDisplayZoomChange(Sender: TObject);
 begin
 
      MainFrm.DisplayZoomIndex := cbDisplayZoom.ItemIndex ;
-     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.01 ;
+     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.001 ;
 
      // Update image panel sizes
      SetImagePanels ;

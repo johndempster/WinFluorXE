@@ -16,6 +16,7 @@ object RecPlotFrm: TRecPlotFrm
   Visible = True
   OnActivate = FormActivate
   OnClose = FormClose
+  OnCreate = FormCreate
   OnResize = FormResize
   OnShow = FormShow
   PixelsPerInch = 96

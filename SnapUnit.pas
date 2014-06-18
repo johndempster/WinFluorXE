@@ -34,6 +34,8 @@ unit SnapUnit;
 // 18.02.14 DCAM NumFramesInBuffer now same as Andor SDK3
 // 02.06.14 PVCAM NumFramesInBuffer now a multiple of binfactor^2 to handle
 //          OptiMOS limitation in buffer size
+// 13.06.14 JD Error in horizontal display scroll position with display zooms <100% fixed
+// 17.06.14 12.5% display zoom added
 
 interface
 
@@ -422,20 +424,21 @@ begin
 
      // Display magnification factor
      cbDisplayZoom.Clear ;
-     cbDisplayZoom.Items.AddObject( '  25% ', Tobject(25) ) ;
-     cbDisplayZoom.Items.AddObject( '  50% ', Tobject(50) ) ;
-     cbDisplayZoom.Items.AddObject( ' 100% ', Tobject(100)) ;
-     cbDisplayZoom.Items.AddObject( ' 200% ', Tobject(200)) ;
-     cbDisplayZoom.Items.AddObject( ' 300% ', Tobject(300)) ;
-     cbDisplayZoom.Items.AddObject( ' 400% ', Tobject(400)) ;
-     cbDisplayZoom.Items.AddObject( ' 500% ', Tobject(500)) ;
-     cbDisplayZoom.Items.AddObject( ' 600% ', Tobject(600)) ;
-     cbDisplayZoom.Items.AddObject( ' 700% ', Tobject(700)) ;
-     cbDisplayZoom.Items.AddObject( ' 800% ', Tobject(800)) ;
+     cbDisplayZoom.Items.AddObject( '12.5% ', Tobject(125) ) ;
+     cbDisplayZoom.Items.AddObject( '  25% ', Tobject(250) ) ;
+     cbDisplayZoom.Items.AddObject( '  50% ', Tobject(500) ) ;
+     cbDisplayZoom.Items.AddObject( ' 100% ', Tobject(1000)) ;
+     cbDisplayZoom.Items.AddObject( ' 200% ', Tobject(2000)) ;
+     cbDisplayZoom.Items.AddObject( ' 300% ', Tobject(3000)) ;
+     cbDisplayZoom.Items.AddObject( ' 400% ', Tobject(4000)) ;
+     cbDisplayZoom.Items.AddObject( ' 500% ', Tobject(5000)) ;
+     cbDisplayZoom.Items.AddObject( ' 600% ', Tobject(6000)) ;
+     cbDisplayZoom.Items.AddObject( ' 700% ', Tobject(7000)) ;
+     cbDisplayZoom.Items.AddObject( ' 800% ', Tobject(8000)) ;
 
      cbDisplayZoom.ItemIndex := Min(Max(MainFrm.DisplayZoomIndex,
                                 0),cbDisplayZoom.Items.Count-1) ;
-     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.01 ;
+     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.001 ;
 
      sbXScroll.Position := 0 ;
      sbYScroll.Position := 0 ;
@@ -653,7 +656,6 @@ begin
            FreeMem(PDisplayBuf) ;
            PDisplayBuf := Nil ;
          except
-           outputdebugString(PChar('Error FreeMem(PDisplayBufs[i]')) ;
            PDisplayBuf := Nil ;
            end ;
          end ;
@@ -665,7 +667,6 @@ begin
            FreeMem(PBackgroundBuf) ;
            PBackgroundBuf := Nil ;
          except
-           outputdebugString(PChar('Error FreeMem(PBackgroundBuf[i]')) ;
            PBackgroundBuf := Nil ;
            end ;
          end ;
@@ -677,7 +678,6 @@ begin
            FreeMem(PSumBuf) ;
            PSumBuf := Nil ;
          except
-           outputdebugString(PChar('Error FreeMem(PSumBuf[i]')) ;
            PSumBuf := Nil ;
            end ;
          end ;
@@ -695,7 +695,6 @@ begin
      try
      if PWorkBuf <> Nil then FreeMem( PWorkBuf ) ;
      except
-           outputdebugString(PChar('Error FreeMem( PWorkBuf )')) ;
            PWorkBuf := Nil ;
            end ;
      GetMem( PWorkBuf, NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel ) ;
@@ -837,7 +836,7 @@ begin
 
      // Set size and pen/brush characteristics of images in use
      cbDisplayZoom.ItemIndex := Min(Max(cbDisplayZoom.ItemIndex,0),cbDisplayZoom.Items.Count-1) ;
-     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.01 ;
+     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.001 ;
 
      // Determine number of image columns and rows
      ImageGrp.ClientWidth :=  Max( ClientWidth - ImageGrp.Left - 5, 2) ;
@@ -1297,7 +1296,7 @@ begin
           // Copy line to bitmap
           xBm := 0 ;
           XIm := sbXScroll.Position ;
-          i := (Yim*MainFrm.Cam1.FrameWidth) + XIm*iStep ;
+          i := (Yim*MainFrm.Cam1.FrameWidth) + XIm ;
           while (Xbm < BitMap.Width) and
                 (Xim < MainFrm.Cam1.FrameWidth) and
                 (i < NumPixelsPerFrame) do begin
@@ -1768,7 +1767,7 @@ begin
     MainFrm.DisplayZoomIndex := cbDisplayZoom.ItemIndex ;
     StopCamera ;
     //MainFrm.Cam1.BinFactor := Round(edBinFactor.Value) ;
-    DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.01 ;
+    DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.001 ;
     StartCamera ;
 
     end;
@@ -1779,7 +1778,6 @@ procedure TSnapFrm.rbEXCShutterOpenClick(Sender: TObject);
 // Open excitation light shutter
 // -----------------------------
 begin
-   //outputdebugString(PChar(format('shutter open click %d',[Numframesdone]))) ;
    UpdateLightSource ;
    UpdateLightSourceShutter ;
    UpdateEMFilterDig ;
@@ -2505,7 +2503,6 @@ procedure TSnapFrm.rbEXCShutterClosedClick(Sender: TObject);
 // Close excitation light shutter
 // -----------------------------
 begin
-   //outputdebugString(PChar(format('shutter open click %d',[Numframesdone]))) ;
    UpdateLightSource ;
    UpdateLightSourceShutter ;
    UpdateEMFilterDig ;

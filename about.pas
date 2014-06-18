@@ -1,5 +1,7 @@
 unit About;
 
+// 18.06.14 Product name caption now updated with latest version number
+
 interface
 
 uses Windows, Classes, Graphics, Forms, Controls, StdCtrls,
@@ -29,9 +31,9 @@ uses Main;
 
 procedure TAboutBox.FormShow(Sender: TObject);
 begin
+     ProductName.Caption :=  MainFrm.ProgramName ;
      MainFrm.Cam1.GetCameraInfo( meCameraInfo.Lines ) ;
-//     SVNRevision.Caption := 'SVN Revision: ' + IntToStr(MainFrm.WinFluorSVNRev) + ' / ' + IntToStr(MainFrm.ComponentsSVNRev) ;
-end;
+     end;
 
 end.
 

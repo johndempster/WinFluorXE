@@ -1,7 +1,7 @@
 unit RecUnit;
-// =====================================================================================                ise
+// =====================================================================================
 // WinFluor - Image Recording Module (c) J. Dempster, University of Strathclydcbsee 2001-03
-// =====================================================================================                     st
+// =====================================================================================
 // All Rights Reserved
 // 1/8/01
 // 27.8.02
@@ -144,6 +144,15 @@ unit RecUnit;
 // 05.03.14 50/50 top/bottom split Image mode added
 // 03.04.14 Bulb exposure mode added.
 // 11.06.14 Recording duration now correct when Split Image selected
+// 13.06.14 StopCamera/StartCamera removed from UpdateExcitationWavelength and
+//          replaced with RestartCamera() in radio button click handlers to
+//          avoid premature start of camera during bRecord.click and unnecessary
+//          camera stops and starts. Fixes hang ups and blue screens with OptiMOS camera
+//          Error in horizontal display scroll position with display zooms <100% fixed
+// 16.06.14 flDisplayBuf moved to RecPlotUnit.pas
+// 17.06.14 12.5% display zoom added
+// 18.06.14 burst illumination delay increased to 10 seconds to allow sufficient time
+//          for waveform to be changed to ensure illumination on at start of burst
 
 {$DEFINE USECONT}
 
@@ -404,7 +413,6 @@ type
   private
     { Private declarations }
 
-    ii : Integer ;
     ADCDevice : SmallInt ;              // Analogue input interface device #1
     DeviceDACsInUse : Array[1..MaxDevices] of Boolean ; // DAC outputs of devices in use
     DeviceDIGsInUse : Array[1..MaxDevices] of Boolean ; // Digital outputs of devices in use
@@ -526,7 +534,6 @@ type
 
     MousePosition : TPoint ;
 
-    FLDisplayBuf : Array[0..99999] of Integer ;  // Image time course buffer
     StimulusRequired : Boolean ;                 // V/Dig/ stimulus needed
     TReEnableStartStimulusButton : Single ;      // Re-enable Start Stimulus button at this time
     PhotoStimulusRequired :Boolean ;             // Photo-stimulus needed flag
@@ -691,7 +698,7 @@ const
     NormaliseToMin = 1 ;
     NormaliseToMax = 2 ;
     NormaliseToZero = 3 ;
-    BurstIlluminationDelay = 3.0 ;
+    BurstIlluminationDelay = 10.0 ;
 
 type
     TMoveMode = (mvNone,mvLeftEdge,mvRightEdge,mvTopEdge,mvBottomEdge,
@@ -711,7 +718,6 @@ var
      i : Integer ;
 begin
 
-     ii := 0 ;
      FrameInterval := 0.0 ;
      FrameRate := 0.0 ;
      ADCRunning := False ;
@@ -875,20 +881,21 @@ begin
 
      // Display magnification factor
      cbDisplayZoom.Clear ;
-     cbDisplayZoom.Items.AddObject( '  25% ', Tobject(25) ) ;
-     cbDisplayZoom.Items.AddObject( '  50% ', Tobject(50) ) ;
-     cbDisplayZoom.Items.AddObject( ' 100% ', Tobject(100)) ;
-     cbDisplayZoom.Items.AddObject( ' 200% ', Tobject(200)) ;
-     cbDisplayZoom.Items.AddObject( ' 300% ', Tobject(300)) ;
-     cbDisplayZoom.Items.AddObject( ' 400% ', Tobject(400)) ;
-     cbDisplayZoom.Items.AddObject( ' 500% ', Tobject(500)) ;
-     cbDisplayZoom.Items.AddObject( ' 600% ', Tobject(600)) ;
-     cbDisplayZoom.Items.AddObject( ' 700% ', Tobject(700)) ;
-     cbDisplayZoom.Items.AddObject( ' 800% ', Tobject(800)) ;
+     cbDisplayZoom.Items.AddObject( '12.5% ', Tobject(125) ) ;
+     cbDisplayZoom.Items.AddObject( '  25% ', Tobject(250) ) ;
+     cbDisplayZoom.Items.AddObject( '  50% ', Tobject(500) ) ;
+     cbDisplayZoom.Items.AddObject( ' 100% ', Tobject(1000)) ;
+     cbDisplayZoom.Items.AddObject( ' 200% ', Tobject(2000)) ;
+     cbDisplayZoom.Items.AddObject( ' 300% ', Tobject(3000)) ;
+     cbDisplayZoom.Items.AddObject( ' 400% ', Tobject(4000)) ;
+     cbDisplayZoom.Items.AddObject( ' 500% ', Tobject(5000)) ;
+     cbDisplayZoom.Items.AddObject( ' 600% ', Tobject(6000)) ;
+     cbDisplayZoom.Items.AddObject( ' 700% ', Tobject(7000)) ;
+     cbDisplayZoom.Items.AddObject( ' 800% ', Tobject(8000)) ;
 
      cbDisplayZoom.ItemIndex := Min(Max(MainFrm.DisplayZoomIndex,
                                  0),cbDisplayZoom.Items.Count-1) ; ;
-     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.01 ;
+     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.001 ;
 
      sbXScroll.Position := 0 ;
      sbYScroll.Position := 0 ;
@@ -1011,8 +1018,11 @@ begin
         NewDisplaySetup ;
         end ;
 
-     // Start acquiring images
+     // Set wavelength control pattern
      UpdateExcitationWavelengths ;
+
+     // Start acquiring images
+     StartCamera ;
 
      // Start schedule events timer (runs at 50 ms intervals)
      Timer.Enabled := True ;
@@ -1129,6 +1139,8 @@ procedure TRecordFrm.StartCamera ;
 var
      i : Integer ;
 begin
+
+   outputdebugstring(pchar('camera started'));
 
    // Don't start if called before initialisations in FormShow complete
    if not InitialisationComplete then Exit ;
@@ -1253,6 +1265,7 @@ begin
 
      // Exit if camera not running
      if not CameraRunning then Exit ;
+   outputdebugstring(pchar('camera stopped'));
 
      // Stop camera
      MainFrm.Cam1.StopCapture ;
@@ -1279,6 +1292,10 @@ var
     i, OldIndex : Integer ;
     s : string ;
 begin
+
+    // If camera is not running then leave it inactive
+    if not MainFrm.Cam1.CameraActive then Exit ;
+
     StopCamera ;
 
     // Update excitation wavelength list
@@ -1318,8 +1335,7 @@ const
     {$IFDEF WIN32}
       MaxBufferSize = 500000000 ;
     {$ELSE}
-      //MaxBufferSize = 2000000000 ;
-        MaxBufferSize = 2000000000 ;
+      MaxBufferSize = 2000000000 ;
     {$IFEND}
 
 var
@@ -1604,7 +1620,7 @@ begin
 
      // Set size and pen/brush characteristics of images in use
      if cbDisplayZoom.ItemIndex < 0 then cbDisplayZoom.ItemIndex := 0 ;
-     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.01 ;
+     DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.001 ;
 
      // Determine number of image columns and rows
      ImageRows := Round(Sqrt(NumFrameTypes)) ;
@@ -1718,16 +1734,16 @@ begin
      for i := StartAt to EndAt do begin
          iFlag := i*NumPixelsPerFrame ;
          if ByteImage then begin
-            PByteArray(PFrameBuf)^[iFlag] := ByteLoValue ;
-            PByteArray(PFrameBuf)^[iFlag+1] := ByteHiValue ;
-            PByteArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-2] := ByteLoValue ;
-            PByteArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-1] := ByteHiValue ;
+            pByteArray(PFrameBuf)^[iFlag] := ByteLoValue ;
+            pByteArray(PFrameBuf)^[iFlag+1] := ByteHiValue ;
+            pByteArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-2] := ByteLoValue ;
+            pByteArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-1] := ByteHiValue ;
             end
          else begin
-            PWordArray(PFrameBuf)^[iFlag] := WordLoValue ;
-            PWordArray(PFrameBuf)^[iFlag+1] := WordHiValue ;
-            PWordArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-2] := WordLoValue ;
-            PWordArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-1] := WordHiValue ;
+            pBigWordArray(PFrameBuf)^[iFlag] := WordLoValue ;
+            pBigWordArray(PFrameBuf)^[iFlag+1] := WordHiValue ;
+            pBigWordArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-2] := WordLoValue ;
+            pBigWordArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-1] := WordHiValue ;
             end ;
          end ;
 
@@ -3253,7 +3269,7 @@ begin
     TimerProcBusy := True ;
     BufferFull := False ;
 
-    // Restart camera if a change to camera settings elsewhere requires is
+    // Restart camera if a change to camera settings elsewhere requires it
     if MainFrm.Cam1.CameraRestartRequired and
        (RecordingMode <> rmRecordingInProgress) then begin
        StopCamera ;
@@ -3315,6 +3331,7 @@ begin
        end ;
 
     StartIllumination := StartBurstAtFrame - Round(BurstIlluminationDelay/MainFrm.Cam1.FrameInterval) ;
+
     if (RecordingMode = rmRecordingInProgress) and
        (cbRecordingMode.ItemIndex = rmTimelapseBurst) and
        (not BurstIlluminationOn) and
@@ -3354,17 +3371,17 @@ begin
            // If image available for this frame, get frame#
            if ByteImage then begin
               // 8 bit pixel frames
-              if (PByteArray(PFrameBuf)^[iFlag+1] = ByteHiValue) and
-                 (PByteArray(PFrameBuf)^[iFlag] = ByteLoValue) then Done := True ;
-              if (PByteArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-1] = ByteHiValue) and
-                 (PByteArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-2] = ByteLoValue) then Done := True ;
+              if (pByteArray(PFrameBuf)^[iFlag+1] = ByteHiValue) and
+                 (pByteArray(PFrameBuf)^[iFlag] = ByteLoValue) then Done := True ;
+              if (pByteArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-1] = ByteHiValue) and
+                 (pByteArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-2] = ByteLoValue) then Done := True ;
               end
            else begin
               // 16 bit pixel frames
-              if (PWordArray(PFrameBuf)^[iFlag+1] = WordHiValue) and
-                 (PWordArray(PFrameBuf)^[iFlag] = WordLoValue) then Done := True ;
-              if (PWordArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-1] = WordHiValue) and
-                 (PWordArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-2] = WordLoValue) then Done := True ;
+              if (pBigWordArray(PFrameBuf)^[iFlag+1] = WordHiValue) and
+                 (pBigWordArray(PFrameBuf)^[iFlag] = WordLoValue) then Done := True ;
+              if (pBigWordArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-1] = WordHiValue) and
+                 (pBigWordArray(PFrameBuf)^[iFlag+NumPixelsPerFrame-2] = WordLoValue) then Done := True ;
               end ;
 
            if not Done then begin
@@ -3458,9 +3475,9 @@ begin
            if RecordingMode = rmRecordingInProgress then  RecordingStatus :=RecordingStatus + DebugMessage ;
            MainFrm.StatusBar.SimpleText := RecordingStatus ;
 
-           if not CameraRunning then begin
-              MainFrm.StatusBar.SimpleText := ' Camera Initialised' ;
-              end ;
+//           if not CameraRunning then begin
+//              MainFrm.StatusBar.SimpleText := ' Camera Initialised' ;
+//              end ;
 
            // Display frame
            if (cbRecordingMode.ItemIndex = rmContinuous) or
@@ -3526,7 +3543,7 @@ begin
                  NumFramesToSave := Min(NumFramesRequired - NumFramesDone,NumFramesInHalfBuffer) ;
                  MainFrm.IDRFile.AsyncSaveFrames( MainFrm.IDRFile.NumFrames + 1,
                                                   NumFramesToSave,
-                                                  @PByteArray(PFrameBuf)[iStart]) ;
+                                                  @pByteArray(PFrameBuf)[iStart]) ;
                  NumFramesDone :=  NumFramesDone + NumFramesToSave ;
                  if NumFramesDone >= NumFramesRequired then RecordingMode := rmStopFrameRecording ;
                  end
@@ -3551,7 +3568,7 @@ begin
                                             LastFrame - FirstFrameToSave + 1) ;
                        IDRFileBurst.AsyncSaveFrames( IDRFileBurst.NumFrames + 1,
                                                      NumFramesToSave,
-                                                     @PByteArray(PFrameBuf)[iStart]) ;
+                                                     @pByteArray(PFrameBuf)[iStart]) ;
                        NumBurstFramesDone :=  NumBurstFramesDone + NumFramesToSave ;
                        end ;
 
@@ -3589,7 +3606,7 @@ begin
                      if (jFrame mod TimeLapseFrameInterval) < NumFrameTypes then begin
                         iStart := (FirstFrame + iFrame)*NumBytesPerFrame ;
                         for i := iStart to iStart + NumBytesPerFrame-1 do begin
-                            PByteArray(PTimeLapseBuf)^[j] := PByteArray(PFrameBuf)^[i] ;
+                            pByteArray(PTimeLapseBuf)^[j] := pByteArray(PFrameBuf)^[i] ;
                             Inc(j) ;
                             end ;
                         Inc(NumFramesToSave) ;
@@ -3660,7 +3677,6 @@ begin
         end ;
 
      // Add empty frame flags to buffer (if required)
-//     outputdebugString(PChar(format('write done %d',[Integer(MainFrm.IDRFile.AsyncWriteInProgress)]))) ;
      if ReplaceEmptyFlags and (not MainFrm.IDRFile.AsyncWriteInProgress) then begin
         FillBufferWithEmptyFlags( EmptyFlagsFirst, EmptyFlagsLast ) ;
         ReplaceEmptyFlags := False ;
@@ -3729,16 +3745,15 @@ begin
      for iY := 0 to iY1-iY0 do begin
          i := iStart + iY*MainFrm.Cam1.FrameWidth ;
          for iX := 0 to iX1-iX0 do begin
-             if ByteImage then Sum := Sum + PByteArray(pImageBuf)^[i]
-                          else Sum := Sum + PWordArray(pImageBuf)^[i] ;
+             if ByteImage then Sum := Sum + pByteArray(pImageBuf)^[i]
+                          else Sum := Sum + pBigWordArray(pImageBuf)^[i] ;
              Inc(i) ;
              Inc(nAvg) ;
              end ;
          end ;
 
-     Y := Round( Sum/nAvg ) ;
-
-     // Subtract background ROI
+     Y := Round( Sum/Max(nAvg,1) ) ;
+                                            // Subtract background ROI
      if RecPlotFrm.SelectedSubROI >= 0 then begin
 
         iX0 := Max(ROIs[RecPlotFrm.SelectedSubROI].X - ROISize div 2,0) ;
@@ -3752,22 +3767,19 @@ begin
         for iY := 0 to iY1-iY0 do begin
             i := iStart + iY*MainFrm.Cam1.FrameWidth ;
             for iX := 0 to iX1-iX0 do begin
-             if ByteImage then Sum := Sum + PByteArray(pImageBuf)^[i]
-                          else Sum := Sum + PWordArray(pImageBuf)^[i] ;
+             if ByteImage then Sum := Sum + pByteArray(pImageBuf)^[i]
+                          else Sum := Sum + pBigWordArray(pImageBuf)^[i] ;
                Inc(i) ;
                Inc(nAvg) ;
                end ;
             end ;
 
-        Y := Y - Round( Sum/nAvg ) ;
+        Y := Y - Round( Sum/Max(nAvg,1) ) ;
         end ;
 
      // Update ROI time course buffer
      LatestROIValue[FrameType] := y ;
-     for iFT := 0 to NumFrameTypes-1 do begin
-        FLDisplayBuf[RecPlotFrm.FLDisplayPointer] := LatestROIValue[iFT] ;
-        Inc(RecPlotFrm.FLDisplayPointer) ;
-        end ;
+     RecPlotFrm.FLDisplayAddPoints( LatestROIValue, NumFrameTypes ) ;
 
      end ;
 
@@ -3789,8 +3801,8 @@ var
     iStep : Integer ;
     iEnd : Integer ;
     iDisplayZoom,iz : Integer ;
-    PScanLine1 : PByteArray ;    // Bitmap line buffer pointer
-    PScanLine : PByteArray ;    // Bitmap line buffer pointer
+    PScanLine1 : pByteArray ;    // Bitmap line buffer pointer
+    PScanLine : pByteArray ;    // Bitmap line buffer pointer
     PCurrentFrame : PIntArray ; // Pointer to current display frame
 begin
 
@@ -3803,14 +3815,14 @@ begin
     if ByteImage then begin
        // 8 bit images
        for i := 0 to NumPixelsPerFrame-1 do begin
-           PCurrentFrame^[i] := PByteArray(PFrameBuf)^[j] ;
+           PCurrentFrame^[i] := pByteArray(PFrameBuf)^[j] ;
            Inc(j) ;
            end ;
        end
     else begin
        // 16 bits images
        for i := 0 to NumPixelsPerFrame-1 do begin
-           PCurrentFrame^[i] := PWordArray(PFrameBuf)^[j] ;
+           PCurrentFrame^[i] := pBigWordArray(PFrameBuf)^[j] ;
            Inc(j) ;
            end ;
        end ;
@@ -3876,7 +3888,7 @@ begin
           // Copy line to bitmap
           xBm := 0 ;
           XIm := sbXScroll.Position ;
-          i := (Yim*MainFrm.Cam1.FrameWidth) + XIm*iStep ;
+          i := (Yim*MainFrm.Cam1.FrameWidth) + XIm ;
           while (Xbm < BitMap.Width) and
                 (Xim < MainFrm.Cam1.FrameWidth) and
                 (i < NumPixelsPerFrame) do begin
@@ -3940,8 +3952,8 @@ var
     iStep : Integer ;
     iEnd : Integer ;
     iDisplayZoom,iz : Integer ;
-    PScanLine1 : PByteArray ;    // Bitmap line buffer pointer
-    PScanLine : PByteArray ;    // Bitmap line buffer pointer
+    PScanLine1 : pByteArray ;    // Bitmap line buffer pointer
+    PScanLine : pByteArray ;    // Bitmap line buffer pointer
     PCurrentFrame : PIntArray ; // Pointer to current display frame
 begin
 
@@ -4707,8 +4719,7 @@ procedure TRecordFrm.edFrameIntervalKeyPress(Sender: TObject;
 begin
      if key = #13 then begin
          OptimiseContrastCount := NumFrameTypes ;
-         StopCamera ;
-         StartCamera ;
+         RestartCamera ;
          // Report minimum readout time
         lbReadoutTime.Caption := format('Min.= %.4g ms',
                               [SecsToMs*MainFrm.Cam1.ReadoutTime]) ;
@@ -4837,8 +4848,7 @@ begin
 
     // Set up A/D signals display window
 
-    RecPlotFrm.FLInitialiseDisplay( @FLDisplayBuf,
-                                    TimeLapseMode,
+    RecPlotFrm.FLInitialiseDisplay( TimeLapseMode,
                                     FrameTypes,
                                     NumFrameTypes,
                                     MainFrm.Cam1.FrameInterval/NumFramesPerCCD,
@@ -4859,10 +4869,8 @@ begin
     MainFrm.StatusBar.SimpleText := ' Wait ... Initialising Camera ' ;
 
     MainFrm.DisplayZoomIndex := cbDisplayZoom.ItemIndex ;
-    StopCamera ;
-    //MainFrm.Cam1.BinFactor := Round(edBinFactor.Value) ;
-    DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.01 ;
-    StartCamera ;
+    DisplayZoom := Integer(cbDisplayZoom.Items.Objects[cbDisplayZoom.ItemIndex])*0.001 ;
+    RestartCamera ;
     end;
 
 
@@ -4873,7 +4881,7 @@ begin
       EXCSetupFrm.Show ;
       end
    else ExcSetupFrm := TExcSetupFrm.Create(Self) ;
-   
+
    end;
 
 
@@ -4888,8 +4896,7 @@ begin
       UpdateLightSourceShutter ;
       end
    else begin
-      StopCamera ;
-      StartCamera ;
+      RestartCamera ;
       end ;
    end;
 
@@ -5153,7 +5160,7 @@ var
 begin
 
      // Stop camera
-     StopCamera ;
+     //StopCamera ;
 
      // Prevent multiple wavelengths if no wavelength sequence defined
      if rbMultipleWavelengths.Checked and (MainFrm.EXCNumWavelengths[MainFrm.EXCSequenceNum] <= 0) then begin
@@ -5205,7 +5212,7 @@ begin
      //edTimeLapseInterval.LoLimit := edFrameInterval.Value*(NumFrameTypes*4) ;
 
      // Restart camera
-     StartCamera ;
+     //StartCamera ;
 
      end ;
 
@@ -5223,7 +5230,7 @@ begin
      SetDisplayIntensityRange( MainFrm.GreyLo[SelectedFrameType],
                                MainFrm.GreyHi[SelectedFrameType] ) ;
 
-     UpdateExcitationWavelengths ;
+     RestartCamera ;
 
      end;
 
@@ -5233,7 +5240,7 @@ procedure TRecordFrm.rbMultipleWavelengthsClick(Sender: TObject);
 // Switch to multiple wavelength excitation
 // ----------------------------------------
 begin
-     UpdateExcitationWavelengths ;
+     RestartCamera ;
      end;
 
 
@@ -5303,12 +5310,11 @@ begin
 
 procedure TRecordFrm.rbStimOffClick(Sender: TObject);
 // ----------------------------------
-// Stimulus Off radion button clicked
+// Stimulus Off radio button clicked
 // ----------------------------------
 begin
      // Re-start timing cycle with stimulus disabled
-     StopCamera ;
-     StartCamera ;
+     RestartCamera ;
      end;
 
 
@@ -5374,7 +5380,7 @@ begin
 
 procedure TRecordFrm.bUpdateWavelengthsClick(Sender: TObject);
 begin
-    UpdateExcitationWavelengths;
+    RestartCamera ;
     end;
 
 
@@ -5399,7 +5405,7 @@ procedure TRecordFrm.cbWavelengthChange(Sender: TObject);
 // --------------------------------------
 begin
      if rbSingleWavelength.Checked then begin
-        UpdateExcitationWavelengths ;
+        RestartCamera ;
         end ;
 
      end;
@@ -5539,8 +5545,7 @@ begin
       UpdateLightSourceShutter ;
       end
    else begin
-      StopCamera ;
-      StartCamera ;
+      RestartCamera ;
       end ;
    end ;
 
@@ -5559,8 +5564,7 @@ procedure TRecordFrm.cbCameraGainChange(Sender: TObject);
 // Camera gain changed
 // -------------------
 begin
-     StopCamera ;
-     StartCamera ;
+     RestartCamera ;
      end ;
 
 
@@ -6157,7 +6161,7 @@ procedure TRecordFrm.cbSequenceChange(Sender: TObject);
 // ------------------------------------------------
 begin
      MainFrm.EXCSequenceNum := cbSequence.ItemIndex ;
-     UpdateExcitationWavelengths ;
+     RestartCamera ;
      end;
 
 procedure TRecordFrm.ckAutoOptimiseClick(Sender: TObject);
@@ -6366,8 +6370,9 @@ begin
      if cbPhotoStimProgram.ItemIndex > 0 then begin
         PhotoStimulusRequired := True ;
         // Camera re-start needed
-        StopCamera ;
-        StartCamera ;
+        RestartCamera ;
+//        StopCamera ;
+//        StartCamera ;
         end ;
      end;
 
@@ -6378,8 +6383,7 @@ procedure TRecordFrm.bStopPhotoStimulusClick(Sender: TObject);
 begin
      PhotoStimulusRequired := False ;
      // A/D restart needed with NIDAQ-MX to force DAC updates
-     StopCamera ;
-     StartCamera ;
+     RestartCamera ;
 
      LogFrm.AddLine( 'Stim Prog: Stopped' ) ;
 
@@ -6428,8 +6432,9 @@ procedure TRecordFrm.ckSplitCCDImageClick(Sender: TObject);
 begin
       MainFrm.SplitImage := ckSplitCCDImage.Checked ;
       OptimiseContrastCount := NumFrameTypes ;
-      StopCamera ;
-      StartCamera ;
+      RestartCamera ;
+//      StopCamera ;
+//      StartCamera ;
       end;
 
 

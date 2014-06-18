@@ -341,6 +341,10 @@ object ViewFrm: TViewFrm
           Font.Style = []
           ImageIndex = 1
           ParentFont = False
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object Label5: TLabel
             Left = 0
             Top = 0
@@ -940,7 +944,7 @@ object ViewFrm: TViewFrm
     NumFrameTypes = 1
     FrameWidth = 0
     FrameHeight = 0
-    PixelDepth = 0
+    PixelDepth = 1
     NumZSections = 1
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
