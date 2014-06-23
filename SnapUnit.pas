@@ -36,6 +36,7 @@ unit SnapUnit;
 //          OptiMOS limitation in buffer size
 // 13.06.14 JD Error in horizontal display scroll position with display zooms <100% fixed
 // 17.06.14 12.5% display zoom added
+// 20.06.14 Buffer no filled with empty flags after StartCapture to ensure buffer is filled with flags
 
 interface
 
@@ -514,19 +515,18 @@ procedure TSnapFrm.StartCamera ;
 // -------------------
 begin
 
+
    // Don't start if called before initialisations in FormShow complete
    if not InitialisationComplete then Exit ;
    if FormClosing then Exit ;
+
+   outputdebugstring(pchar('StartCamera'));
 
    // Stop camera (if it is running)
    StopCamera ;
 
    Timer.Enabled := False ;
-
    MainFrm.StatusBar.SimpleText := 'Wait ... Starting camera' ;
-
-//   outputdebugString(PChar(format('camera started %d',[Numframesdone]))) ;
-   CameraRunning := False ;
 
    // Set camera trigger mode
    MainFrm.Cam1.TriggerMode := CamFreeRun ;
@@ -554,6 +554,9 @@ begin
       Exit ;
       end;
 
+   // Ensure buffer is filled with empty flags
+   FillBufferWithEmptyFlags( 0, NumFramesInBuffer-1 ) ;
+
    TStart := TimeGetTime ;
    FrameRateCounter := 0 ;
    LastFrameNum := 0 ;
@@ -576,6 +579,7 @@ begin
    UpdateLightSource ;
    UpdateLightSourceShutter ;
    UpdateEmFilterDig ;
+   outputdebugstring(pchar('camera started'));
 
    end ;
 
@@ -588,6 +592,7 @@ begin
 
      // Exit if camera not running
      if not CameraRunning then Exit ;
+     outputdebugstring(pchar('camera stopped'));
 
      // Stop camera
      MainFrm.Cam1.StopCapture ;
@@ -975,16 +980,6 @@ begin
        StartCamera ;
        end ;
 
- {   if timegettime > ttest then begin
-        StopCamera ;
-        MainFrm.Cam1.SetCCDArea( MainFrm.Cam1.FrameLeft,
-                                 MainFrm.Cam1.FrameTop,
-                                 Max(MainFrm.Cam1.FrameRight-10,10),
-                                 Max(MainFrm.Cam1.FrameBottom-10,10));
-        StartCamera ;
-        ttest := timegettime + 5000 ;
-        end ;}
-
     // Resize controls (if required)
     if FormResizeCounter > 1 then Dec(FormResizeCounter) ;
     if FormResizeCounter = 1 then begin
@@ -1003,7 +998,7 @@ begin
         // ----------------------------------------
 
         FrameNum := LastFrameDisplayed + 1 ;
-
+        //outputdebugstring(pchar(format('framenum=%d',[framenum])));
         NextFrameToDisplay := -1 ;
         FrameCount := 0 ;
         BufferFull := False ;
@@ -1134,7 +1129,7 @@ begin
               end ;
 
            // Reset empty frame flags
-           FillBufferWithEmptyFlags( FirstFrame, LastFrame ) ;
+          FillBufferWithEmptyFlags( FirstFrame, LastFrame ) ;
 
            // Toggle buffer in use flag
            LowerBufferFilling := not LowerBufferFilling ;

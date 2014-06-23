@@ -1213,6 +1213,9 @@ begin
       Exit ;
       end;
 
+   // Ensure buffer is filled with empty flags
+   FillBufferWithEmptyFlags( 0, NumFramesInBuffer-1 ) ;
+
    // Update exposure interval in case camera has changed it
    edFrameInterval.Value := MainFrm.Cam1.FrameInterval ;
    FrameInterval := MainFrm.Cam1.FrameInterval ;
@@ -1529,7 +1532,7 @@ begin
      // Keep duration of frames in buffer to less than 8s
      NumFramesInBuffer := Min( NumFramesInBuffer, Round(8.0/MainFrm.Cam1.FrameInterval) ) ;
      // Ensure buffer is divisible by required factor
-     NumFramesInBuffer := (NumFramesInBuffer div FrameBufferMultiple)*FrameBufferMultiple ;
+     NumFramesInBuffer := Max(NumFramesInBuffer div FrameBufferMultiple,1)*FrameBufferMultiple ;
 
      // Set camera buffer
      MainFrm.Cam1.NumFramesInBuffer := NumFramesInBuffer ;

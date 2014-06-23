@@ -163,6 +163,8 @@ unit Main;
 //                    of PVCAM
 // 17.06.14 V3.6.1 JD Support for OptiMOS added
 //                    Disk file writing speed now improved.
+// 23.06.14 V3.6.1 JD Support for OptiMOS checked and working (no 3x3, 5x5 binning)
+//
 
 interface
 
@@ -741,7 +743,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.1 17-6-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.1 23-6-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
