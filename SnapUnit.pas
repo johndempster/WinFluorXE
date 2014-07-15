@@ -37,6 +37,7 @@ unit SnapUnit;
 // 13.06.14 JD Error in horizontal display scroll position with display zooms <100% fixed
 // 17.06.14 12.5% display zoom added
 // 20.06.14 Buffer no filled with empty flags after StartCapture to ensure buffer is filled with flags
+// 09.07.14 Calibration bar now sized correctly from Cam1.PixelWidth
 
 interface
 
@@ -180,8 +181,6 @@ type
     FrameTypeToBeDisplayed : Integer ;    // Next type of frame to be displayed
 
     DisplayZoom : Single ;                // Display zoom factor (0.5,1.0.2.0)
-    XResolution : Single ;                // Image pixel width
-    ResolutionUnits : String ;            // Image pixel width units
 
     FirstResize : Boolean ;
     FormResizeCounter : Integer ;
@@ -533,10 +532,6 @@ begin
 
    // Set camera gain
    MainFrm.Cam1.AmpGain := cbCameraGain.ItemIndex ;
-
-   // Get current spatial resolution
-   XResolution := MainFrm.Cam1.PixelWidth ;
-   ResolutionUnits := MainFrm.Cam1.PixelUnits ;
 
    // Set exposure interval
    MainFrm.Cam1.FrameInterval := edFrameInterval.Value ;
@@ -1519,7 +1514,7 @@ begin
      KeepBrush := TBrush.Create ;
      KeepBrush.Assign(Canvas.Brush) ;
 
-     iCalBarSize := Round((MainFrm.CalibrationBarSize*DisplayZoom)/MainFrm.IDRFile.XResolution) ;
+     iCalBarSize := Round((MainFrm.CalibrationBarSize*DisplayZoom)/MainFrm.Cam1.PixelWidth) ;
      iCalBarThickness := Max( 1, Round(MainFrm.CalibrationBarThickness) ) ;
 
      Bitmap.Canvas.Pen.Color := clWhite ;
@@ -1532,7 +1527,7 @@ begin
      iTop := Bitmap.Height - Bitmap.Canvas.TextHeight('X') ;
      Bitmap.Canvas.TextOut( 2,
                             iTop,
-                            format('%.4g %s',[MainFrm.CalibrationBarSize,MainFrm.IDRFile.ResolutionUnits])) ;
+                            format('%.4g %s',[MainFrm.CalibrationBarSize,MainFrm.Cam1.PixelUnits])) ;
 
      Bitmap.Canvas.Brush.Color := clWhite ;
      Bitmap.Canvas.Brush.Style := bsSolid ;

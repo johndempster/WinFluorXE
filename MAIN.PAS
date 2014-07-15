@@ -164,7 +164,11 @@ unit Main;
 // 17.06.14 V3.6.1 JD Support for OptiMOS added
 //                    Disk file writing speed now improved.
 // 23.06.14 V3.6.1 JD Support for OptiMOS checked and working (no 3x3, 5x5 binning)
-//
+//                    Andor Now loads atmcd64d.dll in 64 bit version / unloads DLL when finished
+// 09.07.14 V3.6.2 JD Calibration bar now sized correctly in Record Image & Record Image & Signals window
+//                    NIMAQDXUnit.pas IMAQDX_SetVideoMode() and IMAQDX_SetPixelFormat() now trap Session.CameraOpen = false
+//                    .CFG Settings now saved to settings directory rather than program directory
+//                    Now detects QCAMDriverx64.dll correctly
 
 interface
 
@@ -743,7 +747,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.1 23-6-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.2 9-7-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
@@ -2350,7 +2354,7 @@ begin
 
      OpenDialog.options := [ofPathMustExist] ;
      OpenDialog.DefaultExt := ConfigFileExtension ;
-     OpenDialog.InitialDir := ExtractFilePath(ParamStr(0)) ;
+     OpenDialog.InitialDir := SettingsDirectory ;
 
      OpenDialog.Filter := format(' Settings Files (*.%s)|*.%s',
                           [ConfigFileExtension,ConfigFileExtension]);
@@ -2386,7 +2390,7 @@ begin
      // Present user with standard Save File dialog box
      SaveDialog.options := [ofOverwritePrompt,ofHideReadOnly,ofPathMustExist] ;
      SaveDialog.DefaultExt := ConfigFileExtension ;
-     SaveDialog.InitialDir := ExtractFilePath(ParamStr(0)) ;
+     SaveDialog.InitialDir := SettingsDirectory ;
      SaveDialog.Filter := format(' Settings Files (*.%s)|*.%s',
                           [ConfigFileExtension,ConfigFileExtension]);
      SaveDialog.Title := 'Save Settings' ;

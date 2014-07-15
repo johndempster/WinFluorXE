@@ -1,6 +1,17 @@
 Comment: Native Code Setup Engine 32 bit-64 bit Installer Project
  
 [DEFINE REGION: Check Application Requirements]
+Get System Setting Windows in 64 bit Mode into CHECKSYSTEM
+if Variable CHECKSYSTEM not Equals TRUE
+  MessageBox: $TITLE$ Setup Error, This product requires at least a 64 bit operating system.$NEWLINE$$NEWLINE$Setup cannot continue.
+  Terminate Installation
+end
+Set x64 - Native 64 bit Windows, AMD64 and EM64T Architectures - installation mode
+Get System Setting Administrator Rights into CHECKSYSTEM
+if Variable CHECKSYSTEM not Equals TRUE
+  MessageBox: $TITLE$ Setup Error, This product requires at least Administrator Privileges.$NEWLINE$$NEWLINE$Setup cannot continue.
+  Terminate Installation
+end
 [END REGION]
  
 [DEFINE REGION: Check/Install Application Pre-Requisites]
@@ -269,20 +280,20 @@ else
   [OFFLINE CONTENT]
   Create Shortcut $SHORTCUTFOLDER$\WinFluor to $TARGETDIR$\WinFluor.exe, Pin to Start Menu, Pin to Taskbar
   Create Shortcut $DESKTOPDIR$\WinFluor to $TARGETDIR$\WinFluor.exe
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\ccir.CNF to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\ccir.TXT to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\Hamc4880.txt to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\Hamc4880.CNF to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\itxco10.dll to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\ixon.cof to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\osLibrary32.dll to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\osLibrary64.dll to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\WinFluor LineScan.txt to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\WinFluor Test.vbs to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\WinFluor User Guide.pdf to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\WinFluor XY Series.txt to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\WinFluor.chm to $TARGETDIR$
-  Install Files C:\Users\cecs06\Documents\RAD Studio\Projects\WinFluorXE\WinFluor.exe to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\ccir.CNF to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\ccir.TXT to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\Hamc4880.CNF to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\Hamc4880.txt to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\ixon.cof to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\itxco10.dll to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\osLibrary32.dll to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\osLibrary64.dll to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor LineScan.txt to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor Test.vbs to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor User Guide.pdf to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor XY Series.txt to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor.chm to $TARGETDIR$
+  Install Files E:\Delphi XE3 Projects\WinFluorXE\WinFluor.exe to $TARGETDIR$
   [DEFINE WEB MEDIA WinFluor Setup]
   Get Component WinFluor Setup Selection State into Variable SELECTED
   if Variable SELECTED Equals TRUE

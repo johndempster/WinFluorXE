@@ -153,6 +153,7 @@ unit RecUnit;
 // 17.06.14 12.5% display zoom added
 // 18.06.14 burst illumination delay increased to 10 seconds to allow sufficient time
 //          for waveform to be changed to ensure illumination on at start of burst
+// 09.07.14 Calibration bar now sized correctly from Cam1.PixelWidth
 
 {$DEFINE USECONT}
 
@@ -487,9 +488,6 @@ type
     FrameTypeToBeDisplayed : Integer ;    // Next type of frame to be displayed
 
     DisplayZoom : Single ;                // Display zoom factor (0.5,1.0.2.0)
-    XResolution : Single ;                // Image pixel width
-    ResolutionUnits : String ;            // Image pixel width units
-
     ADCRunning : Boolean ;                    // TRUE = A/D converter acquiring samples
     ADCNumSamplesInBuffer : Integer ;         // Total no. of samples in circular A/D buffer ADCBuf
     ADCNumSamplesInWriteBuffer : Integer ;    // No. of A/D samples in write buffer
@@ -1178,10 +1176,6 @@ begin
 
    // Set camera gain
    MainFrm.Cam1.AmpGain := cbCameraGain.ItemIndex ;
-
-   // Get current spatial resolution
-   XResolution := MainFrm.Cam1.PixelWidth ;
-   ResolutionUnits := MainFrm.Cam1.PixelUnits ;
 
    // In continuous mode if Z stack enabled and exposure to be terminated when Z step starts
    // add additional camera reaout time
@@ -4149,7 +4143,7 @@ begin
      KeepBrush := TBrush.Create ;
      KeepBrush.Assign(Canvas.Brush) ;
 
-     iCalBarSize := Round((MainFrm.CalibrationBarSize*DisplayZoom)/MainFrm.IDRFile.XResolution) ;
+     iCalBarSize := Round((MainFrm.CalibrationBarSize*DisplayZoom)/MainFrm.Cam1.PixelWidth) ;
      iCalBarThickness := Max( 1, Round(MainFrm.CalibrationBarThickness) ) ;
 
      Bitmap.Canvas.Pen.Color := clWhite ;
@@ -4162,7 +4156,7 @@ begin
      iTop := Bitmap.Height - Bitmap.Canvas.TextHeight('X') ;
      Bitmap.Canvas.TextOut( 2,
                             iTop,
-                            format('%.4g %s',[MainFrm.CalibrationBarSize,MainFrm.IDRFile.ResolutionUnits])) ;
+                            format('%.4g %s',[MainFrm.CalibrationBarSize,MainFrm.Cam1.PixelUnits])) ;
 
      Bitmap.Canvas.Brush.Color := clWhite ;
      Bitmap.Canvas.Brush.Style := bsSolid ;
@@ -4418,8 +4412,8 @@ begin
 
      MainFrm.IDRFile.ADCScanInterval := DACUpdateInterval ;
      // Get camera pixel size
-     MainFrm.IDRFile.XResolution := XResolution ;
-     MainFrm.IDRFile.ResolutionUnits := ResolutionUnits ;
+     MainFrm.IDRFile.XResolution := MainFrm.Cam1.PixelWidth ;
+     MainFrm.IDRFile.ResolutionUnits := MainFrm.Cam1.PixelUnits ;
 
      // Update IDR file channels with current settings
      MainFrm.IDRFile.ADCNumChannels := MainFrm.ADCNumChannels ;

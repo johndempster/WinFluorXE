@@ -1,6 +1,11 @@
 Comment
 Comment
 Code Folding Region
+Get System Settings
+If
+MessageBox
+Terminate Install
+End
 Code Folding Region
 Comment
 Code Folding Region
@@ -328,6 +333,11 @@ $
 {2C258FB8-307E-4B84-B6A6-DBE7FC8A79FE}
 {E34AFC4D-F128-4093-AD93-4EC3E87DC378}
 {5177FF3C-C42D-4163-ACD1-BAF4DBE0F1C2}
+{B5A1E7AD-AADB-4226-AC6F-7B385EE07456}
+{46EDB026-8DDE-4059-A787-93616404490F}
+{358A3353-7E8C-4EA4-A784-F6FCF947F5FE}
+{821E25A0-3174-4EC1-AB33-ACE5FF72B9A2}
+{ED4133CC-0873-4C86-B941-E0BBA50B1FED}
 {FDA6556D-7FB3-4A17-9C40-3D44528E12C4}
 {11F568DA-28EF-43FD-B05A-5CAFC3064A0D}
 {F43A46D2-0C61-48F7-9CC9-741DE2F2944E}
@@ -1084,6 +1094,11 @@ MAINTENANCE
 0
 TRUE
 FALSE
+{46EDB026-8DDE-4059-A787-93616404490F}
+CHECKSYSTEM
+0
+TRUE
+TRUE
 {D51179F2-5760-4231-A01D-11527830ABF4}
 $TITLE$ Setup
 Your computer needs to be restarted before $TITLE$ Setup can continue.$NEWLINE$$NEWLINE$Please save your work in all running programs and click OK to restart your computer. Setup will resume once your computer restarts.$NEWLINE$$NEWLINE$If you click CANCEL, setup will exit. You will have to run setup again at a later time to install $TITLE$.
@@ -1108,6 +1123,12 @@ Unable to uninstall old version of $TITLE$. It is strongly recommended that you 
 2
 2
 NATIVE_ERROR
+{358A3353-7E8C-4EA4-A784-F6FCF947F5FE}
+$TITLE$ Setup Error
+This product requires at least Administrator Privileges.$NEWLINE$$NEWLINE$Setup cannot continue.
+3
+1
+
 {EAC1FFF4-CCCD-452E-886C-3AAFA5AC4558}
 welcome
 WIZARD
@@ -1313,6 +1334,9 @@ TRUE
 {218DE77C-5294-4EED-8A28-08408D8B4CDD}
 ISNT
 18
+{B5A1E7AD-AADB-4226-AC6F-7B385EE07456}
+CHECKSYSTEM
+0
 {59BD6CD6-36D7-488B-90A4-0D6E230EE762}
 E:\Delphi XE3 Projects\WinFluorXE\ccir.CNF
 FALSE|
@@ -1713,6 +1737,11 @@ $
 
 
 
+
+
+
+
+
 C
 
 
@@ -2012,6 +2041,11 @@ C
 
 
 $
+
+
+
+
+
 
 
 

@@ -1,6 +1,11 @@
 Comment: Native Code Setup Engine 32 bit-64 bit Installer Project
  
 [DEFINE REGION: Check Application Requirements]
+Get System Setting Administrator Rights into CHECKSYSTEM
+if Variable CHECKSYSTEM not Equals TRUE
+  MessageBox: $TITLE$ Setup Error, This product requires at least Administrator Privileges.$NEWLINE$$NEWLINE$Setup cannot continue.
+  Terminate Installation
+end
 [END REGION]
  
 [DEFINE REGION: Check/Install Application Pre-Requisites]
