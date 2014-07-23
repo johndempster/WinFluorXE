@@ -62,6 +62,7 @@ unit AmpModule;
 // 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
 // 23.07.14 Multiclamp support updated to support MultiClamp Commander V2.0 API (same as WinWCP)
 //          to fix problems Josh GoldBerg's problems
+//          TCopyDataStruct now defined with NativeInts for 64 bit compatibility
 
 interface
 
@@ -296,10 +297,11 @@ const
 type
 
 TCopyDataStruct = record
-    dwData : Cardinal ;
-    cbData : Cardinal ;
+    dwData : NativeUInt ;
+    cbData : NativeInt ;
     lpData : Pointer ;
     end ;
+
 PCopyDataStruct = ^TCopyDataStruct ;
 
 // Axon Multiclamp Commander data record
