@@ -169,6 +169,7 @@ unit Main;
 //                    NIMAQDXUnit.pas IMAQDX_SetVideoMode() and IMAQDX_SetPixelFormat() now trap Session.CameraOpen = false
 //                    .CFG Settings now saved to settings directory rather than program directory
 //                    Now detects QCAMDriverx64.dll correctly
+// 22.07.14 V3.6.3 JD PVCAM & NIMAQdx: Camera can be selected when more than one is available
 
 interface
 
@@ -747,7 +748,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.2 9-7-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.3 23-7-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

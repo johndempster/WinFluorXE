@@ -54,12 +54,12 @@ unit FileIOUnit;
 //                    'EXCWEMF%d='MainFrm.EXCWavelengths[iWav].EmFilter added
 //                    'EXCWEMN%d=' MainFrm.EXCWavelengths[iWav].EmName added
 //                    'EXCSPEMFILT=', MainFrm.EXCSpectrumEMFilter added
-// 03.03.04 ......... 'SPLIM0=',MainFrm.SplitImageName[0]
+// 03.03.14 ......... 'SPLIM0=',MainFrm.SplitImageName[0]
 //                    'SPLIM1=',MainFrm.SplitImageName[1]
 //                    Header, 'SPLIM=',MainFrm.SplitImage
-// 05.03.04 ......... 'BULBEXP=', MainFrm.BulbExposureMode
+// 05.03.14 ......... 'BULBEXP=', MainFrm.BulbExposureMode
 //                    'EXCWFEX%d=',[iWav]), MainFrm.EXCWavelengths[iWav].FractionalExposure
-
+// 22.07.14 ......... 'CAMSEL=', MainFrm.Cam1.SelectedCamera
 
 interface
 
@@ -187,6 +187,8 @@ begin
 
      // Auxiliary camera settings
      AppendInt( Header, 'CAMTYPEAUX=', MainFrm.AuxCameraType ) ;
+
+     AppendInt( Header, 'CAMSEL=', MainFrm.Cam1.SelectedCamera ) ;
 
      AppendFloat( Header, 'CAMFI=', MainFrm.Cam1.FrameInterval ) ;
      AppendInt( Header, 'CAMFL=', MainFrm.Cam1.FrameLeft ) ;
@@ -583,15 +585,23 @@ begin
      // Auxiliary camera settings
      ReadInt( Header, 'CAMTYPEAUX=', MainFrm.AuxCameraType ) ;
 
+     iValue := MainFrm.Cam1.SelectedCamera ;
+     ReadInt( Header, 'CAMSEL=', iValue ) ;
+     MainFrm.Cam1.SelectedCamera := iValue ;
+
+     iValue := MainFrm.Cam1.BinFactor ;
      ReadInt( Header, 'CAMBIN=', iValue ) ;
      MainFrm.Cam1.BinFactor := iValue ;
 
+     iValue := MainFrm.Cam1.ReadoutSpeed ;
      ReadInt( Header, 'CAMRS=', iValue ) ;
      MainFrm.Cam1.ReadoutSpeed := iValue ;
 
+     iValue :=  MainFrm.Cam1.CameraMode ;
      ReadInt( Header, 'CAMVM=', iValue ) ;
      MainFrm.Cam1.CameraMode := iValue ;
 
+     iValue := MainFrm.Cam1.CameraADC ;
      ReadInt( Header, 'CAMADC=', iValue ) ;
      MainFrm.Cam1.CameraADC := iValue ;
 
@@ -603,23 +613,34 @@ begin
      ReadLogical( Header, 'CAMCCDPERO=', bValue ) ;
      MainFrm.Cam1.CCDPostExposureReadout := bValue ;
 
+     iValue := MainFrm.Cam1.ComPort ;
      ReadInt( Header, 'CAMCOM=', iValue ) ;
      MainFrm.Cam1.ComPort := iValue ;
+
+     iValue := MainFrm.Cam1.AmpGain ;
      ReadInt( Header, 'CAMGN=', iValue ) ;
      MainFrm.Cam1.AmpGain := iValue ;
 
+     iValue := MainFrm.Cam1.FrameLeft ;
      ReadInt( Header, 'CAMFL=', iValue ) ;
      MainFrm.Cam1.FrameLeft := iValue ;
+
+     iValue := MainFrm.Cam1.FrameRight ;
      ReadInt( Header, 'CAMFR=', iValue ) ;
      MainFrm.Cam1.FrameRight := iValue ;
+
+     iValue := MainFrm.Cam1.FrameTop ;
      ReadInt( Header, 'CAMFT=', iValue ) ;
      MainFrm.Cam1.FrameTop := iValue ;
+
+     iValue := MainFrm.Cam1.FrameBottom ;
      ReadInt( Header, 'CAMFB=', iValue ) ;
      MainFrm.Cam1.FrameBottom := iValue ;
 
      // NOTE. Bin factor, readout speed and imaging area need to be set before
      // .FrameInterval to ensure camera will accept short intervals
 
+     fValue := MainFrm.Cam1.FrameInterval ;
      ReadFloat( Header, 'CAMFI=', fValue ) ;
      MainFrm.Cam1.FrameInterval := fValue ;
 

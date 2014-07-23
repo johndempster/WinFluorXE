@@ -31,6 +31,7 @@ unit SetupUnit;
 // 25.10.13 JD Z stage step time added
 // 16.12.13 JD CheckSettings added to check input and output channels for missing and multiple channels
 // 27.02.13 JD Emission filter control settings added to Light Source page
+// 22.07.14 JD Camera selection menu added (allows selection of camera when more than one available)
 
 interface
 
@@ -272,6 +273,9 @@ type
     Label76: TLabel;
     edSplitImageLower: TEdit;
     ckBulbExposureMode: TCheckBox;
+    CameraPanel: TPanel;
+    cbCameraNames: TComboBox;
+    Label77: TLabel;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure bOKClick(Sender: TObject);
@@ -286,6 +290,7 @@ type
     procedure cbCameraModeChange(Sender: TObject);
     procedure cbCameraADCChange(Sender: TObject);
     procedure cbLSLaserStartChange(Sender: TObject);
+    procedure cbCameraNamesChange(Sender: TObject);
   private
     { Private declarations }
     CameraOpenRequired : Boolean ;
@@ -331,9 +336,13 @@ begin
      if MainFrm.FormExists('RecADCOnlyFrm') then RecADCOnlyFrm.Close ;
      if MainFrm.FormExists('SealTestFrm') then SealTestFrm.Close ;
 
-     // Set main camera
-     MainFrm.Cam1.GetCameraNameList( cbCamera.Items ) ;
+     // Get camera library list
+     MainFrm.Cam1.GetCameraLibList( cbCamera.Items ) ;
      cbCamera.ItemIndex := MainFrm.CameraType ;
+
+     // Get names of available cameras
+     MainFrm.Cam1.GetCameraNameList( cbCameraNames.Items ) ;
+     cbCameraNames.ItemIndex := MainFrm.Cam1.SelectedCamera ;
 
      // Set auxiliary camera
      MainFrm.Cam1.GetCameraNameList( cbAuxCamera.Items ) ;
@@ -799,6 +808,7 @@ begin
      // Close existing camera and re-open new if camera changed
 
      if (cbCamera.ItemIndex <> MainFrm.CameraType) or
+        (cbCameraNames.ItemIndex <> MainFrm.Cam1.SelectedCamera) or
         (cbAuxCamera.ItemIndex <> MainFrm.AuxCameraType) or
         (cbCameraPort.ItemIndex <> (MainFrm.Cam1.ComPort-1)) then begin
 
@@ -807,6 +817,7 @@ begin
         MainFrm.Cam1.CloseCamera ;
 
         // Update main camera type
+        MainFrm.Cam1.SelectedCamera := cbCameraNames.ItemIndex ;
         MainFrm.CameraType := cbCamera.ItemIndex ;
         MainFrm.AuxCameraType := cbAuxCamera.ItemIndex ;
 
@@ -838,10 +849,17 @@ begin
 
      iTop := cbCamera.Top + cbCamera.Height + 5 ;
 
-     // Show auxiliary camera panel if many camera is an LSM
+     // Show auxiliary camera panel if main camera is an LSM
      AuxCameraPanel.Top := iTop ;
      AuxCameraPanel.Visible := MainFrm.Cam1.IsLSM( MainFrm.CameraType ) ;
      if AuxCameraPanel.Visible then iTop := iTop + AuxCameraPanel.Height ;
+
+     // Show auxiliary camera panel if main camera is an LSM
+     CameraPanel.Top := iTop ;
+     if MainFrm.Cam1.NumCameras > 1 then begin
+        CameraPanel.Visible := True ;
+       iTop := iTop + CameraPanel.Height ;
+       end ;
 
      ModePanel.Top := iTop ;
      MainFrm.Cam1.GetCameraModeList( cbCameraMode.Items );
@@ -1083,10 +1101,7 @@ begin
      MainFrm.SplitImageName[0] := edSplitImageUpper.Text ;
      MainFrm.SplitImageName[1] := edSplitImageLower.Text ;
 
-
-
      CheckSettings ;
-
 
     // Update relevant forms if they are active
     if MainFrm.FormExists('TimeCourseFrm') then TimeCourseFrm.UpdateSettings ;
@@ -1248,6 +1263,33 @@ begin
                                        else ReadoutSpeedPanel.Visible := False ;
 
      CameraOpenRequired :=  True ;
+
+     end;
+
+procedure TSetupFrm.cbCameraNamesChange(Sender: TObject);
+// --------------
+// Camera changed
+// --------------
+var
+    i : Integer ;
+    ReadSpeed, MaxSpeed : Single ;
+begin
+
+     //MainFrm.Cam1.SelectedCamera := cbCameraNames.ItemIndex ;
+     CameraOpenRequired :=  True ;
+     NewCamera ;
+
+     // Set camera readout speed to maximum
+     if cbReadoutSpeed.Visible then begin
+        MaxSpeed := 0.0 ;
+        for i := 0 to cbReadoutSpeed.Items.Count-1 do begin
+            ReadSpeed := ExtractFloat( cbReadoutSpeed.Items.Strings[i], 0.0 ) ;
+            if ReadSpeed > MaxSpeed then begin
+               MaxSpeed := ReadSpeed ;
+               cbReadoutSpeed.ItemIndex := i ;
+               end ;
+            end ;
+        end ;
 
      end;
 

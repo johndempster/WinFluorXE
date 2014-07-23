@@ -614,7 +614,6 @@ begin
                    { Erase display & Draw horizontal zero level cursor(s) }
                    LabIO.UpdateDACOutputBuffer ;
                    LabIO.GetADCSamples( ADCDevice, ADC ) ;
-                   outputdebugstring(pchar(format('%d %d',[TimeGetTime,TTimeOut]))) ;
                    // if all samples have been acquired, display on screen
                    if ADC[EndOfBuf] <> EmptyFlags[EndOfBuf and 1] then Inc(EndOfSweepCount) ;
                    if ADC[EndOfBuf-1] <> EmptyFlags[(EndOfBuf-1) and 1] then Inc(EndOfSweepCount) ;

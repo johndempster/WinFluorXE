@@ -1,9 +1,9 @@
 object SealTestFrm: TSealTestFrm
   Left = 532
   Top = 298
-  Width = 599
-  Height = 705
   Caption = 'Signals Monitor (Seal Test)'
+  ClientHeight = 678
+  ClientWidth = 591
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clBlack
@@ -92,7 +92,7 @@ object SealTestFrm: TSealTestFrm
     object Label2: TLabel
       Left = 8
       Top = 48
-      Width = 41
+      Width = 40
       Height = 15
       Caption = 'Voltage'
       Font.Charset = DEFAULT_CHARSET
@@ -109,7 +109,6 @@ object SealTestFrm: TSealTestFrm
       Height = 23
       Hint = 'Channel containing current signal'
       Style = csDropDownList
-      ItemHeight = 15
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
@@ -122,7 +121,6 @@ object SealTestFrm: TSealTestFrm
       Height = 23
       Hint = 'Channel containing voltage signal'
       Style = csDropDownList
-      ItemHeight = 15
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
@@ -357,6 +355,10 @@ object SealTestFrm: TSealTestFrm
       end
       object TabSheet1: TTabSheet
         Caption = 'Cell'
+        ExplicitLeft = 0
+        ExplicitTop = 0
+        ExplicitWidth = 0
+        ExplicitHeight = 0
         object Label15: TLabel
           Left = 10
           Top = 4
@@ -788,7 +790,6 @@ object SealTestFrm: TSealTestFrm
       Height = 23
       Hint = 'Channel containing voltage signal'
       Style = csDropDownList
-      ItemHeight = 15
       ParentShowHint = False
       ShowHint = True
       TabOrder = 9
@@ -939,9 +940,9 @@ object SealTestFrm: TSealTestFrm
       ParentFont = False
       TabOrder = 1
       object Label18: TLabel
-        Left = 42
+        Left = 43
         Top = 24
-        Width = 36
+        Width = 35
         Height = 15
         Alignment = taRightJustify
         Caption = 'Vout 0'
@@ -953,9 +954,9 @@ object SealTestFrm: TSealTestFrm
         ParentFont = False
       end
       object Label19: TLabel
-        Left = 42
+        Left = 43
         Top = 48
-        Width = 36
+        Width = 35
         Height = 15
         Alignment = taRightJustify
         Caption = 'Vout 1'

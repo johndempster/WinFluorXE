@@ -1671,8 +1671,6 @@ begin
         if (FADCPointer > ADCBufEnd) and FADCCircularBuffer then FADCPointer := 0 ;
         end ;
 
-    //outputdebugString(PChar(format('%d %d %d',[FADCPointer,NumSamplesRead,timegettime-t0]))) ;
-
     end ;
 
 
@@ -1928,8 +1926,6 @@ begin
                            Nil
                            )) ;
 
-        //t1 := Timegettime ;
-        //outputdebugstring(pchar(format('%d %d %d %d %d',[NumPointsToWrite,NumSamplesWritten,iPointer,tt,t1-t0])));
         end ;
 
     end ;
@@ -1953,7 +1949,6 @@ begin
 
      // Stop running D/A task
      CheckError( DAQmxClearTask(DACTask[Device])) ;
- //    outputdebugString(PChar(format('DAC stopped dev=%d',[Device]))) ;
 
      EnableFPUExceptions ;
 
@@ -2248,8 +2243,6 @@ begin
                                           NumSamplesWritten,
                                           Nil)) ;
 
-        //t1 := Timegettime ;
-        //outputdebugstring(pANSIChar(format('%d %d %d %d %d',[NumPointsToWrite,NumSamplesWritten,iPointer,tt,t1-t0])));
         FreeMem(IOBuf) ;
         end ;
 
@@ -2271,7 +2264,6 @@ begin
 
      // Stop running D/A task
      CheckError( DAQmxClearTask(DIGTask[Device])) ;
-//     outputdebugString(PChar(format('DIG stopped dev=%d',[Device]))) ;
 
      EnableFPUExceptions ;
 

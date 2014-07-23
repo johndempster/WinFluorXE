@@ -60,6 +60,8 @@ unit AmpModule;
 //          Allowing amplifiers to be listed in a better order.
 // 05.08.08 Optopatch checked now working correctly
 // 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
+// 23.07.14 Multiclamp support updated to support MultiClamp Commander V2.0 API (same as WinWCP)
+//          to fix problems Josh GoldBerg's problems
 
 interface
 
@@ -67,7 +69,7 @@ uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs, Math ;
 
 const
-
+     MaxAmplifiers = 4 ;
      NumAmplifiers = 29 ;
 
      amNone = 0 ;
@@ -320,8 +322,22 @@ TMC_TELEGRAPH_DATA = packed record
    SecondaryScaleFactorUnits : Cardinal ;// use constants defined above
    HardwareType : Cardinal ;       // use constants defined above
    SecondaryAlpha : Double ;
-   pcPadding : Array[1..28] of Byte ;
-   pcPadding1 : Array[1..128] of Byte ;
+
+   SecondaryLPFCutoff : Double ;   // ( Hz ) , ( MCTG_LPF_BYPASS indicates Bypass )
+                                   // for SECONDARY output signal.
+   AppVersion : Array[0..15] of ANSIChar ;       // application version number
+   FirmwareVersion : Array[0..15] of ANSIChar ;  // firmware version number
+   DSPVersion : Array[0..15] of ANSIChar ;       // DSP version number
+   SerialNumber : Array[0..15] of ANSIChar ;     // serial number of device
+
+   SeriesResistance : Double ;     // ( Rs )
+                                   // dSeriesResistance will be MCTG_NOSERIESRESIST
+                                   // if we are not in V-Clamp mode,
+                                   // or
+                                   // if Rf is set to range 2 (5G) or range 3 (50G),
+                                   // or
+                                   // if whole cell comp is explicitly disabled.
+   pcPadding1 : Array[1..76] of Byte ;
    end ;
 PMC_TELEGRAPH_DATA = ^TMC_TELEGRAPH_DATA ;
 
@@ -589,6 +605,7 @@ TAXC_GetHeadstageType = function(
           var ChanScale : Single
           ) ;
 
+    procedure OpenMultiClamp ;
     function GetMultiClampGain(
          AmpNumber : Integer ) : single ;
     procedure GetMultiClampChannelSettings(
@@ -809,7 +826,7 @@ var
 
 implementation
 
-uses Main, maths, shared, VP500Unit,VP500Lib , LabIOUnit;
+uses Main, maths, shared, VP500Unit,VP500Lib , LabIOUnit, LogUnit;
 
 {$R *.DFM}
 
@@ -892,8 +909,9 @@ function TAmplifier.AppHookFunc(var Message : TMessage)  : Boolean;
 // ---------------
 var
     AddChannel : Boolean ;
-    MCTelegraphDataIn : TMC_TELEGRAPH_DATA ;
-    i : Integer ;
+    TData : TMC_TELEGRAPH_DATA ;
+    i,ComID,AxobusID,ChannelID,Device,Err,iChan : Integer ;
+    SerialNum : Cardinal ;
 begin
   Result := False; //I just do this by default
 
@@ -904,12 +922,28 @@ begin
           (PCopyDataStruct(Message.lParam)^.cbData = 256)) and
          (PCopyDataStruct(Message.lParam)^.dwData = MCRequestMessageID) then begin
          // Copy telegraph data into record
-         MCTelegraphDataIn := PMC_TELEGRAPH_DATA(PCopyDataStruct(Message.lParam)^.lpData)^;
-         if (MCTelegraphDataIn.ChannelID >= 0) and
-            (MCTelegraphDataIn.ChannelID <= High(MCTelegraphData)) then begin
-           MCTelegraphData[MCTelegraphDataIn.ChannelID] :=  MCTelegraphDataIn ;
-           end ;
-         //Main.StatusBar.SimpleText := 'WM_COPYDATA received' ;
+         TData := PMC_TELEGRAPH_DATA(PCopyDataStruct(Message.lParam)^.lpData)^ ;
+         if TData.Version < 6 then begin
+            // API V1.x
+            iChan := (TData.AxoBusID*2) + TData.ChannelID ;
+            iChan := Max(0,Min(iChan,High(MCTelegraphData))) ;
+//            LogFrm.AddLine(format(
+//            'Multiclamp V1.1: Message from Device=%d AxobusID=%d ComPortID=%d Ch.=%d',
+//            [TData.AxoBusID,TData.ComPortID,TData.ChannelID]));
+            end
+         else begin
+            // API V2.x
+            iChan := 0 ;
+            for i  := 0 to MCNumChannels-1 do begin
+               Val( ANSIString(TData.SerialNumber), SerialNum, Err ) ;
+               if Err <> 0 then SerialNum := 0 ;
+               if ((TData.ChannelID shl 28) or SerialNum) = MCChannels[i] then iChan := i ;
+               end ;
+//             LogFrm.AddLine(format(
+//             'Multiclamp V2.x: Message from Device=%s  Ch.=%d',
+//             [ANSIString(TData.SerialNumber),TData.ChannelID]));
+            end ;
+         MCTelegraphData[iChan] := TData ;
          Result := True ;
          end ;
       end ;
@@ -918,20 +952,24 @@ begin
     if (Message.Msg = MCIDMessageID) or (Message.Msg = MCReconnectMessageID) then begin
          AddChannel := True ;
          for i := 0 to MCNumChannels-1 do if MCChannels[i] = Message.lParam then AddChannel := False ;
+         LogFrm.AddLine(format('Multiclamp: MCIDMessage received ID=%x',[Message.lParam]));
+
          if AddChannel then begin
              // Store server device/channel ID in list
              MCChannels[MCNumChannels] := Message.lParam ;
              // Open connection to this device/channel
              if not PostMessage(HWND_BROADCAST,MCOpenMessageID,Application.Handle,MCChannels[MCNumChannels] ) then
                 ShowMessage( 'MultiClamp Commander (Open Message Failed)' ) ;
-             MainFrm.StatusBar.SimpleText := format('MCOpenMessageID broadcast to device %x',
+             MainFrm.StatusBar.SimpleText := format('Multiclamp: MCOpenMessageID broadcast to device %x',
              [MCChannels[MCNumChannels]]) ;
+             LogFrm.AddLine(MainFrm.StatusBar.SimpleText) ;
              Inc(MCNumChannels) ;
              end ;
          Result := True ;
          end ;
 
     end;
+
 
 
 procedure TAmplifier.GetList( List : TStrings ) ;
@@ -2092,32 +2130,52 @@ function TAmplifier.GetMultiClampGain(
 // --------------------------
 // Get Axon Multi-Clamp gain
 // --------------------------
+begin
+
+    if not MCConnectionOpen then OpenMulticlamp ;
+    if not MCConnectionOpen then begin
+       Result := 1.0 ;
+       Exit ;
+       end ;
+
+    Result := MCTelegraphData[AmpNumber].PrimaryAlpha ;
+    if Result = 0.0 then Result := 1.0 ;
+
+    end ;
+
+
+procedure TAmplifier.OpenMultiClamp ;
+// ------------------------------------
+// Open connection to Multiclamp A or B
+// ------------------------------------
 var
     lParam : Cardinal ;
     i : Integer ;
 begin
 
-    if not MCConnectionOpen then begin
-       // Register messages
-       MCOpenMessageID := RegisterWindowMessage(MCTG_OPEN_MESSAGE_STR) ;
-       MCCloseMessageID := RegisterWindowMessage(MCTG_CLOSE_MESSAGE_STR) ;
-       MCRequestMessageID := RegisterWindowMessage(MCTG_REQUEST_MESSAGE_STR) ;
-       MCReconnectMessageID := RegisterWindowMessage(MCTG_RECONNECT_MESSAGE_STR) ;
-       MCBroadcastMessageID := RegisterWindowMessage(MCTG_BROADCAST_MESSAGE_STR) ;
-       MCIDMessageID := RegisterWindowMessage(MCTG_ID_MESSAGE_STR) ;
-       // Request MultiClamps to identify themselves
+    if MCConnectionOpen then Exit ;
 
-       // Clear available channel list
-       for i := 0 to High(MCChannels) do MCChannels[i] := 0 ;
-       MCNumChannels := 0 ;
-       lParam := 0 ;
-       if not PostMessage( HWND_BROADCAST, MCBroadcastMessageID, Application.Handle, lParam )
-       then ShowMessage( 'MultiClamp Commander (Broadcast Message Failed)' ) ;
-       MCConnectionOpen := True ;
-       end ;
+    // Register messages
+    MCOpenMessageID := RegisterWindowMessage(MCTG_OPEN_MESSAGE_STR) ;
+    MCCloseMessageID := RegisterWindowMessage(MCTG_CLOSE_MESSAGE_STR) ;
+    MCRequestMessageID := RegisterWindowMessage(MCTG_REQUEST_MESSAGE_STR) ;
+    MCReconnectMessageID := RegisterWindowMessage(MCTG_RECONNECT_MESSAGE_STR) ;
+    MCBroadcastMessageID := RegisterWindowMessage(MCTG_BROADCAST_MESSAGE_STR) ;
+    MCIDMessageID := RegisterWindowMessage(MCTG_ID_MESSAGE_STR) ;
+    // Request MultiClamps to identify themselves
 
-    Result := MCTelegraphData[AmpNumber].PrimaryAlpha ;
-    if Result = 0.0 then Result := 1.0 ;
+    // Clear available channel list
+    for i := 0 to High(MCChannels) do MCChannels[i] := 0 ;
+    MCNumChannels := 0 ;
+    lParam := 0 ;
+    if not PostMessage( HWND_BROADCAST,
+                        MCBroadcastMessageID,
+                        Application.Handle,
+                        lParam ) then
+                        ShowMessage( 'MultiClamp Commander (Broadcast Message Failed)' ) ;
+
+    MCConnectionOpen := True ;
+
     end ;
 
 
@@ -2132,14 +2190,20 @@ procedure TAmplifier.GetMultiClampChannelSettings(
 // Get Axon Multi-Clamp channel settings
 // --------------------------
 var
-    lParam : Cardinal ;
     i : Integer ;
     Units : Integer ;
     ChanNames : Array[0..MCTG_OUT_MUX_MAXCHOICES-1] of String ;
+   AmpNumber : Integer ;
 begin
 
-    // Exit if not one patch clamp channels
-    if iChan > 3 then Exit ;
+    // Open connection to multiclamp
+    if not MCConnectionOpen then OpenMulticlamp ;
+    if not MCConnectionOpen then begin
+       Exit ;
+       end ;
+
+    AmpNumber := ChanAmpNumber(iChan) -1 ;
+    if AmpNumber >= MaxAmplifiers then Exit ;
 
     if MCConnectionOpen then begin
 
@@ -2147,11 +2211,11 @@ begin
 
            ChanNames[i] := format('%d',[i]) ;
 
-           if MCTelegraphData[ChanAmpNumber(iChan)].HardwareType = 1 then begin
+           if MCTelegraphData[AmpNumber].HardwareType = 1 then begin
               if i < High(MCTG_ChanNames700B) then ChanNames[i] := MCTG_ChanNames700B[i] ;
               end
            else if i <= High(MCTG_ChanNames700A_VC) then begin
-              if MCTelegraphData[ChanAmpNumber(iChan)].OperatingMode = MCTG_MODE_VCLAMP then begin
+              if MCTelegraphData[AmpNumber].OperatingMode = MCTG_MODE_VCLAMP then begin
                  ChanNames[i] := MCTG_ChanNames700A_VC[i] ;
                  end
               else begin
@@ -2161,26 +2225,31 @@ begin
            end ;
 
 
-       // Voltage clamp mode
-       if (iChan = 0) or (iChan = 2) then begin
+       if (iChan mod 2) = 0 then begin
 
-          if (MCTelegraphData[ChanAmpNumber(iChan)].PrimaryScaledOutSignal >= 0) and
-             (MCTelegraphData[ChanAmpNumber(iChan)].PrimaryScaledOutSignal < High(ChanNames)) then
-             ChanName := ChanNames[MCTelegraphData[ChanAmpNumber(iChan)].PrimaryScaledOutSignal] ;
+          // Primary channel
 
-          Units := MCTelegraphData[ChanAmpNumber(iChan)].PrimaryScaleFactorUnits ;
-          ChanCalFactor := MCTelegraphData[ChanAmpNumber(iChan)].PrimaryScaleFactor ;
-          ChanScale := MCTelegraphData[ChanAmpNumber(iChan)].PrimaryAlpha ;
+          if (MCTelegraphData[AmpNumber].PrimaryScaledOutSignal >= 0) and
+             (MCTelegraphData[AmpNumber].PrimaryScaledOutSignal < High(ChanNames)) then
+             ChanName := ChanNames[MCTelegraphData[AmpNumber].PrimaryScaledOutSignal] ;
+
+          ChanName := ChanName + format('%d',[AmpNumber+1]) ;
+          Units := MCTelegraphData[AmpNumber].PrimaryScaleFactorUnits ;
+          ChanCalFactor := MCTelegraphData[AmpNumber].PrimaryScaleFactor ;
+          ChanScale := MCTelegraphData[AmpNumber].PrimaryAlpha ;
           end
-       else if (iChan = 1) or (iChan = 3) then begin
+       else begin
 
-          if (MCTelegraphData[ChanAmpNumber(iChan)].SecondaryOutSignal >= 0) and
-             (MCTelegraphData[ChanAmpNumber(iChan)].SecondaryOutSignal < High(ChanNames)) then
-             ChanName := ChanNames[MCTelegraphData[ChanAmpNumber(iChan)].SecondaryOutSignal] ;
+          // Secondary channel
 
-          Units := MCTelegraphData[ChanAmpNumber(iChan)].SecondaryScaleFactorUnits ;
-          ChanCalFactor := MCTelegraphData[ChanAmpNumber(iChan)].SecondaryScaleFactor ;
-          ChanScale := MCTelegraphData[ChanAmpNumber(iChan)].SecondaryAlpha ;
+          if (MCTelegraphData[AmpNumber].SecondaryOutSignal >= 0) and
+             (MCTelegraphData[AmpNumber].SecondaryOutSignal < High(ChanNames)) then
+             ChanName := ChanNames[MCTelegraphData[AmpNumber].SecondaryOutSignal] ;
+
+          ChanName := ChanName + format('%d',[AmpNumber+1]) ;
+          Units := MCTelegraphData[AmpNumber].SecondaryScaleFactorUnits ;
+          ChanCalFactor := MCTelegraphData[AmpNumber].SecondaryScaleFactor ;
+          ChanScale := MCTelegraphData[AmpNumber].SecondaryAlpha ;
           end ;
 
        // Convert to WinWCP preferred units (mV, pA)
@@ -2213,7 +2282,7 @@ begin
               ChanUnits := 'pA' ;
               end ;
            MCTG_UNITS_VOLTS_PER_PICOAMP : Begin
-              ChanCalFactor := ChanCalFactor*1E-3 ;
+              ChanCalFactor := ChanCalFactor ;
               ChanUnits := 'pA' ;
               end ;
            else begin
@@ -2223,27 +2292,11 @@ begin
 
        if ChanScale = 0.0 then ChanScale := 1.0 ;
        if ChanCalFactor = 0.0 then ChanCalFactor := 1.0 ;
+
        end
     else begin
-       // Open connection \
-
-       // Register messages
-       MCOpenMessageID := RegisterWindowMessage(MCTG_OPEN_MESSAGE_STR) ;
-       MCCloseMessageID := RegisterWindowMessage(MCTG_CLOSE_MESSAGE_STR) ;
-       MCRequestMessageID := RegisterWindowMessage(MCTG_REQUEST_MESSAGE_STR) ;
-       MCReconnectMessageID := RegisterWindowMessage(MCTG_RECONNECT_MESSAGE_STR) ;
-       MCBroadcastMessageID := RegisterWindowMessage(MCTG_BROADCAST_MESSAGE_STR) ;
-       MCIDMessageID := RegisterWindowMessage(MCTG_ID_MESSAGE_STR) ;
-       // Request MultiClamps to identify themselves
-
-       // Clear available channel list
-       for i := 0 to High(MCChannels) do MCChannels[i] := 0 ;
-       MCNumChannels := 0 ;
-       lParam := 0 ;
-       if not PostMessage( HWND_BROADCAST, MCBroadcastMessageID, Application.Handle, lParam )
-       then ShowMessage( 'MultiClamp Commander (Broadcast Message Failed)' ) ;
-       MCConnectionOpen := True ;
-
+       ChanCalFactor := 1.0 ;
+       ChanScale := 1.0 ;
        end ;
 
     end ;
