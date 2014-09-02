@@ -912,7 +912,7 @@ function TAmplifier.AppHookFunc(var Message : TMessage)  : Boolean;
 var
     AddChannel : Boolean ;
     TData : TMC_TELEGRAPH_DATA ;
-    i,ComID,AxobusID,ChannelID,Device,Err,iChan : Integer ;
+    i,Err,iChan : Integer ;
     SerialNum : Cardinal ;
 begin
   Result := False; //I just do this by default
@@ -3137,14 +3137,6 @@ function TAmplifier.GetTritonGain(
 // ---------------------------------------------------
 // Decode Tecella Triton current gain
 // ---------------------------------------------------
-const
-     NumGains = 8 ;
-     VGainSpacing = 0.4 ;
-     VStart = 0.4 ;
-var
-   Gains : Array[0..NumGains-1] of single ;
-   V : single ;
-   iGain : Integer ;
 begin
 
      // Note. Don't interrupt A/D sampling if it in progress.

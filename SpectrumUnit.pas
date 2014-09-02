@@ -117,9 +117,7 @@ procedure TSpectrumFrm.UpdateSpectrumSettings ;
 // Initialisation when form is displayed
 // -------------------------------------
 var
-    i,iROI,iSubROI : Integer ;
-    Wavelength : Single ;
-    Y : Single ;
+    i : Integer ;
 begin
 
      edSpectrumRange.LoValue := MainFrm.IDRFile.SpectrumStartWavelength ;
@@ -190,7 +188,7 @@ procedure TSpectrumFrm.PlotSpectrum ;
 // ---------------------------------------------------------
 var
     X,Y : Single ;
-    i,iFrame,iROI,iSubROI,iSpec : Integer ;
+    iFrame,iROI,iSubROI,iSpec : Integer ;
     YMin : Single ;
     YMax : Single ;
 begin
@@ -434,7 +432,7 @@ procedure TSpectrumFrm.bPlotTimeCourseClick(Sender: TObject);
 // --------------------------------------------------------------
 var
     X,Y : Single ;
-    i,W,iFrame,iSpec,iWavelength,StartAt,EndAt : Integer ;
+    W,iFrame,iSpec,iWavelength,StartAt,EndAt : Integer ;
     iROI,iSubROI : Integer ;
     NumLines : Integer ;
 begin

@@ -28,7 +28,7 @@ unit TimeCourseUnit;
 //          FP divide by zero error when Df/F0 plotted with F0=0 fixed.
 // 25.08.12 Line is no longer truncated when more than 10000 frames/lines in plot
 // 31.12.12 Fix issue with plotting different length fluorescence and ADC channels
-//
+// 21.08.14 Unused PlotNum removed from PlotROIIntensity() and other plot functions
 interface
 
 uses
@@ -138,21 +138,21 @@ type
     procedure PlotROIIntensity(
               StartAtFrame : Integer ;
               EndAtFrame : Integer ;
-              PlotNum : Integer ;
+//              PlotNum : Integer ;
               LineNum : Integer
               ) ;
 
     procedure PlotLineScanIntensity(
               StartAtLine : Integer ;       // Start at frame #
               EndAtLine : Integer ;         // End at frame #
-              PlotNum : Integer ;            // Plot on plot #
+//              PlotNum : Integer ;            // Plot on plot #
               LineNum : Integer              // Plot as line #
               ) ;
 
     procedure PlotADCChannel(
               StartAtFrame : Integer ;
               EndAtFrame : Integer ;
-              PlotNum : Integer ;
+//              PlotNum : Integer ;
               LineNum : Integer
               ) ;
 
@@ -262,7 +262,6 @@ procedure TTimeCourseFrm.bNewPlotClick(Sender: TObject);
 // ---------------------------------
 var
      PlotNum : Integer ;
-     i : Integer ;
 begin
 
       // Prevent plotting if time course is being calculated
@@ -358,13 +357,13 @@ begin
         if MainFrm.IDRFile.LineScan then begin
            PlotLineScanIntensity( StartAtFrame,
                                   EndAtFrame,
-                                  PlotNum,
+//                                  PlotNum,
                                   LineNum ) ;
            end
         else begin
            PlotROIIntensity( StartAtFrame,
                              EndAtFrame,
-                             PlotNum,
+//                             PlotNum,
                              LineNum ) ;
            end ;
         end
@@ -372,7 +371,7 @@ begin
         // Plot analogue signal channel
         PlotADCChannel( StartAtFrame,
                         EndAtFrame,
-                        PlotNum,
+//                        PlotNum,
                         LineNum ) ;
         end ;
 
@@ -401,7 +400,7 @@ begin
 procedure TTimeCourseFrm.PlotROIIntensity(
           StartAtFrame : Integer ;       // Start at frame #
           EndAtFrame : Integer ;         // End at frame #
-          PlotNum : Integer ;            // Plot on plot #
+//          PlotNum : Integer ;            // Plot on plot #
           LineNum : Integer              // Plot as line #
           ) ;
 // -------------------------------------------------------------
@@ -666,7 +665,7 @@ begin
 procedure TTimeCourseFrm.PlotLineScanIntensity(
           StartAtLine : Integer ;       // Start at frame #
           EndAtLine : Integer ;         // End at frame #
-          PlotNum : Integer ;            // Plot on plot #
+//          PlotNum : Integer ;            // Plot on plot #
           LineNum : Integer              // Plot as line #
           ) ;
 // -------------------------------------------------------------
@@ -887,7 +886,7 @@ begin
 procedure TTimeCourseFrm.PlotADCChannel(
           StartAtFrame : Integer ;       // Start at frame #
           EndAtFrame : Integer ;         // End at frame #
-          PlotNum : Integer ;            // Plot on plot #
+//          PlotNum : Integer ;            // Plot on plot #
           LineNum : Integer              // Plot as line #
           ) ;
 // ----------------------------

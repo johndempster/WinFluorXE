@@ -1,9 +1,9 @@
 object DirectControlFrm: TDirectControlFrm
   Left = 668
   Top = 42
-  Width = 436
-  Height = 845
   Caption = 'Device Control Outputs (Direct Control)'
+  ClientHeight = 818
+  ClientWidth = 428
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -378,7 +378,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'
@@ -570,7 +569,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'
@@ -606,7 +604,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'
@@ -642,7 +639,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'
@@ -678,7 +674,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'
@@ -714,7 +709,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'
@@ -750,7 +744,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'
@@ -786,7 +779,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'
@@ -822,7 +814,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'
@@ -1097,7 +1088,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'
@@ -1142,7 +1132,6 @@ object DirectControlFrm: TDirectControlFrm
         Width = 66
         Height = 23
         Style = csDropDownList
-        ItemHeight = 15
         ItemIndex = 0
         TabOrder = 0
         Text = 'Off (0V)'

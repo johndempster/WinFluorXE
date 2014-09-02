@@ -1517,6 +1517,12 @@ begin
            FrameBufferMultiple := 2 ;
            end ;
 
+        Thorlabs : begin
+           NumFramesInBuffer := Min( (Round(5.0/edFrameInterval.Value) div 2)*2,
+                                      (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
+           end ;
+
+
         else begin
            NumFramesInBuffer := 32 ;
            FrameBufferMultiple := 2 ;

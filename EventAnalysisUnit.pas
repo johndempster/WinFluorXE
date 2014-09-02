@@ -2142,7 +2142,6 @@ begin
                                  else FDMode := FDRatio ;
         end ;
 
-
      // Display ratio and ion conc. modes if only one wavelength available
      if (MainFrm.IDRFile.NumFrameTypes < 2) then begin
         if (FDMode = FDRatio) or (FDMode = FDIonConc) then begin

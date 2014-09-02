@@ -115,10 +115,10 @@ type
     ADCBuf : Array[0..(MaxDisplayScans*MaxADCChannels*2)-1] of SmallInt ;
 
     ADCDisplayScansPerPoint : Single ;
-    ADCDisplayCursorUpdated : Boolean ;
+    //ADCDisplayCursorUpdated : Boolean ;
 
     FLDisplayBuf : Array[0..(MaxFrames*(MaxFrameType+1))-1] of Integer ; // Fluorescence display buffer
-    FLDisplayCursorUpdated : Boolean ;
+    //FLDisplayCursorUpdated : Boolean ;
 
     RDisplayBuf : Array[0..MaxFrames-1] of Integer ;   // Ratio display buffer
 
@@ -1036,6 +1036,7 @@ var
      PixelList : PROIPixelList ;
 
 begin
+     Result := 0.0 ;
 
      // Get ROI record
      ROI := MainFrm.IDRFile.ROI[iROI] ;

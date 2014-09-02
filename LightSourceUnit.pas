@@ -777,8 +777,6 @@ const
 
 var
      NumVMono : Integer ;
-     DValue : Double ;
-     NumLines : DWord ;
      LaserDAC : Integer ;
      i : Integer ;
      MonoWavelength,VScale,VMono : Double ;

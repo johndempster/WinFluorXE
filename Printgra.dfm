@@ -275,6 +275,7 @@ object PrintGraphFrm: TPrintGraphFrm
           Scale = 0.100000001490116100
           Units = 'cm'
           NumberFormat = '%.1f'
+          LoLimit = -1.000000015047466E30
           HiLimit = 1.000000015047466E30
         end
         object edRightMargin: TValidatedEdit
@@ -287,6 +288,7 @@ object PrintGraphFrm: TPrintGraphFrm
           Scale = 0.100000001490116100
           Units = 'cm'
           NumberFormat = '%.1f'
+          LoLimit = -1.000000015047466E30
           HiLimit = 1.000000015047466E30
         end
         object edTopMargin: TValidatedEdit
@@ -299,6 +301,7 @@ object PrintGraphFrm: TPrintGraphFrm
           Scale = 0.100000001490116100
           Units = 'cm'
           NumberFormat = '%.1f'
+          LoLimit = -1.000000015047466E30
           HiLimit = 1.000000015047466E30
         end
         object edBottomMargin: TValidatedEdit
@@ -311,6 +314,7 @@ object PrintGraphFrm: TPrintGraphFrm
           Scale = 0.100000001490116100
           Units = 'cm'
           NumberFormat = '%.1f'
+          LoLimit = -1.000000015047466E30
           HiLimit = 1.000000015047466E30
         end
       end

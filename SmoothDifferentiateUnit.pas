@@ -121,7 +121,7 @@ begin
   // Check that channel index is valid
   if (ch < 0) or (ch > MainFrm.IDRFile.ADCNumChannels) then
   begin
-    MessageDlg('Invalid channel selection.', mtInformation, [mbOk], 0);
+    ShowMessage('Invalid channel selection.');
     Exit;
   end;
 
@@ -562,7 +562,6 @@ var
   SampleStep: Integer;
   StartTime: Single;
   StartSample: Integer;
-  Done: Boolean;
   yMin: Array[0..3] of Integer;
   yMax: Array[0..3] of Integer;
   yMinAt: Array[0..3] of Integer;

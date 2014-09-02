@@ -28,6 +28,10 @@ object SpectrumFrm: TSpectrumFrm
     TabOrder = 0
     object SpectrumTab: TTabSheet
       Caption = 'Spectrum'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object plSpectrum: TXYPlotDisplay
         Left = 192
         Top = 8
@@ -60,10 +64,10 @@ object SpectrumFrm: TSpectrumFrm
         PrinterFontName = 'Arial'
         PrinterLineWidth = 1
         PrinterMarkerSize = 5
-        PrinterLeftMargin = 4
-        PrinterRightMargin = 4
-        PrinterTopMargin = 4
-        PrinterBottomMargin = 4
+        PrinterLeftMargin = 3
+        PrinterRightMargin = 3
+        PrinterTopMargin = 3
+        PrinterBottomMargin = 3
         PrinterDisableColor = False
         MetafileWidth = 500
         MetafileHeight = 400
@@ -284,6 +288,10 @@ object SpectrumFrm: TSpectrumFrm
     object TimeCourseTab: TTabSheet
       Caption = 'Time Course'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object plTimeCourse: TXYPlotDisplay
         Left = 192
         Top = 8
@@ -317,10 +325,10 @@ object SpectrumFrm: TSpectrumFrm
         PrinterFontName = 'Arial'
         PrinterLineWidth = 1
         PrinterMarkerSize = 5
-        PrinterLeftMargin = 3
-        PrinterRightMargin = 3
-        PrinterTopMargin = 3
-        PrinterBottomMargin = 3
+        PrinterLeftMargin = 2
+        PrinterRightMargin = 2
+        PrinterTopMargin = 2
+        PrinterBottomMargin = 2
         PrinterDisableColor = False
         MetafileWidth = 500
         MetafileHeight = 400

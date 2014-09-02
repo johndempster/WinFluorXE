@@ -32,7 +32,7 @@ unit SetupUnit;
 // 16.12.13 JD CheckSettings added to check input and output channels for missing and multiple channels
 // 27.02.13 JD Emission filter control settings added to Light Source page
 // 22.07.14 JD Camera selection menu added (allows selection of camera when more than one available)
-
+// 20.08.14 JD Default readout speed set when camera type changed now obtained from Cam1.DefaultReadoutSpeed
 interface
 
 
@@ -792,7 +792,6 @@ begin
     cbZStageControl.ItemIndex := Max( 0,
         cbZStageControl.Items.IndexOfObject(TObject(MainFrm.IOConfig.ZStageControl))) ;
 
-
      end ;
 
 
@@ -859,7 +858,8 @@ begin
      if MainFrm.Cam1.NumCameras > 1 then begin
         CameraPanel.Visible := True ;
        iTop := iTop + CameraPanel.Height ;
-       end ;
+       end
+     else CameraPanel.Visible := False ;
 
      ModePanel.Top := iTop ;
      MainFrm.Cam1.GetCameraModeList( cbCameraMode.Items );
@@ -1139,9 +1139,6 @@ procedure TSetupFrm.cbCameraChange(Sender: TObject);
 // --------------
 // Camera changed
 // --------------
-var
-    i : Integer ;
-    ReadSpeed, MaxSpeed : Single ;
 begin
 
      CameraOpenRequired :=  True ;
@@ -1149,14 +1146,7 @@ begin
 
      // Set camera readout speed to maximum
      if cbReadoutSpeed.Visible then begin
-        MaxSpeed := 0.0 ;
-        for i := 0 to cbReadoutSpeed.Items.Count-1 do begin
-            ReadSpeed := ExtractFloat( cbReadoutSpeed.Items.Strings[i], 0.0 ) ;
-            if ReadSpeed > MaxSpeed then begin
-               MaxSpeed := ReadSpeed ;
-               cbReadoutSpeed.ItemIndex := i ;
-               end ;
-            end ;
+        cbReadoutSpeed.ItemIndex := MainFrm.Cam1.DefaultReadoutSpeed ;
         end ;
 
      end;

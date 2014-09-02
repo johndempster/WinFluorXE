@@ -4,6 +4,7 @@ unit DirectControlUnit;
 // =============================================
 // (c) J. Dempster, University of Strathclyde
 // 20.12.2010
+// 25.08.14 Digital output bits now controlled correctly
 
 interface
 
@@ -316,6 +317,8 @@ begin
      ClientWidth := 450 ;
      ClientHeight := CameraTriggerGrp.Top + CameraTriggerGrp.Height + 50 ;  ;
 
+     UpdateOutputs ;
+
      end;
 
 
@@ -585,7 +588,7 @@ begin
 
      EditBox.Value := LabIO.DACOutState[DACDev][DACChan] ;
      Trackbar.Position := Round((EditBox.Value/TrackBarVMax)*Trackbar.Max) ;
-
+     UpdateOutputs ;
      end ;
 
 
@@ -599,6 +602,7 @@ begin
      if Key = #13 then begin
         LabIO.DACOutState[VControl[0].Device][VControl[0].Chan] := ValidatedEdit0.Value ;
         TrackBar0.Position := Round((ValidatedEdit0.Value/TrackBarVMax)*TrackBar0.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -612,6 +616,7 @@ begin
      if Key = #13 then begin
         LabIO.DACOutState[VControl[1].Device][VControl[1].Chan] := ValidatedEdit1.Value ;
         TrackBar1.Position := Round((ValidatedEdit1.Value/TrackBarVMax)*TrackBar1.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -625,6 +630,7 @@ begin
      if Key = #13 then begin
         LabIO.DACOutState[VControl[2].Device][VControl[2].Chan] := ValidatedEdit2.Value ;
         TrackBar2.Position := Round((ValidatedEdit2.Value/TrackBarVMax)*TrackBar2.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -638,6 +644,7 @@ begin
      if Key = #13 then begin
         LabIO.DACOutState[VControl[3].Device][VControl[3].Chan] := ValidatedEdit3.Value ;
         TrackBar3.Position := Round((ValidatedEdit3.Value/TrackBarVMax)*TrackBar3.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -651,6 +658,7 @@ begin
      if Key = #13 then begin
         LabIO.DACOutState[VControl[4].Device][VControl[4].Chan] := ValidatedEdit4.Value ;
         TrackBar4.Position := Round((ValidatedEdit4.Value/TrackBarVMax)*TrackBar4.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -664,6 +672,7 @@ begin
      if Key = #13 then begin
         LabIO.DACOutState[VControl[5].Device][VControl[5].Chan] := ValidatedEdit5.Value ;
         TrackBar5.Position := Round((ValidatedEdit5.Value/TrackBarVMax)*TrackBar5.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -689,7 +698,7 @@ begin
 
          // Update digital outputs
          if not LabIO.DIGActive[Dev] then begin
-     //       LabIO.WriteToDigitalOutPutPort( Dev, LabIO.DigOutState[Dev] ) ;
+            LabIO.WriteToDigitalOutPutPort( Dev, LabIO.DigOutState[Dev] ) ;
             end ;
 
         end ;
@@ -796,10 +805,9 @@ begin
         DACCHan := LabIO.Resource[MainFrm.IOConfig.VCommand[0]].StartChannel ;
         LabIO.DACOutState[Dev][DACChan] := ValidatedEdit20.Value ;
         TrackBar20.Position := Round((ValidatedEdit20.Value/TrackBarVMax)*TrackBar20.Max) ;
+        UpdateOutputs ;
         end ;
      end;
-
-
 
 
 procedure TDirectControlFrm.ValidatedEdit21KeyPress(Sender: TObject;
@@ -815,6 +823,7 @@ begin
         DACCHan := LabIO.Resource[MainFrm.IOConfig.VCommand[1]].StartChannel ;
         LabIO.DACOutState[Dev][DACChan] := ValidatedEdit21.Value ;
         TrackBar21.Position := Round((ValidatedEdit21.Value/TrackBarVMax)*TrackBar21.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -833,6 +842,7 @@ begin
         DACCHan := LabIO.Resource[MainFrm.IOConfig.VCommand[2]].StartChannel ;
         LabIO.DACOutState[Dev][DACChan] := ValidatedEdit22.Value ;
         TrackBar22.Position := Round((ValidatedEdit22.Value/TrackBarVMax)*TrackBar22.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -851,10 +861,9 @@ begin
         DACchan := LabIO.Resource[MainFrm.IOConfig.PhotoStimX].StartChannel ;
         LabIO.DACOutState[Dev,DACchan] := ValidatedEdit40.Value ;
         TrackBar40.Position := Round((ValidatedEdit40.Value/TrackBarVMax)*TrackBar40.Max) ;
+        UpdateOutputs ;
         end ;
      end;
-
-
 
 
 procedure TDirectControlFrm.ValidatedEdit41KeyPress(Sender: TObject;
@@ -870,6 +879,7 @@ begin
         DACchan := LabIO.Resource[MainFrm.IOConfig.PhotoStimY].StartChannel ;
         LabIO.DACOutState[Dev,DACchan] := ValidatedEdit41.Value ;
         TrackBar41.Position := Round((ValidatedEdit41.Value/TrackBarVMax)*TrackBar41.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -887,6 +897,7 @@ begin
         DACchan := LabIO.Resource[MainFrm.IOConfig.PhotoStimI1].StartChannel ;
         LabIO.DACOutState[Dev,DACchan] := ValidatedEdit42.Value ;
         TrackBar42.Position := Round((ValidatedEdit42.Value/TrackBarVMax)*TrackBar42.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -904,6 +915,7 @@ begin
         DACchan := LabIO.Resource[MainFrm.IOConfig.PhotoStimI2].StartChannel ;
         LabIO.DACOutState[Dev,DACchan] := ValidatedEdit43.Value ;
         TrackBar43.Position := Round((ValidatedEdit43.Value/TrackBarVMax)*TrackBar43.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -920,6 +932,7 @@ begin
         DACchan := LabIO.Resource[MainFrm.IOConfig.PhotoStimI3].StartChannel ;
         LabIO.DACOutState[Dev,DACchan] := ValidatedEdit43.Value ;
         TrackBar43.Position := Round((ValidatedEdit43.Value/TrackBarVMax)*TrackBar43.Max) ;
+        UpdateOutputs ;
         end ;
      end;
 
@@ -1082,7 +1095,8 @@ procedure TDirectControlFrm.ComboBox1Change(Sender: TObject);
 //
 begin
      SetDigOutputState( MainFrm.IOConfig.LSShutter,
-                        0, TComboBox(Sender).ItemIndex
+                        0,
+                        TComboBox(Sender).ItemIndex
                         ) ;
      end ;
 
@@ -1095,7 +1109,8 @@ procedure TDirectControlFrm.SetDigOutputState(
 // Set digital output state
 // ------------------------
 var
-    Dev,StartChan,iBit,iMask : Integer ;
+    Dev,StartChan : Integer ;
+    iMask : DWORD ;
 begin
 
      if MainFrm.IOResourceAvailable(iResource) then begin
@@ -1107,11 +1122,12 @@ begin
            end
         else begin
            // Digital output
-             iBit := 1 shl StartChan ;
-             iMask := not iBit ;
-             LabIO.DigOutState[Dev] := (LabIO.DigOutState[Dev] and iMask) or iBit ;
+             iState := iState shl (StartChan + iChan) ;
+             iMask := not (1 shl (StartChan + iChan)) ;
+             LabIO.DigOutState[Dev] := (LabIO.DigOutState[Dev] and iMask) or iState;
              end ;
         end ;
+
      end ;
 
 
@@ -1125,6 +1141,7 @@ begin
                         0,
                         TComboBox(Sender).ItemIndex
                         ) ;
+     UpdateOutputs ;
      end ;
 
 
@@ -1138,6 +1155,7 @@ begin
                         0,
                         TComboBox(Sender).ItemIndex
                         ) ;
+     UpdateOutputs ;
      end ;
 
 procedure TDirectControlFrm.combobox30Change(Sender: TObject);
@@ -1163,6 +1181,7 @@ begin
                            iChan,
                            TComboBox(Sender).ItemIndex
                            ) ;
+        UpdateOutputs ;
         end ;
      end ;
 
@@ -1189,6 +1208,7 @@ begin
                            iChan,
                            TComboBox(Sender).ItemIndex
                            ) ;
+        UpdateOutputs ;
         end ;
      end ;
 
@@ -1216,6 +1236,7 @@ begin
                            iChan,
                            TComboBox(Sender).ItemIndex
                            ) ;
+        UpdateOutputs ;
         end ;
      end ;
 
@@ -1243,6 +1264,7 @@ begin
                            iChan,
                            TComboBox(Sender).ItemIndex
                            ) ;
+        UpdateOutputs ;
         end ;
      end ;
 
@@ -1270,6 +1292,7 @@ begin
                            iChan,
                            TComboBox(Sender).ItemIndex
                            ) ;
+        UpdateOutputs ;
         end ;
      end ;
 
@@ -1297,6 +1320,7 @@ begin
                            iChan,
                            TComboBox(Sender).ItemIndex
                            ) ;
+        UpdateOutputs ;
         end ;
      end ;
 
@@ -1324,6 +1348,7 @@ begin
                            iChan,
                            TComboBox(Sender).ItemIndex
                            ) ;
+        UpdateOutputs ;
         end ;
      end ;
 
@@ -1351,6 +1376,7 @@ begin
                            iChan,
                            TComboBox(Sender).ItemIndex
                            ) ;
+        UpdateOutputs ;
         end ;
      end ;
 

@@ -312,6 +312,10 @@ object TimeCourseFrm: TTimeCourseFrm
           object FTab: TTabSheet
             Caption = 'Fluor'
             TabVisible = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label3: TLabel
               Left = 5
               Top = 2
@@ -334,6 +338,10 @@ object TimeCourseFrm: TTimeCourseFrm
             Caption = 'F/F0'
             ImageIndex = 1
             TabVisible = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label6: TLabel
               Left = 5
               Top = 2
@@ -479,6 +487,10 @@ object TimeCourseFrm: TTimeCourseFrm
             ImageIndex = 2
             ParentFont = False
             TabVisible = False
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Shape2: TShape
               Left = 56
               Top = 27

@@ -836,6 +836,7 @@ begin
         else YScale := 1.0 ;
         scRDisplay.ChanScale[0] := 1.0 / YScale ;
         scRDisplay.ChanName[0] := cbNumerator.Text + '/' + cbDenominator.Text ;
+        R := 0.0 ;
         for i := scRDisplay.NumPoints-1 to scFLDisplay.NumPoints-1 do begin
             j := i*NumFrameTypes ;
             yNum := pIntArray(pFLDisplayBuf)^[j+iFTNum] ;
