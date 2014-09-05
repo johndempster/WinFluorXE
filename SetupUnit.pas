@@ -853,12 +853,12 @@ begin
      AuxCameraPanel.Visible := MainFrm.Cam1.IsLSM( MainFrm.CameraType ) ;
      if AuxCameraPanel.Visible then iTop := iTop + AuxCameraPanel.Height ;
 
-     // Show auxiliary camera panel if main camera is an LSM
+     // Show camera selection panel if more than one camera available
      CameraPanel.Top := iTop ;
      if MainFrm.Cam1.NumCameras > 1 then begin
         CameraPanel.Visible := True ;
-       iTop := iTop + CameraPanel.Height ;
-       end
+        iTop := iTop + CameraPanel.Height ;
+        end
      else CameraPanel.Visible := False ;
 
      ModePanel.Top := iTop ;

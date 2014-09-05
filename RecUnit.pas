@@ -154,6 +154,9 @@ unit RecUnit;
 // 18.06.14 burst illumination delay increased to 10 seconds to allow sufficient time
 //          for waveform to be changed to ensure illumination on at start of burst
 // 09.07.14 Calibration bar now sized correctly from Cam1.PixelWidth
+// 05.09.14 exposure time no longer shortened by .EmissionFilterChangeTime when no
+//          emission filters in use. Was causing filter wavelength sequence to be shifted
+//          with non-zero exchange times.
 
 {$DEFINE USECONT}
 
@@ -1188,7 +1191,7 @@ begin
       end;
 
    // If emission filter in use shorten exposure by emission filter change time
-   if not MainFrm.IOResourceAvailable(MainFrm.IOConfig.EMFilterStart) then begin
+   if MainFrm.IOResourceAvailable(MainFrm.IOConfig.EMFilterStart) then begin
       MainFrm.Cam1.ShortenExposureBy := Max(MainFrm.Cam1.ShortenExposureBy,LightSource.EMFilterChangeTime) ;
       end;
 
