@@ -282,7 +282,7 @@ object ExcSetupFrm: TExcSetupFrm
       Scale = 1.000000000000000000
       Units = 'nm'
       NumberFormat = '%.4g'
-      LoLimit = 5.000000000000000000
+      LoLimit = 1.000000000000000000
       HiLimit = 1000.000000000000000000
     end
     object edSpectrumBandwidth: TValidatedEdit

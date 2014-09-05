@@ -10,6 +10,7 @@ unit ExcSetupUnit;
 //          Multi-wavelength sequence now multi-rate
 // 21.01
 // 05.03.14 Emission filter control and fractional exposure control added
+// 05.09.14 spectrum step size lower limit reduced to 1 nm
 
 interface
 
