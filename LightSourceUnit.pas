@@ -30,11 +30,12 @@ unit LightSourceUnit;
 // 03.06.13 JD Monochromator + Laser/LED light source now working
 // 27.09.13 JD .ShutterChangeTime property added
 // 18.02.14 JD Now used osLibrary64.dll and osLibrary32.dll
-
+// 11.09.14 JD os_In_Slit_Bandwidth_To_Width and os_Out_Slit_Bandwidth_To_Width
+//             now includes Wavelength to fix crashes with 64 versions and Optoscan
 interface
 
 uses
-  Windows,SysUtils, Classes, math ;
+  Windows,SysUtils, Classes, math, dialogs ;
 
 {$Include osCodes.inc}
 {$Include osLibraryDAC.inc}
@@ -255,19 +256,19 @@ begin
 
         lsOptoScan1200,lsOptoscanWithLasers : begin
             os_Set_Grating_Lines( 1200 ) ;
-            os_Min_Wavelength(@MinWavelength) ;
+            //os_Min_Wavelength(@MinWavelength) ;
             Result := 300 ; //MinWavelength ;
             end ;
 
         lsOptoScan1800 : begin
             os_Set_Grating_Lines( 1800 ) ;
-            os_Min_Wavelength(@MinWavelength) ;
+            //os_Min_Wavelength(@MinWavelength) ;
             Result := 300 ; //MinWavelength ;
             end ;
 
         lsOptoScan2000 : begin
             os_Set_Grating_Lines( 2000 ) ;
-            os_Min_Wavelength(@MinWavelength) ;
+            //os_Min_Wavelength(@MinWavelength) ;
             Result := 300 ; //MinWavelength ;
             end ;
 
@@ -295,25 +296,25 @@ begin
 
         lsOptoScan1200 : begin
             os_Set_Grating_Lines( 1200 ) ;
-            os_Max_Wavelength(@MaxWavelength) ;
+            //os_Max_Wavelength(@MaxWavelength) ;
             Result := 750 ; //MaxWavelength ;
             end ;
 
         lsOptoScan1800 : begin
             os_Set_Grating_Lines( 1800 ) ;
-            os_Max_Wavelength(@MaxWavelength) ;
+            //os_Max_Wavelength(@MaxWavelength) ;
             Result := 750 ; //MaxWavelength ;
             end ;
 
         lsOptoScan2000 : begin
             os_Set_Grating_Lines( 2000 ) ;
-            os_Max_Wavelength(@MaxWavelength) ;
+            //os_Max_Wavelength(@MaxWavelength) ;
             Result := 750 ; //MaxWavelength ;
             end ;
 
         lsOptoscanWithLasers : begin
             os_Set_Grating_Lines( 1200 ) ;
-            os_Max_Wavelength(@MaxWavelength) ;
+            //os_Max_Wavelength(@MaxWavelength) ;
             Result := 3000 ; //MaxWavelength ;
             end ;
 
@@ -652,6 +653,7 @@ var
      NumLines : DWord ;
      FileName : ANSIString ;
      VOffset : Double ;
+     Err : DWORD ;
 begin
 
      // No. of channels available to control light source
@@ -661,6 +663,7 @@ begin
 
      FileName := MainFrm.ProgramDirectory + 'oslibrary.ini' ;
      os_Load_Interface_Defaults( PANSIChar(FileName));
+     //os_Set_Handle(0) ;
 
      // Set lines/mm of grating
      case DeviceType of
@@ -681,8 +684,9 @@ begin
 
      // Set input slit bandwidth
      DValue := Bandwidth ;
-     os_In_Slit_Bandwidth_To_Width( @DValue ) ;
+     os_In_Slit_Bandwidth_To_Width( Wavelength, @DValue ) ;
      os_In_Slit_Width_To_Voltage( @DValue ) ;
+     outputdebugstring(pchar(format('in slit V= %.3g',[DValue])));
      VControl[0].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel ;
      VControl[0].V := DValue ;
      VControl[0].Delay := 0.0 ;
@@ -694,6 +698,7 @@ begin
      DValue := Wavelength ;
      os_Wavelength_To_Voltage( @DValue ) ;
      DValue := DValue + VOffset ;
+     outputdebugstring(pchar(format('wavelength V= %.3g',[DValue])));
      VControl[1].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
      VControl[1].V := DValue ;
      VControl[1].Delay := 0.0 ;
@@ -703,8 +708,9 @@ begin
 
      // Set output slit bandwidth
      DValue := Bandwidth ;
-     os_Out_Slit_Bandwidth_To_Width( @DValue ) ;
+     os_Out_Slit_Bandwidth_To_Width( Wavelength, @DValue ) ;
      os_Out_Slit_Width_To_Voltage( @DValue ) ;
+     outputdebugstring(pchar(format('out slit V= %.3g',[DValue])));
      VControl[2].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 2 ;
      VControl[2].V := DValue ;
      VControl[2].Delay := 0.0 ;
@@ -1042,7 +1048,7 @@ begin
      if iVControl < NumVOpto then begin
         LastOptoscanBandwidth := Bandwidth ;
         DValue := Bandwidth ;
-        os_In_Slit_Bandwidth_To_Width( @DValue ) ;
+        os_In_Slit_Bandwidth_To_Width( Wavelength,@DValue ) ;
         os_In_Slit_Width_To_Voltage( @DValue ) ;
         VControl[iVControl].V := DValue ;
         VControl[iVControl].Delay := 0.0 ;
@@ -1074,7 +1080,7 @@ begin
      if iVControl < NumVOpto then begin
         LastOptoscanBandwidth := Bandwidth ;
         DValue := Bandwidth ;
-        os_Out_Slit_Bandwidth_To_Width( @DValue ) ;
+        os_Out_Slit_Bandwidth_To_Width( Wavelength,@DValue ) ;
         os_Out_Slit_Width_To_Voltage( @DValue ) ;
         VControl[iVControl].V := DValue ;
         VControl[iVControl].Delay := 0.0 ;

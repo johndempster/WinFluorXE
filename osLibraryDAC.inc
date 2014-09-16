@@ -3,6 +3,7 @@
 //Debug stuff
 // os_Set_Grating_Lines (J.D. 14/9/5
 // 18.2.14 PCHAR replaced with PANSIChar, Separate 32 and 64 libraries
+// 11.09.14 Slit_Bandwidth_To_Width() updated to include wavelength as a parameter
 
 {$IFDEF WIN64}
 
@@ -16,12 +17,12 @@ function os_Wide_Error_String(ECode: DWord): lpWStr;stdcall; external 'osLibrary
 function os_Char_Error_String(ECode: DWord): lpStr;stdcall; external 'osLibrary64.dll';
 function os_Wavelength_To_RGB(const Wavelength: Double; var R,G,B: Byte): DWord;stdcall; external 'osLibrary64.dll';
 function os_Wavelength_To_Voltage(Wavelength: PDouble): DWord;stdcall; external 'osLibrary64.dll';
-function os_In_Slit_Bandwidth_To_Width(Slit: PDouble): DWord;stdcall;  external 'osLibrary64.dll';
-function os_Out_Slit_Bandwidth_To_Width(Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_In_Slit_Bandwidth_To_Width(Wavelength: Double;Slit: PDouble): DWord;stdcall;  external 'osLibrary64.dll';
+function os_Out_Slit_Bandwidth_To_Width(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
 function os_In_Slit_Width_To_Voltage(Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
 function os_Out_Slit_Width_To_Voltage(Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
-function os_In_Slit_Width_To_Bandwidth(Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
-function os_Out_Slit_Width_To_Bandwidth(Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_In_Slit_Width_To_Bandwidth(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_Out_Slit_Width_To_Bandwidth(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
 function os_Query_IO(Reserved: DWord; Data: lpStr; Size: DWord): DWord;stdcall; external 'osLibrary64.dll';
 function os_Open_IO(Reserved: DWord; Data: lpStr): DWord;stdcall; external 'osLibrary64.dll';
 function os_Switch_Control(Value: Bool): DWord;stdcall; external 'osLibrary64.dll';
@@ -61,12 +62,12 @@ function os_Wide_Error_String(ECode: DWord): lpWStr;stdcall; external 'osLibrary
 function os_Char_Error_String(ECode: DWord): lpStr;stdcall; external 'osLibrary32.dll';
 function os_Wavelength_To_RGB(const Wavelength: Double; var R,G,B: Byte): DWord;stdcall; external 'osLibrary32.dll';
 function os_Wavelength_To_Voltage(Wavelength: PDouble): DWord;stdcall; external 'osLibrary32.dll';
-function os_In_Slit_Bandwidth_To_Width(Slit: PDouble): DWord;stdcall;  external 'osLibrary32.dll';
-function os_Out_Slit_Bandwidth_To_Width(Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_In_Slit_Bandwidth_To_Width(Wavelength: Double;Slit: PDouble): DWord;stdcall;  external 'osLibrary32.dll';
+function os_Out_Slit_Bandwidth_To_Width(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
 function os_In_Slit_Width_To_Voltage(Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
 function os_Out_Slit_Width_To_Voltage(Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
-function os_In_Slit_Width_To_Bandwidth(Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
-function os_Out_Slit_Width_To_Bandwidth(Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_In_Slit_Width_To_Bandwidth(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_Out_Slit_Width_To_Bandwidth(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
 function os_Query_IO(Reserved: DWord; Data: lpStr; Size: DWord): DWord;stdcall; external 'osLibrary32.dll';
 function os_Open_IO(Reserved: DWord; Data: lpStr): DWord;stdcall; external 'osLibrary32.dll';
 function os_Switch_Control(Value: Bool): DWord;stdcall; external 'osLibrary32.dll';

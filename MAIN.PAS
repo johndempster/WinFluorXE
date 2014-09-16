@@ -171,6 +171,8 @@ unit Main;
 //                    Now detects QCAMDriverx64.dll correctly
 // 22.07.14 V3.6.3 JD PVCAM & NIMAQdx: Camera can be selected when more than one is available
 // 21.08.14 V3.6.5 JD Support for Thorlabs DCx cameras added
+// 11.09.14 V3.6.6 JD 64 bit Andor SDK2 camera support now works.
+//                    Bug in 64 bit Optoscan control fixed.
 
 interface
 
@@ -749,7 +751,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.5 5-9-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.6 11-9-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
