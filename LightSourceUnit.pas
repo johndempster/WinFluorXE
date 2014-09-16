@@ -32,13 +32,103 @@ unit LightSourceUnit;
 // 18.02.14 JD Now used osLibrary64.dll and osLibrary32.dll
 // 11.09.14 JD os_In_Slit_Bandwidth_To_Width and os_Out_Slit_Bandwidth_To_Width
 //             now includes Wavelength to fix crashes with 64 versions and Optoscan
+// 16.09.14 JD osLibrary.inc now incorporated in to this unit.
 interface
 
 uses
   Windows,SysUtils, Classes, math, dialogs ;
 
-{$Include osCodes.inc}
-{$Include osLibraryDAC.inc}
+{$IFDEF WIN64}
+
+// Calls to 64 bit DLL
+procedure os_Set_Log(Strings: TStrings);stdcall; external 'osLibrary64.dll';
+
+//General osLibrary functions
+function os_Library_Version: Double;stdcall; external 'osLibrary64.dll';
+function os_Library_Version_Str: PANSIChar;stdcall; external 'osLibrary64.dll';
+function os_Wide_Error_String(ECode: DWord): lpWStr;stdcall; external 'osLibrary64.dll';
+function os_Char_Error_String(ECode: DWord): lpStr;stdcall; external 'osLibrary64.dll';
+function os_Wavelength_To_RGB(const Wavelength: Double; var R,G,B: Byte): DWord;stdcall; external 'osLibrary64.dll';
+function os_Wavelength_To_Voltage(Wavelength: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_In_Slit_Bandwidth_To_Width(Wavelength: Double;Slit: PDouble): DWord;stdcall;  external 'osLibrary64.dll';
+function os_Out_Slit_Bandwidth_To_Width(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_In_Slit_Width_To_Voltage(Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_Out_Slit_Width_To_Voltage(Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_In_Slit_Width_To_Bandwidth(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_Out_Slit_Width_To_Bandwidth(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_Query_IO(Reserved: DWord; Data: lpStr; Size: DWord): DWord;stdcall; external 'osLibrary64.dll';
+function os_Open_IO(Reserved: DWord; Data: lpStr): DWord;stdcall; external 'osLibrary64.dll';
+function os_Switch_Control(Value: Bool): DWord;stdcall; external 'osLibrary64.dll';
+function os_Close_IO: DWord;stdcall; external 'osLibrary64.dll';
+function os_Valid_Params(Wavelength,InSlit,OutSlit: Double): DWord;stdcall; external 'osLibrary64.dll';
+function os_Set_Params(Wavelength,InSlit,OutSlit: Double): DWord;stdcall; external 'osLibrary64.dll';
+function os_Get_Ready(Wavelength,InSlit,OutSlit: PBool): DWord;stdcall; external 'osLibrary64.dll';
+function os_Shut_In_Slit(Value: Bool): DWord;stdcall; external 'osLibrary64.dll';
+function os_Shut_Grating(Value: Bool): DWord;stdcall; external 'osLibrary64.dll';
+function os_Shut_Out_Slit(Value: Bool): DWord;stdcall; external 'osLibrary64.dll';
+function os_Shut_Both_Slits(Value: Bool): DWord;stdcall; external 'osLibrary64.dll';
+function os_Num_Driver_Errors: DWord;stdcall; external 'osLibrary64.dll';
+function os_Last_Driver_Error: lpStr;stdcall; external 'osLibrary64.dll';
+function os_Slits_Driven(InSlit,OutSlit: PBool): DWord;stdcall;  external 'osLibrary64.dll';
+function os_Max_Wavelength(Wavelength: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_Min_Wavelength(Wavelength: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_Max_InSlit(Wavelength: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_Min_InSlit(Wavelength: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_Max_OutSlit(Wavelength: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_Min_OutSlit(Wavelength: PDouble): DWord;stdcall; external 'osLibrary64.dll';
+function os_Grating_Lines(Lines: PDWord): DWord;stdcall; external 'osLibrary64.dll';
+function os_Set_Grating_Lines(Lines: DWord): DWord;stdcall; external 'osLibrary64.dll';
+function os_Load_Interface_Defaults(FileName: PANSIChar): DWord;stdcall; external 'osLibrary64.dll';
+//function os_Load_DAC_Defaults(FileName: PANSIChar): DWord;stdcall; external 'osLibrary64.dll';
+function os_Get_Handle(Handle: PDWord): DWord;stdcall; external 'osLibrary64.dll';
+function os_Set_Handle(Handle: DWord): DWord;stdcall; external 'osLibrary64.dll';
+
+{$ELSE}
+
+// Calls to 32 bit DLL
+procedure os_Set_Log(Strings: TStrings);stdcall; external 'osLibrary32.dll';
+
+//General osLibrary functions
+function os_Library_Version: Double;stdcall; external 'osLibrary32.dll';
+function os_Library_Version_Str: PANSIChar;stdcall; external 'osLibrary32.dll';
+function os_Wide_Error_String(ECode: DWord): lpWStr;stdcall; external 'osLibrary32.dll';
+function os_Char_Error_String(ECode: DWord): lpStr;stdcall; external 'osLibrary32.dll';
+function os_Wavelength_To_RGB(const Wavelength: Double; var R,G,B: Byte): DWord;stdcall; external 'osLibrary32.dll';
+function os_Wavelength_To_Voltage(Wavelength: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_In_Slit_Bandwidth_To_Width(Wavelength: Double;Slit: PDouble): DWord;stdcall;  external 'osLibrary32.dll';
+function os_Out_Slit_Bandwidth_To_Width(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_In_Slit_Width_To_Voltage(Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_Out_Slit_Width_To_Voltage(Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_In_Slit_Width_To_Bandwidth(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_Out_Slit_Width_To_Bandwidth(Wavelength: Double;Slit: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_Query_IO(Reserved: DWord; Data: lpStr; Size: DWord): DWord;stdcall; external 'osLibrary32.dll';
+function os_Open_IO(Reserved: DWord; Data: lpStr): DWord;stdcall; external 'osLibrary32.dll';
+function os_Switch_Control(Value: Bool): DWord;stdcall; external 'osLibrary32.dll';
+function os_Close_IO: DWord;stdcall; external 'osLibrary32.dll';
+function os_Valid_Params(Wavelength,InSlit,OutSlit: Double): DWord;stdcall; external 'osLibrary32.dll';
+function os_Set_Params(Wavelength,InSlit,OutSlit: Double): DWord;stdcall; external 'osLibrary32.dll';
+function os_Get_Ready(Wavelength,InSlit,OutSlit: PBool): DWord;stdcall; external 'osLibrary32.dll';
+function os_Shut_In_Slit(Value: Bool): DWord;stdcall; external 'osLibrary32.dll';
+function os_Shut_Grating(Value: Bool): DWord;stdcall; external 'osLibrary32.dll';
+function os_Shut_Out_Slit(Value: Bool): DWord;stdcall; external 'osLibrary32.dll';
+function os_Shut_Both_Slits(Value: Bool): DWord;stdcall; external 'osLibrary32.dll';
+function os_Num_Driver_Errors: DWord;stdcall; external 'osLibrary32.dll';
+function os_Last_Driver_Error: lpStr;stdcall; external 'osLibrary32.dll';
+function os_Slits_Driven(InSlit,OutSlit: PBool): DWord;stdcall;  external 'osLibrary32.dll';
+function os_Max_Wavelength(Wavelength: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_Min_Wavelength(Wavelength: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_Max_InSlit(Wavelength: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_Min_InSlit(Wavelength: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_Max_OutSlit(Wavelength: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_Min_OutSlit(Wavelength: PDouble): DWord;stdcall; external 'osLibrary32.dll';
+function os_Grating_Lines(Lines: PDWord): DWord;stdcall; external 'osLibrary32.dll';
+function os_Set_Grating_Lines(Lines: DWord): DWord;stdcall; external 'osLibrary32.dll';
+function os_Load_Interface_Defaults(FileName: PANSIChar): DWord;stdcall; external 'osLibrary32.dll';
+//function os_Load_DAC_Defaults(FileName: PANSIChar): DWord;stdcall; external 'osLibrary32.dll';
+function os_Get_Handle(Handle: PDWord): DWord;stdcall; external 'osLibrary32.dll';
+function os_Set_Handle(Handle: DWord): DWord;stdcall; external 'osLibrary32.dll';
+{$ENDIF}
+
 
 const
     lsNone = 0 ;
@@ -649,7 +739,7 @@ procedure TLightSource.OptoScanWavelengthToVoltage(
 // Get OptoScan control voltages for selected wavelength & bandwidth
 // -----------------------------------------------------------------
 var
-     DValue : Double ;
+     DValue,DWavelength : Double ;
      NumLines : DWord ;
      FileName : ANSIString ;
      VOffset : Double ;
@@ -684,9 +774,10 @@ begin
 
      // Set input slit bandwidth
      DValue := Bandwidth ;
-     os_In_Slit_Bandwidth_To_Width( Wavelength, @DValue ) ;
+     DWavelength := Wavelength ;
+     os_In_Slit_Bandwidth_To_Width( DWavelength, @DValue ) ;
      os_In_Slit_Width_To_Voltage( @DValue ) ;
-     outputdebugstring(pchar(format('in slit V= %.3g',[DValue])));
+     //outputdebugstring(pchar(format('in slit V= %.3g',[DValue])));
      VControl[0].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel ;
      VControl[0].V := DValue ;
      VControl[0].Delay := 0.0 ;
@@ -698,7 +789,7 @@ begin
      DValue := Wavelength ;
      os_Wavelength_To_Voltage( @DValue ) ;
      DValue := DValue + VOffset ;
-     outputdebugstring(pchar(format('wavelength V= %.3g',[DValue])));
+     //outputdebugstring(pchar(format('wavelength V= %.3g',[DValue])));
      VControl[1].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
      VControl[1].V := DValue ;
      VControl[1].Delay := 0.0 ;
@@ -708,17 +799,16 @@ begin
 
      // Set output slit bandwidth
      DValue := Bandwidth ;
-     os_Out_Slit_Bandwidth_To_Width( Wavelength, @DValue ) ;
+     DWavelength := Wavelength ;
+     os_Out_Slit_Bandwidth_To_Width( DWavelength, @DValue ) ;
      os_Out_Slit_Width_To_Voltage( @DValue ) ;
-     outputdebugstring(pchar(format('out slit V= %.3g',[DValue])));
+     //outputdebugstring(pchar(format('out slit V= %.3g',[DValue])));
      VControl[2].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 2 ;
      VControl[2].V := DValue ;
      VControl[2].Delay := 0.0 ;
      VControl[2].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
      VControl[2].Name := format('Optoscan: Output slit: Dev%d:AO%d ',
                          [VControl[2].Device,VControl[2].Chan]) ;
-
-//      outputdebugString(PANSIChar(format('V0=%.4g V1=%.4g V2=%.4g',[VControl[0],VControl[1],VControl[2]]))) ;
 
      end;
 
@@ -981,7 +1071,7 @@ const
 
 var
      NumVOpto : Integer ;
-     DValue : Double ;
+     DValue,DWavelength : Double ;
      NumLines : DWord ;
      LaserDAC : Integer ;
      i : Integer ;
@@ -1048,7 +1138,8 @@ begin
      if iVControl < NumVOpto then begin
         LastOptoscanBandwidth := Bandwidth ;
         DValue := Bandwidth ;
-        os_In_Slit_Bandwidth_To_Width( Wavelength,@DValue ) ;
+        DWavelength := Wavelength ;
+        os_In_Slit_Bandwidth_To_Width( DWavelength,@DValue ) ;
         os_In_Slit_Width_To_Voltage( @DValue ) ;
         VControl[iVControl].V := DValue ;
         VControl[iVControl].Delay := 0.0 ;
@@ -1080,7 +1171,8 @@ begin
      if iVControl < NumVOpto then begin
         LastOptoscanBandwidth := Bandwidth ;
         DValue := Bandwidth ;
-        os_Out_Slit_Bandwidth_To_Width( Wavelength,@DValue ) ;
+        DWavelength := Wavelength ;
+        os_Out_Slit_Bandwidth_To_Width( DWavelength,@DValue ) ;
         os_Out_Slit_Width_To_Voltage( @DValue ) ;
         VControl[iVControl].V := DValue ;
         VControl[iVControl].Delay := 0.0 ;
