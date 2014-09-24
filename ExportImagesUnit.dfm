@@ -378,6 +378,7 @@ object ExportImagesFrm: TExportImagesFrm
       ReadOnly = True
       ScrollBars = ssVertical
       TabOrder = 1
+      WordWrap = False
     end
   end
   object ImageFile: TImageFile

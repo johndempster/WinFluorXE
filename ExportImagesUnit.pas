@@ -19,6 +19,7 @@ unit ExportImagesUnit;
 // 10.03.14 ... Multiple files can now be selected for export
 //              User can no longer changed export name
 //              (n) added to end of files when file name already exists
+// 24.09.14 ... Long file names can now be exported again (Word Wrap = False in meFiles memo box)
 interface
 
 uses

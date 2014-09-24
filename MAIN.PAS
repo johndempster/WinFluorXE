@@ -173,6 +173,8 @@ unit Main;
 // 21.08.14 V3.6.5 JD Support for Thorlabs DCx cameras added
 // 11.09.14 V3.6.6 JD 64 bit Andor SDK2 camera support now works.
 //                    Bug in 64 bit Optoscan control fixed.
+// 24.09.14 V3.6.7 JD Image files with long file names can now be exported again (since V3.5.9)
+//                    (Word Wrap = False in meFiles memo box)
 
 interface
 
@@ -751,7 +753,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.6 16-9-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.7 24-9-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
