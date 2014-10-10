@@ -175,6 +175,8 @@ unit Main;
 //                    Bug in 64 bit Optoscan control fixed.
 // 24.09.14 V3.6.7 JD Image files with long file names can now be exported again (since V3.5.9)
 //                    (Word Wrap = False in meFiles memo box)
+// 10.10.14 V3.6.8 JD OptiMOS minimum frame interval now 1.4 x readout time (not 2X)
+//                    Support for Orca-100 with NI IMAQ interface
 
 interface
 
