@@ -60,6 +60,9 @@ unit FileIOUnit;
 // 05.03.14 ......... 'BULBEXP=', MainFrm.BulbExposureMode
 //                    'EXCWFEX%d=',[iWav]), MainFrm.EXCWavelengths[iWav].FractionalExposure
 // 22.07.14 ......... 'CAMSEL=', MainFrm.Cam1.SelectedCamera
+// 23.10.14 ......... LightSource.DeviceType now a property rather than public variable
+// 02.12.14 ......... LightSource.LaserWavelength etc. now supports 8 light sources 0..7
+//                    Keywords numbers 1..8 (LSLAS1WAV= .. LSLAS8WAV=
 
 interface
 
@@ -290,12 +293,12 @@ begin
      AppendFloat( Header, 'LSV2=', LightSource.Voltage2 ) ;
 
      // Laser settings
-     for i := 1 to lsMaxLasers do begin
-        AppendFloat( Header, format('LSLAS%dWAV=',[i]), LightSource.LaserWavelength[i] ) ;
-        AppendFloat( Header, format('LSLAS%dDEL=',[i]), LightSource.LaserDelay[i] ) ;
-        AppendFloat( Header, format('LSLAS%dVOFF=',[i]), LightSource.LaserOffVoltage[i] ) ;
-        AppendFloat( Header, format('LSLAS%dVON=',[i]), LightSource.LaserOnVoltage[i] ) ;
-        AppendFloat( Header, format('LSLAS%dINT=',[i]), LightSource.LaserIntensity[i] ) ;
+     for i := 0 to lsMaxLightSources-1 do begin
+        AppendFloat( Header, format('LSLAS%dWAV=',[i+1]), LightSource.LaserWavelength[i] ) ;
+        AppendFloat( Header, format('LSLAS%dDEL=',[i+1]), LightSource.LaserDelay[i] ) ;
+        AppendFloat( Header, format('LSLAS%dVOFF=',[i+1]), LightSource.LaserOffVoltage[i] ) ;
+        AppendFloat( Header, format('LSLAS%dVON=',[i+1]), LightSource.LaserOnVoltage[i] ) ;
+        AppendFloat( Header, format('LSLAS%dINT=',[i+1]), LightSource.LaserIntensity[i] ) ;
         end ;
 
      // LED settings
@@ -770,19 +773,21 @@ begin
          end ;
 
      // Light source
-     ReadInt( Header, 'LSDEV=', LightSource.DeviceType ) ;
+     iValue := LightSource.DeviceType ;
+     ReadInt( Header, 'LSDEV=', iValue ) ;
+     LightSource.DeviceType := iValue ;
      ReadFloat( Header, 'LSW1=', LightSource.Wavelength1 ) ;
      ReadFloat( Header, 'LSV1=', LightSource.Voltage1 ) ;
      ReadFloat( Header, 'LSW2=', LightSource.Wavelength2 ) ;
      ReadFloat( Header, 'LSV2=', LightSource.Voltage2 ) ;
 
      // Laser settings
-     for i := 1 to lsMaxLasers do begin
-        ReadFloat( Header, format('LSLAS%dWAV=',[i]), LightSource.LaserWavelength[i] ) ;
-        ReadFloat( Header, format('LSLAS%dDEL=',[i]), LightSource.LaserDelay[i] ) ;
-        ReadFloat( Header, format('LSLAS%dVOFF=',[i]), LightSource.LaserOffVoltage[i] ) ;
-        ReadFloat( Header, format('LSLAS%dVON=',[i]), LightSource.LaserOnVoltage[i] ) ;
-        ReadFloat( Header, format('LSLAS%dINT=',[i]), LightSource.LaserIntensity[i] ) ;
+     for i := 0 to lsMaxLightSources-1 do begin
+        ReadFloat( Header, format('LSLAS%dWAV=',[i+1]), LightSource.LaserWavelength[i] ) ;
+        ReadFloat( Header, format('LSLAS%dDEL=',[i+1]), LightSource.LaserDelay[i] ) ;
+        ReadFloat( Header, format('LSLAS%dVOFF=',[i+1]), LightSource.LaserOffVoltage[i] ) ;
+        ReadFloat( Header, format('LSLAS%dVON=',[i+1]), LightSource.LaserOnVoltage[i] ) ;
+        ReadFloat( Header, format('LSLAS%dINT=',[i+1]), LightSource.LaserIntensity[i] ) ;
         end ;
 
      // LED settings

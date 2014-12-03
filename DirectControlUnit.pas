@@ -112,6 +112,14 @@ type
     CameraTriggerPanel: TPanel;
     Label15: TLabel;
     ComboBox3: TComboBox;
+    LightSourcePanel6: TPanel;
+    Label4: TLabel;
+    TrackBar6: TTrackBar;
+    ValidatedEdit6: TValidatedEdit;
+    LightSourcePanel7: TPanel;
+    Label10: TLabel;
+    TrackBar7: TTrackBar;
+    ValidatedEdit7: TValidatedEdit;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure ValidatedEdit0KeyPress(Sender: TObject; var Key: Char);
@@ -153,6 +161,10 @@ type
     procedure combobox35Change(Sender: TObject);
     procedure combobox36Change(Sender: TObject);
     procedure combobox37Change(Sender: TObject);
+    procedure ValidatedEdit6KeyPress(Sender: TObject; var Key: Char);
+    procedure ValidatedEdit7KeyPress(Sender: TObject; var Key: Char);
+    procedure TrackBar6Change(Sender: TObject);
+    procedure TrackBar7Change(Sender: TObject);
    
   private
     { Private declarations }
@@ -192,6 +204,12 @@ type
              Name : String ;
              var PanelHeight : Integer
              ) ;
+
+   procedure SetLightSourceOutput(
+             iOut : Integer ;                        // Output # (0..7)
+             V : single                              // Output voltage
+             ) ;
+
 
    procedure UpdateOutputs ;
 
@@ -250,6 +268,9 @@ begin
      SetControlPanel( LightSourcePanel3, 3, VControl, NumVControls, H ) ;
      SetControlPanel( LightSourcePanel4, 4, VControl, NumVControls, H ) ;
      SetControlPanel( LightSourcePanel5, 5, VControl, NumVControls, H ) ;
+     SetControlPanel( LightSourcePanel6, 6, VControl, NumVControls, H ) ;
+     SetControlPanel( LightSourcePanel7, 7, VControl, NumVControls, H ) ;
+
      ShutterPanel.Top := H ;
      SetDigControl( ShutterPanel,
                     MainFrm.IOConfig.LSShutter,
@@ -366,9 +387,10 @@ begin
 
      EditBox.Value := LabIO.DACOutState[VControl[iVControl].Device][VControl[iVControl].Chan] ;
 
-    TrackBar.Position := Round((VControl[iVControl].V/TrackBarVMax)*TrackBar.Max) ;
+     TrackBar.Position := Round((VControl[iVControl].V/TrackBarVMax)*TrackBar.Max) ;
 
-    end ;
+     end ;
+
 
 procedure TDirectControlFrm.SetVStimChannel(
           ControlPanel : TPanel ;
@@ -677,6 +699,34 @@ begin
      end;
 
 
+procedure TDirectControlFrm.ValidatedEdit6KeyPress(Sender: TObject;
+  var Key: Char);
+// -----------------------------
+// Update output channel voltage
+// -----------------------------
+begin
+    if NumVControls > 6 then begin
+       ValidatedEdit6.Value := (TrackBar6.Position*TrackBarVMax)/TrackBar6.Max ;
+       LabIO.DACOutState[VControl[6].Device][VControl[6].Chan] := ValidatedEdit6.Value ;
+       UpdateOutputs ;
+       end ;
+    end;
+
+
+procedure TDirectControlFrm.ValidatedEdit7KeyPress(Sender: TObject;
+  var Key: Char);
+// -----------------------------
+// Update output channel voltage
+// -----------------------------
+begin
+    if NumVControls > 7 then begin
+       ValidatedEdit7.Value := (TrackBar7.Position*TrackBarVMax)/TrackBar7.Max ;
+       LabIO.DACOutState[VControl[7].Device][VControl[7].Chan] := ValidatedEdit7.Value ;
+       UpdateOutputs ;
+       end ;
+    end;
+
+
 procedure TDirectControlFrm.UpdateOutputs ;
 // ------------------------------------------
 // Update all digital and DAC control outputs
@@ -714,11 +764,42 @@ procedure TDirectControlFrm.Trackbar0Change(Sender: TObject);
 begin
     if NumVControls > 0 then begin
        ValidatedEdit0.Value := (TrackBar0.Position*TrackBarVMax)/TrackBar0.Max ;
-       LabIO.DACOutState[VControl[0].Device][VControl[0].Chan] := ValidatedEdit0.Value ;
+       SetLightSourceOutput( 0, ValidatedEdit0.Value ) ;
        UpdateOutputs ;
        end ;
 
     end;
+
+procedure TDirectControlFrm.SetLightSourceOutput(
+          iOut : Integer ;                        // Output # (0..7)
+          V : single                              // Output voltage
+          ) ;
+// -------------------------------
+// Set light source output channel
+// -------------------------------
+var
+    Dev,iChan : Integer ;
+    iState,iMask : Word ;
+begin
+
+    Dev := VControl[iOut].Device ;
+    iChan := VControl[iOut].Chan ;
+
+    if ANSIContainsText(VControl[iOut].Name,'AO') then begin
+       // Analogue output
+       LabIO.DACOutState[Dev][iChan] := V ;
+       end
+    else begin
+       // Digital output
+       if V > 0.0 then iState := 1
+                  else iState := 0 ;
+       iState := iState shl iChan ;
+       iMask := not (1 shl iChan) ;
+       LabIO.DigOutState[Dev] := (LabIO.DigOutState[Dev] and iMask) or iState;
+       end ;
+
+    end;
+
 
 procedure TDirectControlFrm.TrackBar1Change(Sender: TObject);
 // -----------------------------
@@ -727,7 +808,7 @@ procedure TDirectControlFrm.TrackBar1Change(Sender: TObject);
 begin
     if NumVControls > 1 then begin
        ValidatedEdit1.Value := (TrackBar1.Position*TrackBarVMax)/TrackBar1.Max ;
-       LabIO.DACOutState[VControl[1].Device][VControl[1].Chan] := ValidatedEdit1.Value ;
+       SetLightSourceOutput( 1, ValidatedEdit1.Value ) ;
        UpdateOutputs ;
        end ;
 
@@ -742,10 +823,9 @@ procedure TDirectControlFrm.TrackBar2Change(Sender: TObject);
 begin
     if NumVControls > 2 then begin
        ValidatedEdit2.Value := (TrackBar2.Position*TrackBarVMax)/TrackBar2.Max ;
-       LabIO.DACOutState[VControl[2].Device][VControl[2].Chan] := ValidatedEdit2.Value ;
+       SetLightSourceOutput( 2, ValidatedEdit2.Value ) ;
        UpdateOutputs ;
        end ;
-
     end;
 
 
@@ -756,12 +836,10 @@ procedure TDirectControlFrm.TrackBar3Change(Sender: TObject);
 begin
     if NumVControls > 3 then begin
        ValidatedEdit3.Value := (TrackBar3.Position*TrackBarVMax)/TrackBar3.Max ;
-       LabIO.DACOutState[VControl[3].Device][VControl[3].Chan] := ValidatedEdit3.Value ;
+       SetLightSourceOutput( 3, ValidatedEdit3.Value ) ;
        UpdateOutputs ;
        end ;
-
     end;
-
 
 
 procedure TDirectControlFrm.TrackBar4Change(Sender: TObject);
@@ -771,10 +849,9 @@ procedure TDirectControlFrm.TrackBar4Change(Sender: TObject);
 begin
     if NumVControls > 4 then begin
        ValidatedEdit4.Value := (TrackBar4.Position*TrackBarVMax)/TrackBar4.Max ;
-       LabIO.DACOutState[VControl[4].Device][VControl[4].Chan] := ValidatedEdit4.Value ;
+       SetLightSourceOutput( 4, ValidatedEdit4.Value ) ;
        UpdateOutputs ;
        end ;
-
     end;
 
 
@@ -785,12 +862,36 @@ procedure TDirectControlFrm.TrackBar5Change(Sender: TObject);
 begin
     if NumVControls > 5 then begin
        ValidatedEdit5.Value := (TrackBar5.Position*TrackBarVMax)/TrackBar5.Max ;
-       LabIO.DACOutState[VControl[5].Device][VControl[5].Chan] := ValidatedEdit5.Value ;
+       SetLightSourceOutput( 5, ValidatedEdit5.Value ) ;
        UpdateOutputs ;
        end ;
-
     end;
 
+
+procedure TDirectControlFrm.TrackBar6Change(Sender: TObject);
+// -----------------------------
+// Update output channel voltage
+// -----------------------------
+begin
+    if NumVControls > 6 then begin
+       ValidatedEdit6.Value := (TrackBar6.Position*TrackBarVMax)/TrackBar6.Max ;
+       SetLightSourceOutput( 6, ValidatedEdit6.Value ) ;
+       UpdateOutputs ;
+       end ;
+    end;
+
+
+procedure TDirectControlFrm.TrackBar7Change(Sender: TObject);
+// -----------------------------
+// Update output channel voltage
+// -----------------------------
+begin
+    if NumVControls > 5 then begin
+       ValidatedEdit7.Value := (TrackBar7.Position*TrackBarVMax)/TrackBar7.Max ;
+       SetLightSourceOutput( 7, ValidatedEdit7.Value ) ;
+       UpdateOutputs ;
+       end ;
+    end;
 
 procedure TDirectControlFrm.validatededit20KeyPress(Sender: TObject;
   var Key: Char);

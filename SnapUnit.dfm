@@ -475,13 +475,16 @@ object SnapFrm: TSnapFrm
         Top = 84
         Width = 145
         Height = 17
-        Caption = 'Set Laser Intensity'
+        Hint = 'Set intensity of LED/Laser light source'
+        Caption = 'Set Light Intensity'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -12
         Font.Name = 'Arial'
         Font.Style = [fsBold]
         ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 2
         OnClick = bSetLaserIntensityClick
       end

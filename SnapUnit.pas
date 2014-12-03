@@ -38,6 +38,7 @@ unit SnapUnit;
 // 17.06.14 12.5% display zoom added
 // 20.06.14 Buffer no filled with empty flags after StartCapture to ensure buffer is filled with flags
 // 09.07.14 Calibration bar now sized correctly from Cam1.PixelWidth
+// 02.12.14 Set Laser Intensity button name changed to Set Light Intensity
 
 interface
 

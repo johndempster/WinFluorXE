@@ -177,6 +177,8 @@ unit Main;
 //                    (Word Wrap = False in meFiles memo box)
 // 10.10.14 V3.6.8 JD OptiMOS minimum frame interval now 1.4 x readout time (not 2X)
 //                    Support for Orca-100 with NI IMAQ interface
+// 03.12.14 V3.6.9 JD Up to 8 LEDs can now be supported using digital control lines
+//                    Intensity of LEDs controlled by analogue outputs can be set using Set Light Intensity dialog box
 
 interface
 
@@ -755,7 +757,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.7 24-9-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.9 3-12-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

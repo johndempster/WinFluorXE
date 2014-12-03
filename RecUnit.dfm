@@ -400,13 +400,16 @@ object RecordFrm: TRecordFrm
             Top = 182
             Width = 153
             Height = 17
-            Caption = 'Set Laser Intensity'
+            Hint = 'Set intensity of LED/Laser light source'
+            Caption = 'Set Light Intensity'
             Font.Charset = ANSI_CHARSET
             Font.Color = clWindowText
             Font.Height = -12
             Font.Name = 'Arial'
             Font.Style = [fsBold]
             ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 2
             OnClick = bSetLaserIntensityClick
           end
@@ -436,10 +439,6 @@ object RecordFrm: TRecordFrm
         object StimulatorTab: TTabSheet
           Caption = 'Stimulator'
           ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object cbStimProgram: TComboBox
             Left = 2
             Top = 0
@@ -607,10 +606,6 @@ object RecordFrm: TRecordFrm
         object PhotoStimTab: TTabSheet
           Caption = 'Photo Stim.'
           ImageIndex = 2
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object cbPhotoStimProgram: TComboBox
             Left = 2
             Top = 0
@@ -827,10 +822,6 @@ object RecordFrm: TRecordFrm
           object SlidersTab: TTabSheet
             Caption = 'Sliders'
             ImageIndex = 1
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label5: TLabel
               Left = 14
               Top = 0

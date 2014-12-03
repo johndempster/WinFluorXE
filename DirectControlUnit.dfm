@@ -20,18 +20,19 @@ object DirectControlFrm: TDirectControlFrm
   TextHeight = 15
   object Splitter1: TSplitter
     Left = 0
-    Top = 209
+    Top = 258
     Width = 428
-    Height = 4
+    Height = 15
     Cursor = crVSplit
     Align = alTop
     AutoSnap = False
     Beveled = True
     MinSize = 20
+    ExplicitTop = 249
   end
   object Splitter2: TSplitter
     Left = 0
-    Top = 323
+    Top = 383
     Width = 428
     Height = 4
     Cursor = crVSplit
@@ -39,10 +40,11 @@ object DirectControlFrm: TDirectControlFrm
     AutoSnap = False
     Beveled = True
     MinSize = 20
+    ExplicitTop = 323
   end
   object Splitter3: TSplitter
     Left = 0
-    Top = 545
+    Top = 605
     Width = 428
     Height = 4
     Cursor = crVSplit
@@ -50,10 +52,11 @@ object DirectControlFrm: TDirectControlFrm
     AutoSnap = False
     Beveled = True
     MinSize = 20
+    ExplicitTop = 545
   end
   object Splitter4: TSplitter
     Left = 0
-    Top = 737
+    Top = 797
     Width = 428
     Height = 4
     Cursor = crVSplit
@@ -61,12 +64,13 @@ object DirectControlFrm: TDirectControlFrm
     AutoSnap = False
     Beveled = True
     MinSize = 20
+    ExplicitTop = 737
   end
   object LSControlGrp: TGroupBox
     Left = 0
     Top = 0
     Width = 428
-    Height = 209
+    Height = 258
     Align = alTop
     Caption = ' Light Source Control Voltages '
     Font.Charset = ANSI_CHARSET
@@ -353,8 +357,8 @@ object DirectControlFrm: TDirectControlFrm
       end
     end
     object ShutterPanel: TPanel
-      Left = 4
-      Top = 172
+      Left = 3
+      Top = 222
       Width = 450
       Height = 24
       BevelOuter = bvNone
@@ -367,14 +371,14 @@ object DirectControlFrm: TDirectControlFrm
       TabOrder = 6
       object Label9: TLabel
         Left = 2
-        Top = 0
+        Top = 4
         Width = 72
         Height = 15
         Caption = 'lbLSControl0'
       end
       object ComboBox1: TComboBox
         Left = 348
-        Top = 0
+        Top = 4
         Width = 66
         Height = 23
         Style = csDropDownList
@@ -387,15 +391,108 @@ object DirectControlFrm: TDirectControlFrm
           'On (5V)')
       end
     end
+    object LightSourcePanel6: TPanel
+      Left = 4
+      Top = 172
+      Width = 450
+      Height = 24
+      BevelOuter = bvNone
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 7
+      object Label4: TLabel
+        Left = 2
+        Top = 0
+        Width = 31
+        Height = 15
+        Caption = 'Label'
+      end
+      object TrackBar6: TTrackBar
+        Left = 260
+        Top = 0
+        Width = 89
+        Height = 20
+        Max = 10000
+        Min = -10000
+        TabOrder = 0
+        ThumbLength = 12
+        TickStyle = tsManual
+        OnChange = TrackBar6Change
+      end
+      object ValidatedEdit6: TValidatedEdit
+        Left = 348
+        Top = 0
+        Width = 66
+        Height = 23
+        OnKeyPress = ValidatedEdit6KeyPress
+        Text = ' 0 V'
+        Scale = 1.000000000000000000
+        Units = 'V'
+        NumberFormat = '%.4g'
+        LoLimit = -10.000000000000000000
+        HiLimit = 10.000000000000000000
+      end
+    end
+    object LightSourcePanel7: TPanel
+      Left = 4
+      Top = 198
+      Width = 450
+      Height = 24
+      BevelOuter = bvNone
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'Arial'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 8
+      object Label10: TLabel
+        Left = 2
+        Top = 0
+        Width = 31
+        Height = 15
+        Caption = 'Label'
+      end
+      object TrackBar7: TTrackBar
+        Left = 260
+        Top = 0
+        Width = 89
+        Height = 20
+        Max = 10000
+        Min = -10000
+        TabOrder = 0
+        ThumbLength = 12
+        TickStyle = tsManual
+        OnChange = TrackBar7Change
+      end
+      object ValidatedEdit7: TValidatedEdit
+        Left = 348
+        Top = 0
+        Width = 66
+        Height = 23
+        OnKeyPress = ValidatedEdit7KeyPress
+        Text = ' 0 V'
+        Scale = 1.000000000000000000
+        Units = 'V'
+        NumberFormat = '%.4g'
+        LoLimit = -10.000000000000000000
+        HiLimit = 10.000000000000000000
+      end
+    end
   end
   object VStimGrp: TGroupBox
     Left = 0
-    Top = 213
+    Top = 273
     Width = 428
     Height = 110
     Align = alTop
     Caption = ' Voltage Stimulus Outputs  '
     TabOrder = 1
+    ExplicitTop = 213
     object VStimPanel0: TPanel
       Left = 4
       Top = 16
@@ -537,12 +634,13 @@ object DirectControlFrm: TDirectControlFrm
   end
   object DigStimGrp: TGroupBox
     Left = 0
-    Top = 327
+    Top = 387
     Width = 428
     Height = 218
     Align = alTop
     Caption = ' Digital Stimulus Outputs '
     TabOrder = 2
+    ExplicitTop = 327
     object DigStimPanel0: TPanel
       Left = 4
       Top = 16
@@ -826,12 +924,13 @@ object DirectControlFrm: TDirectControlFrm
   end
   object PhotoStimGrp: TGroupBox
     Left = 0
-    Top = 549
+    Top = 609
     Width = 428
     Height = 188
     Align = alTop
     Caption = 'Photo Stimulus Outputs '
     TabOrder = 3
+    ExplicitTop = 549
     object PhotoStimPanel0: TPanel
       Left = 4
       Top = 17
@@ -1100,12 +1199,14 @@ object DirectControlFrm: TDirectControlFrm
   end
   object CameraTriggerGrp: TGroupBox
     Left = 0
-    Top = 741
+    Top = 801
     Width = 428
-    Height = 77
+    Height = 17
     Align = alClient
     Caption = ' Camera Trigger Output '
     TabOrder = 4
+    ExplicitTop = 768
+    ExplicitHeight = 50
     object CameraTriggerPanel: TPanel
       Left = 4
       Top = 14

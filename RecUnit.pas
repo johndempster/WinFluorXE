@@ -157,6 +157,7 @@ unit RecUnit;
 // 05.09.14 exposure time no longer shortened by .EmissionFilterChangeTime when no
 //          emission filters in use. Was causing filter wavelength sequence to be shifted
 //          with non-zero exchange times.
+// 02.12.14 Set Laser Intensity button name changed to Set Light Intensity
 
 {$DEFINE USECONT}
 

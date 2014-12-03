@@ -33,6 +33,12 @@ unit LightSourceUnit;
 // 11.09.14 JD os_In_Slit_Bandwidth_To_Width and os_Out_Slit_Bandwidth_To_Width
 //             now includes Wavelength to fix crashes with 64 versions and Optoscan
 // 16.09.14 JD osLibrary.inc now incorporated in to this unit.
+// 23.10.14 JD LightSource.DeviceType now a property rather than public variable
+//             Allows default settings of Optoscan to be loaded by SetDeviceType
+// 02.12.14 JD LEDFilterNumToVoltage() No. LEDS no longer restricted to 4.
+//             lsMaxLasers increased from 3 to 8
+//             Light source intensities default to 50%
+
 interface
 
 uses
@@ -144,7 +150,7 @@ const
     lsTillWithLasers = 10 ;
     lsMaxVControl = 199 ;
 
-    lsMaxLasers = 3 ;
+    lsMaxLightSources = 8 ;
     lsMaxTIRFGalvos = 2 ;
 
 type
@@ -161,6 +167,7 @@ type
     procedure DataModuleCreate(Sender: TObject);
   private
     { Private declarations }
+    FDeviceType : Integer ;        // Light source device in use
     NumVControlInUse : Integer ;
     VControlInUse : Array[0..lsMaxVControl] of TLSVcontrol ;
     LastOptoscanBandwidth : Single ;
@@ -219,9 +226,12 @@ type
               var VControl : Array of TLSVControl ;    // Control voltages
               var NumVControl : Integer ) ;            // No. control channels
 
+    procedure SetDeviceType( Value : Integer ) ;
+
+
   public
     { Public declarations }
-    DeviceType : Integer ;        // Light source device in use
+
     Wavelength1 : Single ;
     Voltage1 : Single ;
     Wavelength2 : Single ;
@@ -235,12 +245,12 @@ type
     ShutterChangeTime : Single ;       // Shutter open/close change time (s)
 
     // User defined laser settings (for lsOptoScanWithLasers2)
-    LaserWavelength: Array[1..lsMaxLasers] of Single ;
-    LaserDelay: Array[1..lsMaxLasers] of Single ;
-    LaserOffVoltage: Array[1..lsMaxLasers] of Single ;
-    LaserOnVoltage: Array[1..lsMaxLasers] of Single ;
-    LaserIntensity: Array[1..lsMaxLasers] of Single ;
-    LaserAvailable: Array[1..lsMaxLasers] of Boolean ;
+    LaserWavelength: Array[0..lsMaxLightSources-1] of Single ;
+    LaserDelay: Array[0..lsMaxLightSources-1] of Single ;
+    LaserOffVoltage: Array[0..lsMaxLightSources-1] of Single ;
+    LaserOnVoltage: Array[0..lsMaxLightSources-1] of Single ;
+    LaserIntensity: Array[0..lsMaxLightSources-1] of Single ;
+    LaserAvailable: Array[0..lsMaxLightSources-1] of Boolean ;
 
     // TIRF angle galvo control voltages
     TIRFOff: Array[1..lsMaxTIRFGalvos] of Single ; // Off position
@@ -278,6 +288,8 @@ type
     function DACOutputsRequired : Boolean ;
     function ShutterClosedWavelengthRequired : Boolean ;
     function ShutterBlankingTime : Single ;
+
+    Property DeviceType : Integer read FDeviceType write SetDeviceType ;
 
   end;
 
@@ -317,7 +329,7 @@ function TLightSource.WavelengthChangeTime : Single ;
 // Time taken to change wavelength
 // -------------------------------
 begin
-    case DeviceType of
+    case FDeviceType of
         lsOptoScan1200,
         lsOptoScan1800,
         lsOptoScan2000,
@@ -342,7 +354,7 @@ function TLightSource.WavelengthMin : Single ;
 var
     MinWavelength : Double ;
 begin
-    case DeviceType of
+    case FDeviceType of
 
         lsOptoScan1200,lsOptoscanWithLasers : begin
             os_Set_Grating_Lines( 1200 ) ;
@@ -382,7 +394,7 @@ Function TLightSource.WavelengthMax : Single ;
 var
     MaxWavelength : Double ;
 begin
-    case DeviceType of
+    case FDeviceType of
 
         lsOptoScan1200 : begin
             os_Set_Grating_Lines( 1200 ) ;
@@ -426,7 +438,7 @@ function TLightSource.UserCalibrationRequired : Boolean ;
 // Returns TRUE if user calibration of light source required
 // ---------------------------------------------------------
 begin
-    case DeviceType of
+    case FDeviceType of
         lsTill : Result := True ;
         lsTillWithLasers : Result := True ;
         else Result := False ;
@@ -439,7 +451,7 @@ function TLightSource.LaserSettingsRequired : Boolean ;
 // Returns TRUE if used must supply laser settings
 // ------------------------------------------------
 begin
-    case DeviceType of
+    case FDeviceType of
         lsOptoscanWithLasers : Result := True ;
         lsTillWithLasers : Result := True ;
         else Result := False ;
@@ -452,7 +464,7 @@ function TLightSource.LEDSettingsRequired : Boolean ;
 // Returns TRUE if used must supply LED on/off voltages
 // ---------------------------------------------------------
 begin
-    case DeviceType of
+    case FDeviceType of
         lsLED : Result := True ;
         else Result := False ;
         end ;
@@ -464,7 +476,7 @@ function TLightSource.TIRFSettingsRequired : Boolean ;
 // Returns TRUE if used must TIRF galvo voltage settings
 // ---------------------------------------------------------
 begin
-    case DeviceType of
+    case FDeviceType of
         lsCairnTIRF : Result := True ;
         else Result := False ;
         end ;
@@ -476,7 +488,7 @@ function TLightSource.WavelengthControlRequired : Boolean ;
 // Returns TRUE if wavelength control line required by light source
 // ----------------------------------------------------------------
 begin
-    case DeviceType of
+    case FDeviceType of
         lsOptoScan1200,lsOptoScan1800,lsOptoScan2000 : Result := True ;
         lsOptoscanWithLasers : Result := True ;
         lsTill : Result := True ;
@@ -495,7 +507,7 @@ function TLightSource.ShutterControlRequired : Boolean ;
 // Returns TRUE if shutter control line required by light source
 // ----------------------------------------------------------------
 begin
-    case DeviceType of
+    case FDeviceType of
         lsOptoScan1200,lsOptoScan1800,lsOptoScan2000 : Result := false ;
         lsOptoscanWithLasers : Result := false ;
         lsTill : Result := false ;
@@ -513,7 +525,7 @@ function TLightSource.DACOutputsRequired : Boolean ;
 // Returns TRUE if DAC outputs required for controlling light source
 // ----------------------------------------------------------------
 begin
-    case DeviceType of
+    case FDeviceType of
         lsOptoScan1200,lsOptoScan1800,lsOptoScan2000 : Result := True ;
         lsOptoscanWithLasers : Result := True ;
         lsTill : Result := True ;
@@ -531,7 +543,7 @@ function TLightSource.ShutterClosedWavelengthRequired : Boolean ;
 // Returns TRUE if shutter closed wavelength supported by light source
 // ----------------------------------------------------------------
 begin
-    case DeviceType of
+    case FDeviceType of
         lsOptoScan1200,lsOptoScan1800,lsOptoScan2000 : Result := True ;
         lsOptoscanWithLasers : Result := True ;
         lsTill : Result := True ;
@@ -550,7 +562,7 @@ function TLightSource.ShutterBlankingTime : Single ;
 // Returns time to hold shutter closed at being of a frame
 // ----------------------------------------------------------------
 begin
-    case DeviceType of
+    case FDeviceType of
         lsOptoScan1200,lsOptoScan1800,lsOptoScan2000 : Result := 0.0 ;
         lsOptoscanWithLasers : Result := 0.0 ;
         lsTill : Result := 0.0 ;
@@ -586,7 +598,7 @@ begin
        Exit ;
        end ;
 
-    case DeviceType of
+    case FDeviceType of
         lsOptoScan1200,lsOptoScan1800,lsOptoScan2000 : begin
             OptoScanWavelengthToVoltage( Wavelength,
                                          BandWidth,
@@ -664,7 +676,7 @@ begin
        Exit ;
        end ;
 
-    case DeviceType of
+    case FDeviceType of
         lsOptoScan1200,lsOptoScan1800,lsOptoScan2000 : begin
             OptoScanWavelengthToVoltage( LightSource.ShutterClosedWavelength,
                                          0.0,
@@ -751,12 +763,8 @@ begin
                     LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
      NumVControl := Min(NumVControl,3) ;
 
-     FileName := MainFrm.ProgramDirectory + 'oslibrary.ini' ;
-     os_Load_Interface_Defaults( PANSIChar(FileName));
-     //os_Set_Handle(0) ;
-
      // Set lines/mm of grating
-     case DeviceType of
+     case FDeviceType of
           lsOptoScan1200 : begin
               NumLines := 1200 ;
               VOffset := 0.0 ;
@@ -850,6 +858,7 @@ begin
                             [VControl[0].Device,VControl[0].Chan]) ;
      end ;
 
+
 procedure TLightSource.TillWithLasersWavelengthToVoltage(
           Wavelength : Single ;
           var VControl : Array of TLSVControl ;  // Control voltages (out)
@@ -876,7 +885,7 @@ var
      LaserDAC : Integer ;
      i : Integer ;
      MonoWavelength,VScale,VMono : Double ;
-     LaserOn : Array[1..lsMaxLasers] of Boolean ;
+     LaserOn : Array[0..lsMaxLightSources-1] of Boolean ;
      iVControl : Integer ;
 begin
 
@@ -892,9 +901,9 @@ begin
      NumVControl := Min(NumVControl,4) ;
 
      // Set available lasers
-     for i := 1 to lsMaxLasers do begin
-         if i <= (NumVControl - NumVMono) then LaserAvailable[i] := True
-                                          else LaserAvailable[i] := False ;
+     for i := 0 to High(LaserAvailable) do begin
+         if i < (NumVControl - NumVMono) then LaserAvailable[i] := True
+                                         else LaserAvailable[i] := False ;
          end ;
 
      // Determine which lasers are on
@@ -904,17 +913,17 @@ begin
      // Laser 3 = 100000
 
      MonoWavelength := Wavelength ;
-     for i := 1 to High(LaserOn) do LaserOn[i] := False ;
+     for i := 0 to High(LaserOn) do LaserOn[i] := False ;
      if MonoWavelength >= Laser3Value then begin
-        LaserOn[3] := True ;
+        LaserOn[2] := True ;
         MonoWavelength := MonoWavelength - Laser3Value ;
         end ;
      if MonoWavelength >= Laser2Value then begin
-        LaserOn[2] := True ;
+        LaserOn[1] := True ;
         MonoWavelength := MonoWavelength - Laser2Value ;
         end ;
      if MonoWavelength >= Laser1Value then begin
-        LaserOn[1] := True ;
+        LaserOn[0] := True ;
         MonoWavelength := MonoWavelength - Laser1Value ;
         end ;
 
@@ -949,7 +958,7 @@ begin
     // Set laser control voltages
 
     LaserDAC := 0 ;
-    for i := 1 to lsMaxLasers do if (iVControl < NumVControl) then begin
+    for i := 0 to High(LaserOn) do if (iVControl < NumVControl) then begin
 
         // Laser delay
         VControl[iVControl].Delay := LaserDelay[i] ;
@@ -1026,10 +1035,16 @@ begin
      // No. of channels available to control light source
      NumVControl := LabIO.Resource[MainFrm.IOConfig.LSWavelengthEnd].StartChannel -
                       LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
-     NumVControl := Min(NumVControl,4) ;
+     //NumVControl := Min(NumVControl,4) ;
 
      if LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].ResourceType = DigOut then OutputType := 'DO'
                                                                                  else OutputType := 'AO' ;
+
+     // Set available light sources
+     for i := 0 to High(LaserAvailable) do begin
+         if i < NumVControl then LaserAvailable[i] := True
+                            else LaserAvailable[i] := False ;
+         end ;
 
      for i := 0 to NumVControl-1 do begin
          VControl[i].V := LEDOffVoltage ;
@@ -1040,7 +1055,9 @@ begin
                              [i+1,VControl[i].Device,OutputType,VControl[i].Chan]) ;
          end ;
 
-     if (FilterNum >= 0) and (FilterNum < NumVControl) then VControl[FilterNum].V := LEDMaxVoltage ;
+     if (FilterNum >= 0) and (FilterNum < NumVControl) then begin
+        VControl[FilterNum].V := (LEDMaxVoltage - LEDOffVoltage)*LaserIntensity[FilterNum]*0.01;
+        end;
 
      end;
 
@@ -1076,7 +1093,7 @@ var
      LaserDAC : Integer ;
      i : Integer ;
      OptoScanWavelength : Single ;
-     LaserOn : Array[1..lsMaxLasers] of Boolean ;
+     LaserOn : Array[0..lsMaxLightSources-1] of Boolean ;
      iVControl : Integer ;
 begin
 
@@ -1092,7 +1109,7 @@ begin
      NumVControl := Min(NumVControl,7) ;
 
      // Set all lasers available
-     for i := 1 to lsMaxLasers do begin
+     for i := 0 to High(LaserAvailable) do begin
          LaserAvailable[i] := True ;
          end ;
 
@@ -1107,23 +1124,23 @@ begin
      // Laser 3 = 100000
 
      OptoScanWavelength := Wavelength ;
-     for i := 1 to High(LaserOn) do LaserOn[i] := False ;
+     for i := 0 to High(LaserOn) do LaserOn[i] := False ;
      if OptoScanWavelength >= Laser3Value then begin
-        LaserOn[3] := True ;
+        LaserOn[2] := True ;
         OptoScanWavelength := OptoScanWavelength - Laser3Value ;
         end ;
      if OptoScanWavelength >= Laser2Value then begin
-        LaserOn[2] := True ;
+        LaserOn[1] := True ;
         OptoScanWavelength := OptoScanWavelength - Laser2Value ;
         end ;
      if OptoScanWavelength >= Laser1Value then begin
-        LaserOn[1] := True ;
+        LaserOn[0] := True ;
         OptoScanWavelength := OptoScanWavelength - Laser1Value ;
         end ;
 
      // If any lasers are on, set monochromator to off wavelength
      // and keep bandwidth same as before
-     if LaserOn[1] or LaserOn[2] or LaserOn[3] then begin
+     if LaserOn[0] or LaserOn[1] or LaserOn[2] then begin
         OptoScanWavelength := LightSource.ShutterClosedWavelength ;
         Bandwidth := LastOptoscanBandwidth ;
         end ;
@@ -1188,7 +1205,7 @@ begin
     // Set laser control voltages
 
     LaserDAC := 0 ;
-    for i := 1 to lsMaxLasers do if (iVControl < NumVControl) then begin
+    for i := 0 to High(LaserOn) do if (iVControl < NumVControl) then begin
 
         // Laser delay
         VControl[iVControl].Delay := LaserDelay[i] ;
@@ -1214,7 +1231,7 @@ begin
 
     if iVControl < NumVControl then begin
 
-       if LaserOn[1] then VControl[iVControl].V := 5.0
+       if LaserOn[0] then VControl[iVControl].V := 5.0
                      else VControl[iVControl].V := 0.0 ;
 
        VControl[iVControl].Chan := LabIO.Resource[MainFrm.IOConfig.LSLaserStart].StartChannel
@@ -1343,6 +1360,24 @@ begin
 
      end ;
 
+procedure TLightSource.SetDeviceType( Value : Integer ) ;
+// ----------------------------
+// Set light source device type
+// ----------------------------
+var
+    FileName : string ;
+begin
+    FDeviceType := Value ;
+    case FDeviceType of
+        lsOptoScan1200,lsOptoScan1800,lsOptoScan2000,lsOptoscanWithLasers : begin
+          // Load default settings
+          FileName := MainFrm.ProgramDirectory + 'oslibrary.ini' ;
+          os_Load_Interface_Defaults( PANSIChar(FileName));
+          end;
+        end ;
+
+   end;
+
 
 procedure TLightSource.DataModuleCreate(Sender: TObject);
 // --------------------------------------
@@ -1351,28 +1386,36 @@ procedure TLightSource.DataModuleCreate(Sender: TObject);
 var
     i : Integer ;
 begin
-     DeviceType := lsNone ;
+     FDeviceType := lsNone ;
      for i := 0 to High(VControlInUse) do VControlInUse[i].V := 0.0 ;
      LastOptoscanBandwidth := 0.0 ;
 
+     for i := 0 to High(LaserWavelength) do begin
+        LaserWavelength[i] := 1000.0 ;
+        LaserDelay[i] := 0.0 ;
+        LaserOffVoltage[i] := 0.0 ;
+        LaserOnVoltage[i] := 5.0 ;
+        LaserIntensity[i] := 50.0 ;
+        end;
+
      // Default laser settings
-     LaserWavelength[1] := 488.0 ;
+     LaserWavelength[0] := 488.0 ;
+     LaserDelay[0] := 4E-4 ;
+     LaserOffVoltage[0] := 0.0 ;
+     LaserOnVoltage[0] := 10.0 ;
+     LaserIntensity[0] := 50.0 ;
+
+     LaserWavelength[1] := 561.0 ;
      LaserDelay[1] := 4E-4 ;
      LaserOffVoltage[1] := 0.0 ;
      LaserOnVoltage[1] := 10.0 ;
-     LaserIntensity[1] := 0.0 ;
+     LaserIntensity[1] := 50.0 ;
 
      LaserWavelength[2] := 561.0 ;
      LaserDelay[2] := 4E-4 ;
      LaserOffVoltage[2] := 0.0 ;
      LaserOnVoltage[2] := 10.0 ;
-     LaserIntensity[2] := 0.0 ;
-
-     LaserWavelength[3] := 561.0 ;
-     LaserDelay[3] := 4E-4 ;
-     LaserOffVoltage[3] := 0.0 ;
-     LaserOnVoltage[3] := 10.0 ;
-     LaserIntensity[3] := 0.0 ;
+     LaserIntensity[2] := 50.0 ;
 
      LEDOffVoltage := 0.0 ;
      LEDMaxVoltage := 5.0 ;
