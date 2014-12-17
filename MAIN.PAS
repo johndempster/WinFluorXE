@@ -179,6 +179,7 @@ unit Main;
 //                    Support for Orca-100 with NI IMAQ interface
 // 03.12.14 V3.6.9 JD Up to 8 LEDs can now be supported using digital control lines
 //                    Intensity of LEDs controlled by analogue outputs can be set using Set Light Intensity dialog box
+// 17.12.14 V3.7.0 JD QCAMUnit ReadoutTime lower limit reduced from 20ms to 10ms in free run mode
 
 interface
 
@@ -757,7 +758,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.6.9 3-12-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.0 17-12-14 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
