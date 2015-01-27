@@ -33,6 +33,10 @@ unit SetupUnit;
 // 27.02.13 JD Emission filter control settings added to Light Source page
 // 22.07.14 JD Camera selection menu added (allows selection of camera when more than one available)
 // 20.08.14 JD Default readout speed set when camera type changed now obtained from Cam1.DefaultReadoutSpeed
+// 20.01.15 JD MainFrm.IOConfig.LSLaserStart/MainFrm.IOConfig.LSLaserEnd now set to None when
+//             laser not required
+// 23.01.15 JD DarkLevelLo and  DarkLeveHi added
+
 interface
 
 
@@ -276,6 +280,11 @@ type
     CameraPanel: TPanel;
     cbCameraNames: TComboBox;
     Label77: TLabel;
+    GroupBox18: TGroupBox;
+    edDarkLevelLo: TValidatedEdit;
+    Label78: TLabel;
+    Label79: TLabel;
+    edDarkLevelHi: TValidatedEdit;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure bOKClick(Sender: TObject);
@@ -449,6 +458,10 @@ begin
 
      edSplitImageUpper.Text := MainFrm.SplitImageName[0] ;
      edSplitImageLower.Text := MainFrm.SplitImageName[1] ;
+
+     // Camera dark level range (used in time lapse mode to detect images containing only dark level values)
+     edDarkLevelLo.Value := MainFrm.DarkLevelLo ;
+     edDarkLevelHi.Value := MainFrm.DarkLevelHi ;
 
      ClientWidth := TabPage.Left + TabPage.Width + 5 ;
      ClientHeight := bOk.Top + bOk.Height + 5 ;
@@ -627,6 +640,10 @@ begin
         cbLSWavelengthEnd.Items.IndexOfObject(TObject(MainFrm.IOConfig.LSWavelengthEnd))) ;
 
     // Laser start/end control lines
+    if not LightSource.LaserSettingsRequired then begin
+       MainFrm.IOConfig.LSLaserStart := 0 ;
+       MainFrm.IOConfig.LSLaserEnd := 0 ;
+       end;
     cbLSLaserStart.Items.Assign(cbLSWavelengthStart.Items) ;
     cbLSLaserEnd.Items.Assign(cbLSWavelengthStart.Items) ;
     cbLSLaserStart.ItemIndex := Max( 0,
@@ -1100,6 +1117,9 @@ begin
 
      MainFrm.SplitImageName[0] := edSplitImageUpper.Text ;
      MainFrm.SplitImageName[1] := edSplitImageLower.Text ;
+
+     MainFrm.DarkLevelLo := Round(edDarkLevelLo.Value) ;
+     MainFrm.DarkLevelHi := Round(edDarkLevelHi.Value) ;
 
      CheckSettings ;
 

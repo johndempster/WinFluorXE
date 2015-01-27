@@ -158,6 +158,11 @@ unit RecUnit;
 //          emission filters in use. Was causing filter wavelength sequence to be shifted
 //          with non-zero exchange times.
 // 02.12.14 Set Laser Intensity button name changed to Set Light Intensity
+// 22.01.15 Restart if camera stops sending frames
+// 26.01.15 Buffer overflow message written to log file
+//          Andor frame buffer increased to MaxBufferSize
+// 27.01.15 .IDR data file closed and re-opened after each time lapse frame
+//          to preserve file directory entry
 
 {$DEFINE USECONT}
 
@@ -450,6 +455,7 @@ type
     //LatestFramesDisplayed : Array[0..MaxFrameType] of Boolean ;
     MaxFramesPerCycle : Integer ;  // Max. no. of frames per D/A update cycle
     NumFramesPerCCD : Integer ;
+    CameraRestartRequired : Boolean ;    // Restart camera if TRUE
 
     // Image capture double buffer
     FirstFrameInLowerBuffer : Integer ;  // Start of lower half of buffer
@@ -464,7 +470,8 @@ type
     EmptyFlagsFirst : Integer ;            // First frame to have empty flag restored
     EmptyFlagsLast : Integer ;             // Last frame to have empty flag restored
     BufferOverFlowMessage : String ;       // Buffer overflow warning message
-
+    TNoFrames : Single ;                   // Time with no frames from camera (s)
+    TimeLapsePreserveFile : Boolean ;      // TRUE = close/open IDR file to preserve directory settings
     EDRFilePointer : Int64 ;               // EDR file pointer
 
     NumFramesDone : Integer ;              // No. of frames recorded so far in this rec. session
@@ -543,6 +550,7 @@ type
 
     TStart : Cardinal ;
     FrameRateCounter : Integer ;
+    TimerTickCount : Cardinal ;
 
     CaptureRegion : TRect ;
     FXOld : Integer ;
@@ -647,6 +655,9 @@ type
             Y : Integer ) ;
   function ExcitationOn( iFrame : Integer ) : boolean ;
 
+  function AreImagesDark(
+           pBuf : Pointer ;
+           NumPixels : Integer ) : Boolean ;
 
   public
     { Public declarations }
@@ -659,10 +670,11 @@ type
     PFrameBuf : Pointer ;                     // Pointer to circular image capture buffer
     PDisplayBufs : Array[0..MaxFrameType] of PIntArray ; // Pointer to displayed image buffers
     FrameTypeCounter : Array[0..MaxFrameType] of Integer ;  // Frames acquired counter
+
     PWorkBuf : Pointer ;                      // Pointer to work buffer
     SelectedFrameType : Integer ;                        // Frame selected by user
     NumFramesInBuffer : Integer ;             // No. of frames in circular capture buffer
-    NumPixelsPerFrame : Integer ;             // No. of pixels in image frame
+    NumPixelsPerFrame : Integer ;             // No. of pixels per frame
     NumBytesPerPixel : Integer ;              // No. of bytes per image pixel
     ByteImage : Boolean ;                     // TRUE = 1 byte/pixel image
 
@@ -772,6 +784,7 @@ var
      s : string ;
 begin
 
+     CameraRestartRequired := False ;
      NumCloseClicks := 0 ;
      FirstResize := True ;
      FormResizeCounter := 1 ;
@@ -1227,8 +1240,12 @@ begin
 
    TStart := TimeGetTime ;
    FrameRateCounter := 0 ;
+   TimeLapseFrameCounter := 0 ;
+   TNoFrames := 0.0 ;
+   TimeLapsePreserveFile := False ;
 
    Timer.Enabled := True ;
+   TimerTickCount := 0 ;
 
    // Report minimum readout time
    lbReadoutTime.Caption := format('Min.= %.3g ms',
@@ -1237,15 +1254,14 @@ begin
    // Initialise frames counters
    for i := 0 to NumFrameTypes-1 do begin
        FrameTypeCounter[i] := 0 ;
-       //FrameDisplayed[i] := -1 ;
        LatestFrames[i] := -1 ;             // Index into frame buffer
-//       LatestFramesDisplayed[i] := True ; // Mark all as displayed
        LatestROIValue[i] := 0 ;
        end ;
    FrameTypeToBeDisplayed := 0 ;
 
    MainFrm.StatusBar.SimpleText := 'Camera started ' ;
 
+   CameraRestartRequired := False ;
    CameraRunning := True ;
    ReplaceEmptyFlags := False ;
    BufferOverFlowMessage := '' ;
@@ -1469,7 +1485,9 @@ begin
           end ;
 
         Andor : begin
-           NumFramesInBuffer :=  (20000000 div MainFrm.Cam1.NumBytesPerFrame)-1 ;
+           NumFramesInBuffer := Max(Round(5.0/edFrameInterval.Value),8) ;
+           NumFramesInBuffer := Min( NumFramesInBuffer,
+                                     MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
            FrameBufferMultiple := 2 ;
            end ;
 
@@ -1503,7 +1521,6 @@ begin
            end ;
 
         IMAQDX : begin
-//           NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
            NumFramesInBuffer := Round(5.0/edFrameInterval.Value) ;
            NumFramesInBuffer := Min( NumFramesInBuffer,
                                      MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
@@ -1524,6 +1541,7 @@ begin
         Thorlabs : begin
            NumFramesInBuffer := Min( (Round(5.0/edFrameInterval.Value) div 2)*2,
                                       (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
+           FrameBufferMultiple := 2 ;
            end ;
 
 
@@ -3284,6 +3302,18 @@ begin
        TimerProcBusy := False ;
        end ;
 
+    // Restart camera
+    if CameraRestartRequired then begin
+       // Close and re-open file to make directory entry permanent
+       RestartCamera ;
+       TimerProcBusy := False ;
+       LowerBufferFilling := True ;
+       MainFrm.IDRFile.NumFrames := MainFrm.IDRFile.NumFrames
+                                    - (MainFrm.IDRFile.NumFrames mod Max(FrameTypeCycleLength,1)) ;
+       LogFrm.AddLine( format('Restart at %d',[MainFrm.IDRFile.NumFrames]));
+       Exit ;
+       end;
+
     // Calculate and display frame acquisition rate
     TimeLast := TimeNow ;
     TimeNow := TimeGetTime ;
@@ -3458,14 +3488,14 @@ begin
               RecordingStatus := RecordingStatus + 'Recording: ' ;
               if TimeLapseMode then  RecordingStatus := RecordingStatus + '[Time lapse] ' ;
 
-              RecordingStatus := RecordingStatus + format( 'Frames %5d/%5d (%8.2fs) %s',
+              RecordingStatus := RecordingStatus + format( 'Frames %5d/%5d (%.2fs) %s',
                                                   [NumFramesDone,
                                                    NumFramesRequired,
                                                    NumFramesDone*MainFrm.IDRFile.FrameInterval,
                                                    BufferOverFlowMessage]) ;
 
               if cbRecordingMode.ItemIndex = rmTimeLapseBurst then
-                 RecordingStatus := RecordingStatus + format('Burst at %.4gs: ',[StartBurstAtFrame*IDRFileBurst.FrameInterval]) + BurstFileName ;
+                 RecordingStatus := RecordingStatus + format('Burst at %.2fs: ',[StartBurstAtFrame*IDRFileBurst.FrameInterval]) + BurstFileName ;
 
               end ;
 
@@ -3480,11 +3510,9 @@ begin
            RecordingStatus :=RecordingStatus + StimulusStatus ;
            RecordingStatus :=RecordingStatus ;
            if RecordingMode = rmRecordingInProgress then  RecordingStatus :=RecordingStatus + DebugMessage ;
-           MainFrm.StatusBar.SimpleText := RecordingStatus ;
 
-//           if not CameraRunning then begin
-//              MainFrm.StatusBar.SimpleText := ' Camera Initialised' ;
-//              end ;
+           if (TimerTickCount mod 2) = 0 then MainFrm.StatusBar.SimpleText := RecordingStatus ;
+           Inc(TimerTickCount) ;
 
            // Display frame
            if (cbRecordingMode.ItemIndex = rmContinuous) or
@@ -3496,7 +3524,6 @@ begin
                                BitMaps[FrameTypeToBeDisplayed],
                                Images[FrameTypeToBeDisplayed] ) ;
                  LatestFrames[FrameTypeToBeDisplayed] := -1 ;
-//                 LatestFramesDisplayed[FrameTypeToBeDisplayed] := True ;
                  Inc(FrameTypeToBeDisplayed) ;
                  Dec(OptimiseContrastCount) ;
                  if FrameTypeToBeDisplayed >= NumFrameTypes then FrameTypeToBeDisplayed := 0 ;
@@ -3506,9 +3533,13 @@ begin
               RecPlotFrm.FLUpdateDisplay( rbSpectrum.Checked ) ;
 
               end ;
-
+           TNoFrames := 0.0 ;
+           end
+        else begin
+           // If camera has stopped supplying frames, restart camera
+           TNoFrames := TNoFrames + Timer.Interval*0.001 ;
+           if TNoFrames > (MainFrm.Cam1.FrameInterval*NumFramesInBuffer*0.5) then CameraRestartRequired := True ;
            end ;
-
 
         // Restore empty frame flags / write to file
         // -----------------------------------------
@@ -3531,7 +3562,10 @@ begin
            // If buffer being written to disk has not had empty flags reset do it now
            if ReplaceEmptyFlags then begin
               FillBufferWithEmptyFlags( EmptyFlagsFirst, EmptyFlagsLast ) ;
-              BufferOverFlowMessage := ' [BUFFER OVERFLOW!]'
+              if BufferOverFlowMessage = '' then begin
+                 BufferOverFlowMessage := ' [BUFFER OVERFLOW!]' ;
+                 LogFrm.AddLine(BufferOverFlowMessage);
+                 end;
               end;
 
            EmptyFlagsFirst := FirstFrame ;
@@ -3594,7 +3628,7 @@ begin
                                                  NumFramesInHalfBuffer ) ;
 
                        IDRFileBurst.Ident := MainFrm.IDRFile.Ident +
-                                             format('Burst T=%.5gs Frame=%d ',[StartBurstAtFrame*IDRFileBurst.FrameInterval,StartBurstAtFrame]);
+                                             format('Burst T=%.2fs Frame=%d ',[StartBurstAtFrame*IDRFileBurst.FrameInterval,StartBurstAtFrame]);
                        LogFrm.AddLine( MainFrm.IDRFile.Ident + BurstFileName ) ;
                        BurstIlluminationOn := False ;
                        UpdateLightSource ;
@@ -3640,7 +3674,19 @@ begin
                                                      PTimeLapseBuf) ;
                     NumFramesDone :=  NumFramesDone + NumFramesToSave ;
                     if NumFramesDone >= NumFramesRequired then RecordingMode := rmStopFrameRecording ;
-                    end ;
+
+                    // Restart camera if time lapse images are all at dark level
+                    CameraRestartRequired := AreImagesDark( PTimeLapseBuf, NumFramesToSave*NumPixelsPerFrame) ;
+                    TimeLapsePreserveFile := True ;
+                    end
+                 else if (MainFrm.TimeLapseInterval > 2.0) and
+                      (not MainFrm.IDRFile.AsyncWriteInProgress) and TimeLapsePreserveFile then begin
+                       // Close and re-open file to make directory entry permanent (for intervals > 2s)
+                       MainFrm.IDRFile.CloseFile ;
+                       MainFrm.IDRFile.OpenFile( MainFrm.IDRFile.FileName ) ;
+                       if not MainFrm.IDRFile.WriteEnabled then MainFrm.IDRFile.WriteEnabled := True ;
+                       TimeLapsePreserveFile := False ;
+                       end;
 
                  RecPlotFrm.FLUpdateDisplay( rbSpectrum.Checked );
 
@@ -3649,7 +3695,6 @@ begin
               // Stop recording if flag set
               if RecordingMode = rmStopFrameRecording then begin
                  RecordingMode := rmStopADCRecording ;
-                 //if not ADCRunning then StopRecording ;
                  end ;
 
               end ;
@@ -3717,6 +3762,39 @@ begin
      TimerProcBusy := False ;
 
      end;
+
+function TRecordFrm.AreImagesDark(
+          pBuf : Pointer ;
+          NumPixels : Integer ) : Boolean ;
+// ------------------------------------------------------------------------
+// Return TRUE if all pixels within image buffer are a dark level of camera
+// (dark level defined by DarkLevelLo and DarkLevelHi limits)
+// ------------------------------------------------------------------------
+var
+    i,Y,YMax,YMin : Integer ;
+begin
+
+     YMax := -1 ;
+     YMin := MainFrm.Cam1.GreyLevelMax ;
+     if MainFrm.Cam1.NumBytesPerPixel > 1 then begin
+        for i := 0 to NumPixels-1 do begin
+            y := PWordArray(pBuf)^[i] ;
+            if Y > YMax then YMax := Y ;
+            if Y < YMin then YMin := Y ;
+            end ;
+        end
+     else begin
+        for i := 0 to NumPixels-1 do begin
+            y := PByteArray(pBuf)^[i] ;
+            if Y > YMax then YMax := Y ;
+            if Y < YMin then YMin := Y ;
+            end ;
+        end;
+
+    if (YMin >= MainFrm.DarkLevelLo) and (YMax <= MainFrm.DarkLevelHi ) then Result := True
+                                                                        else Result := False ;
+
+    end;
 
 
 procedure TRecordFrm.ReadROI(
@@ -4412,7 +4490,6 @@ begin
      MainFrm.IDRFile.FrameHeight := FrameHeight ;
      MainFrm.IDRFile.PixelDepth := MainFrm.Cam1.PixelDepth ;
 
-
      // (Ensure that additions to file starts on a multiple of frame types in file)
      MainFrm.IDRFile.NumFrames := MainFrm.IDRFile.NumFrames
                                   - (MainFrm.IDRFile.NumFrames mod Max(FrameTypeCycleLength,1)) ;
@@ -4496,7 +4573,7 @@ begin
 
         TimeLapseMode := True ;
         LogFrm.AddLine( format(
-        'Record: Time-lapse Recording started at frame %d (%d frames@%.4gs intervals, %.4gs)',
+        'Record: Time-lapse Recording started at frame %d (%d frames@%.4gs intervals, %.2fs)',
                      [MainFrm.IDRFile.NumFrames+1,
                       NumFramesRequired,
                       MainFrm.IDRFile.FrameInterval,
@@ -4516,7 +4593,7 @@ begin
            NumBurstFramesRequired := NumFramesPerCCD*Max(Round(edBurstDuration.Value/MainFrm.Cam1.FrameInterval),NumFrameTypes) ;
            StartBurstAtFrame := NumFramesPerCCD*Max(Round(edBurstInterval.Value/MainFrm.Cam1.FrameInterval),1) ;
            IDRFileBurst.Ident := MainFrm.IDRFile.Ident +
-                                 format('Burst T=%.5gs Frame=%d',[StartBurstAtFrame*IDRFileBurst.FrameInterval,StartBurstAtFrame]);
+                                 format('Burst T=%.2fs Frame=%d',[StartBurstAtFrame*IDRFileBurst.FrameInterval,StartBurstAtFrame]);
            LogFrm.AddLine( IDRFileBurst.Ident + BurstFileName ) ;
            end
         else BurstFileName := '' ;
@@ -4679,7 +4756,6 @@ begin
      // Close and re-open file to make directory entry permanent
      MainFrm.IDRFile.CloseFile ;
      MainFrm.IDRFile.OpenFile( MainFrm.IDRFile.FileName ) ;
-
 
      IDRFileBurst.CloseFile ;
      // Delete file if empty
@@ -5467,7 +5543,7 @@ begin
      MainFrm.IDRFile.AddMarker( MarkerTime, MarkerText ) ;
      RecPlotFrm.AddMarker( MarkerText );
 
-     LogFrm.AddLine( format('Marker at %.4gs %s',[MarkerTime, MarkerText]));
+     LogFrm.AddLine( format('Marker at %.2fs %s',[MarkerTime, MarkerText]));
 
      end;
 
@@ -6378,8 +6454,6 @@ begin
         PhotoStimulusRequired := True ;
         // Camera re-start needed
         RestartCamera ;
-//        StopCamera ;
-//        StartCamera ;
         end ;
      end;
 
@@ -6440,8 +6514,6 @@ begin
       MainFrm.SplitImage := ckSplitCCDImage.Checked ;
       OptimiseContrastCount := NumFrameTypes ;
       RestartCamera ;
-//      StopCamera ;
-//      StartCamera ;
       end;
 
 

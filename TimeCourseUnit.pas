@@ -237,6 +237,7 @@ begin
 
      plPlot.ShowMarkers := False ;
      plPlot.ShowLines := True ;
+     plPlot.ShowLineLabels := True ;
 
      ClientHeight := ControlsGrp.Top + ControlsGrp.Height + 5 ;
 
@@ -336,7 +337,8 @@ begin
      Col := ColorSequence[plPlot.NumLinesInPlot[plPlot.PlotNum]] ;
      LineNum := plPlot.CreateLine( Col,
                                    msOpenSquare,
-                                   psSolid ) ;
+                                   psSolid,
+                                   cbSource.Items.Strings[cbSource.ItemIndex]) ;
      LineColors[LineNum] := Col ;
 
      { Plot graph of currently selected variables }
@@ -357,13 +359,11 @@ begin
         if MainFrm.IDRFile.LineScan then begin
            PlotLineScanIntensity( StartAtFrame,
                                   EndAtFrame,
-//                                  PlotNum,
                                   LineNum ) ;
            end
         else begin
            PlotROIIntensity( StartAtFrame,
                              EndAtFrame,
-//                             PlotNum,
                              LineNum ) ;
            end ;
         end
@@ -371,7 +371,6 @@ begin
         // Plot analogue signal channel
         PlotADCChannel( StartAtFrame,
                         EndAtFrame,
-//                        PlotNum,
                         LineNum ) ;
         end ;
 
@@ -400,7 +399,6 @@ begin
 procedure TTimeCourseFrm.PlotROIIntensity(
           StartAtFrame : Integer ;       // Start at frame #
           EndAtFrame : Integer ;         // End at frame #
-//          PlotNum : Integer ;            // Plot on plot #
           LineNum : Integer              // Plot as line #
           ) ;
 // -------------------------------------------------------------
@@ -1270,6 +1268,8 @@ begin
 
      // Only use for image files
      if MainFrm.IDRFile.LineScan then Exit ;
+
+
 
       // Prevent plotting if time course is being calculated
       for i := 0 to MainFrm.MDIChildCount-1 do

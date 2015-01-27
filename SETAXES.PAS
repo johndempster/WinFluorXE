@@ -4,13 +4,16 @@ unit Setaxes;
   -------------------------------------------------------------------
   15/12/98 ... Now include histogram style options
   22.5.02 .... Modified for use in WinImage
-  5/4/05 ..... Axes auto/manual options now set correctly when form displayed}
+  5/4/05 ..... Axes auto/manual options now set correctly when form displayed
+  27/1/15 .... Show Line Labels check box added
+  }
+
 
 interface
 
 uses WinTypes, WinProcs, Classes, Graphics, Forms, Controls, Buttons,
   StdCtrls, Spin, sysutils, shared, ExtCtrls, Dialogs,
-  ValEdit, XMultiYPlot, ValidatedEdit ;
+  ValEdit, XMultiYPlot, ValidatedEdit, UITYpes ;
 
 type
   TSetAxesFrm = class(TForm)
@@ -53,6 +56,7 @@ type
     ckMarkers: TCheckBox;
     ckLines: TCheckBox;
     bUpdateAll: TButton;
+    ckShowLineLabels: TCheckBox;
     procedure bUpdateClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure rbXAutoRangeClick(Sender: TObject);
@@ -156,6 +160,7 @@ begin
 
           ckLines.checked := ShowLines ;
           ckMarkers.checked := ShowMarkers ;
+          ckShowLineLabels.Checked := ShowLineLabels ;
 
           cbFillStyle.ItemIndex := cbFillStyle.Items.IndexOfObject(
                                    TObject(HistogramFillStyle)) ;
@@ -199,6 +204,7 @@ begin
 
           ShowLines := ckLines.checked ;
           ShowMarkers := ckMarkers.checked ;
+          ShowLineLabels := ckShowLineLabels.Checked ;
 
           HistogramFillStyle := TBrushStyle(
                                 cbFillStyle.Items.Objects[cbFillStyle.ItemIndex]) ;

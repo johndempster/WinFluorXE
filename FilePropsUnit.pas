@@ -6,6 +6,7 @@ unit FilePropsUnit;
 // 02-03-06 No. bytes in file header added to properties
 // 13-07-10 File header text added to properties
 // 30.01.13 Z stack properties added
+// 19.01.15 File creation time displayed
 
 interface
 
@@ -100,10 +101,13 @@ begin
      meProperties.Clear ;
      meProperties.lines.Add( 'File name: ' + MainFrm.IDRFile.FileName ) ;
 
-     meProperties.lines.Add( format('Created (dd/mm/yyyy): %d/%d/%d',
+     meProperties.lines.Add( format('Created (dd/mm/yyyy hh:mm:ss): %d/%d/%d %d:%d:%d',
                              [ MainFrm.IDRFile.Day,
                                MainFrm.IDRFile.Month,
-                               MainFrm.IDRFile.Year ])) ;
+                               MainFrm.IDRFile.Year,
+                               MainFrm.IDRFile.Hour,
+                               MainFrm.IDRFile.Minute,
+                               MainFrm.IDRFile.Second ])) ;
 
      meProperties.lines.Add( MainFrm.IDRFile.Ident ) ;
 

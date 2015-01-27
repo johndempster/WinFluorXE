@@ -63,7 +63,7 @@ unit FileIOUnit;
 // 23.10.14 ......... LightSource.DeviceType now a property rather than public variable
 // 02.12.14 ......... LightSource.LaserWavelength etc. now supports 8 light sources 0..7
 //                    Keywords numbers 1..8 (LSLAS1WAV= .. LSLAS8WAV=
-
+// 23.01.14 ......... DARKLEVLO= and DARKLEVHI= added.
 interface
 
 uses
@@ -534,6 +534,10 @@ begin
      AppendLogical( Header, 'ARI=', MainFrm.AutoResetInterfaceCards ) ;
 
      AppendLogical( Header, 'STARTSTIMONREC=', MainFrm.StartStimOnRecord ) ;
+
+     // Camera dark level detection range
+     AppendInt( Header, 'DARKLEVLO=',MainFrm.DarkLevelLo ) ;
+     AppendInt( Header, 'DARKLEVHI=',MainFrm.DarkLevelHi ) ;
 
      // Save Z Stage control settings
      ZStage.SaveSettings( Header ) ;
@@ -1037,6 +1041,10 @@ begin
      ReadLogical( Header, 'ARI=', MainFrm.AutoResetInterfaceCards ) ;
 
      ReadLogical( Header, 'STARTSTIMONREC=', MainFrm.StartStimOnRecord ) ;
+
+     // Camera dark level detection range
+     ReadInt( Header, 'DARKLEVLO=',MainFrm.DarkLevelLo ) ;
+     ReadInt( Header, 'DARKLEVHI=',MainFrm.DarkLevelHi ) ;
 
      // Read Z Stage control settings
      ZStage.ReadSettings( Header ) ;

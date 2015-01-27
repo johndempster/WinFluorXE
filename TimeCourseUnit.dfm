@@ -2,7 +2,7 @@ object TimeCourseFrm: TTimeCourseFrm
   Left = 548
   Top = 61
   Caption = 'Time Course Analysis'
-  ClientHeight = 617
+  ClientHeight = 652
   ClientWidth = 580
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -65,11 +65,11 @@ object TimeCourseFrm: TTimeCourseFrm
     Left = 8
     Top = 4
     Width = 188
-    Height = 605
+    Height = 629
     TabOrder = 0
     object RangeGrp: TGroupBox
       Left = 8
-      Top = 488
+      Top = 512
       Width = 168
       Height = 65
       Caption = ' Plot Range '
@@ -127,7 +127,7 @@ object TimeCourseFrm: TTimeCourseFrm
       Left = 8
       Top = 8
       Width = 168
-      Height = 473
+      Height = 498
       Caption = ' ROI / Channel '
       TabOrder = 1
       object Label1: TLabel
@@ -175,7 +175,7 @@ object TimeCourseFrm: TTimeCourseFrm
         Left = 8
         Top = 316
         Width = 153
-        Height = 145
+        Height = 165
         TabOrder = 3
         object Shape1: TShape
           Left = 8
@@ -312,10 +312,6 @@ object TimeCourseFrm: TTimeCourseFrm
           object FTab: TTabSheet
             Caption = 'Fluor'
             TabVisible = False
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label3: TLabel
               Left = 5
               Top = 2
@@ -338,10 +334,6 @@ object TimeCourseFrm: TTimeCourseFrm
             Caption = 'F/F0'
             ImageIndex = 1
             TabVisible = False
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label6: TLabel
               Left = 5
               Top = 2
@@ -487,10 +479,6 @@ object TimeCourseFrm: TTimeCourseFrm
             ImageIndex = 2
             ParentFont = False
             TabVisible = False
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Shape2: TShape
               Left = 56
               Top = 27
@@ -639,9 +627,9 @@ object TimeCourseFrm: TTimeCourseFrm
     end
     object TUnitsGrp: TGroupBox
       Left = 8
-      Top = 556
+      Top = 580
       Width = 168
-      Height = 35
+      Height = 37
       Caption = ' Time Units '
       TabOrder = 2
       object rbSeconds: TRadioButton

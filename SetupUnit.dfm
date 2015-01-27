@@ -3,7 +3,7 @@ object SetupFrm: TSetupFrm
   Top = 114
   BorderStyle = bsDialog
   Caption = 'Camera/System Setup'
-  ClientHeight = 572
+  ClientHeight = 600
   ClientWidth = 485
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -21,7 +21,7 @@ object SetupFrm: TSetupFrm
   TextHeight = 14
   object bOK: TButton
     Left = 8
-    Top = 543
+    Top = 567
     Width = 49
     Height = 24
     Caption = 'OK'
@@ -37,7 +37,7 @@ object SetupFrm: TSetupFrm
   end
   object bCancel: TButton
     Left = 64
-    Top = 543
+    Top = 567
     Width = 49
     Height = 17
     Caption = 'Cancel'
@@ -53,7 +53,7 @@ object SetupFrm: TSetupFrm
   end
   object CardGrp: TGroupBox
     Left = 8
-    Top = 440
+    Top = 464
     Width = 473
     Height = 97
     Caption = ' Interface Cards '
@@ -128,16 +128,17 @@ object SetupFrm: TSetupFrm
     Left = 8
     Top = 8
     Width = 473
-    Height = 425
+    Height = 450
     ActivePage = CameraTab
     TabOrder = 3
     object CameraTab: TTabSheet
       Caption = 'Camera'
+      ExplicitHeight = 396
       object GroupBox4: TGroupBox
         Left = 8
         Top = 0
         Width = 225
-        Height = 393
+        Height = 409
         Caption = ' Camera '
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
@@ -147,9 +148,9 @@ object SetupFrm: TSetupFrm
         ParentFont = False
         TabOrder = 0
         object Label41: TLabel
-          Left = 39
-          Top = 364
-          Width = 90
+          Left = 10
+          Top = 380
+          Width = 122
           Height = 14
           Alignment = taRightJustify
           Caption = 'Tempr. Set Point'
@@ -244,7 +245,7 @@ object SetupFrm: TSetupFrm
         end
         object edTemperatureSetPoint: TValidatedEdit
           Left = 136
-          Top = 364
+          Top = 380
           Width = 81
           Height = 20
           AutoSize = False
@@ -609,7 +610,7 @@ object SetupFrm: TSetupFrm
           Left = 45
           Top = 18
           Width = 60
-          Height = 22
+          Height = 20
           Hint = 
             'Label of upper half of camera image when split image mode select' +
             'ed'
@@ -622,7 +623,7 @@ object SetupFrm: TSetupFrm
           Left = 157
           Top = 18
           Width = 60
-          Height = 22
+          Height = 20
           Hint = 
             'Label of lower half of camera image when split image mode select' +
             'ed'
@@ -632,10 +633,71 @@ object SetupFrm: TSetupFrm
           Text = 'B'
         end
       end
+      object GroupBox18: TGroupBox
+        Left = 240
+        Top = 352
+        Width = 225
+        Height = 57
+        Caption = ' Camera Dark Level Range'
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 4
+        object Label78: TLabel
+          Left = 8
+          Top = 16
+          Width = 36
+          Height = 14
+          Alignment = taRightJustify
+          Caption = 'Lower'
+        end
+        object Label79: TLabel
+          Left = 120
+          Top = 16
+          Width = 33
+          Height = 14
+          Alignment = taRightJustify
+          Caption = 'Upper'
+        end
+        object edDarkLevelLo: TValidatedEdit
+          Left = 50
+          Top = 16
+          Width = 60
+          Height = 20
+          Hint = 'Lower limit of camera dark level range (grey levels)'
+          ParentCustomHint = False
+          AutoSize = False
+          ShowHint = True
+          Text = ' -1 '
+          Value = -1.000000000000000000
+          Scale = 1.000000000000000000
+          NumberFormat = '%.0f'
+          LoLimit = -1.000000000000000000
+          HiLimit = 65000.000000000000000000
+        end
+        object edDarkLevelHi: TValidatedEdit
+          Left = 157
+          Top = 16
+          Width = 60
+          Height = 20
+          Hint = 'Upper limit of camera dark level range (grey levels)'
+          AutoSize = False
+          Text = ' -1 '
+          Value = -1.000000000000000000
+          Scale = 1.000000000000000000
+          NumberFormat = '%.0f'
+          LoLimit = -1.000000000000000000
+          HiLimit = 65000.000000000000000000
+        end
+      end
     end
     object LightSourceTab: TTabSheet
       Caption = 'Light Source'
       ImageIndex = 1
+      ExplicitHeight = 396
       object LightSourceGrp: TGroupBox
         Left = 8
         Top = 0
@@ -1747,6 +1809,7 @@ object SetupFrm: TSetupFrm
     object TabSheet1: TTabSheet
       Caption = 'Stimulus Outputs'
       ImageIndex = 2
+      ExplicitHeight = 396
       object GroupBox11: TGroupBox
         Left = 8
         Top = 0
@@ -2150,6 +2213,7 @@ object SetupFrm: TSetupFrm
     object AnalogInputTab: TTabSheet
       Caption = 'Analog Inputs && Timing'
       ImageIndex = 3
+      ExplicitHeight = 396
       object ADCGrp: TGroupBox
         Left = 8
         Top = 0
@@ -2273,6 +2337,7 @@ object SetupFrm: TSetupFrm
     object ZStageTab: TTabSheet
       Caption = 'Z Stage'
       ImageIndex = 4
+      ExplicitHeight = 396
       object GroupBox13: TGroupBox
         Left = 3
         Top = 0

@@ -39,6 +39,7 @@ unit SnapUnit;
 // 20.06.14 Buffer no filled with empty flags after StartCapture to ensure buffer is filled with flags
 // 09.07.14 Calibration bar now sized correctly from Cam1.PixelWidth
 // 02.12.14 Set Laser Intensity button name changed to Set Light Intensity
+// 26.12.15 Andor frame buffer increased to MaxBufferSize
 
 interface
 
@@ -732,9 +733,11 @@ begin
           end ;
 
         Andor : begin
-           NumFramesInBuffer :=  (20000000 div
-                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
-           if NumFramesInBuffer > 36 then NumFramesInBuffer := 36 ;
+//           NumFramesInBuffer :=  (50000000 div
+//                                        (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1 ;
+//           if NumFramesInBuffer > 36 then NumFramesInBuffer := 36 ;
+           NumFramesInBuffer := Min( (Round(8.0/edFrameInterval.Value) div 2)*2,
+                                      (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
            end ;
 
         AndorSDK3 : begin

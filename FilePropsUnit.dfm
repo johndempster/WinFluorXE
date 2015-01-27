@@ -1,9 +1,9 @@
 object FilePropsFrm: TFilePropsFrm
   Left = 342
   Top = 154
-  Width = 452
-  Height = 523
   Caption = 'File Properties'
+  ClientHeight = 496
+  ClientWidth = 444
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -28,6 +28,10 @@ object FilePropsFrm: TFilePropsFrm
     TabOrder = 0
     object PropTab: TTabSheet
       Caption = 'Properties'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object meProperties: TMemo
         Left = 8
         Top = 8
@@ -149,6 +153,10 @@ object FilePropsFrm: TFilePropsFrm
     object ADCTab: TTabSheet
       Caption = 'Analogue Channels'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object ChannelsGrp: TGroupBox
         Left = 8
         Top = 0
@@ -235,6 +243,10 @@ object FilePropsFrm: TFilePropsFrm
     object MarkerTab: TTabSheet
       Caption = 'Markers'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object MarkersGrp: TGroupBox
         Left = 8
         Top = 8
@@ -292,6 +304,10 @@ object FilePropsFrm: TFilePropsFrm
     object FrameTypesTab: TTabSheet
       Caption = 'Frame Types'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object FrameTypesGrp: TGroupBox
         Left = 8
         Top = 8

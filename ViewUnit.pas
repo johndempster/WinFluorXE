@@ -73,6 +73,7 @@ unit ViewUnit;
 // 29.05.14 JD FileHandle now THandle rather than Integer
 // 13.06.14 JD Error in horizontal display scroll position with display zooms <100% fixed
 // 17.06.14 12.5% display zoom added
+// 19.01.15 Frame time now has 3 fixed decimal places
 
 interface
 
@@ -861,7 +862,7 @@ begin
 
         // Time of acquisition
         FrameTime := (CurrentPosition + (NumFrameTypes-1) )*MainFrm.IDRFile.FrameInterval ;
-        edFrameTime.Text := format( ' %.5g %s',[FrameTime*MainFrm.TScale,MainFrm.TUnits]) ;
+        edFrameTime.Text := format( ' %.3f %s',[FrameTime*MainFrm.TScale,MainFrm.TUnits]) ;
 
         for iFrameType := 0 to NumFrameTypes - 1 do begin
 

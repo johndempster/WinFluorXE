@@ -182,7 +182,7 @@ object ViewPlotFrm: TViewPlotFrm
       Value = 1.000198006629944000
       Scale = 0.016666699200868610
       Units = 'min'
-      NumberFormat = '%.5g'
+      NumberFormat = '%.6g'
       LoLimit = 1.000000000000000000
       HiLimit = 20000.000000000000000000
     end

@@ -180,6 +180,9 @@ unit Main;
 // 03.12.14 V3.6.9 JD Up to 8 LEDs can now be supported using digital control lines
 //                    Intensity of LEDs controlled by analogue outputs can be set using Set Light Intensity dialog box
 // 17.12.14 V3.7.0 JD QCAMUnit ReadoutTime lower limit reduced from 20ms to 10ms in free run mode
+// 27.01.15 V3.7.1 JD Recording now restarted in time lapse mode when camera hangs up or
+//                    images are a black level. File is closed/reopened after each time lapse interval (>2s)
+//                    to ensure file directory info is preserved.
 
 interface
 
@@ -548,6 +551,9 @@ type
     LUTs : Array[0..((MaxFrameType+1)*LUTSize-1)] of Word ;    // Display look-up tables
     PaletteType : TPaletteType ;  // Display colour palette
 
+    DarkLevelLo : Integer ;
+    DarkLevelHi : Integer ;
+
     TScale : Single ;        // Time scaling factor
     TUnits : String ;        // Time units (s/ms)
 
@@ -758,7 +764,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.0 17-12-14 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.1 27-1-15 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
@@ -783,6 +789,9 @@ begin
     Cam1.CameraTemperatureSetPoint := -50.0 ;
     CameraTriggerOffset := 0.0 ;
     Cam1.AdditionalReadoutTime := 0.0 ;
+
+    DarkLevelLo := -1 ;
+    DarkLevelHi := -1 ;
 
     // Default number of frames per recording sequence
     NumFramesRequired := 100 ;

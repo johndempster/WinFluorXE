@@ -88,7 +88,6 @@ object SetAxesFrm: TSetAxesFrm
       Height = 23
       Hint = 'Linear or logarithmic axis scaling '
       Style = csDropDownList
-      ItemHeight = 15
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
@@ -253,7 +252,6 @@ object SetAxesFrm: TSetAxesFrm
       Height = 23
       Hint = 'Linear or logarithmic axis scaling '
       Style = csDropDownList
-      ItemHeight = 15
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
@@ -372,7 +370,7 @@ object SetAxesFrm: TSetAxesFrm
     object Label5: TLabel
       Left = 8
       Top = 16
-      Width = 32
+      Width = 31
       Height = 14
       Caption = 'X Axis'
       Font.Charset = DEFAULT_CHARSET
@@ -385,7 +383,7 @@ object SetAxesFrm: TSetAxesFrm
     object Label6: TLabel
       Left = 8
       Top = 40
-      Width = 33
+      Width = 32
       Height = 14
       Caption = 'Y Axis'
       Font.Charset = DEFAULT_CHARSET
@@ -441,7 +439,7 @@ object SetAxesFrm: TSetAxesFrm
         Left = 8
         Top = 0
         Width = 169
-        Height = 43
+        Height = 57
         Caption = ' Line Style '
         Font.Charset = ANSI_CHARSET
         Font.Color = clBlack
@@ -469,6 +467,16 @@ object SetAxesFrm: TSetAxesFrm
           Checked = True
           State = cbChecked
           TabOrder = 1
+        end
+        object ckShowLineLabels: TCheckBox
+          Left = 16
+          Top = 32
+          Width = 145
+          Height = 17
+          Caption = 'Show Line Labels'
+          Checked = True
+          State = cbChecked
+          TabOrder = 2
         end
       end
     end
@@ -536,7 +544,6 @@ object SetAxesFrm: TSetAxesFrm
           Font.Height = -12
           Font.Name = 'Arial'
           Font.Style = []
-          ItemHeight = 15
           ParentFont = False
           TabOrder = 1
           Items.Strings = (
@@ -571,7 +578,6 @@ object SetAxesFrm: TSetAxesFrm
       Font.Height = -11
       Font.Name = 'Arial'
       Font.Style = [fsBold]
-      ItemHeight = 14
       ParentFont = False
       TabOrder = 0
       OnChange = cbPlotChange

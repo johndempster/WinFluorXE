@@ -25,6 +25,7 @@ unit ViewPlotUnit;
 // 17.09.12 JD ROITimeCourseBuf size increased to hold MainFrm.IDRFile.MaxROIInUse+1 ROIs
 //             (rather than MainFrm.IDRFile.MaxROIInUse) to avoid memory access violations
 // 13.11.12 ... .LOADADC() now uses 64 bit scan counter
+// 16.01.15 ... ROI time calculation skipped if no ROIs defined
 
 interface
 
@@ -653,7 +654,7 @@ begin
 
      // Set size & location of time course displays
 
-     DisplayHeight := Max( sbDisplay.Top - scFLDisplay.Top - 1, 2 ) ;
+     //DisplayHeight := Max( sbDisplay.Top - scFLDisplay.Top - 1, 2 ) ;
 
      if MainFrm.IDRFile.ADCNumChannels <= 0 then begin
         ckDisplayADC.Visible := False ;
@@ -903,7 +904,7 @@ procedure TViewPlotFrm.DisplayRatio(
 // Display fluorescence ratio time course
 // ---------------------------------------
 var
-    i,jOffset : Integer ;
+    i : Integer ;
     yNum,yDen,YScale : Single ;
     iROI,iSubROI : Integer ;
     jROINum,jSubNum, jROIDen, jSubDen : Integer ;
@@ -934,8 +935,8 @@ begin
 
     // Frame #1 is at normally at index=NumFrameTypes in time course buffer
     // In spectral data files index=1 for frame #1
-    if MainFrm.IDRFile.SpectralDataFile then jOffset := -NumFrameTypes + 1
-                                        else jOffset := 0 ;
+    //if MainFrm.IDRFile.SpectralDataFile then jOffset := -NumFrameTypes + 1
+    //                                    else jOffset := 0 ;
 
     // Copy time course data into display buffer
     iROI := Integer(cbROI.Items.Objects[cbROI.ItemIndex]) ;
@@ -952,8 +953,11 @@ begin
                   + cbDenominator.ItemIndex ;
        SubtractROI := True ;
        end
-    else SubtractROI := False ;
-
+    else begin
+       SubtractROI := False ;
+       jSubNum := 0 ;
+       jSubDen := 0 ;
+       end;
     YScale := scRDisplay.MaxADCValue / edRDisplayMax.Value ;
     scRDisplay.ChanScale[0] := 1.0 / YScale ;
 
@@ -1830,7 +1834,7 @@ procedure TViewPlotFrm.TimerTimer(Sender: TObject);
 var
     i,j,iROI,TDone,iFrameType,iFrame,NumFrames,NumFrameTypes  : Integer ;
     y : Single ;
-    Done : Boolean ;
+    Done,ROIsAvailable : Boolean ;
     LatestValue : Array[0..MaxLightSourceCycleLength+1] of Integer ;
 begin
 
@@ -1846,6 +1850,12 @@ begin
     if TimerTickCount < 3 then Exit ;
 
     if ROITCNumFramesDone >= NumFrames Then Exit ;
+
+    // Exit of no ROIs available
+    ROIsAvailable := False ;
+    for iROI := 1 to MainFrm.IDRFile.MaxROIInUse do
+        ROIsAvailable := ROIsAvailable or MainFrm.IDRFile.ROI[iROI].InUse ;
+    if not ROIsAvailable then Exit ;
 
     ROITCRunning := True ;
 
@@ -1871,7 +1881,6 @@ begin
 
         // Frame type for this frame
         iFrameType := MainFrm.IDRFile.TypeOfFrame(ROITCNumFramesDone+1) ;
-//        outputdebugString(PChar(format('%d %d',[ROITCNumFramesDone,iFrameType]))) ;
 
         // Compute mean intensity
         for iROI := 1 to MainFrm.IDRFile.MaxROIInUse do
@@ -1888,9 +1897,7 @@ begin
             end ;
 
         Inc( ROITCNumFramesDone ) ;
-
-        if (TimeGetTime >= TDone) or
-           (ROITCNumFramesDone >= NumFrames) then Done := True ;
+        if (TimeGetTime >= TDone) or (ROITCNumFramesDone >= NumFrames) then Done := True ;
 
         end ;
 
