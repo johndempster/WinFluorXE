@@ -241,7 +241,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 1
-      OnClick = rbASCIIClick
+      OnClick = rbABFClick
     end
     object rbEDR: TRadioButton
       Left = 8
@@ -256,7 +256,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 2
-      OnClick = rbEDRClick
+      OnClick = rbABFClick
     end
     object rbMAT: TRadioButton
       Left = 8
@@ -268,10 +268,10 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       Font.Color = clWindowText
       Font.Height = -11
       Font.Name = 'Arial'
-      Font.Style = [fsItalic]
+      Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 3
-      OnClick = rbMATClick
+      OnClick = rbABFClick
     end
     object rbIBW: TRadioButton
       Left = 8
@@ -286,7 +286,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 4
-      OnClick = rbIBWClick
+      OnClick = rbABFClick
     end
   end
   object bOK: TButton

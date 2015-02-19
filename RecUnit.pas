@@ -336,6 +336,7 @@ type
     ckSplitCCDImage: TCheckBox;
     IDRBackground: TIDRFile;
     IDRFileBurst: TIDRFile;
+    IDRFileXY: TIDRFile;
     procedure FormShow(Sender: TObject);
     procedure TimerTimer(Sender: TObject);
     procedure FormCreate(Sender: TObject);
@@ -541,6 +542,10 @@ type
     TimeLapseFrameCounter : Integer ;
     TimeLapseFrameInterval : Integer ;
 
+    MoveXYStageAtFrame : Integer ;              // Move XY stage at the frame
+    XYStageFileNames : Array[0..99] of String ; // XY stage file names
+    XYStageLastFrame : Integer ;                // Last frame written to an XY file
+
     MousePosition : TPoint ;
 
     StimulusRequired : Boolean ;                 // V/Dig/ stimulus needed
@@ -604,9 +609,6 @@ type
 
     procedure UpdateCameraStartWaveform ;
     procedure UpdateLightSource ;
-    procedure UpdateLightSourceDAC ;
-
-    procedure UpdateLightSourceDIG ;
     procedure UpdateStimulusWaveforms( StimulusEnabled : Boolean ;
                                        InitialiseBuffer : Boolean ) ;
     procedure UpdateVCommandWaveform ;
@@ -700,7 +702,7 @@ implementation
 uses Main, mmsystem, pvcam, maths, SESCam, FileIOUnit,
   ViewUnit, AmpModule, SealTest , LogUnit,
   StimModule, RecPlotUnit, SetCCDReadoutUnit, SetLasersUnit , SnapUnit,
-  PhotoStimModule, ZStageUnit;
+  PhotoStimModule, ZStageUnit, XYStageUnit;
 
 const
     ByteLoValue = 0 ;
@@ -794,6 +796,9 @@ begin
         Close ;
         Exit ;
         end ;
+
+     // Display XY stage control
+     if XYStageFrm.Available and (not XYStageFrm.Visible) then XYStageFrm.Show ;
 
      // Stop seal test (if it is running)
      if MainFrm.FormExists( 'SealTestFrm' ) then SealTestFrm.StopSealTest ;
@@ -2250,9 +2255,31 @@ procedure TRecordFrm.UpdateLightSource ;
 // Update light source control waveforms
 // -------------------------------------
 var
-  i,j,LastSlow,NumFramesPerSpectrum,WVNum : Integer ;
-  ActualDivideFactor : Integer ;
-  W : Single ;
+     Dev : Integer ;
+     iChan : Integer ;
+     iFrame : Integer ;
+     iV : Integer ;
+     iStart : Integer ;
+     NumDACChannels : Integer ;
+     i,j,iResource : Integer ;
+     DACValue : SmallInt ;
+     VControl : Array[0..MaxLightSourceCycleLength] of TLSVControl ;
+     VControlClosed : Array[0..MaxLightSourceCycleLength] of TLSVControl ;
+     NumVControl : Integer ;
+     DACBufSize : Integer ;
+     iWaveLength : Integer ;
+     V,Delay : single ;
+     BlankingStartAt,iShorten : Integer ;
+     VClosed : Array[0..MaxLSControlLine] of Single ;
+     LastSlow,NumFramesPerSpectrum,WVNum : Integer ;
+     ActualDivideFactor : Integer ;
+     W : Single ;
+     Bit : Word ;
+     BitMask  : Word ;
+     StartBit  : Word ;
+     DigBufSize : Integer ;
+     PDigBuf : PBig32bitArray ;
+
 begin
 
      // Default frame type cycle (if no light source)
@@ -2262,9 +2289,7 @@ begin
      FrameTypeCycleCounter := 0 ;
 
      // Exit if no light source or D/A channels configured
-     if (not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthStart)) or
-        (not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthEnd)) or
-        (LightSource.DeviceType = lsNone) then Exit ;
+     if LightSource.DeviceType = lsNone then Exit ;
 
      // Create wavelength/filter cycle patterns
 
@@ -2354,46 +2379,6 @@ begin
          FrameTypeCycleCounter := 0 ;
          end ;
 
-     // Update digital or DAC output channel patterns
-
-     if LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].ResourceType = DACOut then begin
-         // DAC output lines
-        UpdateLightSourceDAC ;
-        end
-     else begin
-        // Digital output lines
-        UpdateLightSourceDIG ;
-        end ;
-
-     end ;
-
-
-procedure TRecordFrm.UpdateLightSourceDAC ;
-// ----------------------------------------
-// Update light source DAC control pattern
-// ----------------------------------------
-var
-     Dev : Integer ;
-     iChan : Integer ;
-     iFrame : Integer ;
-     iV : Integer ;
-     iStart : Integer ;
-     NumDACChannels : Integer ;
-     i,j : Integer ;
-     DACValue : SmallInt ;
-     VControl : Array[0..MaxLightSourceCycleLength] of TLSVControl ;
-     VControlClosed : Array[0..MaxLightSourceCycleLength] of TLSVControl ;
-     NumVControl : Integer ;
-     DACBufSize : Integer ;
-     iWaveLength : Integer ;
-
-     BlankingStartAt,iShorten : Integer ;
-begin
-
-     // Exit if no light source or D/A channels configured
-     if (not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthStart)) or
-        (not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthEnd)) or
-        (LightSource.DeviceType = lsNone) then Exit ;
 
      if (NumDACPointsPerCycle mod NumDACPointsPerFrame) <> 0 then
         ShowMessage( 'Cycle period is not a multiple of frame duration') ;
@@ -2408,7 +2393,11 @@ begin
      BlankingStartAt := Min(Max(NumDACPointsPerFrame - iShorten,0),NumDACPointsPerFrame) ;
 
      // Get voltages for shutters closed condition
-     LightSource.ShutterClosedVoltages( VControlClosed, NumVControl ) ;
+     LightSource.ShutterClosedVoltages ;
+     for i := 0 to LightSource.NumControlLines-1 do begin
+         iResource := MainFrm.IOConfig.LSControlLine[i] ;
+         if MainFRm.IOResourceAvailable(iResource) then VClosed[i] := LabIO.Resource[iResource].V ;
+         end ;
 
      iWaveLength := 0 ;
      for iFrame := 0 to NumFramesPerCycle-1 do begin
@@ -2418,14 +2407,11 @@ begin
             // Get voltages for selected wavelength
             LightSource.WavelengthToVoltage( FilterNums[iWaveLength],
                                              Wavelengths[iWaveLength],
-                                             Bandwidths[iWaveLength],
-                                             VControl,
-                                             NumVControl );
+                                             Bandwidths[iWaveLength] );
             end
          else begin
             // Get voltages for shutters closed condition
-            LightSource.ShutterClosedVoltages( VControl,
-                                               NumVControl ) ;
+            LightSource.ShutterClosedVoltages ;
             end ;
 
          // Start of frame in cycle buffer
@@ -2433,40 +2419,91 @@ begin
 
          // Set D/A channel with excitation voltage
 
-         for iV := 0 to NumVControl-1 do begin
+         for iV := 0 to LightSource.NumControlLines-1 do begin
 
-             Dev := VControl[iV].Device ;
-             if Dev <= 0 then Continue ;
+             iResource := MainFrm.IOConfig.LSControlLine[iV] ;
+             if not MainFRm.IOResourceAvailable(iResource) then Continue ;
 
-             DeviceDACsInUse[Dev] := True ;
-             NumDACChannels := LabIO.NumDACs[Dev] ;
-             DACBufSize := NumDACPointsPerFrame*NumDACChannels*NumFramesPerCycle ;
+             Dev := LabIO.Resource[iResource].Device ;
+             iChan := LabIO.Resource[iResource].StartChannel ;
+             Delay := LabIO.Resource[iResource].Delay ;
+             V := LabIO.Resource[iResource].V ;
 
-             iChan := VControl[iV].Chan ;
-             j := (iStart + Round(VControl[iV].Delay/DACUpdateInterval))*NumDACChannels
-                   + iChan ;
+             if LabIO.Resource[iResource].ResourceType = DACOut then begin
 
-             // Open shutter period
-             DACValue := Round(VControl[iV].V*LabIO.DACScale[Dev]) ;
+                // *** Update DAC channel***
 
-             for i := 0 to BlankingStartAt-1 do begin
-                 // Keep within circular buffer
-                 if j >= DACBufSize then j := j - DACBufSize
-                 else if j < 0 then j := j + DACBufSize ;
+                DeviceDACsInUse[Dev] := True ;
+                NumDACChannels := LabIO.NumDACs[Dev] ;
+                DACBufSize := NumDACPointsPerFrame*NumDACChannels*NumFramesPerCycle ;
 
-                 DACBufs[Dev]^[j] := DACValue ;
-                 j := j + NumDACChannels ;
-                 end ;
+                j := (iStart + Round(Delay/DACUpdateInterval))*NumDACChannels + iChan ;
 
-             // Shutter blanking period (set to closed wavelength & slits)
-             DACValue := Round(VControlClosed[iV].V*LabIO.DACScale[Dev]) ;
-             for i := BlankingStartAt to NumDACPointsPerFrame-1 do begin
-                 // Keep within circular buffer
-                if j >= DACBufSize then j := j - DACBufSize
-                else if j < 0 then j := j + DACBufSize ;
-                DACBufs[Dev]^[j] := DACValue ;
-                j := j + NumDACChannels ;
-                end ;
+                // Open shutter period
+                DACValue := Round(V*LabIO.DACScale[Dev]) ;
+
+                for i := 0 to BlankingStartAt-1 do begin
+                    // Keep within circular buffer
+                    if j >= DACBufSize then j := j - DACBufSize
+                    else if j < 0 then j := j + DACBufSize ;
+
+                    DACBufs[Dev]^[j] := DACValue ;
+                    j := j + NumDACChannels ;
+                    end ;
+
+                // Shutter blanking period (set to closed wavelength & slits)
+                DACValue := Round(VClosed[iV]*LabIO.DACScale[Dev]) ;
+                for i := BlankingStartAt to NumDACPointsPerFrame-1 do begin
+                    // Keep within circular buffer
+                   if j >= DACBufSize then j := j - DACBufSize
+                   else if j < 0 then j := j + DACBufSize ;
+                   DACBufs[Dev]^[j] := DACValue ;
+                   j := j + NumDACChannels ;
+                   end ;
+
+                // Set off-state value for this channel
+                LabIO.DACOutState[Dev][iChan] := VClosed[iV] ;
+
+                end
+             else begin
+
+                // *** Update digital channel***
+
+                // Start of frame in cycle buffer
+                iStart := iFrame*NumDACPointsPerFrame ;
+                j := (iStart + Round(Delay/DACUpdateInterval)) ;
+
+                PDigBuf := DigBufs[Dev] ;      // Digital O/P buffer
+                DeviceDIGsInUse[Dev] := True ;
+
+                // Create pre-blanking data
+                Bit := LabIO.BitMask(iChan) ;
+                BitMask := not Bit ;
+                if V = 0.0 then Bit := 0 ;
+                for i := 0 to BlankingStartAt-1 do begin
+                    // Keep within circular buffer
+                    if j >= DIGBufSize then j := j - DIGBufSize
+                    else if j < 0 then j := j + DIGBufSize ;
+                    pDigBuf^[j] := (pDigBuf^[j] and BitMask) or Bit ;
+                    Inc(j) ;
+                    end ;
+
+                // Create post-blanking data (closed setting)
+                Bit := LabIO.BitMask(iChan) ;
+                BitMask := not Bit ;
+                if VClosed[iV] = 0.0 then Bit := 0 ;
+                for i := BlankingStartAt to NumDACPointsPerFrame-1 do begin
+                    // Keep within circular buffer
+                    if j >= DIGBufSize then j := j - DIGBufSize
+                    else if j < 0 then j := j + DIGBufSize ;
+                    pDigBuf^[j] := (pDigBuf^[j] and BitMask) or Bit ;
+                    Inc(j) ;
+                    end ;
+
+                // Set off state
+                LabIO.DigOutState[Dev] := (LabIO.DigOutState[Dev] and BitMask) or Bit ;
+
+                end;
 
              end ;
 
@@ -2476,14 +2513,8 @@ begin
 
          end ;
 
-     // Set off-state value for this channel
-     LightSource.ShutterClosedVoltages( VControl, NumVControl ) ;
-     for iV := 0 to NumVControl-1 do begin
-         Dev := VControl[iV].Device ;
-         LabIO.DACOutState[Dev][VControl[iV].Chan] := VControl[iV].V ;
-         end ;
-
      end ;
+
 
 function TRecordFrm.ExcitationOn( iFrame : Integer ) : boolean ;
 // -------------------------------------------
@@ -2506,144 +2537,6 @@ begin
           end ;
 
      if not rbEXCShutterOpen.Checked then Result := False ;
-
-     end ;
-
-
-procedure TRecordFrm.UpdateLightSourceDIG ;
-// ----------------------------------------
-// Update light source digital output waveform
-// ----------------------------------------
-var
-     Device : Integer ;
-     iV : Integer ;
-     iFrame : Integer ;
-     iStart : Integer ;
-     i,j : Integer ;
-     VControl : Array[0..MaxLightSourceCycleLength-1] of TLSVControl ;
-     VControlClosed : Array[0..MaxLightSourceCycleLength-1] of TLSVControl ;
-     NumVControl : Integer ;
-     DigBufSize : Integer ;
-     Bit : Word ;
-     BitWord  : Word ;
-     BitMask  : Word ;
-     StartBit  : Word ;
-     PDigBuf : PBig32bitArray ;
-     iWavelength : Integer ;
-     BlankingStartAt : Integer ;
-begin
-
-     // D/A output device
-     Device :=  LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-     if Device <= 0 then Exit ;
-     if DigBufs[Device] = Nil Then Exit ;
-
-     if (NumDACPointsPerCycle mod NumDACPointsPerFrame) <> 0 then
-        ShowMessage( 'Cycle period is not a multiple of frame duration') ;
-
-     // Get digital outputs allocated filter control
-
-     DigBufSize := NumDACPointsPerFrame*NumFramesPerCycle ;
-
-     // Get voltages for shutters closed condition
-     LightSource.ShutterClosedVoltages( VControlClosed, NumVControl ) ;
-
-     // Determine start of period of shutter blanking
-     BlankingStartAt := NumDACPointsPerFrame -
-                         Round(LightSource.ShutterBlankingPeriod/DACUpdateInterval) ;
-     BlankingStartAt := Min(Max(BlankingStartAt,0),NumDACPointsPerFrame) ;
-
-     iWaveLength := 0 ;
-     for iFrame := 0 to NumFramesPerCycle-1 do begin
-
-         // Get control voltages for wavelength
-         if ExcitationOn(iFrame) then begin
-            // Get voltages for selected wavelength
-            LightSource.WavelengthToVoltage( FilterNums[iWaveLength],
-                                             Wavelengths[iWaveLength],
-                                             Bandwidths[iWaveLength],
-                                             VControl,
-                                             NumVControl );
-            end
-         else begin
-            // Get voltages for shutters closed condition
-            LightSource.ShutterClosedVoltages( VControl,NumVControl ) ;
-            end ;
-
-         if VControl[0].Device <= 0 then Continue ;
-
-         // Start of frame in cycle buffer
-         iStart := iFrame*NumDACPointsPerFrame ;
-
-         // Set digital O/P bit channel
-         j := (iStart + Round(VControl[0].Delay/DACUpdateInterval)) ;
-         StartBit := LabIO.BitMask(VControl[0].Chan) ;
-         PDigBuf := DigBufs[VControl[0].Device] ;      // Digital O/P buffer
-         DeviceDIGsInUse[VControl[0].Device] := True ;
-
-         // Create pre-blanking data
-         for i := 0 to BlankingStartAt-1 do begin
-             BitMask := 0 ;
-             BitWord := 0 ;
-             Bit := StartBit ;
-             for iV := 0 to NumVControl-1 do begin
-                BitMask := BitMask or Bit ;
-                if VControl[iV].V <> 0.0 then BitWord := BitWord or Bit ;
-                Bit := Bit*2 ;
-                end ;
-             BitMask := not BitMask ;
-
-             // Keep within circular buffer
-             if j >= DIGBufSize then j := j - DIGBufSize
-             else if j < 0 then j := j + DIGBufSize ;
-
-             pDigBuf^[j] := (pDigBuf^[j] and BitMask) or BitWord ;
-             Inc(j) ;
-
-             end ;
-
-         // Create post-blanking data (wavelength at closed setting)
-         for i := BlankingStartAt to NumDACPointsPerFrame-1 do begin
-
-             BitMask := 0 ;
-             BitWord := 0 ;
-             Bit := StartBit ;
-             for iV := 0 to NumVControl-1 do begin
-                BitMask := BitMask or Bit ;
-                if VControlClosed[iV].V <> 0.0 then BitWord := BitWord or Bit ;
-                Bit := Bit*2 ;
-                end ;
-             BitMask := not BitMask ;
-
-             // Keep within circular buffer
-             if j >= DIGBufSize then j := j - DIGBufSize
-             else if j < 0 then j := j + DIGBufSize ;
-             pDigBuf^[j] := (pDigBuf^[j] and BitMask) or BitWord ;
-             Inc(j) ;
-
-             end ;
-
-
-         // Next frame type
-         Inc(iWaveLength) ;
-         if iWaveLength = NumFramesPerWavelengthCycle then iWaveLength := 0 ;
-
-         end ;
-
-     // Set off-state value for this channel
-
-     LightSource.ShutterClosedVoltages( VControl,NumVControl ) ;
-     BitWord := 0 ;
-     StartBit := LabIO.BitMask(VControl[0].Chan) ;
-     Bit := StartBit ;
-     BitMask := 0 ;
-     for iV := 0 to NumVControl-1 do begin
-         BitMask := BitMask or Bit ;
-         if VControl[iV].V <> 0.0 then BitWord := BitWord or Bit ;
-         Bit := Bit*2 ;
-         end ;
-     BitMask := not BitMask ;
-     LabIO.DigOutState[VControl[0].Device] := (LabIO.DigOutState[VControl[0].Device] and BitMask) or BitWord ;
 
      end ;
 
@@ -3285,6 +3178,8 @@ var
      NumFramesInHalfBuffer : Integer ;
      NumFramesToSave : Integer ;
      iFrameType : Integer ;
+     OldPosition : Integer ;
+     iBuf : Pointer ;
 begin
 
     if PFrameBuf = Nil then Exit ;
@@ -3606,7 +3501,7 @@ begin
                     if FirstFrameToSave <= LastFrame then begin
                        iStart := FirstFrameToSave*NumBytesPerFrame ;
                        NumFramesToSave := Min( NumBurstFramesRequired - NumBurstFramesDone,
-                                            LastFrame - FirstFrameToSave + 1) ;
+                                               LastFrame - FirstFrameToSave + 1) ;
                        IDRFileBurst.AsyncSaveFrames( IDRFileBurst.NumFrames + 1,
                                                      NumFramesToSave,
                                                      @pByteArray(PFrameBuf)[iStart]) ;
@@ -3755,6 +3650,35 @@ begin
     // Re-enable Start Photostimulus button after stimulus is complete
     if (not bStartPhotoStimulus.Enabled) and
        (TimeNow >= TReEnableStartPhotoStimulusButton) then bStartPhotoStimulus.Enabled := True ;
+
+    // XY Stage increment (in time lapse modes only)
+    if (RecordingMode = rmRecordingInProgress) and
+       (cbRecordingMode.ItemIndex <> rmContinuous) and
+        XYStageFrm.IncrementStagePosition then begin
+        // Set initial move
+       if TimeLapseFrameCounter <= 0 then begin
+          MoveXYStageAtFrame := TimeLapseFrameInterval div 2 ;
+          end;
+       // Write frames acquired at this stage position to position sub-file
+       if TimeLapseFrameCounter >= MoveXYStageAtFrame then begin
+          IDRFileXY.OpenFile( XYStageFileNames[XYStageFrm.Position]) ;
+          IDRFileXY.WriteEnabled := True ;
+          GetMem( iBuf, NumPixelsPerFrame*SizeOf(Integer) ) ;
+          outputdebugstring(pchar(format('%s %d %d',[XYStageFileNames[XYStageFrm.Position],XYStageLastFrame,MainFrm.IDRFile.NumFrames])));
+          while XYStageLastFrame <= MainFrm.IDRFile.NumFrames do begin
+               MainFrm.IDRFile.LoadFrame( XYStageLastFrame, iBuf ) ;
+               IDRFileXY.SaveFrame( IDRFileXY.NumFrames + 1, iBuf ) ;
+               Inc(XYStageLastFrame) ;
+               end;
+          IDRFileXY.CloseFile ;
+          FreeMem( iBuf ) ;
+
+          XYStageFrm.Position := XYStageFrm.Position + 1 ;
+          MoveXYStageAtFrame := MoveXYStageAtFrame + TimeLapseFrameInterval ;
+          end;
+
+       end;
+
 
     // Update A/D signal display
     if MainFrm.ADCNumChannels > 0 then UpdateADCDisplay ;
@@ -4406,7 +4330,6 @@ begin
 
      // Close other forms to avoid possible interruption of recording
      if MainFrm.FormExists('SealTestFrm') then SealTestFrm.Close ;
-     //if MainFrm.FormExists('ViewFrm') then ViewFrm.Close ;
 
      // Stop image capture
      StopCamera ;
@@ -4631,6 +4554,21 @@ begin
      ZStage.StartAt := edZStartPos.Value ;
      ZStage.StepSize := edZStepSize.Value ;
      ZStage.NumSteps := Round(edZNumSteps.Value) ;
+
+     // Create XY Stage files (if required)
+     if (cbRecordingMode.ItemIndex <> rmContinuous) and
+        XYStageFrm.IncrementStagePosition then begin
+        for i := 0 to XYStageFrm.NumPositions-1 do begin
+            XYStageFileNames[i] := ANSIReplaceText( MainFrm.IDRFile.FileName,'.idr',
+                                                    format('.XY%d.idr',[i+1]));
+            if not FileExists(XYStageFileNames[i]) then begin
+               IDRFileXY.CreateFileFrom( XYStageFileNames[i], MainFrm.IDRFile, false ) ;
+               IDRFileXY.FrameInterval := MainFrm.IDRFile.FrameInterval*XYStageFrm.NumPositions ;
+               IDRFileXY.CloseFile ;
+               end ;
+            end;
+        XYStageLastFrame := MainFrm.IDRFile.NumFrames + 1 ;
+        end;
 
      // Start image capture
      StartCamera ;

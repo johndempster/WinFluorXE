@@ -1071,7 +1071,6 @@ var
     PImageBuf : PIntArray ; // Image frame buffer pointer
     iFrame : Integer ;     // Frame counter
     InterLineTime : Single ;
-    PMTChannels : Array[0..MaxUltimaChannels] of Integer ;
     NewNameIDR : string ;
     FirstNewNameIDR : string ;
     NewNameEDR : string ;
@@ -1080,7 +1079,7 @@ var
     NumCycles,NumChannels,NumFrames,NumLines  : Integer ;
     iCycle,iChan : Integer ;
     FrameWidth : Integer ;
-    i,iWrite : Integer ;
+    iWrite : Integer ;
     Done : Boolean ;
     FileName : String ;
 begin

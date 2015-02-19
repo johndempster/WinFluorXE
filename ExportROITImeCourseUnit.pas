@@ -5,13 +5,14 @@ unit ExportROITImeCourseUnit;
 // 21-10-10 Time course for ROI#s > ROI1 no longer set to zero
 // 22-7-11 Option to export all ROIs in a single operation added
 // 27-7-11 CFS export added
+// 17-2-15 MAT export added
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ADCDataFile, StdCtrls, RangeEdit, ExtCtrls, math, labiounit,
-  ValidatedEdit, UITYpes ;
+  ValidatedEdit, UITYpes, MATFileWRiterUnit ;
 
 type
   TExportROITimeCourseFrm = class(TForm)
@@ -53,8 +54,6 @@ type
     procedure bChangeNameClick(Sender: TObject);
     procedure bOKClick(Sender: TObject);
     procedure rbABFClick(Sender: TObject);
-    procedure rbASCIIClick(Sender: TObject);
-    procedure rbEDRClick(Sender: TObject);
     procedure cbROIChange(Sender: TObject);
     procedure cbSubROIChange(Sender: TObject);
     procedure cbFrameTypeChange(Sender: TObject);
@@ -163,13 +162,15 @@ procedure TExportROITimeCourseFrm.bOKClick(Sender: TObject);
 // Copy selected section of data file to export file
 // -------------------------------------------------
 var
-   StartAt,EndAt,ch,i,j : Integer ;
+   StartAt,EndAt,ch,i,j,iTo,iFrom : Integer ;
    iROI,SubROI,SelFrameType,NumFrameType,DenFrameType : Integer ;
-   nPoints : Integer ;
+   NP,nPoints : Integer ;
    iFrame : Integer ;
    iList,iList0,iList1 : Integer ;
-   OutBuf : pSmallIntArray ;
-   yBuf : PBigSingleArray ;
+   OutBuf : pSmallIntArray ;       // Integer data array
+   yBuf : PBigSingleArray ;        // Y data array
+   TMat : PBigDoubleArray ;        // Time data array
+   YMat : PBigDoubleArray ;        // Time data array
    Done : Boolean ;
    ExportType : TADCDataFileType ;
    NumROIsExported : Integer ;
@@ -178,6 +179,7 @@ var
    y,yThreshold,yDenominator,yNumerator,yMax : Single ;
    ROIRange : String ;
    FileName : String ;
+   Writer : TMATFileWriter ;
 begin
 
      bOK.Enabled := False ;
@@ -190,18 +192,6 @@ begin
         StartAt := Round(edRange.LoValue) ;
         EndAt := Round(edRange.HiValue) ;
         end ;
-
-     // Export file type
-
-     // Check MAT-File export option
-     // Added by NS 18 February 2009
-     if rbMAT.Checked then
-     begin
-      //MessageDlg('Exporting to MAT-File format not yet implemented.', mtWarning, [mbOK], 0);
-      //ExportMATFile(ExportFileName, StartAt, EndAt, UseChannel);
-      bOK.Enabled := True;
-      Exit;
-     end;
 
      // Frame range & subtraction ROI
      SubROI := Integer(cbSubROI.Items.Objects[cbSubROI.ItemIndex]) ;
@@ -265,7 +255,7 @@ begin
          if subROI < MainFrm.IDRFile.MaxROI then begin
             ROIRange := ROIRange + format('-ROI%d',[subROI]) ;
             end ;
-            
+
          FileName := AddFileNameTag( ExportFileName ) ;
          FileName := ANSIReplaceText( FileName,'ROI?',ROIRange ) ;
 
@@ -278,23 +268,30 @@ begin
                end ;
             end ;
 
-         // Create empty export data file
-         ExportFile.CreateDataFile( FileName, ExportType ) ;
+         if rbMat.Checked then begin
+            // Open MAT file
+            Writer := TMATFileWriter.Create();
+            Writer.OpenMATFile( FileName ) ;
+            Writer.WriteFileHeader;
+            end
+          else begin
+            // Create empty export data file
+            ExportFile.CreateDataFile( FileName, ExportType ) ;
 
-         // Set file parameters
-
-         ExportFile.NumChannelsPerScan := NumROIsInFile ;
-         ExportFile.NumScansPerRecord := EndAt - StartAt + 1 ;
-         ExportFile.ScanInterval := MainFrm.IDRFile.FrameInterval ;
-         ExportFile.IdentLine := MainFrm.IDRFile.Ident ;
-         ExportFile.RecordNum := 1 ;
-         ExportFile.ABFAcquisitionMode := ftGapFree ;
-         ExportFile.MaxADCValue := Min(MainFrm.IDRFile.GreyMax,32767) ;
-         ExportFile.MinADCValue := -MainFrm.IDRFile.GreyMax - 1 ;
+            // Set file parameters
+            ExportFile.NumChannelsPerScan := NumROIsInFile ;
+            ExportFile.NumScansPerRecord := EndAt - StartAt + 1 ;
+            ExportFile.ScanInterval := MainFrm.IDRFile.FrameInterval ;
+            ExportFile.IdentLine := MainFrm.IDRFile.Ident ;
+            ExportFile.RecordNum := 1 ;
+            ExportFile.ABFAcquisitionMode := ftGapFree ;
+            ExportFile.MaxADCValue := Min(MainFrm.IDRFile.GreyMax,32767) ;
+            ExportFile.MinADCValue := -MainFrm.IDRFile.GreyMax - 1 ;
+            end ;
 
          // Allocate buffers
-         GetMem( OutBuf, MainFrm.IDRFile.NumFrames*NumROIsInFile*SizeOf(SmallInt)) ;
-         GetMem( yBuf, MainFrm.IDRFile.NumFrames*NumROIsInFile*SizeOf(Single)) ;
+
+         GetMem( yBuf, MainFrm.IDRFile.NumFrames*NumROIsInFile*SizeOf(Double)) ;
 
          // Read ROIs into export buffer
 
@@ -342,30 +339,66 @@ begin
             YMax := YMax*1.5 ;
             end ;
 
-         // Set export channel name, scaling and units
-         for i := 0 to NumROIsInFile-1 do begin
-             ExportFile.ChannelOffset[i] := i ;
-             ExportFile.ChannelADCVoltageRange[i] := 1.0 ;
-             ExportFile.ChannelName[i] := format('ROI%d',[ROIExportList[iList0+i]]) ; ;
-             ExportFile.ChannelUnits[i] := '' ;
-             ExportFile.ChannelGain[i] := 1.0 ;
-             ExportFile.ChannelScale[i] := YMax/ExportFile.MaxADCValue ;
-             ExportFile.ChannelCalibrationFactor[i] := 1.0/(ExportFile.MaxADCValue*ExportFile.ChannelScale[i]) ;
+
+         if rbMat.Checked then begin
+
+            // *** Write to MAT file ***
+            NP := nPoints div NumROIsInFile ;
+            GetMem( TMat, NP*SizeOf(Double) ) ;
+            GetMem( YMat, nPoints*SizeOf(Double) ) ;
+
+            // Copy to MAT buffers
+            for iROI := 0 to NumROIsInFile-1 do begin
+                iTo := iROI*NP ;
+                iFrom := iROI ;
+                for i := 0 to NP-1 do begin
+                    TMat^[i] := i*MainFrm.IDRFile.FrameInterval ;
+                    YMat^[iTo] := Round(yBuf^[iFrom]) ;
+                    iTo := iTo + 1 ;
+                    iFrom := iFrom + NumROIsInFile ;
+                    end;
+                end ;
+            // Write to MAT file
+            Writer.WriteDoubleMatrixHeader('T',NP,1);
+            Writer.WriteDoubleMatrixValues( TMat^,NP,1) ;
+            Writer.WriteDoubleMatrixHeader('Y',NP,NumROIsInFile);
+            Writer.WriteDoubleMatrixValues( YMat^, NP,NumROIsInFile) ;
+            Writer.CloseMATFile;
+
+            FreeMem(TMat) ;
+            FreeMem(YMat) ;
+
+            end
+         else begin
+
+             // *** Write to other file type ***
+             GetMem( OutBuf, MainFrm.IDRFile.NumFrames*NumROIsInFile*SizeOf(SmallInt)) ;
+             // Set export channel name, scaling and units
+             for i := 0 to NumROIsInFile-1 do begin
+               ExportFile.ChannelOffset[i] := i ;
+               ExportFile.ChannelADCVoltageRange[i] := 1.0 ;
+               ExportFile.ChannelName[i] := format('ROI%d',[ROIExportList[iList0+i]]) ; ;
+               ExportFile.ChannelUnits[i] := '' ;
+               ExportFile.ChannelGain[i] := 1.0 ;
+               ExportFile.ChannelScale[i] := YMax/ExportFile.MaxADCValue ;
+               ExportFile.ChannelCalibrationFactor[i] := 1.0/(ExportFile.MaxADCValue*ExportFile.ChannelScale[i]) ;
+               end ;
+
+             // Scale to integer and copy to output buffer
+             ch := 0 ;
+             for i := 0 to nPoints-1 do begin
+                 OutBuf^[i] := Round(yBuf^[i]/ExportFile.ChannelScale[ch]) ;
+                 Inc(ch) ;
+                 if ch >= NumROIsInFile then ch := 0 ;
+                 end ;
+             // Write to export file
+             ExportFile.SaveADCBuffer( 0, nPoints div NumROIsInFile, OutBuf^ ) ;
+             // Close export data file
+             ExportFile.CloseDataFile ;
+
+             FreeMem(OutBuf) ;
+
              end ;
-
-         // Scale to integer and copy to output buffer
-         ch := 0 ;
-         for i := 0 to nPoints-1 do begin
-             OutBuf^[i] := Round(yBuf^[i]/ExportFile.ChannelScale[ch]) ;
-             Inc(ch) ;
-             if ch >= NumROIsInFile then ch := 0 ;
-             end ;
-
-         // Write to export file
-         ExportFile.SaveADCBuffer( 0, nPoints div NumROIsInFile, OutBuf^ ) ;
-
-         // Close export data file
-         ExportFile.CloseDataFile ;
 
          // Final Report
          MainFrm.StatusBar.SimpleText := format(
@@ -373,7 +406,6 @@ begin
          [EndAt-StartAt+1,FileName]) ;
          LogFrm.AddLine( MainFrm.StatusBar.SimpleText ) ;
 
-         FreeMem(OutBuf) ;
          FreeMem(yBuf) ;
 
          // Increment to next set of ROIs
@@ -436,7 +468,7 @@ begin
     if rbABF.Checked then FileName := ChangeFileExt( FileName, '.abf' ) ;
     if rbASCII.Checked then FileName := ChangeFileExt( FileName, '.txt' ) ;
     if rbIBW.Checked then FileName := ChangeFileExt( FileName, '.ibw' ) ;
-    if rbIBW.Checked then FileName := ChangeFileExt( FileName, '.cfs' ) ;
+    if rbCFS.Checked then FileName := ChangeFileExt( FileName, '.cfs' ) ;
     if rbEDR.Checked then begin
         FileName := ChangeFileExt( FileName, '.edr' ) ;
         if LowerCase(FileName) = LowerCase(MainFrm.IDRFile.FileName) then begin
@@ -456,15 +488,6 @@ begin
     edFileName.Text := AddFileNameTag( ExportFileName ) ;
     end;
 
-procedure TExportROITimeCourseFrm.rbASCIIClick(Sender: TObject);
-begin
-  edFileName.Text := AddFileNameTag( ExportFileName ) ;
-  end;
-
-procedure TExportROITimeCourseFrm.rbEDRClick(Sender: TObject);
-begin
-  edFileName.Text := AddFileNameTag( ExportFileName ) ;
-  end;
 
 procedure TExportROITimeCourseFrm.cbROIChange(Sender: TObject);
 begin
@@ -525,6 +548,7 @@ procedure TExportROITimeCourseFrm.rbExportROIClick(Sender: TObject);
 begin
   edFileName.Text := AddFileNameTag( ExportFileName ) ;
     end;
+
 
 procedure TExportROITimeCourseFrm.rbRangeClick(Sender: TObject);
 begin

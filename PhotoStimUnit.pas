@@ -806,7 +806,7 @@ begin
   if (MainFrm.CameraType = NoCamera8) or
      (MainFrm.CameraType = NoCamera16) then
   begin
-      MessageDlg('There is no camera setup.', mtError, [mbOK], 0);
+      ShowMessage('There is no camera setup.');
       Close;
       Exit;
   end
@@ -815,8 +815,7 @@ begin
   // Check for unsupported BioRad Radiance/MRC 1024
   else if MainFrm.CameraType = BioRad then
   begin
-      MessageDlg('This feature is not supported on a BioRad Radiance/MRC 1024.',
-                 mtError, [mbOK], 0);
+      ShowMessage('This feature is not supported on a BioRad Radiance/MRC 1024.');
       Close;
       Exit;
   end
@@ -841,7 +840,7 @@ begin
     // Check if Ultima is active
     if not Ultima.IsUltimaActive then
     begin
-      MessageDlg('There is no connection to the Ultima.', mtError, [mbOK], 0);
+      ShowMessage('There is no connection to the Ultima.');
       Exit;
     end;
 
@@ -870,7 +869,7 @@ begin
     // Show error if Record Images & Signals form is not open
     if not isRecordFrmOpen then
     begin
-      MessageDlg('Record Images & Signals is not open.', mtError, [mbOK], 0);
+      ShowMessage('Record Images & Signals is not open.');
       Close;
       Exit;
     end;
@@ -879,7 +878,7 @@ begin
     isImageAvailable := RecordFrm.ImageAvailable;
     if not isImageAvailable then
     begin
-      MessageDlg('No image is available.', mtError, [mbOK], 0);
+      ShowMessage('No image is available.');
       Close;
       Exit;
     end;
@@ -1500,7 +1499,7 @@ begin
   PImageSource := RecordFrm.PDisplayBufs[0];
   if PImageSource = Nil then
   begin
-    MessageDlg('Error getting camera image.', mtError, [mbOK], 0);
+    ShowMessage('Error getting camera image.');
     Close;
     Exit;
   end;
@@ -1794,8 +1793,6 @@ procedure TPhotoStimFrm.LoadWaveform(FileName : String);
 // ------------------------------------------
 // Load a photo-stimulus waveform from a file
 // ------------------------------------------
-var
-  i, c, r : Integer;
 begin
 
   // Clear all waveform elements in protocol
@@ -1901,8 +1898,6 @@ procedure TPhotoStimFrm.SetImagePanels();
 const
   MarginPixels = 16 ;
 var
-  ImageAreaHeight : Integer ;
-  ImageAreaWidth : Integer ;
   RightEdge : Integer ;
   BottomEdge : Integer ;
 begin
@@ -2000,14 +1995,14 @@ begin
     // Check for file
     if MainFrm.PhotoStim.PMTFileNames[i] = '' then
     begin
-      MessageDlg('No file associated with channel.', mtError, [mbOK], 0);
+      ShowMessage('No file associated with channel.');
       Exit;
     end;
 
     // Attempt to open image
     if not UltimaImageFile.OpenFile(MainFrm.PhotoStim.PMTFileNames[i]) then
     begin
-      MessageDlg('Error loading image file.', mtError, [mbOK], 0);
+      ShowMessage('Error loading image file.');
       Exit;
     end;
 
@@ -2063,7 +2058,6 @@ procedure TPhotoStimFrm.UpdateDuration();
 // ----------------------------------------------------------------
 var
   duration : Single;  // Duration
-  i : Integer;        // Loop index
 begin
 
   // Calcualte protocol duration
@@ -2272,7 +2266,6 @@ var
   attenuator : Integer;
   c : Integer;
   cur : Single;
-  i : Integer;
   r : Integer;
   maxPower : Single;        // Maximum power in mW
   minPower : Single;        // Minimum power in mW

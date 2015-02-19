@@ -64,7 +64,8 @@ uses
   DigitalFilterUnit in 'DigitalFilterUnit.pas' {DigitalFilterFrm},
   DirectControlUnit in 'DirectControlUnit.pas' {DirectControlFrm},
   ZStageUnit in 'ZStageUnit.pas' {ZStage: TDataModule},
-  Maths in '..\SESComponentsXE\Maths.pas';
+  Maths in '..\SESComponentsXE\Maths.pas',
+  XYStageUnit in 'XYStageUnit.pas' {XYStageFrm};
 
 {$R *.TLB}
 
@@ -72,7 +73,7 @@ uses
 
 begin
   Application.Initialize;
-  Application.Title := 'WinFluor V3.4.6';
+  Application.Title := 'WinFluor V3.7.2';
   Application.HelpFile := 'C:\Program Files\Borland\Delphi7\WinFluor\WINFLUOR.chm';
   Application.CreateForm(TMainFrm, MainFrm);
   Application.CreateForm(TAboutBox, AboutBox);
@@ -97,5 +98,6 @@ begin
   Application.CreateForm(TExportROITimeCourseFrm, ExportROITimeCourseFrm);
   Application.CreateForm(TPlaybackStimulator, PlaybackStimulator);
   Application.CreateForm(TZStage, ZStage);
+  Application.CreateForm(TXYStageFrm, XYStageFrm);
   Application.Run;
 end.

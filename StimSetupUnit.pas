@@ -535,7 +535,7 @@ begin
 
      FileHandle := FileCreate( Path ) ;
      if FileHandle <= 0 then begin
-        MessageDlg( ' Could not create file ' + Path, mtWarning, [mbOK], 0 ) ;
+        ShowMessage( ' Could not create file ' ) ;
         Exit ;
         end ;
 
@@ -571,7 +571,7 @@ begin
      AppendFloat( TextBuf, 'STDUR=', StimProg.Duration ) ;
 
      if FileWrite( FileHandle, TextBuf, Sizeof(TextBuf) ) <> Sizeof(TextBuf) then
-        MessageDlg( ' Write to ' + FileName + ' failed!', mtWarning, [mbOK], 0 ) ;
+        ShowMessage( ' Write to ' + FileName + ' failed!' ) ;
 
      if FileHandle >= 0 then FileClose( FileHandle ) ;
 

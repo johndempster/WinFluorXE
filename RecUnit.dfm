@@ -276,6 +276,10 @@ object RecordFrm: TRecordFrm
         TabOrder = 0
         object ExcitationLightTab: TTabSheet
           Caption = 'Excitation Light'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object GroupBox6: TGroupBox
             Left = 2
             Top = 0
@@ -439,6 +443,10 @@ object RecordFrm: TRecordFrm
         object StimulatorTab: TTabSheet
           Caption = 'Stimulator'
           ImageIndex = 1
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object cbStimProgram: TComboBox
             Left = 2
             Top = 0
@@ -606,6 +614,10 @@ object RecordFrm: TRecordFrm
         object PhotoStimTab: TTabSheet
           Caption = 'Photo Stim.'
           ImageIndex = 2
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object cbPhotoStimProgram: TComboBox
             Left = 2
             Top = 0
@@ -715,6 +727,10 @@ object RecordFrm: TRecordFrm
           TabOrder = 0
           object RangeTab: TTabSheet
             Caption = 'Display Contrast'
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object bFullScale: TButton
               Left = 2
               Top = 4
@@ -822,6 +838,10 @@ object RecordFrm: TRecordFrm
           object SlidersTab: TTabSheet
             Caption = 'Sliders'
             ImageIndex = 1
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object Label5: TLabel
               Left = 14
               Top = 0
@@ -1793,7 +1813,53 @@ object RecordFrm: TRecordFrm
     EventF0UseConstant = False
     EventF0DisplayMax = 10.000000000000000000
     EventF0SubtractF0 = False
-    Left = 304
-    Top = 712
+    Left = 248
+    Top = 696
+  end
+  object IDRFileXY: TIDRFile
+    NumFrames = 0
+    NumFrameTypes = 1
+    FrameWidth = 0
+    FrameHeight = 0
+    PixelDepth = 1
+    NumZSections = 1
+    ZSpacing = 1.000000000000000000
+    IntensityScale = 1.000000000000000000
+    XResolution = 1.000000000000000000
+    ADCNumScansInFile = 0
+    ADCNumChannels = 0
+    ADCNumScansPerFrame = 0
+    ADCMaxValue = 0
+    LineScan = False
+    LSTimeCoursePixel = 0
+    LSTimeCourseNumAvg = 1
+    LSTimeCourseBackgroundPixel = 0
+    LSSubtractBackground = False
+    WriteEnabled = False
+    SpectralDataFile = False
+    EventDisplayDuration = 1.000000000000000000
+    EventDeadTime = 1.000000000000000000
+    EventDetectionThreshold = 1000.000000000000000000
+    EventDetectionThresholdPolarity = 0
+    EventDetectionSource = 0
+    EventROI = 0
+    EventBackgROI = 0
+    EventFixedBaseline = True
+    EventRollingBaselinePeriod = 1.000000000000000000
+    EventBaselineLevel = 0
+    EventRatioExclusionThreshold = 0
+    EventRatioTop = 0
+    EventRatioBottom = 1
+    EventRatioDisplayMax = 10.000000000000000000
+    EventRatioRMax = 1.000000000000000000
+    EventFLWave = 0
+    EventF0Wave = 0
+    EventF0Start = 1
+    EventF0End = 1
+    EventF0UseConstant = False
+    EventF0DisplayMax = 10.000000000000000000
+    EventF0SubtractF0 = False
+    Left = 312
+    Top = 696
   end
 end

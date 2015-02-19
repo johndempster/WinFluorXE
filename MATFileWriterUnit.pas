@@ -39,7 +39,7 @@ type
 
       procedure WriteArrayFlags;
 
-      procedure WriteArrayName(name: String);
+      procedure WriteArrayName(name: ANSIString);
 
       procedure WriteDimensionsArray(columns: Integer; rows: Integer);
 
@@ -53,9 +53,13 @@ type
 
       procedure WriteFileHeader;
 
-      procedure WriteDoubleMatrixHeader(name: String; size: Integer);
+      procedure WriteDoubleMatrixHeader( name: ANSIString;
+                                         nRows : Integer;
+                                         nCols : Integer);
 
-      procedure WriteDoubleMatrixValues(var arr: Array of Double; size: Integer);
+      procedure WriteDoubleMatrixValues( var arr: Array of Double;
+                                         nRows : Integer;
+                                         nCols : Integer);
 
   end;
 
@@ -127,10 +131,10 @@ end;
 
 //----------------------------------------------------------------------------//
 
-procedure TMATFileWriter.WriteArrayName(name: String);
+procedure TMATFileWriter.WriteArrayName(name: ANSIString);
 var
   i: Integer;                               // loop index
-  nameArray: array [1..256] of Char;        // Pointer to name array
+  nameArray: array [1..256] of ANSIChar;        // Pointer to name array
   nameArraySize: Integer;                   // Size of name array
   nameType: Integer;                        // Array name type, miINT8, 1
   nameSize: Integer;                        // Array name size
@@ -145,7 +149,7 @@ begin
   MATFileStream.Write(nameSize, 4);
 
   // Size of name array that's aligned to 64-bit boundary
-  nameArraySize := (Ceil(nameSize / 8) * 8) * SizeOf(Char);
+  nameArraySize := (Ceil(nameSize / 8) * 8) * SizeOf(ANSIChar);
 
   // Clear array
   for i := 1 to 256 do
@@ -156,7 +160,7 @@ begin
   // Copy name
   for i := 1 to Length(name) do
   begin
-    nameArray[i] := name[i];
+    nameArray[i] := ANSIChar(name[i]);
   end;
 
   // Write name array
@@ -193,8 +197,8 @@ var
   endianIndicator: SmallInt;              // Endian indicator
   endianTemp: SmallInt;                   // Temp variable for endian indicator
   subsysDataOffset: array[1..8] of Byte;  // subsys data offset - not used
-  textArray: array[1..116] of Char;       // Descriptive text array
-  textString: String;                     // Descriptive text string
+  textArray: array[1..116] of ANSIChar;       // Descriptive text array
+  textString: ANSIString;                     // Descriptive text string
   version: SmallInt;                      // MAT-File version
   i: Integer;                             // loop index
   l: Integer;                             // Length of descriptive text string
@@ -250,7 +254,10 @@ end;
 
 //----------------------------------------------------------------------------//
 
-procedure TMATFileWriter.WriteDoubleMatrixHeader(name: String; size: Integer);
+procedure TMATFileWriter.WriteDoubleMatrixHeader(
+          name: ANSIString;
+          nRows : Integer;
+          nCols : Integer);
 var
   arrayFlagsBytes: Integer;       // Bytes in Array Flags
   arrayNameBytes: Integer;        // Bytes in ArrayName
@@ -268,7 +275,7 @@ begin
   arrayFlagsBytes := 16;
   dimensionsArrayBytes := 16;
   arrayNameBytes := 8 + (Ceil(Length(name) / 8) * 8);
-  dataBytes := 8 + (size * 8);
+  dataBytes := 8 + (nRows*nCols * 8);
 
   // Compute total number of bytes
   totalBytes := arrayFlagsBytes +
@@ -291,7 +298,7 @@ begin
 
 
   // Write dimensions array
-  WriteDimensionsArray(size, 1);
+  WriteDimensionsArray( nCols, nRows);
 
 
   // Write array name
@@ -305,7 +312,7 @@ begin
   MATFileStream.Write(realType, 4);
 
   // Set data size to number of bytes actual data takes up
-  realSize := size * 8;
+  realSize := nRows*nCols * 8;
   MATFileStream.Write(realSize, 4);
 
   // Now, data should be filled in with calls to WriteDoulbeMatrixValues(...)
@@ -314,12 +321,14 @@ end;
 
 //----------------------------------------------------------------------------//
 
-procedure TMATFileWriter.WriteDoubleMatrixValues(var arr: Array of Double;
-                                                 size: Integer);
+procedure TMATFileWriter.WriteDoubleMatrixValues(
+          var arr: Array of Double;
+          nRows : Integer;
+          nCols : Integer);
 begin
 
   // Write double data to file
-  MATFileStream.Write(arr, size * 8);
+  MATFileStream.Write(arr, nRows*nCols * 8);
 
 end;
 

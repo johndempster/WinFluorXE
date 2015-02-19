@@ -169,7 +169,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
-      OnClick = rbASCIIClick
+      OnClick = rbABFClick
     end
     object rbEDR: TRadioButton
       Left = 8
@@ -187,7 +187,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 2
-      OnClick = rbEDRClick
+      OnClick = rbABFClick
     end
     object rbMAT: TRadioButton
       Left = 8
@@ -195,13 +195,14 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       Width = 57
       Height = 17
       Caption = 'MAT'
-      Font.Charset = DEFAULT_CHARSET
+      Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsItalic]
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 3
+      OnClick = rbABFClick
     end
     object rbIBW: TRadioButton
       Left = 8
@@ -219,7 +220,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 4
-      OnClick = rbEDRClick
+      OnClick = rbABFClick
     end
     object rbCFS: TRadioButton
       Left = 8
@@ -234,7 +235,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 5
-      OnClick = rbEDRClick
+      OnClick = rbABFClick
     end
   end
   object bOK: TButton

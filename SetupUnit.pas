@@ -42,7 +42,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ComCtrls, ExtCtrls, Grids, ValEdit, ValidatedEdit, IDRFile, maths, math ;
+  StdCtrls, ComCtrls, ExtCtrls, Grids, ValEdit, ValidatedEdit, IDRFile, maths, math, system.StrUtils ;
 const
      MaxADCChannel = 7 ;
 type
@@ -91,10 +91,6 @@ type
     edWavelength2: TValidatedEdit;
     edVoltage2: TValidatedEdit;
     LSWaveGrp: TGroupBox;
-    Label2: TLabel;
-    Label21: TLabel;
-    cbLSWavelengthStart: TComboBox;
-    cbLSWavelengthEnd: TComboBox;
     LSLEDGrp: TGroupBox;
     Label35: TLabel;
     Label36: TLabel;
@@ -115,48 +111,6 @@ type
     edTIRFOff2: TValidatedEdit;
     edTIRFOn2: TValidatedEdit;
     edTIRFWF2: TValidatedEdit;
-    LSLaserGrp: TGroupBox;
-    Label38: TLabel;
-    Label39: TLabel;
-    LSLaserPage: TPageControl;
-    Laser1Tab: TTabSheet;
-    Label7: TLabel;
-    Label26: TLabel;
-    edLaser1Wavelength: TValidatedEdit;
-    GroupBox2: TGroupBox;
-    Label24: TLabel;
-    Label25: TLabel;
-    Label8: TLabel;
-    edLaser1OffVoltage: TValidatedEdit;
-    edLaser1OnVoltage: TValidatedEdit;
-    edLaser1Delay: TValidatedEdit;
-    edLaser1Intensity: TValidatedEdit;
-    Laser2Tab: TTabSheet;
-    Label9: TLabel;
-    Label22: TLabel;
-    edLaser2Wavelength: TValidatedEdit;
-    edLaser2Intensity: TValidatedEdit;
-    GroupBox10: TGroupBox;
-    Label27: TLabel;
-    Label28: TLabel;
-    Label29: TLabel;
-    edlaser2OffVoltage: TValidatedEdit;
-    edLaser2OnVoltage: TValidatedEdit;
-    edLaser2Delay: TValidatedEdit;
-    Laser3Tab: TTabSheet;
-    Label30: TLabel;
-    Label31: TLabel;
-    edLaser3Wavelength: TValidatedEdit;
-    edLaser3Intensity: TValidatedEdit;
-    GroupBox12: TGroupBox;
-    Label32: TLabel;
-    Label33: TLabel;
-    Label34: TLabel;
-    edLaser3OffVoltage: TValidatedEdit;
-    edLaser3OnVoltage: TValidatedEdit;
-    edLaser3Delay: TValidatedEdit;
-    cbLSLaserStart: TComboBox;
-    cbLSLaserEnd: TComboBox;
     TabSheet1: TTabSheet;
     AnalogInputTab: TTabSheet;
     ADCGrp: TGroupBox;
@@ -285,6 +239,85 @@ type
     Label78: TLabel;
     Label79: TLabel;
     edDarkLevelHi: TValidatedEdit;
+    LSControl0: TPanel;
+    cbLSControl0: TComboBox;
+    lbLSControl0: TLabel;
+    lsControl1: TPanel;
+    lbLSControl1: TLabel;
+    cbLSControl1: TComboBox;
+    lsControl2: TPanel;
+    lbLSControl2: TLabel;
+    cbLSControl2: TComboBox;
+    lsControl3: TPanel;
+    lbLSControl3: TLabel;
+    cbLSControl03: TComboBox;
+    lsControl4: TPanel;
+    lbLSControl4: TLabel;
+    cbLSControl4: TComboBox;
+    lsControl5: TPanel;
+    lbLSControl5: TLabel;
+    cbLSControl05: TComboBox;
+    lsControl6: TPanel;
+    lbLSControl6: TLabel;
+    cbLSControl06: TComboBox;
+    lsControl7: TPanel;
+    lbLSControl7: TLabel;
+    cbLSControl7: TComboBox;
+    LSLaserGrp: TGroupBox;
+    LSLaserPage: TPageControl;
+    Laser1Tab: TTabSheet;
+    Label7: TLabel;
+    Label26: TLabel;
+    edLaser1Wavelength: TValidatedEdit;
+    GroupBox2: TGroupBox;
+    Label24: TLabel;
+    Label25: TLabel;
+    Label8: TLabel;
+    edLaser1OffVoltage: TValidatedEdit;
+    edLaser1OnVoltage: TValidatedEdit;
+    edLaser1Delay: TValidatedEdit;
+    edLaser1Intensity: TValidatedEdit;
+    Laser2Tab: TTabSheet;
+    Label9: TLabel;
+    Label22: TLabel;
+    edLaser2Wavelength: TValidatedEdit;
+    edLaser2Intensity: TValidatedEdit;
+    GroupBox10: TGroupBox;
+    Label27: TLabel;
+    Label28: TLabel;
+    Label29: TLabel;
+    edlaser2OffVoltage: TValidatedEdit;
+    edLaser2OnVoltage: TValidatedEdit;
+    edLaser2Delay: TValidatedEdit;
+    Laser3Tab: TTabSheet;
+    Label30: TLabel;
+    Label31: TLabel;
+    edLaser3Wavelength: TValidatedEdit;
+    edLaser3Intensity: TValidatedEdit;
+    GroupBox12: TGroupBox;
+    Label32: TLabel;
+    Label33: TLabel;
+    Label34: TLabel;
+    edLaser3OffVoltage: TValidatedEdit;
+    edLaser3OnVoltage: TValidatedEdit;
+    edLaser3Delay: TValidatedEdit;
+    XYStateGrp: TGroupBox;
+    Label2: TLabel;
+    cbXYStageType: TComboBox;
+    GroupBox19: TGroupBox;
+    edXMotorSerialNumber: TEdit;
+    Label21: TLabel;
+    Label38: TLabel;
+    edYMotorSerialNumber: TEdit;
+    LimitsGrp: TGroupBox;
+    edXYStageXMin: TValidatedEdit;
+    Label39: TLabel;
+    Label80: TLabel;
+    edXYStageXMax: TValidatedEdit;
+    Label81: TLabel;
+    edXYStageYMin: TValidatedEdit;
+    Label82: TLabel;
+    edXYStageYMax: TValidatedEdit;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure bOKClick(Sender: TObject);
@@ -298,8 +331,8 @@ type
     procedure bResetDevicesClick(Sender: TObject);
     procedure cbCameraModeChange(Sender: TObject);
     procedure cbCameraADCChange(Sender: TObject);
-    procedure cbLSLaserStartChange(Sender: TObject);
     procedure cbCameraNamesChange(Sender: TObject);
+    procedure cbLSControl0Change(Sender: TObject);
   private
     { Private declarations }
     CameraOpenRequired : Boolean ;
@@ -308,6 +341,15 @@ type
     procedure DisplayLightSourceSettingsPanels ;
     procedure ShowLaserSettings ;
     procedure CheckSettings ;
+    procedure DisplayLSControl(
+              Panel : TPanel ;
+              LineName : string ;
+              Index : Integer
+              ) ;
+   Function GetLSControlSetting(
+            Panel : TPanel ) : Integer ;
+   procedure GetAllLSControlSetting ;
+
   public
     { Public declarations }
   end;
@@ -318,7 +360,7 @@ var
 implementation
 
 uses Main, shared, LabIOUnit, TimeCourseUnit, AmpModule , LightSourceUnit,
-  RecUnit, SnapUnit, RecADCOnlyUnit, Sealtest, LogUnit, ZStageUnit;
+  RecUnit, SnapUnit, RecADCOnlyUnit, Sealtest, LogUnit, ZStageUnit, XYStageUnit;
 
 
 {$R *.DFM}
@@ -344,6 +386,8 @@ begin
      if MainFrm.FormExists('SnapFrm') then SnapFrm.Close ;
      if MainFrm.FormExists('RecADCOnlyFrm') then RecADCOnlyFrm.Close ;
      if MainFrm.FormExists('SealTestFrm') then SealTestFrm.Close ;
+     if XYStageFrm.Visible then XYStageFrm.Close ;
+
 
      // Get camera library list
      MainFrm.Cam1.GetCameraLibList( cbCamera.Items ) ;
@@ -391,23 +435,23 @@ begin
      edVoltage2.Value := LightSource.Voltage2 ;
 
      // Laser calibration settings
-     edLaser1Wavelength.Value := LightSource.LaserWavelength[1] ;
-     edLaser1Delay.Value := LightSource.LaserDelay[1] ;
-     edLaser1OffVoltage.Value := LightSource.LaserOffVoltage[1] ;
-     edLaser1OnVoltage.Value := LightSource.LaserOnVoltage[1] ;
-     edLaser1Intensity.Value := LightSource.LaserIntensity[1] ;
+     edLaser1Wavelength.Value := LightSource.LaserWavelength[0] ;
+     edLaser1Delay.Value := LightSource.LaserDelay[0] ;
+     edLaser1OffVoltage.Value := LightSource.LaserOffVoltage[0] ;
+     edLaser1OnVoltage.Value := LightSource.LaserOnVoltage[0] ;
+     edLaser1Intensity.Value := LightSource.LaserIntensity[0] ;
 
-     edLaser2Wavelength.Value := LightSource.LaserWavelength[2] ;
-     edLaser2Delay.Value := LightSource.LaserDelay[2] ;
-     edLaser2OffVoltage.Value := LightSource.LaserOffVoltage[2] ;
-     edLaser2OnVoltage.Value := LightSource.LaserOnVoltage[2] ;
-     edLaser2Intensity.Value := LightSource.LaserIntensity[2] ;
+     edLaser2Wavelength.Value := LightSource.LaserWavelength[1] ;
+     edLaser2Delay.Value := LightSource.LaserDelay[1] ;
+     edLaser2OffVoltage.Value := LightSource.LaserOffVoltage[1] ;
+     edLaser2OnVoltage.Value := LightSource.LaserOnVoltage[1] ;
+     edLaser2Intensity.Value := LightSource.LaserIntensity[1] ;
 
-     edLaser3Wavelength.Value := LightSource.LaserWavelength[3] ;
-     edLaser3Delay.Value := LightSource.LaserDelay[3] ;
-     edLaser3OffVoltage.Value := LightSource.LaserOffVoltage[3] ;
-     edLaser3OnVoltage.Value := LightSource.LaserOnVoltage[3] ;
-     edLaser3Intensity.Value := LightSource.LaserIntensity[3] ;
+     edLaser3Wavelength.Value := LightSource.LaserWavelength[2] ;
+     edLaser3Delay.Value := LightSource.LaserDelay[2] ;
+     edLaser3OffVoltage.Value := LightSource.LaserOffVoltage[2] ;
+     edLaser3OnVoltage.Value := LightSource.LaserOnVoltage[2] ;
+     edLaser3Intensity.Value := LightSource.LaserIntensity[2] ;
 
      ShowLaserSettings ;
 
@@ -442,6 +486,16 @@ begin
      edADCInterval.LoLimit := ADCMinInterval ;
 
      edTemperatureSetPoint.Value := MainFrm.Cam1.CameraTemperatureSetPoint ;
+
+     // XY stage
+     XYStageFrm.GetList ( cbXYStageType.Items ) ;
+     cbXYStageType.ItemIndex := cbXYStageType.Items.IndexOfObject(TObject(XYStageFrm.StageType)) ;
+     edXMotorSerialNumber.Text := format('%d',[XYStageFrm.XMotorID]) ;
+     edYMotorSerialNumber.Text := format('%d',[XYStageFrm.YMotorID]) ;
+     edXYStageXMin.Value := XYStageFrm.XMin ;
+     edXYStageXMax.Value := XYStageFrm.XMax ;
+     edXYStageYMin.Value := XYStageFrm.YMin ;
+     edXYStageYMax.Value := XYStageFrm.YMax ;
 
      // Z Stage
      ckZStageEnabled.Checked := ZStage.Available ;
@@ -480,7 +534,7 @@ var
 begin
 
      LSCalGrp.Visible := LightSource.UsercalibrationRequired ;
-     LSLaserGrp.Visible := LightSource.LaserSettingsRequired ;
+//     LSLaserGrp.Visible := LightSource.LaserSettingsRequired ;
      LSLEDGrp.Visible := LightSource.LEDSettingsRequired ;
      LSTIRFGrp.Visible := LightSource.TIRFSettingsRequired ;
 
@@ -541,7 +595,7 @@ begin
      cbADCIn.Items.AddObject('None',TObject(MaxResources+1)) ;
      for i := 0 to LabIO.NumResources-1 do
          if LabIO.Resource[i].ResourceType = ADCIn then begin
-         s := format('Device %d: ADC%d-%d',
+         s := format('Device %d: AI%d-%d',
               [LabIO.Resource[i].Device,
                LabIO.Resource[i].StartChannel,
                LabIO.Resource[i].EndChannel]) ;
@@ -562,7 +616,7 @@ begin
      for i := 0 to LabIO.NumResources-1 do begin
          if LabIO.Resource[i].ResourceType = DACOut then begin
             // DAC outputs
-            s := format('Device %d: DAC%d',
+            s := format('Device %d: AO%d',
                  [LabIO.Resource[i].Device,
                   LabIO.Resource[i].StartChannel]) ;
             cbCameraStart.Items.AddObject(s,TObject(i))
@@ -570,7 +624,7 @@ begin
          else if (LabIO.Resource[i].ResourceType = DIGOut) and
                  LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
             // Digital outputs
-            s := format('Device %d: DIG%d',
+            s := format('Device %d: PO.%d',
                  [LabIO.Resource[i].Device,
                   LabIO.Resource[i].StartChannel]) ;
                 cbCameraStart.Items.AddObject(s,TObject(i))
@@ -592,7 +646,7 @@ begin
      cbVCommand0.Items.AddObject('None',TObject(MaxResources+1)) ;
      for i := 0 to LabIO.NumResources-1 do
          if LabIO.Resource[i].ResourceType = DACOut then begin
-         s := format('Device %d: DAC%d',
+         s := format('Device %d: AO%d',
               [LabIO.Resource[i].Device,
                LabIO.Resource[i].StartChannel]) ;
          cbVCommand0.Items.AddObject(s,TObject(i))
@@ -611,45 +665,14 @@ begin
     // Light source control lines
     // --------------------------
 
-     cbLSWavelengthStart.Clear ;
-     cbLSWavelengthStart.Items.AddObject('None',TObject(MaxResources+1)) ;
-     for i := 0 to LabIO.NumResources-1 do begin
-         if LabIO.Resource[i].ResourceType = DACOut then begin
-            // DAC outputs
-            s := format('Device %d: DAC%d',
-                 [LabIO.Resource[i].Device,
-                  LabIO.Resource[i].StartChannel]) ;
-            cbLSWavelengthStart.Items.AddObject(s,TObject(i))
-            end
-         else if (LabIO.Resource[i].ResourceType = DIGOut) and
-                 (not LightSource.DACOutputsRequired) and
-                 LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
-                 // Digital outputs
-                 s := format('Device %d: DIG%d',
-                     [LabIO.Resource[i].Device,
-                      LabIO.Resource[i].StartChannel]) ;
-                cbLSWavelengthStart.Items.AddObject(s,TObject(i))
-            end ;
-         end ;
-    cbLSWavelengthEnd.Items.Assign(cbLSWavelengthStart.Items) ;
-
-    // Light source wavelength control (start and end line)
-    cbLSWavelengthStart.ItemIndex := Max( 0,
-        cbLSWavelengthStart.Items.IndexOfObject(TObject(MainFrm.IOConfig.LSWavelengthStart))) ;
-    cbLSWavelengthEnd.ItemIndex := Max( 0,
-        cbLSWavelengthEnd.Items.IndexOfObject(TObject(MainFrm.IOConfig.LSWavelengthEnd))) ;
-
-    // Laser start/end control lines
-    if not LightSource.LaserSettingsRequired then begin
-       MainFrm.IOConfig.LSLaserStart := 0 ;
-       MainFrm.IOConfig.LSLaserEnd := 0 ;
-       end;
-    cbLSLaserStart.Items.Assign(cbLSWavelengthStart.Items) ;
-    cbLSLaserEnd.Items.Assign(cbLSWavelengthStart.Items) ;
-    cbLSLaserStart.ItemIndex := Max( 0,
-        cbLSLaserStart.Items.IndexOfObject(TObject(MainFrm.IOConfig.LSLaserStart))) ;
-    cbLSLaserEnd.ItemIndex := Max( 0,
-        cbLSLaserEnd.Items.IndexOfObject(TObject(MainFrm.IOConfig.LSLaserEnd))) ;
+    DisplayLSControl( lsControl0, LightSource.ControlLineName(0), MainFrm.IOConfig.LSControlLine[0]  ) ;
+    DisplayLSControl( lsControl1, LightSource.ControlLineName(1), MainFrm.IOConfig.LSControlLine[1] ) ;
+    DisplayLSControl( lsControl2, LightSource.ControlLineName(2),MainFrm.IOConfig.LSControlLine[2] ) ;
+    DisplayLSControl( lsControl3, LightSource.ControlLineName(3),MainFrm.IOConfig.LSControlLine[3] ) ;
+    DisplayLSControl( lsControl4, LightSource.ControlLineName(4),MainFrm.IOConfig.LSControlLine[4] ) ;
+    DisplayLSControl( lsControl5, LightSource.ControlLineName(5),MainFrm.IOConfig.LSControlLine[5] ) ;
+    DisplayLSControl( lsControl6, LightSource.ControlLineName(6),MainFrm.IOConfig.LSControlLine[6] ) ;
+    DisplayLSControl( lsControl7, LightSource.ControlLineName(7),MainFrm.IOConfig.LSControlLine[7] ) ;
 
     // Emission filter control lines
     // -----------------------------
@@ -660,7 +683,7 @@ begin
          if (LabIO.Resource[i].ResourceType = DIGOut) and
                  LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
                  // Digital outputs
-                 s := format('Device %d: DIG%d',
+                 s := format('Device %d: PO0.%d',
                      [LabIO.Resource[i].Device,
                       LabIO.Resource[i].StartChannel]) ;
                 cbEMFilterStart.Items.AddObject(s,TObject(i))
@@ -680,7 +703,7 @@ begin
     for i := 0 to LabIO.NumResources-1 do
          if (LabIO.Resource[i].ResourceType = DIGOut) and
             LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
-         s := format('Device %d: DIG%d',
+         s := format('Device %d: PO0.%d',
               [LabIO.Resource[i].Device,
                LabIO.Resource[i].StartChannel]) ;
          cbDigitalStimStart.Items.AddObject(s,TObject(i))
@@ -689,7 +712,7 @@ begin
     for i := 0 to LabIO.NumResources-1 do
          if LabIO.Resource[i].ResourceType = DACOut then begin
             // DAC outputs
-            s := format('Device %d: DAC%d',
+            s := format('Device %d: AO%d',
                  [LabIO.Resource[i].Device,
                   LabIO.Resource[i].StartChannel]) ;
             cbDigitalStimStart.Items.AddObject(s,TObject(i))
@@ -712,7 +735,7 @@ begin
      cbPhotoStimX.Items.AddObject('None',TObject(MaxResources+1)) ;
      for i := 0 to LabIO.NumResources-1 do
          if LabIO.Resource[i].ResourceType = DACOut then begin
-         s := format('Device %d: DAC%d',
+         s := format('Device %d: AO%d',
               [LabIO.Resource[i].Device,
                LabIO.Resource[i].StartChannel]) ;
          cbPhotoStimX.Items.AddObject(s,TObject(i))
@@ -762,24 +785,12 @@ begin
     rbPhotoStimShutterActiveLow.Checked := not rbPhotoStimShutterActiveHigh.Checked ;
     edPhotoStimShutterLatency.Value := MainFrm.IOConfig.PhotoStimShutterLatency ;
 
-    // Moving to PhotoStimFrm
-    //edPowerMinimum.Value := MainFrm.IOConfig.PhotoStimIPowerMin ;
-    //edPowerMaximum.Value := MainFrm.IOConfig.PhotoStimIPowerMax ;
-    //edBiasSetting.Value := MainFrm.IOConfig.PhotoStimIBias ;
-    //edVoltagePi.Value := MainFrm.IOConfig.PhotoStimIVoltagePi ;
-
-    //if MainFrm.IOConfig.PhotoStimIPolarizationCross then rbPolarizationCross.Checked := True ;
-    //rbPolarizationParallel.Checked := Not rbPolarizationCross.Checked ;
-
-    //if MainFrm.IOConfig.PhotoStimIConoptics302 then rbConoptics302.Checked := True;
-    //rbConoptics302RM.Checked := Not rbConoptics302.Checked ;
-
      // Light source shutter
      cbLSShutter.Clear ;
      cbLSShutter.Items.AddObject('None',TObject(MaxResources+1)) ;
      for i := 0 to LabIO.NumResources-1 do
          if (LabIO.Resource[i].ResourceType = DIGOut) then begin
-         s := format('Device %d: DIG%d',
+         s := format('Device %d: PO0.%d',
               [LabIO.Resource[i].Device,
                LabIO.Resource[i].StartChannel]) ;
          cbLSShutter.Items.AddObject(s,TObject(i))
@@ -801,7 +812,7 @@ begin
      cbZStageControl.Items.AddObject('None',TObject(MaxResources+1)) ;
      for i := 0 to LabIO.NumResources-1 do
          if LabIO.Resource[i].ResourceType = DACOut then begin
-         s := format('Device %d: DAC%d',
+         s := format('Device %d: AO%d',
               [LabIO.Resource[i].Device,
                LabIO.Resource[i].StartChannel]) ;
          cbZStageControl.Items.AddObject(s,TObject(i)) ;
@@ -811,6 +822,86 @@ begin
 
      end ;
 
+procedure TSetupFrm.DisplayLSControl(
+          Panel : TPanel ;
+          LineName : string ;
+          Index : Integer
+          ) ;
+// ---------------------------------------
+// Display light source control line panel
+// ---------------------------------------
+var
+    ComboBox : TComboBox ;
+    Lab : TLabel ;
+    i : Integer ;
+    s : string ;
+begin
+
+    // If line has no name hide panel and exit
+    if LineName = '' then begin
+       Panel.Visible := False ;
+       Exit ;
+       end
+    else Panel.Visible := True ;
+
+    // Local components
+    for i  := 0 to Panel.ControlCount-1 do begin
+        if ANSIContainsText(Panel.Controls[i].Name,'cbLS') then ComboBox := TComboBox(Panel.Controls[i])
+        else if ANSIContainsText(Panel.Controls[i].Name,'lbLS') then Lab := TLabel(Panel.Controls[i]) ;
+        end;
+
+    Lab.Caption := LineName ;
+
+    ComboBox.Clear ;
+    ComboBox.Items.AddObject('None',TObject(MaxResources+1)) ;
+    for i := 0 to LabIO.NumResources-1 do begin
+        if LabIO.Resource[i].ResourceType = DACOut then begin
+            // DAC outputs
+            s := format('Device %d: AO%d',
+                 [LabIO.Resource[i].Device,
+                  LabIO.Resource[i].StartChannel]) ;
+            ComboBox.Items.AddObject(s,TObject(i))
+            end
+         else if (LabIO.Resource[i].ResourceType = DIGOut) and
+                 (not LightSource.DACOutputsRequired) and
+                 LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
+                 // Digital outputs
+                 s := format('Device %d: PO0.%d',
+                     [LabIO.Resource[i].Device,
+                      LabIO.Resource[i].StartChannel]) ;
+                ComboBox.Items.AddObject(s,TObject(i))
+            end ;
+         end ;
+
+    ComboBox.ItemIndex := Max( 0, ComboBox.Items.IndexOfObject(TObject(Index))) ;
+
+    lsWaveGrp.Height := Panel.Top + Panel.Height + 10 ;
+
+
+    end;
+
+
+Function TSetupFrm.GetLSControlSetting(
+         Panel : TPanel ) : Integer ;
+// --------------------------------------------
+// Return settings of light source control line
+// --------------------------------------------
+var
+    ComboBox : TComboBox ;
+    i : Integer ;
+begin
+
+    if not Panel.Visible then begin
+       Result := 0 ;
+       Exit ;
+       end;
+
+    // Local components
+    for i  := 0 to Panel.ControlCount-1 do begin
+        if ANSIContainsText(Panel.Controls[i].Name,'cbLS') then ComboBox := TComboBox(Panel.Controls[i]) ;
+        end;
+    Result := Integer(ComboBox.Items.Objects[ComboBox.ItemIndex]) ;
+    end;
 
 procedure TSetupFrm.NewCamera ;
 // ---------------------------------------------
@@ -924,6 +1015,8 @@ procedure TSetupFrm.bOKClick(Sender: TObject);
 // ------------------------------------
 // Update settings and close setup form
 // ------------------------------------
+var
+    BadChar : Integer ;
 begin
 
     Screen.Cursor := crDefault ;
@@ -964,16 +1057,8 @@ begin
     MainFrm.IOConfig.LSShutterActiveHigh := rbLSShutterActiveHigh.Checked ;
 
     // Monochromator/filter wavelength control lines
-    MainFrm.IOConfig.LSWavelengthStart :=
-    Integer(cbLSWavelengthStart.Items.Objects[cbLSWavelengthStart.ItemIndex]) ;
-    MainFrm.IOConfig.LSWavelengthEnd :=
-    Integer(cbLSWavelengthEnd.Items.Objects[cbLSWavelengthEnd.ItemIndex]) ;
+    GetAllLSControlSetting ;
 
-    // Laser control lines
-    MainFrm.IOConfig.LSLaserStart :=
-      Integer(cbLSLaserStart.Items.Objects[cbLSLaserStart.ItemIndex]) ;
-    MainFrm.IOConfig.LSLaserEnd :=
-      Integer(cbLSLaserEnd.Items.Objects[cbLSLaserEnd.ItemIndex]) ;
     MainFrm.IOConfig.DigitalStimStart :=
       Integer(cbDigitalStimStart.Items.Objects[cbDigitalStimStart.ItemIndex]) ;
 
@@ -1007,18 +1092,6 @@ begin
     MainFrm.IOConfig.PhotoStimMeter :=
     Integer(cbPhotoStimMeterInput.Items.Objects[cbPhotoStimMeterInput.ItemIndex]) ;
 
-    // Moving to PhotoStimFrm
-    //MainFrm.IOConfig.PhotoStimIPowerMin := edPowerMinimum.Value ;
-    //MainFrm.IOConfig.PhotoStimIPowerMax := edPowerMaximum.Value ;
-    //MainFrm.IOConfig.PhotoStimIBias := edBiasSetting.Value ;
-    //MainFrm.IOConfig.PhotoStimIVoltagePi := edVoltagePi.Value ;
-
-    //if rbPolarizationCross.Checked then MainFrm.IOConfig.PhotoStimIPolarizationCross := True ;
-    //if rbPolarizationParallel.Checked then MainFrm.IOConfig.PhotoStimIPolarizationCross := False ;
-
-    //if rbConoptics302.Checked then MainFrm.IOConfig.PhotoStimIConoptics302 := True ;
-    //if rbConoptics302RM.Checked then MainFrm.IOConfig.PhotoStimIConoptics302 := False ;
-
     MainFrm.IOConfig.ClockSyncLine := Integer(cbClockSynchronisation.Items.Objects[
                                        cbClockSynchronisation.ItemIndex]) ;
 
@@ -1030,23 +1103,23 @@ begin
     LightSource.Voltage2 := edVoltage2.Value ;
 
     // Laser calibration settings
-    LightSource.LaserWavelength[1] := edLaser1Wavelength.Value ;
-    LightSource.LaserDelay[1] := edLaser1Delay.Value ;
-    LightSource.LaserOffVoltage[1] := edLaser1OffVoltage.Value ;
-    LightSource.LaserOnVoltage[1] := edLaser1OnVoltage.Value ;
-    LightSource.LaserIntensity[1] := edLaser1Intensity.Value ;
+    LightSource.LaserWavelength[0] := edLaser1Wavelength.Value ;
+    LightSource.LaserDelay[0] := edLaser1Delay.Value ;
+    LightSource.LaserOffVoltage[0] := edLaser1OffVoltage.Value ;
+    LightSource.LaserOnVoltage[0] := edLaser1OnVoltage.Value ;
+    LightSource.LaserIntensity[0] := edLaser1Intensity.Value ;
 
-    LightSource.LaserWavelength[2] := edLaser2Wavelength.Value ;
-    LightSource.LaserDelay[2] := edLaser2Delay.Value ;
-    LightSource.LaserOffVoltage[2] := edLaser2OffVoltage.Value ;
-    LightSource.LaserOnVoltage[2] := edLaser2OnVoltage.Value ;
-    LightSource.LaserIntensity[2] := edLaser2Intensity.Value ;
+    LightSource.LaserWavelength[1] := edLaser2Wavelength.Value ;
+    LightSource.LaserDelay[1] := edLaser2Delay.Value ;
+    LightSource.LaserOffVoltage[1] := edLaser2OffVoltage.Value ;
+    LightSource.LaserOnVoltage[1] := edLaser2OnVoltage.Value ;
+    LightSource.LaserIntensity[1] := edLaser2Intensity.Value ;
 
-    LightSource.LaserWavelength[3] := edLaser3Wavelength.Value ;
-    LightSource.LaserDelay[3] := edLaser3Delay.Value ;
-    LightSource.LaserOffVoltage[3] := edLaser3OffVoltage.Value ;
-    LightSource.LaserOnVoltage[3] := edLaser3OnVoltage.Value ;
-    LightSource.LaserIntensity[3] := edLaser3Intensity.Value ;
+    LightSource.LaserWavelength[2] := edLaser3Wavelength.Value ;
+    LightSource.LaserDelay[2] := edLaser3Delay.Value ;
+    LightSource.LaserOffVoltage[2] := edLaser3OffVoltage.Value ;
+    LightSource.LaserOnVoltage[2] := edLaser3OnVoltage.Value ;
+    LightSource.LaserIntensity[2] := edLaser3Intensity.Value ;
 
     LightSource.LEDOffVoltage := edLEDOffVoltage.Value ;
     LightSource.LEDMaxVoltage := edLEDMaxVoltage.Value ;
@@ -1058,18 +1131,6 @@ begin
      LightSource.TIRFOff[2] := edTIRFOff2.Value ;
      LightSource.TIRFOn[2] := edTIRFOn2.Value ;
      LightSource.TIRFWF[2] := edTIRFWF2.Value ;
-
-    // If outputs are digital force LED voltages to TTL values (0 and 5V)
-    if LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].ResourceType = DIGOut then begin
-       if LightSource.LEDMaxVoltage <> 0.0 then begin
-          LightSource.LEDMaxVoltage := 5.0 ;
-          LightSource.LEDOffVoltage := 0.0 ;
-          end
-       else begin
-          LightSource.LEDMaxVoltage := 0.0 ;
-          LightSource.LEDOffVoltage := 5.0 ;
-          end ;
-       end ;
 
     // Wavelength selected when light source shutters closed
     LightSource.ShutterClosedWavelength := edShutterClosedWavelength.Value ;
@@ -1098,6 +1159,15 @@ begin
     MainFrm.Cam1.CameraTemperatureSetPoint := edTemperatureSetPoint.Value ;
 
     MainFrm.Cam1.AdditionalReadoutTime := edCameraReadoutTime.Value ;
+
+     // XY stage
+     Val(edXMotorSerialNumber.Text,XYStageFrm.XMotorID, BadChar ) ;
+     Val(edYMotorSerialNumber.Text,XYStageFrm.YMotorID, BadChar );
+     XYStageFrm.XMin := edXYStageXMin.Value ;
+     XYStageFrm.XMax := edXYStageXMax.Value ;
+     XYStageFrm.YMin := edXYStageYMin.Value ;
+     XYStageFrm.YMax := edXYStageYMax.Value ;
+     XYStageFrm.StageType := Integer(cbXYStageType.Items.Objects[cbXYStageType.ItemIndex]) ;
 
      // Z Stage
      ZStage.Available := ckZStageEnabled.Checked ;
@@ -1134,6 +1204,22 @@ begin
     Close ;
 
     end;
+
+procedure TSetupFrm.GetAllLSControlSetting ;
+// --------------------------------------------------
+// Get all LS conntrol line settings from combo boxes
+// --------------------------------------------------
+begin
+    // Monochromator/filter wavelength control lines
+    MainFrm.IOConfig.LSControlLine[0] := GetLSControlSetting( LSControl0 ) ;
+    MainFrm.IOConfig.LSControlLine[1] := GetLSControlSetting( LSControl1 ) ;
+    MainFrm.IOConfig.LSControlLine[2] := GetLSControlSetting( LSControl2 ) ;
+    MainFrm.IOConfig.LSControlLine[3] := GetLSControlSetting( LSControl3 ) ;
+    MainFrm.IOConfig.LSControlLine[4] := GetLSControlSetting( LSControl4 ) ;
+    MainFrm.IOConfig.LSControlLine[5] := GetLSControlSetting( LSControl5 ) ;
+    MainFrm.IOConfig.LSControlLine[6] := GetLSControlSetting( LSControl6 ) ;
+    MainFrm.IOConfig.LSControlLine[7] := GetLSControlSetting( LSControl7 ) ;
+    end ;
 
 
 procedure TSetupFrm.bCancelClick(Sender: TObject);
@@ -1193,6 +1279,11 @@ begin
 
      // Force updates to control line list
      NewInterfaceCards ;
+
+     // Display light source settings panels
+     GetAllLSControlSetting ;
+     ShowLaserSettings ;
+     DisplayLightSourceSettingsPanels ;
 
      end;
 
@@ -1325,23 +1416,58 @@ begin
 
 
 procedure TSetupFrm.ShowLaserSettings ;
+// -----------------------------------------------------
+// Make laser control tabs visible if laser is available
+// -----------------------------------------------------
 var
-    iStart,iEnd,nLasers : Integer ;
+    i,nLasers : Integer ;
 begin
-    iStart := Integer(cbLSLaserStart.Items.Objects[cbLSLaserStart.ItemIndex]) ;
-    iEnd := Integer(cbLSLaserEnd.Items.Objects[cbLSLaserEnd.ItemIndex]) ;
-    nLasers := (LabIO.Resource[iEnd].StartChannel - LabIO.Resource[iStart].StartChannel) + 1 ;
-    Laser1Tab.TabVisible := True ;
-    if nLasers >= 2 then Laser2Tab.TabVisible := True
-                    else Laser2Tab.TabVisible := False ;
-    if nLasers >= 3 then Laser3Tab.TabVisible := True
-                    else Laser3Tab.TabVisible := False ;
+    nLasers := 0 ;
+    Laser1Tab.TabVisible := False ;
+    Laser1Tab.Caption := '' ;
+    Laser2Tab.TabVisible := False ;
+    Laser2Tab.Caption := '' ;
+    Laser3Tab.TabVisible := False ;
+    Laser3Tab.Caption := '' ;
+    for i := 0 to MaxLSControlLine do begin
+        outputdebugstring(pchar(LightSource.ControlLineName(i)+
+        format(' %d',[MainFrm.IOConfig.LSControlLine[i]]) ));
+        if ANSIContainsText( LightSource.ControlLineName(i), 'LED/Laser') and
+           MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSControlLine[i]) then begin
+           Inc(nLasers) ;
+           case nLasers of
+              1 : begin
+                Laser1Tab.TabVisible := True ;
+                Laser1Tab.Caption := LightSource.ControlLineName(i) ;
+                end;
+              2 : begin
+                Laser2Tab.TabVisible := True ;
+                Laser2Tab.Caption := LightSource.ControlLineName(i) ;
+                end;
+              3 : begin
+                Laser3Tab.TabVisible := True ;
+                Laser3Tab.Caption := LightSource.ControlLineName(i) ;
+                end;
+              end;
+           end;
+        end;
+    LSLaserPage.Invalidate ;
+    if nLasers > 0 then LSLaserGrp.Visible := True
+                   else  LSLaserGrp.Visible := False ;
+
     end ;
 
-procedure TSetupFrm.cbLSLaserStartChange(Sender: TObject);
+
+procedure TSetupFrm.cbLSControl0Change(Sender: TObject);
+// ---------------------------------
+// Light source control line changed
+// ---------------------------------
 begin
-    ShowLaserSettings ;
-    end;
+     GetAllLSControlSetting ;
+     ShowLaserSettings ;
+     DisplayLightSourceSettingsPanels ;
+
+     end;
 
 
 procedure TSetupFrm.CheckSettings ;
@@ -1368,10 +1494,10 @@ begin
          if MainFrm.IOConfig.CameraStart = i then  Inc(ResCount[i]);
          for j := 0 to High(MainFrm.IOConfig.VCommand) do
              if MainFrm.IOConfig.VCommand[j] = i then  Inc(ResCount[i]);
-         for j := MainFrm.IOConfig.LSWavelengthStart to MainFrm.IOConfig.LSWavelengthEnd do
-             if j = i then  Inc(ResCount[i]);
-         for j := MainFrm.IOConfig.LSLaserStart to MainFrm.IOConfig.LSLaserEnd do
-             if j = i then  Inc(ResCount[i]);
+
+         for j := 0 to High(MainFrm.IOConfig.LSControlLine) do
+             if MainFrm.IOConfig.LSControlLine[j] = i then Inc(ResCount[i]);
+
          for j := MainFrm.IOConfig.DigitalStimStart to MainFrm.IOConfig.DigitalStimEnd do
              if j = i then  Inc(ResCount[i]);
          if MainFrm.IOConfig.PhotoStimX = i then  Inc(ResCount[i]);
@@ -1390,7 +1516,7 @@ begin
 
       // Check for multiple analog output channel selection
       for i := 0 to High(ResCount) do if ResCount[i] >= 2 then begin
-          ShowMessage(format('SETUP: Warning! Channel Device%d:DAC%d selected more than once!',
+          ShowMessage(format('SETUP: Warning! Channel Device%d:AO%d selected more than once!',
                   [LabIO.Resource[i].Device,LabIO.Resource[i].StartChannel]));
           end;
 
@@ -1400,10 +1526,8 @@ begin
      for i := 0 to High(LabIO.Resource) do if LabIO.Resource[i].ResourceType = DIGOut then begin
          if MainFrm.IOConfig.CameraStart = i then  Inc(ResCount[i]);
          if MainFrm.IOConfig.LSShutter = i then  Inc(ResCount[i]);
-         for j := MainFrm.IOConfig.LSWavelengthStart to MainFrm.IOConfig.LSWavelengthEnd do
-             if j = i then  Inc(ResCount[i]);
-         for j := MainFrm.IOConfig.LSLaserStart to MainFrm.IOConfig.LSLaserEnd do
-             if j = i then  Inc(ResCount[i]);
+         for j := 0 to High(MainFrm.IOConfig.LSControlLine) do
+             if MainFrm.IOConfig.LSControlLine[i] = i then Inc(ResCount[i]);
          for j := MainFrm.IOConfig.DigitalStimStart to MainFrm.IOConfig.DigitalStimEnd do
              if j = i then  Inc(ResCount[i]);
          if MainFrm.IOConfig.PhotoStimShutter = i then  Inc(ResCount[i]);
@@ -1411,7 +1535,7 @@ begin
 
       // Check for multiple digital output channel selection
       for i := 0 to High(ResCount) do if ResCount[i] >= 2 then begin
-          ShowMessage(format('SETUP: Warning! Channel Device%d:DIG%d selected more than once!',
+          ShowMessage(format('SETUP: Warning! Channel Device%d:PO0.%d selected more than once!',
                   [LabIO.Resource[i].Device,LabIO.Resource[i].StartChannel]));
           end;
 

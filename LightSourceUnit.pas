@@ -38,11 +38,12 @@ unit LightSourceUnit;
 // 02.12.14 JD LEDFilterNumToVoltage() No. LEDS no longer restricted to 4.
 //             lsMaxLasers increased from 3 to 8
 //             Light source intensities default to 50%
+// 17.02.15 JD Eight light source control lines can now be set individually to DAC or DIG outputs
 
 interface
 
 uses
-  Windows,SysUtils, Classes, math, dialogs ;
+  Windows,SysUtils, Classes, math, dialogs, strutils ;
 
 {$IFDEF WIN64}
 
@@ -161,6 +162,7 @@ type
       Device : Integer ;
       Chan : Integer ;
       Name : String ;
+      ResourceType : Integer ;
       end ;
 
   TLightSource = class(TDataModule)
@@ -168,46 +170,25 @@ type
   private
     { Private declarations }
     FDeviceType : Integer ;        // Light source device in use
-    NumVControlInUse : Integer ;
+//    NumVControlInUse : Integer ;
     VControlInUse : Array[0..lsMaxVControl] of TLSVcontrol ;
     LastOptoscanBandwidth : Single ;
 
-    procedure OptoScanWavelengthToVoltage(
-              Wavelength : Single ;
-              BandWidth : Single ;
-              var VControl : Array of TLSVControl ;
-              var NumVControl : Integer
-              ) ;
+    procedure OptoScanWavelengthToVoltage( Wavelength : Single ;
+                                           BandWidth : Single
+                                           ) ;
 
-    procedure TillWavelengthToVoltage(
-          Wavelength : Single ;
-          var VControl : Array of TLSVControl ;
-          var NumVControl : Integer
-          ) ;
+    procedure TillWavelengthToVoltage(Wavelength : Single ) ;
 
-    procedure TillWithLasersWavelengthToVoltage(
-          Wavelength : Single ;
-          var VControl : Array of TLSVControl ;
-          var NumVControl : Integer
-          ) ;
+    procedure TillWithLasersWavelengthToVoltage(Wavelength : Single) ;
 
-    procedure Lambda10FilterNumToVoltage(
-              FilterNum : Integer ;
-              var VControl : Array of TLSVControl ;
-              var NumVControl : Integer
-              ) ;
+    procedure Lambda10FilterNumToVoltage(FilterNum : Integer) ;
 
-    procedure LEDFilterNumToVoltage(
-              FilterNum : Integer ;
-              var VControl : Array of TLSVControl ;
-              var NumVControl : Integer
-              ) ;
+    procedure LEDFilterNumToVoltage( FilterNum : Integer) ;
 
     procedure OptoScanWithLasersWavelengthToVoltage(
               Wavelength : Single ;
-              BandWidth : Single ;
-              var VControl : Array of TLSVControl ;
-              var NumVControl : Integer
+              BandWidth : Single
               ) ;
 
     function LaserVoltage(
@@ -216,15 +197,11 @@ type
          ) : Single ;
 
     procedure SutterDG4FilterNumToVoltage(
-              FilterNum : Integer ;
-              var VControl : Array of TLSVControl ;
-              var NumVControl : Integer
+              FilterNum : Integer
               ) ;
 
     procedure CairnTIRFPositionToVoltage(
-              GalvoPosition : Single ;                  // TIRF Galvo position
-              var VControl : Array of TLSVControl ;    // Control voltages
-              var NumVControl : Integer ) ;            // No. control channels
+              GalvoPosition : Single ) ;
 
     procedure SetDeviceType( Value : Integer ) ;
 
@@ -250,7 +227,6 @@ type
     LaserOffVoltage: Array[0..lsMaxLightSources-1] of Single ;
     LaserOnVoltage: Array[0..lsMaxLightSources-1] of Single ;
     LaserIntensity: Array[0..lsMaxLightSources-1] of Single ;
-    LaserAvailable: Array[0..lsMaxLightSources-1] of Boolean ;
 
     // TIRF angle galvo control voltages
     TIRFOff: Array[1..lsMaxTIRFGalvos] of Single ; // Off position
@@ -266,35 +242,32 @@ type
     procedure WavelengthToVoltage(
               FilterNum : Integer ;
               Wavelength : Single ;
-              BandWidth : Single ;
-              var VControl : Array of TLSVControl ;
-              var NumVControl : Integer
+              BandWidth : Single
               ) ;
 
-    procedure ShutterClosedVoltages(
-              var VControl : Array of TLSVControl ;
-              var NumVControl : Integer
-              ) ;
+    procedure ShutterClosedVoltages ;
 
     function WavelengthChangeTime : Single ;
     function WavelengthMin : Single ;
     function WavelengthMax : Single ;
     function UserCalibrationRequired : Boolean ;
-    function LaserSettingsRequired : Boolean ;
+    //function LaserSettingsRequired : Boolean ;
     function LEDSettingsRequired : Boolean ;
     function TIRFSettingsRequired : Boolean ;
-    function WavelengthControlRequired : Boolean ;
     function ShutterControlRequired : Boolean ;
     function DACOutputsRequired : Boolean ;
     function ShutterClosedWavelengthRequired : Boolean ;
     function ShutterBlankingTime : Single ;
+    function ControlLineName( Num : Integer ) : String ;
+    function VariableIntensitySource( iLine : Integer ) : Boolean ;
+    function NumControlLines : Integer ;
 
     Property DeviceType : Integer read FDeviceType write SetDeviceType ;
 
   end;
 
 var
-  LightSource: TLightSource;
+  LightSource : TLightSource ;
 
 implementation
 
@@ -323,6 +296,61 @@ begin
 
      end ;
 
+function TLightSource.ControlLineName( Num : Integer ) : String ;
+// ----------------------------------------
+// Return name of light source control line
+// ----------------------------------------
+var
+    i : Integer ;
+    Names : Array[0..7] of string ;
+begin
+
+   for i := 0 to High(Names) do Names[i] := '' ;
+
+   case FDeviceType of
+     lsOptoScan1200,
+     lsOptoScan1800,
+     lsOptoScan2000 : begin
+        Names[0] := 'Input Slit' ;
+        Names[1] := 'Wavelength' ;
+        Names[2] := 'Output Slit' ;
+        end ;
+     lsOptoscanWithLasers : begin
+        Names[0] := 'Input Slit' ;
+        Names[1] := 'Wavelength' ;
+        Names[2] := 'Output Slit' ;
+        Names[3] := 'LED/Laser1' ;
+        Names[4] := 'LED/Laser2' ;
+        Names[5] := 'LED/Laser3' ;
+        Names[6] := 'Laser #1 Shutter:' ;
+        end ;
+     lsTill : begin
+        Names[0] := 'Wavelength:' ;
+        end ;
+     lsTillWithLasers : begin
+        Names[0] := 'Wavelength:' ;
+        Names[1] := 'LED/Laser1' ;
+        end ;
+     lsLambda10 : begin
+       for i := 0 to High(Names) do Names[i] := format('Line%d:',[i]);
+       end ;
+     lsSutterDG4 : begin
+        Names[0] := 'Line 0' ;
+        Names[1] := 'Line 1' ;
+        Names[2] := 'Line 2' ;
+       end ;
+     lsLED : begin
+        for i := 0 to High(Names) do Names[i] := format('LED%d',[i]);
+        end ;
+     lsCairnTIRF : begin
+        Names[0] := 'Galvo 1' ;
+        Names[1] := 'Galvo 2' ;
+       end ;
+    end;
+   if (Num >=0) and (Num <= High(Names)) then Result := Names[Num]
+                                         else Result := '' ;
+   end;
+
 
 function TLightSource.WavelengthChangeTime : Single ;
 // -------------------------------
@@ -347,12 +375,32 @@ begin
     end ;
 
 
+function TLightSource.NumControlLines : Integer ;
+// -----------------------------------------
+// No. of control lines used by light source
+// ------------------------------------------
+begin
+    case FDeviceType of
+        lsOptoScan1200,
+        lsOptoScan1800,
+        lsOptoScan2000,
+        lsOptoscanWithLasers : Result := 7 ;
+        lsTill : Result := 1 ;
+        lsTillWithLasers : Result := 2 ;
+        lsLambda10 : Result := 3 ;
+        lsLED : Result := 8 ;
+        lsSutterDG4 : Result := 3 ;
+        lsCairnTIRF : Result := 2 ;
+        else Result := 0 ;
+        end ;
+    end ;
+
+
+
 function TLightSource.WavelengthMin : Single ;
 // ------------------
 // Minimum wavelength
 // -------------------
-var
-    MinWavelength : Double ;
 begin
     case FDeviceType of
 
@@ -391,8 +439,6 @@ Function TLightSource.WavelengthMax : Single ;
 // ------------------
 // Maximum wavelength
 // -------------------
-var
-    MaxWavelength : Double ;
 begin
     case FDeviceType of
 
@@ -446,19 +492,6 @@ begin
     end ;
 
 
-function TLightSource.LaserSettingsRequired : Boolean ;
-// ------------------------------------------------
-// Returns TRUE if used must supply laser settings
-// ------------------------------------------------
-begin
-    case FDeviceType of
-        lsOptoscanWithLasers : Result := True ;
-        lsTillWithLasers : Result := True ;
-        else Result := False ;
-        end ;
-    end ;
-
-
 function TLightSource.LEDSettingsRequired : Boolean ;
 // ---------------------------------------------------------
 // Returns TRUE if used must supply LED on/off voltages
@@ -477,25 +510,6 @@ function TLightSource.TIRFSettingsRequired : Boolean ;
 // ---------------------------------------------------------
 begin
     case FDeviceType of
-        lsCairnTIRF : Result := True ;
-        else Result := False ;
-        end ;
-    end ;
-
-
-function TLightSource.WavelengthControlRequired : Boolean ;
-// ----------------------------------------------------------------
-// Returns TRUE if wavelength control line required by light source
-// ----------------------------------------------------------------
-begin
-    case FDeviceType of
-        lsOptoScan1200,lsOptoScan1800,lsOptoScan2000 : Result := True ;
-        lsOptoscanWithLasers : Result := True ;
-        lsTill : Result := True ;
-        lsTillWithLasers : Result := True ;
-        lsLambda10 : Result := True ;
-        lsLED : Result := True ;
-        lsSutterDG4 : Result := True ;
         lsCairnTIRF : Result := True ;
         else Result := False ;
         end ;
@@ -581,187 +595,114 @@ begin
 procedure TLightSource.WavelengthToVoltage(
           FilterNum : Integer ;
           Wavelength : Single ;
-          BandWidth : Single ;
-          var VControl : Array of TLSVControl ;
-          var NumVControl : Integer
+          BandWidth : Single
           ) ;
 // --------------------------------------------------------
-// Get control voltages for selected wavelength & bandwidth
+// Set control voltages for selected wavelength & bandwidth
 // --------------------------------------------------------
-var
-    i : Integer ;
 begin
-
-    // Exit if no control lines defined
-    if not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthStart) then begin
-       NumVControl := 0 ;
-       Exit ;
-       end ;
 
     case FDeviceType of
         lsOptoScan1200,lsOptoScan1800,lsOptoScan2000 : begin
             OptoScanWavelengthToVoltage( Wavelength,
-                                         BandWidth,
-                                         VControl,
-                                         NumVControl ) ;
+                                         BandWidth ) ;
             end ;
 
         lsTill : begin
-            TillWavelengthToVoltage( Wavelength,
-                                     VControl,
-                                     NumVControl ) ;
+            TillWavelengthToVoltage( Wavelength ) ;
             end ;
 
         lsTillWithLasers : begin
-            TillWithLasersWavelengthToVoltage( Wavelength,
-                                               VControl,
-                                               NumVControl ) ;
+            TillWithLasersWavelengthToVoltage( Wavelength ) ;
             end ;
 
         lsLambda10 : Begin
-            Lambda10FilterNumToVoltage( FilterNum,
-                                        VControl,
-                                        NumVControl ) ;
+            Lambda10FilterNumToVoltage( FilterNum ) ;
             end ;
         lsLED : Begin
-            LEDFilterNumToVoltage( FilterNum,
-                                   VControl,
-                                   NumVControl ) ;
+            LEDFilterNumToVoltage( FilterNum ) ;
             end ;
         lsOptoScanWithLasers : begin
-            OptoScanWithLasersWavelengthToVoltage( Wavelength,
-                                                   BandWidth,
-                                                   VControl,
-                                                   NumVControl ) ;
+            OptoScanWithLasersWavelengthToVoltage( Wavelength, BandWidth ) ;
             end ;
 
         lsSutterDG4 : Begin
-            SutterDG4FilterNumToVoltage( FilterNum,
-                                         VControl,
-                                         NumVControl ) ;
+            SutterDG4FilterNumToVoltage( FilterNum ) ;
             end ;
 
         lsCairnTIRF : Begin
-            CairnTIRFPositionToVoltage(  Wavelength,
-                                         VControl,
-                                         NumVControl ) ;
+            CairnTIRFPositionToVoltage(  Wavelength ) ;
             end ;
 
-        else begin
-             NumVControl := 0 ;
-             end ;
         end ;
-
-    // Keep last voltage control settings used
-    NumVControlInUse := NumVControl ;
-    for i := 0 to NumVControl-1 do VControlInUse[i] := VControl[i] ;
 
     end ;
 
 
-procedure TLightSource.ShutterClosedVoltages(
-          var VControl : Array of TLSVControl ;
-          var NumVControl : Integer
-          ) ;
+procedure TLightSource.ShutterClosedVoltages ;
 // -------------------------------------------------
-// Return DAC voltages which close all light sources
+// Return Dig/DAC voltages which close all light sources
 // -------------------------------------------------
-var
-    i : Integer ;
 begin
-
-    // Exit if no control lines defined
-    if not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthStart) then begin
-       NumVControl := 0 ;
-       Exit ;
-       end ;
 
     case FDeviceType of
         lsOptoScan1200,lsOptoScan1800,lsOptoScan2000 : begin
             OptoScanWavelengthToVoltage( LightSource.ShutterClosedWavelength,
-                                         0.0,
-                                         VControl,
-                                         NumVControl ) ;
+                                         0.0 ) ;
             end ;
 
         lsTill : begin
-            TillWavelengthToVoltage(
-            LightSource.ShutterClosedWavelength,
-                                     VControl,
-                                     NumVControl ) ;
+            TillWavelengthToVoltage( LightSource.ShutterClosedWavelength ) ;
             end ;
 
         lsTillWithLasers : begin
-            TillWithLasersWavelengthToVoltage(
-            LightSource.ShutterClosedWavelength,
-                                     VControl,
-                                     NumVControl ) ;
+            TillWithLasersWavelengthToVoltage( LightSource.ShutterClosedWavelength ) ;
             end ;
 
         lsLambda10 : Begin
-  //          Lambda10FilterNumToVoltage( 0,
-  //                                      VControl,
-  //                                      VDelay,
-  //                                      NumVControl ) ;
-            // Use last settings
-            NumVControl := NumVControlInUse ;
-            for i := 0 to NumVControl-1 do VControl[i] := VControlInUse[i] ;
-
+            Lambda10FilterNumToVoltage( 0 ) ;
             end ;
 
         lsLED : Begin
-            LEDFilterNumToVoltage( -1, {-1 forces off setting}
-                                   VControl,
-                                   NumVControl ) ;
+            LEDFilterNumToVoltage( -1 {-1 forces off setting} ) ;
             end ;
 
         lsOptoScanWithLasers : begin
-            OptoScanWithLasersWavelengthToVoltage( LightSource.ShutterClosedWavelength,
-                                                   0.0,
-                                                   VControl,
-                                                   NumVControl ) ;
+            OptoScanWithLasersWavelengthToVoltage( LightSource.ShutterClosedWavelength, 0.0 ) ;
             end ;
 
         lsSutterDG4 : Begin
-            SutterDG4FilterNumToVoltage( -1, {-1 forces off setting}
-                                         VControl,
-                                        NumVControl ) ;
+            SutterDG4FilterNumToVoltage( -1 ) ;{-1 forces off setting}
             end ;
 
         lsCairnTIRF : Begin
-            CairnTIRFPositionToVoltage(  0,        // Both TIRF galvos in off position
-                                         VControl,
-                                         NumVControl ) ;
+            CairnTIRFPositionToVoltage(  0  ) ;       // Both TIRF galvos in off position
+
             end ;
 
-        else begin
-             NumVControl := 0 ;
-             end ;
         end ;
+
     end ;
 
 
 procedure TLightSource.OptoScanWavelengthToVoltage(
           Wavelength : Single ;                      // Selected wavelength
-          BandWidth : Single ;                       // Selected bandwidth
-          var VControl : Array of TLSVControl ;      // Control voltage array (returned)
-          var NumVControl : Integer                  // No. entries in VControl (returned)
+          BandWidth : Single                        // Selected bandwidth
           ) ;
 // -----------------------------------------------------------------
 // Get OptoScan control voltages for selected wavelength & bandwidth
 // -----------------------------------------------------------------
+const
+    InputSlitDAC = 0 ;      // Optoscan
+    GratingDAC = 1 ;        // Optoscan
+    OutputSlitDAC = 2 ;      // Optoscan
+
 var
      DValue,DWavelength : Double ;
      NumLines : DWord ;
-     FileName : ANSIString ;
      VOffset : Double ;
-     Err : DWORD ;
+     iResource : Integer ;
 begin
-
-     // No. of channels available to control light source
-     NumVControl := LabIO.Resource[MainFrm.IOConfig.LSWavelengthEnd].StartChannel -
-                    LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
-     NumVControl := Min(NumVControl,3) ;
 
      // Set lines/mm of grating
      case FDeviceType of
@@ -781,65 +722,54 @@ begin
      os_Set_Grating_Lines( NumLines ) ;
 
      // Set input slit bandwidth
-     DValue := Bandwidth ;
-     DWavelength := Wavelength ;
-     os_In_Slit_Bandwidth_To_Width( DWavelength, @DValue ) ;
-     os_In_Slit_Width_To_Voltage( @DValue ) ;
-     //outputdebugstring(pchar(format('in slit V= %.3g',[DValue])));
-     VControl[0].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel ;
-     VControl[0].V := DValue ;
-     VControl[0].Delay := 0.0 ;
-     VControl[0].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-     VControl[0].Name := format('Optoscan: Input slit: Dev%d:AO%d ',
-                         [VControl[0].Device,VControl[0].Chan]) ;
+     iResource := MainFrm.IOConfig.LSControlLine[InputSlitDAC] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
+        DValue := Bandwidth ;
+        DWavelength := Wavelength ;
+        os_In_Slit_Bandwidth_To_Width( DWavelength, @DValue ) ;
+        os_In_Slit_Width_To_Voltage( @DValue ) ;
+        LabIO.Resource[iResource].V := DValue ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
+        end ;
+
 
      // Set centre wavelength
-     DValue := Wavelength ;
-     os_Wavelength_To_Voltage( @DValue ) ;
-     DValue := DValue + VOffset ;
-     //outputdebugstring(pchar(format('wavelength V= %.3g',[DValue])));
-     VControl[1].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
-     VControl[1].V := DValue ;
-     VControl[1].Delay := 0.0 ;
-     VControl[1].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-     VControl[1].Name := format('Optoscan: Centre wavelength: Dev%d:AO%d ',
-                         [VControl[1].Device,VControl[1].Chan]) ;
+     iResource := MainFrm.IOConfig.LSControlLine[GratingDAC] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
+        DValue := Wavelength ;
+        os_Wavelength_To_Voltage( @DValue ) ;
+        DValue := DValue + VOffset ;
+        LabIO.Resource[iResource].V := DValue ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
+        end ;
 
      // Set output slit bandwidth
-     DValue := Bandwidth ;
-     DWavelength := Wavelength ;
-     os_Out_Slit_Bandwidth_To_Width( DWavelength, @DValue ) ;
-     os_Out_Slit_Width_To_Voltage( @DValue ) ;
-     //outputdebugstring(pchar(format('out slit V= %.3g',[DValue])));
-     VControl[2].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 2 ;
-     VControl[2].V := DValue ;
-     VControl[2].Delay := 0.0 ;
-     VControl[2].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-     VControl[2].Name := format('Optoscan: Output slit: Dev%d:AO%d ',
-                         [VControl[2].Device,VControl[2].Chan]) ;
+     iResource := MainFrm.IOConfig.LSControlLine[OutputSlitDAC] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
+        DValue := Bandwidth ;
+        DWavelength := Wavelength ;
+        os_Out_Slit_Bandwidth_To_Width( DWavelength, @DValue ) ;
+        os_Out_Slit_Width_To_Voltage( @DValue ) ;
+        LabIO.Resource[iResource].V := DValue ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
+        end ;
 
      end;
 
 
 procedure TLightSource.TillWavelengthToVoltage(
-          Wavelength : Single ;
-          var VControl : Array of TLSVControl ;
-          var NumVControl : Integer
-          ) ;
+          Wavelength : Single ) ;
 // ---------------------------------------------------
 // Get Till control voltages for selected wavelength
 // ---------------------------------------------------
 const
     WavelengthMin = 0.0 ;
     WavelengthMax = 10000.0 ;
+    GratingDAC = 0 ;
 var
      VScale,VMono : Single ;
+     iResource : Integer ;
 begin
-
-     // No. of channels available to control light source
-     NumVControl := LabIO.Resource[MainFrm.IOConfig.LSWavelengthEnd].StartChannel -
-                      LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
-     NumVControl := Min(NumVControl,1) ;
 
      // Set wavelength
      if Wavelength < WavelengthMin then Wavelength := WavelengthMin ;
@@ -850,19 +780,18 @@ begin
         end
      else VMono := 0.0 ;
 
-     VControl[0].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel ;
-     VControl[0].V := VMono ;
-     VControl[0].Delay := 0.0 ;
-     VControl[0].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-     VControl[0].Name := format('Till Monochromator: Centre Wavelength: : Dev%d:AO%d ',
-                            [VControl[0].Device,VControl[0].Chan]) ;
+     // Set wavelength
+     iResource := MainFrm.IOConfig.LSControlLine[GratingDAC] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
+        LabIO.Resource[iResource].V := VMono ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
+        end ;
+
      end ;
 
 
 procedure TLightSource.TillWithLasersWavelengthToVoltage(
-          Wavelength : Single ;
-          var VControl : Array of TLSVControl ;  // Control voltages (out)
-          var NumVControl : Integer         // No. of control voltages (out)
+          Wavelength : Single
           ) ;
 // ------------------------------------------------------------------------------
 // Return PTI/Till monochromator & laser control voltages for selected wavelength
@@ -872,7 +801,6 @@ const
     Laser1DAC = 1 ;          // Laser #1 Intensity control
     Laser2DAC = 2 ;          // Laser #2 Intensity control
     Laser3DAC = 3 ;          // Laser #3 Intensity control
-    Laser1Shutter = 4 ;      // Laser #1 shutter control
 
     // Values added to wavelength to select laser
     Laser1Value = 1000.0 ;
@@ -881,30 +809,11 @@ const
     TillWavelengthMin = 100.0 ;
 
 var
-     NumVMono : Integer ;
-     LaserDAC : Integer ;
-     i : Integer ;
+//     LaserDAC : Integer ;
+     i,iResource : Integer ;
      MonoWavelength,VScale,VMono : Double ;
      LaserOn : Array[0..lsMaxLightSources-1] of Boolean ;
-     iVControl : Integer ;
 begin
-
-     // No. of channels available to control Till
-     NumVMono := LabIO.Resource[MainFrm.IOConfig.LSWavelengthEnd].StartChannel -
-                      LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
-     NumVMono := Min(NumVMono,1) ;
-
-     // No. of channels available to control lasers
-     NumVControl := NumVMono +
-                    LabIO.Resource[MainFrm.IOConfig.LSLaserEnd].StartChannel -
-                    LabIO.Resource[MainFrm.IOConfig.LSLaserStart].StartChannel + 1 ;
-     NumVControl := Min(NumVControl,4) ;
-
-     // Set available lasers
-     for i := 0 to High(LaserAvailable) do begin
-         if i < (NumVControl - NumVMono) then LaserAvailable[i] := True
-                                         else LaserAvailable[i] := False ;
-         end ;
 
      // Determine which lasers are on
      // Wavelength = Till + Laser 1 + Laser 2 + Laser 3
@@ -932,141 +841,95 @@ begin
         MonoWavelength := LightSource.ShutterClosedWavelength ;
         end ;
 
-     // Initialise VControl index
-     iVControl := 0 ;
-
      // Set monochromator centre wavelength
-
-     if iVControl < NumVMono then begin
-       MonoWavelength := Max(Min(MonoWavelength,WavelengthMax),WavelengthMin) ;
-       if Abs(Wavelength2 - Wavelength1) > 0.1 then begin
+     MonoWavelength := Max(Min(MonoWavelength,WavelengthMax),WavelengthMin) ;
+     if Abs(Wavelength2 - Wavelength1) > 0.1 then begin
           VScale := (Voltage2 - Voltage1) / (Wavelength2 - Wavelength1) ;
           VMono := VScale*(MonoWavelength - Wavelength1) +  + Voltage1 ;
           end
-       else VMono := 0.0 ;
-        VControl[iVControl].V := VMono ;
-        VControl[iVControl].Delay := 0.0 ;
-        VControl[iVControl].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel
-                                    + GratingDAC ;
-        VControl[iVControl].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-        VControl[iVControl].Name := format('Mono: Wavelength: Dev%d:AO%d ',
-                                    [VControl[iVControl].Device,VControl[iVControl].Chan]) ;
-        Inc(iVControl) ;
-        end ;
+     else VMono := 0.0 ;
 
+     // Set wavelength
+     iResource := MainFrm.IOConfig.LSControlLine[GratingDAC] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
+        LabIO.Resource[iResource].V := VMono ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
+        end ;
 
     // Set laser control voltages
 
-    LaserDAC := 0 ;
-    for i := 0 to High(LaserOn) do if (iVControl < NumVControl) then begin
+    for i := 0 to High(LaserOn) do begin
+        iResource := MainFrm.IOConfig.LSControlLine[Laser1DAC+i] ;
+        if MainFRm.IOResourceAvailable(iResource) then begin
+           // Laser delay
+           LabIO.Resource[iResource].Delay := LaserDelay[i] ;
+           // Set laser voltage
+           if LaserOn[i] then LabIO.Resource[iResource].V := LaserVoltage( i, LaserIntensity[Laser1DAC+i] )
+                         else LabIO.Resource[iResource].V := LaserVoltage( i, 0.0 ) ;
 
-        // Laser delay
-        VControl[iVControl].Delay := LaserDelay[i] ;
-
-        // Set laser voltage
-        if LaserOn[i] then VControl[iVControl].V := LaserVoltage( i, LaserIntensity[i] )
-                      else VControl[iVControl].V := LaserVoltage( i, 0.0 ) ;
-
-        VControl[iVControl].Chan := LabIO.Resource[MainFrm.IOConfig.LSLaserStart].StartChannel
-                                    + LaserDAC ;
-
-        VControl[iVControl].Device := LabIO.Resource[MainFrm.IOConfig.LSLaserStart].Device ;
-
-        VControl[iVControl].Name := format('LED/Laser #%d Intensity: Dev%d:AO%d ',
-                                    [i,VControl[iVControl].Device,VControl[iVControl].Chan]) ;
-
-        Inc(LaserDAC) ;
-        Inc(iVControl) ;
-
+           end ;
         end ;
 
      end;
 
 
 procedure TLightSource.Lambda10FilterNumToVoltage(
-          FilterNum : Integer ;
-          var VControl : Array of TLSVControl ;
-          var NumVControl : Integer
+          FilterNum : Integer
           ) ;
 // ---------------------------------------
 // Get Lambd10 filter # selection voltages
 // ---------------------------------------
 var
      iBit : Integer ;
-     i : Integer ;
-     OutputType : String ;
+     i,iResource : Integer ;
+     V : single ;
 begin
 
-     // No. of channels available to control light source
-     NumVControl := LabIO.Resource[MainFrm.IOConfig.LSWavelengthEnd].StartChannel -
-                      LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
-     NumVControl := Min(NumVControl,4) ;
-
-     if LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].ResourceType = DigOut then OutputType := 'DO'
-                                                                                 else OutputType := 'AO' ;
+     // Set value
      iBit := 1 ;
-     for i := 0 to NumVControl-1 do begin
-         if (FilterNum and iBit) <> 0 then VControl[i].V := 4.9
-                                      else VControl[i].V := 0.0 ;
-         VControl[i].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + i ;
+     for i := 0 to NumControlLines-1 do begin
+         iResource := MainFrm.IOConfig.LSControlLine[i] ;
+         if MainFRm.IOResourceAvailable(iResource) then begin
+            if (FilterNum and iBit) <> 0 then V := 4.9
+                                         else V := 0.0 ;
+            LabIO.Resource[iResource].V := V ;
+            LabIO.Resource[iResource].Delay := 0.0 ;
+            end;
          iBit := iBit*2 ;
-         VControl[i].Delay := 0.0 ;
-         VControl[i].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-         VControl[i].Name := format('Lambda 10: Filter control bit%d : Dev%d:%s%d',
-                             [i-1,VControl[i].Device,OutputType,VControl[i].Chan]) ;
          end ;
 
      end;
 
 
 procedure TLightSource.LEDFilterNumToVoltage(
-          FilterNum : Integer ;
-          var VControl : Array of TLSVControl ;
-          var NumVControl : Integer
+          FilterNum : Integer
           ) ;
 // ---------------------------------------
 // Get LED filter # selection voltages
 // ---------------------------------------
+const
+    MaxLEDs = 8 ;
 var
-    i : Integer ;
-    OutputType : String ;
+    i,iResource : Integer ;
 begin
 
-     // No. of channels available to control light source
-     NumVControl := LabIO.Resource[MainFrm.IOConfig.LSWavelengthEnd].StartChannel -
-                      LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
-     //NumVControl := Min(NumVControl,4) ;
-
-     if LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].ResourceType = DigOut then OutputType := 'DO'
-                                                                                 else OutputType := 'AO' ;
-
-     // Set available light sources
-     for i := 0 to High(LaserAvailable) do begin
-         if i < NumVControl then LaserAvailable[i] := True
-                            else LaserAvailable[i] := False ;
+     for i := 0 to NumControlLines-1 do begin
+         iResource := MainFrm.IOConfig.LSControlLine[i] ;
+         if MainFRm.IOResourceAvailable(iResource) then begin
+            LabIO.Resource[iResource].V := LEDOffVoltage ;
+            LabIO.Resource[iResource].Delay := 0.0 ;
+            if i = FilterNum then begin
+               LabIO.Resource[iResource].V := (LEDMaxVoltage - LEDOffVoltage)*LaserIntensity[FilterNum]*0.01;
+               end;
+            end;
          end ;
-
-     for i := 0 to NumVControl-1 do begin
-         VControl[i].V := LEDOffVoltage ;
-         VControl[i].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + i ;
-         VControl[i].Delay := 0.0 ;
-         VControl[i].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-         VControl[i].Name := format('LED: No.%d : Dev%d:%s%d',
-                             [i+1,VControl[i].Device,OutputType,VControl[i].Chan]) ;
-         end ;
-
-     if (FilterNum >= 0) and (FilterNum < NumVControl) then begin
-        VControl[FilterNum].V := (LEDMaxVoltage - LEDOffVoltage)*LaserIntensity[FilterNum]*0.01;
-        end;
 
      end;
 
 
 procedure TLightSource.OptoScanWithLasersWavelengthToVoltage(
           Wavelength : Single ;
-          BandWidth : Single ;
-          var VControl : Array of TLSVControl ;  // Control voltages (out)
-          var NumVControl : Integer         // No. of control voltages (out)
+          BandWidth : Single
           ) ;
 // -------------------------------------------------------------------------
 // Return OptoScan & laser control voltages for selected wavelength & bandwidth
@@ -1087,31 +950,13 @@ const
     OptoScanWavelengthMin = 100.0 ;
 
 var
-     NumVOpto : Integer ;
      DValue,DWavelength : Double ;
      NumLines : DWord ;
-     LaserDAC : Integer ;
      i : Integer ;
      OptoScanWavelength : Single ;
      LaserOn : Array[0..lsMaxLightSources-1] of Boolean ;
-     iVControl : Integer ;
+     iResource : Integer ;
 begin
-
-     // No. of channels available to control optoscan
-     NumVOpto := LabIO.Resource[MainFrm.IOConfig.LSWavelengthEnd].StartChannel -
-                      LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
-     NumVOpto := Min(NumVOpto,3) ;
-
-     // No. of channels available to control lasers
-     NumVControl := NumVOpto +
-                    LabIO.Resource[MainFrm.IOConfig.LSLaserEnd].StartChannel -
-                    LabIO.Resource[MainFrm.IOConfig.LSLaserStart].StartChannel + 1 ;
-     NumVControl := Min(NumVControl,7) ;
-
-     // Set all lasers available
-     for i := 0 to High(LaserAvailable) do begin
-         LaserAvailable[i] := True ;
-         end ;
 
      // Set lines/mm of grating
      NumLines := 1200 ;
@@ -1145,104 +990,58 @@ begin
         Bandwidth := LastOptoscanBandwidth ;
         end ;
 
-     // Initialise VControl index
-     iVControl := 0 ;
-
-     // Set Optoscan wavelength
-     // ------------------------
-
      // Set input slit bandwidth
-     if iVControl < NumVOpto then begin
+     iResource := MainFrm.IOConfig.LSControlLine[InputSlitDAC] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
         LastOptoscanBandwidth := Bandwidth ;
         DValue := Bandwidth ;
         DWavelength := Wavelength ;
         os_In_Slit_Bandwidth_To_Width( DWavelength,@DValue ) ;
         os_In_Slit_Width_To_Voltage( @DValue ) ;
-        VControl[iVControl].V := DValue ;
-        VControl[iVControl].Delay := 0.0 ;
-        VControl[iVControl].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel
-                                    + InputSlitDAC ;
-        VControl[iVControl].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-        VControl[iVControl].Name := format('Optoscan: Input slit: Dev%d:AO%d ',
-                                    [VControl[iVControl].Device,VControl[iVControl].Chan]) ;
-
-        Inc(iVControl) ;
+        LabIO.Resource[iResource].V := DValue ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
         end ;
 
      // Set centre wavelength
-     if iVControl < NumVOpto then begin
+     iResource := MainFrm.IOConfig.LSControlLine[GratingDAC] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
         DValue := OptoScanWavelength ;
         os_Wavelength_To_Voltage( @DValue ) ;
-        VControl[iVControl].V := DValue ;
-        VControl[iVControl].Delay := 0.0 ;
-        VControl[iVControl].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel
-                                    + GratingDAC ;
-        VControl[iVControl].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-        VControl[iVControl].Name := format('Optoscan: Wavelength: Dev%d:AO%d ',
-                                    [VControl[iVControl].Device,VControl[iVControl].Chan]) ;
-
-        Inc(iVControl) ;
+        LabIO.Resource[iResource].V := DValue ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
         end ;
 
      // Set output slit bandwidth
-     if iVControl < NumVOpto then begin
+     iResource := MainFrm.IOConfig.LSControlLine[OutputSlitDAC] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
         LastOptoscanBandwidth := Bandwidth ;
         DValue := Bandwidth ;
         DWavelength := Wavelength ;
         os_Out_Slit_Bandwidth_To_Width( DWavelength,@DValue ) ;
         os_Out_Slit_Width_To_Voltage( @DValue ) ;
-        VControl[iVControl].V := DValue ;
-        VControl[iVControl].Delay := 0.0 ;
-        VControl[iVControl].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel
-                                    + OutputSlitDAC ;
-        VControl[iVControl].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-        VControl[iVControl].Name := format('Optoscan: Output slit: Dev%d:AO%d ',
-                                    [VControl[iVControl].Device,VControl[iVControl].Chan]) ;
-
-        Inc(iVControl) ;
+        LabIO.Resource[iResource].V := DValue ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
         end ;
 
     // Set laser control voltages
 
-    LaserDAC := 0 ;
-    for i := 0 to High(LaserOn) do if (iVControl < NumVControl) then begin
-
-        // Laser delay
-        VControl[iVControl].Delay := LaserDelay[i] ;
-
-        // Set laser voltage
-        if LaserOn[i] then VControl[iVControl].V := LaserVoltage( i, LaserIntensity[i] )
-                      else VControl[iVControl].V := LaserVoltage( i, 0.0 ) ;
-
-        VControl[iVControl].Chan := LabIO.Resource[MainFrm.IOConfig.LSLaserStart].StartChannel
-                                    + LaserDAC ;
-
-        VControl[iVControl].Device := LabIO.Resource[MainFrm.IOConfig.LSLaserStart].Device ;
-
-        VControl[iVControl].Name := format('Laser #%d Intensity: Dev%d:AO%d ',
-                                    [i,VControl[iVControl].Device,VControl[iVControl].Chan]) ;
-
-        Inc(LaserDAC) ;
-        Inc(iVControl) ;
-
+    for i := 0 to High(LaserOn) do begin
+        iResource := MainFrm.IOConfig.LSControlLine[Laser1DAC+i] ;
+        if MainFRm.IOResourceAvailable(iResource) then begin
+           // Laser delay
+           LabIO.Resource[iResource].Delay := LaserDelay[i] ;
+           // Set laser voltage
+           if LaserOn[i] then LabIO.Resource[iResource].V := LaserVoltage( i, LaserIntensity[Laser1DAC+i] )
+                         else LabIO.Resource[iResource].V := LaserVoltage( i, 0.0 ) ;
+            end ;
         end ;
 
     // Open shutter for laser 1 if it has a non-zero intensity
-
-    if iVControl < NumVControl then begin
-
-       if LaserOn[0] then VControl[iVControl].V := 5.0
-                     else VControl[iVControl].V := 0.0 ;
-
-       VControl[iVControl].Chan := LabIO.Resource[MainFrm.IOConfig.LSLaserStart].StartChannel
-                                   + LaserDAC ;
-
-       VControl[iVControl].Device := LabIO.Resource[MainFrm.IOConfig.LSLaserStart].Device ;
-       VControl[iVControl].Delay := LaserDelay[1] ;
-
-       VControl[iVControl].Name := format('Laser #1 Shutter: Dev%d:AO%d ',
-                                    [VControl[iVControl].Device,VControl[iVControl].Chan]) ;
-
+    iResource := MainFrm.IOConfig.LSControlLine[Laser1Shutter] ;
+    if MainFRm.IOResourceAvailable(iResource) then begin
+       if LaserOn[0] then DValue := 5.0 else DValue := 0.0 ;
+        LabIO.Resource[iResource].V := DValue ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
        end ;
 
      end;
@@ -1257,8 +1056,6 @@ function TLightSource.LaserVoltage(
 // desired % intensity
 // -------------------------------------------------------------
 begin
-
-
      Result := LaserOffVoltage[LaserNum] +
                Min(Max(Abs(PercentageIntensity*0.01),0.0),1.0)*
                (LaserOnVoltage[LaserNum] - LaserOffVoltage[LaserNum]) ;
@@ -1266,9 +1063,7 @@ begin
 
 
 procedure TLightSource.SutterDG4FilterNumToVoltage(
-          FilterNum : Integer ;
-          var VControl : Array of TLSVControl ;
-          var NumVControl : Integer
+          FilterNum : Integer
           ) ;
 // ---------------------------------------
 // Get Sutter DG4 filter # selection voltages
@@ -1276,38 +1071,31 @@ procedure TLightSource.SutterDG4FilterNumToVoltage(
 // -1 = closed
 // 0-3 = Filters 0-3
 var
-    iBit : Integer ;
-     i : Integer ;
-     OutputType : String ;
+    iResource,iBit,i : Integer ;
+    BitPattern : Word ;
+    V : Single ;
 begin
 
-     // No. of channels available to control light source
-     NumVControl := LabIO.Resource[MainFrm.IOConfig.LSWavelengthEnd].StartChannel -
-                    LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
-     NumVControl := Min(NumVControl,3) ;
+     if FilterNum >= 0 then BitPattern := (FilterNum mod 4) or 4
+                       else BitPattern := 0 ;
 
-     if LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].ResourceType = DigOut then OutputType := 'DO'
-                                                                                 else OutputType := 'AO' ;
-
+     // Set value
      iBit := 1 ;
-     for i := 0 to NumVControl-1 do begin
-         if ((FilterNum+1) and iBit) <> 0 then VControl[i].V := 4.9
-                                          else VControl[i].V := 0.0 ;
-         VControl[i].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + i ;
-         VControl[i].Delay := 0.0 ;
-         VControl[i].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-         VControl[i].Name := format('Sutter DG4: Filter bit%d : Dev%d:%s%d',
-                             [i+1,VControl[i].Device,OutputType,VControl[i].Chan]) ;
-
+     for i := 0 to NumControlLines-1 do begin
+         iResource := MainFrm.IOConfig.LSControlLine[i] ;
+         if MainFRm.IOResourceAvailable(iResource) then begin
+            if (BitPattern and iBit) <> 0 then V := 4.9 else V := 0.0 ;
+            LabIO.Resource[iResource].V := V ;
+            LabIO.Resource[iResource].Delay := 0.0 ;
+            end;
          iBit := iBit*2 ;
          end ;
 
      end;
 
+
 procedure TLightSource.CairnTIRFPositionToVoltage(
-           GalvoPosition : Single ;                  // TIRF Galvo position
-           var VControl : Array of TLSVControl ;    // Control voltages
-           var NumVControl : Integer ) ;            // No. control channels
+           GalvoPosition : Single  ) ;            // No. control channels
 // ---------------------------------------------------
 // Get Cairn TIRF galvo voltages for selected position
 // ---------------------------------------------------
@@ -1319,21 +1107,16 @@ procedure TLightSource.CairnTIRFPositionToVoltage(
 // 11 = Laser #1 & #2 TIRF
 // 12 = Laser #1 TIRF Laser #2 wide field
 // 21 = Laser #2 TIRF Laser #1 wide field
+// 22 = Laser #2 wide field Laser #1 wide field
+
+Const
+    Galvo1 = 0 ;
+    Galvo2 = 1 ;
 var
-    i : Integer ;
+    iResource : Integer ;
     V : Array[0..lsMaxTIRFGalvos-1] of Single ;
 
 begin
-
-    if not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthStart) then begin
-       NumVControl := 0 ;
-       Exit ;
-       end ;
-
-    // No. of channels available to control light source
-    NumVControl := LabIO.Resource[MainFrm.IOConfig.LSWavelengthEnd].StartChannel -
-                   LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + 1 ;
-    NumVControl := Min(NumVControl,2) ;
 
     // TIRF galvo #1
     case Round(GalvoPosition) mod 10 of
@@ -1349,23 +1132,47 @@ begin
         else V[1] := TIRFOff[2] ;
         end ;
 
-    for i := 0 to NumVControl-1 do begin
-        VControl[i].Chan := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].StartChannel + i ;
-        VControl[i].Delay := 0.0 ;
-        VControl[i].Device := LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].Device ;
-        VControl[i].V := V[i] ;
-        VControl[i].Name := format('Cairn TIRF : Laser #%d galvo: Dev%d:AO%d ',
-                                    [i+1,VControl[i].Device,VControl[i].Chan]) ;
+     // Galvo #1
+     iResource := MainFrm.IOConfig.LSControlLine[Galvo1] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
+        LabIO.Resource[iResource].V := V[0] ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
+        end ;
+
+     // Galvo #2
+     iResource := MainFrm.IOConfig.LSControlLine[Galvo2] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
+        LabIO.Resource[iResource].V := V[1] ;
+        LabIO.Resource[iResource].Delay := 0.0 ;
         end ;
 
      end ;
+
+
+function TLightSource.VariableIntensitySource( iLine : Integer ) : Boolean ;
+// ----------------------------------------------
+// Return TRUE if light intensity can be adjusted
+// ----------------------------------------------
+var
+    iResource : Integer ;
+begin
+     Result := False ;
+     if (iLine < 0) or (iLine >= High(MainFrm.IOConfig.LSControlLine)) then Exit ;
+
+     iResource := MainFrm.IOConfig.LSControlLine[iLine] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
+        if ANSIContainsText( ControlLineName(iLine), 'LED') and
+           (LabIO.Resource[iResource].ResourceType = DACout) then Result := True ;
+        end;
+     end;
+
 
 procedure TLightSource.SetDeviceType( Value : Integer ) ;
 // ----------------------------
 // Set light source device type
 // ----------------------------
 var
-    FileName : string ;
+    FileName : ANSIstring ;
 begin
     FDeviceType := Value ;
     case FDeviceType of

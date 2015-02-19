@@ -174,8 +174,6 @@ type
     procedure SetControlPanel(
           ControlPanel : TPanel ;
           iVControl : Integer ;
-          var VControl : Array of TLSVControl ;
-          NumVControls : Integer ;
           var PanelHeight : Integer
           ) ;
 
@@ -247,29 +245,22 @@ procedure TDirectControlFrm.FormShow(Sender: TObject);
 // Initialise form when displayed
 // ------------------------------
 var
-    iV,Dev,H : Integer ;
+    H : Integer ;
 begin
 
      // Get voltages for shutter closed condition to populate
      // VControl with name information
-     LightSource.ShutterClosedVoltages( VControl, NumVControls ) ;
-
-     // Get current default state of control lines
-
-     for iV := 0 to NumVControls-1 do begin
-         Dev := VControl[iV].Device ;
-         VControl[iV].V := LabIO.DACOutState[Dev][VControl[iV].Chan] ;
-         end ;
+     LightSource.ShutterClosedVoltages ;
 
      H := 50 ;
-     SetControlPanel( LightSourcePanel0, 0, VControl, NumVControls, H ) ;
-     SetControlPanel( LightSourcePanel1, 1, VControl, NumVControls, H ) ;
-     SetControlPanel( LightSourcePanel2, 2, VControl, NumVControls, H ) ;
-     SetControlPanel( LightSourcePanel3, 3, VControl, NumVControls, H ) ;
-     SetControlPanel( LightSourcePanel4, 4, VControl, NumVControls, H ) ;
-     SetControlPanel( LightSourcePanel5, 5, VControl, NumVControls, H ) ;
-     SetControlPanel( LightSourcePanel6, 6, VControl, NumVControls, H ) ;
-     SetControlPanel( LightSourcePanel7, 7, VControl, NumVControls, H ) ;
+     SetControlPanel( LightSourcePanel0, 0, H ) ;
+     SetControlPanel( LightSourcePanel1, 1, H ) ;
+     SetControlPanel( LightSourcePanel2, 2, H ) ;
+     SetControlPanel( LightSourcePanel3, 3, H ) ;
+     SetControlPanel( LightSourcePanel4, 4, H ) ;
+     SetControlPanel( LightSourcePanel5, 5, H ) ;
+     SetControlPanel( LightSourcePanel6, 6, H ) ;
+     SetControlPanel( LightSourcePanel7, 7, H ) ;
 
      ShutterPanel.Top := H ;
      SetDigControl( ShutterPanel,
@@ -346,8 +337,6 @@ begin
 procedure TDirectControlFrm.SetControlPanel(
           ControlPanel : TPanel ;
           iVControl : Integer ;
-          var VControl : Array of TLSVControl ;
-          NumVControls : Integer ;
           var PanelHeight : Integer
           ) ;
 // --------------------------------
@@ -357,7 +346,7 @@ var
     Lab : TLabel ;
     TrackBar : TTrackBar ;
     EditBox : TValidatedEdit ;
-    i : Integer ;
+    i,iResource,Dev,Chan : Integer ;
 begin
 
     if iVControl < NumVControls then begin
@@ -383,11 +372,17 @@ begin
         end ;
 
     // Update controls
-     Lab.Caption := Format('%s: ',[VControl[iVControl].Name]) ;
+     Lab.Caption := LightSource.ControlLineName(iVControl) ;
 
-     EditBox.Value := LabIO.DACOutState[VControl[iVControl].Device][VControl[iVControl].Chan] ;
+     iResource := MainFrm.IOConfig.LSControlLine[iVControl] ;
+     if MainFRm.IOResourceAvailable(iResource) then begin
+        Dev := LabIO.Resource[iResource].Device ;
+        Chan := LabIO.Resource[iResource].StartChannel ;
+        EditBox.Value := LabIO.DACOutState[Dev][Chan] ;
+        end
+     else EditBox.Value := 0.0 ;
 
-     TrackBar.Position := Round((VControl[iVControl].V/TrackBarVMax)*TrackBar.Max) ;
+     TrackBar.Position := Round((EditBox.Value/TrackBarVMax)*TrackBar.Max) ;
 
      end ;
 
@@ -523,7 +518,7 @@ var
     Lab : TLabel ;
     ComboBox : TComboBox ;
     i : Integer ;
-    Dev,DigChan,DigStart,DigEnd : Integer ;
+    Dev,DigStart : Integer ;
     OutputName : String ;
 begin
 

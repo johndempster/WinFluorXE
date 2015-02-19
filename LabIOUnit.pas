@@ -82,16 +82,21 @@ type
         ResourceType : TResourceType ;
         StartChannel : Integer ;
         EndChannel : Integer ;
+        V : Single ;
+        Delay : Single ;
         end ;
 
-  TBig16bitArray = Array[0..$1FFFFFFF] of SmallInt ;
-  PBig16bitArray = ^TBig16bitArray ;
-  TBig8bitArray = Array[0..$1FFFFFFF] of Byte ;
-  PBig8bitArray = ^TBig8bitArray ;
-  TBig32bitArray = Array[0..$1FFFFFF] of Integer ;
-  PBig32bitArray = ^TBig32bitArray ;
+  TBig16bitArray =  Array[0..$1FFFFFFF] of SmallInt ;
+  PBig16bitArray =  ^TBig16bitArray ;
+  TBig8bitArray =   Array[0..$1FFFFFFF] of Byte ;
+  PBig8bitArray =   ^TBig8bitArray ;
+  TBig32bitArray =  Array[0..$1FFFFFF] of Integer ;
+  PBig32bitArray =  ^TBig32bitArray ;
   TBigSingleArray = Array[0..$1FFFFFF] of Single ;
   PBigSingleArray = ^TBigSingleArray ;
+  TBigDoubleArray = Array[0..$1FFFFFF] of double ;
+  PBigDoubleArray = ^TBigdoubleArray ;
+
   TDAC = record
       Buf : PBig16bitArray ;
       Pointer : Integer ;

@@ -4,6 +4,8 @@ unit SetLasersUnit;
 // ---------------------------------------------------------
 // 10.03.09 Laser intensity can now be set from live image window
 // 31.5.13 JD Only slider from available laser now visible
+// 29.01.15 Variable light source now determined frm LightSource.ControlLineName()
+
 interface
 
 uses
@@ -16,35 +18,35 @@ type
     bOK: TButton;
     bCancel: TButton;
     panSource1: TPanel;
-    Label31: TLabel;
+    lbName1: TLabel;
     sbIntensity1: TScrollBar;
     edIntensity1: TValidatedEdit;
     panSource2: TPanel;
-    Label1: TLabel;
+    lbName2: TLabel;
     sbIntensity2: TScrollBar;
     edIntensity2: TValidatedEdit;
     panSource3: TPanel;
-    Label2: TLabel;
+    lbName3: TLabel;
     sbIntensity3: TScrollBar;
     edIntensity3: TValidatedEdit;
     panSource4: TPanel;
-    Label3: TLabel;
+    lbName4: TLabel;
     sbIntensity4: TScrollBar;
     edIntensity4: TValidatedEdit;
     panSource5: TPanel;
-    Label4: TLabel;
+    lbName5: TLabel;
     sbIntensity5: TScrollBar;
     edIntensity5: TValidatedEdit;
     panSource6: TPanel;
-    Label5: TLabel;
+    lbName6: TLabel;
     sbIntensity6: TScrollBar;
     edIntensity6: TValidatedEdit;
     panSource7: TPanel;
-    Label6: TLabel;
+    lbName7: TLabel;
     sbIntensity7: TScrollBar;
     edIntensity7: TValidatedEdit;
     panSource8: TPanel;
-    Label7: TLabel;
+    lbName8: TLabel;
     sbIntensity8: TScrollBar;
     edIntensity8: TValidatedEdit;
     procedure FormShow(Sender: TObject);
@@ -71,17 +73,62 @@ procedure TSetLasersFrm.FormShow(Sender: TObject);
 // ---------------------------------------
 // Initialise controls when form displayed
 // ---------------------------------------
+var
+    iTop : Integer ;
 begin
 
      // Set visibility
-     panSource1.Visible :=  LightSource.LaserAvailable[0] ;
-     panSource2.Visible :=  LightSource.LaserAvailable[1] ;
-     panSource3.Visible :=  LightSource.LaserAvailable[2] ;
-     panSource4.Visible :=  LightSource.LaserAvailable[3] ;
-     panSource5.Visible :=  LightSource.LaserAvailable[4] ;
-     panSource6.Visible :=  LightSource.LaserAvailable[5] ;
-     panSource7.Visible :=  LightSource.LaserAvailable[6] ;
-     panSource8.Visible :=  LightSource.LaserAvailable[7] ;
+     panSource1.Visible :=  LightSource.VariableIntensitySource(0) ;
+     panSource2.Visible :=  LightSource.VariableIntensitySource(1) ;
+     panSource3.Visible :=  LightSource.VariableIntensitySource(2) ;
+     panSource4.Visible :=  LightSource.VariableIntensitySource(3) ;
+     panSource5.Visible :=  LightSource.VariableIntensitySource(4) ;
+     panSource6.Visible :=  LightSource.VariableIntensitySource(5) ;
+     panSource7.Visible :=  LightSource.VariableIntensitySource(6) ;
+     panSource8.Visible :=  LightSource.VariableIntensitySource(7) ;
+
+     iTop := panSource1.Top ;
+     if panSource1.Visible then begin
+        panSource1.Top := iTop ;
+        iTop := iTop + panSource1.Height ;
+        end;
+     if panSource2.Visible then begin
+        panSource2.Top := iTop ;
+        iTop := iTop + panSource2.Height ;
+        end;
+     if panSource3.Visible then begin
+        panSource3.Top := iTop ;
+        iTop := iTop + panSource3.Height ;
+        end;
+     if panSource4.Visible then begin
+        panSource4.Top := iTop ;
+        iTop := iTop + panSource4.Height ;
+        end;
+     if panSource5.Visible then begin
+        panSource5.Top := iTop ;
+        iTop := iTop + panSource5.Height ;
+        end;
+     if panSource6.Visible then begin
+        panSource6.Top := iTop ;
+        iTop := iTop + panSource6.Height ;
+        end;
+     if panSource7.Visible then begin
+        panSource7.Top := iTop ;
+        iTop := iTop + panSource7.Height ;
+        end;
+     if panSource8.Visible then begin
+        panSource8.Top := iTop ;
+        iTop := iTop + panSource8.Height ;
+        end;
+
+     lbName1.Caption := LightSource.ControlLineName(0) ;
+     lbName2.Caption := LightSource.ControlLineName(1) ;
+     lbName3.Caption := LightSource.ControlLineName(2) ;
+     lbName4.Caption := LightSource.ControlLineName(3) ;
+     lbName5.Caption := LightSource.ControlLineName(4) ;
+     lbName6.Caption := LightSource.ControlLineName(5) ;
+     lbName7.Caption := LightSource.ControlLineName(6) ;
+     lbName8.Caption := LightSource.ControlLineName(7) ;
 
      // Set sliders
      sbIntensity1.Position := Round(LightSource.LaserIntensity[0]) ;

@@ -183,6 +183,9 @@ unit Main;
 // 27.01.15 V3.7.1 JD Recording now restarted in time lapse mode when camera hangs up or
 //                    images are a black level. File is closed/reopened after each time lapse interval (>2s)
 //                    to ensure file directory info is preserved.
+// 18.02.15 V3.7.2 JD Default file name prefix is date
+//                    Support for Thorlabs MLS203 stage added
+//                    Time courses can now be exported to MAT files
 
 interface
 
@@ -190,7 +193,8 @@ uses Windows, SysUtils, Classes, Graphics, Forms, Controls, Menus,
   StdCtrls, Dialogs, Buttons, Messages, ExtCtrls, ComCtrls, StdActns,
   ActnList, ToolWin, ImgList, SESCam, shared, ValEdit, SetupUnit, SealTest,
   StimSetupUnit, ImageFile, IDRFile, Sockets, UltimaUnit, ViewPlotUnit,
-  EventAnalysisUnit, ExcSetupUnit, math, shlobj, UITypes, VCL.HTMLHelpViewer ;
+  EventAnalysisUnit, ExcSetupUnit, math, shlobj, UITypes, VCL.HTMLHelpViewer,
+  Vcl.AppEvnts ;
 
 const
     InitialisationFileName = 'WinFluor.ini' ;
@@ -220,6 +224,7 @@ const
     PProtSubFolderName = 'pprot\' ;
     MaxFrameDivideFactor = 100 ;
     MaxStimPoints = 100 ;
+    MaxLSControlLine = 7 ;
 type
 
  TSmallIntArray = Array[0..4095*4095] of SmallInt ;
@@ -243,10 +248,11 @@ type
       VCommand : Array[0..NumCommandVoltageChannels-1] of Integer ;
       LSShutter : Integer ;
       LSShutterActiveHigh : Boolean ;
-      LSWavelengthStart : Integer ;
-      LSWavelengthEnd : Integer ;
-      LSLaserStart : Integer ; // 9/3/7 Separate laser control line range
-      LSLaserEnd : Integer ;   // 9/3/7
+      LSControlLine : Array[0..MaxLSControlLine] of Integer ;
+      //LSWavelengthStart : Integer ;
+      //LSWavelengthEnd : Integer ;
+      //LSLaserStart : Integer ; // 9/3/7 Separate laser control line range
+      //LSLaserEnd : Integer ;   // 9/3/7
       EmFilterStart : Integer ;   // 27.2.14 Emission filter control lines
       EmFilterEnd : Integer ;     // 27.2.14
       DigitalStimStart : Integer ;
@@ -462,6 +468,8 @@ type
     Cam1: TSESCam;
     mnDirectControl: TMenuItem;
     IDRFile: TIDRFile;
+    mnXYStage: TMenuItem;
+    ApplicationEvents: TApplicationEvents;
     procedure FileNew1Execute(Sender: TObject);
     procedure FileOpen1Execute(Sender: TObject);
     procedure HelpAbout1Execute(Sender: TObject);
@@ -523,6 +531,8 @@ type
     procedure mnDigitalFilterClick(Sender: TObject);
     procedure mnDirectControlClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure mnXYStageClick(Sender: TObject);
+    procedure ApplicationEventsException(Sender: TObject; E: Exception);
   private
 
     procedure SetRecentFileItem(
@@ -720,9 +730,8 @@ type
           const ADCChannel : TChannel
           ) ;
     function FormExists( FormName : String ) : Boolean ;
-
-
-
+    function LSControlLinesAvailable :Boolean ;
+    function LSNumControlLinesAvailable : Integer ;
   end;
 
 // Corrected system function call template
@@ -749,7 +758,7 @@ uses About, RecUnit, ViewUnit, TimeCourseUnit,
   FilePropsUnit, SaveAsFileUnit, RecPlotUnit, StimulusDefaultsUnit,
   SpectrumUnit, SnapUnit, PhotoStimUnit, SmoothDifferentiateUnit,
   CameraSettingsUnit, ExportROITImeCourseUnit, DynamicProtocolSetupUnit,
-  DigitalFilterUnit, DirectControlUnit;
+  DigitalFilterUnit, DirectControlUnit, XYStageUnit;
 
 
 
@@ -764,7 +773,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.1 27-1-15 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.2 18-2-15 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
@@ -865,10 +874,8 @@ begin
     for i := 0 to High(IOConfig.VCommand) do IOConfig.VCommand[i] := -1 ;
     IOConfig.LSShutter := -1 ;
     IOConfig.LSShutterActiveHigh := True ;
-    IOConfig.LSWavelengthStart := -1 ;
-    IOConfig.LSWavelengthEnd := -1 ;
-    IOConfig.LSLaserStart := -1 ;
-    IOConfig.LSLaserEnd := -1 ;
+//    IOConfig.LSLaserStart := -1 ;
+//    IOConfig.LSLaserEnd := -1 ;
     IOConfig.EmFilterStart := -1 ;
     IOConfig.EmFilterEnd := -1 ;
     IOConfig.DigitalStimStart := -1 ;
@@ -1216,6 +1223,11 @@ begin
 
      end;
 
+
+procedure TMainFrm.ApplicationEventsException(Sender: TObject; E: Exception);
+begin
+      ShowMessage(E.ClassName+' error raised, with message : '+E.Message);
+end;
 
 procedure TMainFrm.CloseWindows ;
 // ----------------------------------------
@@ -2288,49 +2300,15 @@ begin
       end;
 
 
-function TMainFrm.CreateIndexedFileName(
-         FileName : String ) : String ;
-// ---------------------------------------------------
-// Append an (incremented) index number to end of file
-// ---------------------------------------------------
-var
-     i : Integer ;
-     IndexNumberStart : Integer ;
-     IndexNum : Integer ;
-     NewFileName : String ;
-     FileStem : String ;
+procedure TMainFrm.mnXYStageClick(Sender: TObject);
+// ------------------------------
+// Display XY stage control panel
+// ------------------------------
 begin
-
-     // If no name create default
-     if FileName = '' then FileName := DataDirectory + 'File.idr' ;
-
-     // Ensure file has .IDR extension
-     FileName := ChangeFileExt( FileName, '.idr' ) ;
-
-     // Find '_nnn' index number (if it exists)
-     IndexNumberStart := Pos( '.idr', FileName ) ;
-     i := IndexNumberStart ;
-     While (i > 0) do begin
-         if FileName[i] = '_' then begin
-            IndexNumberStart := i ;
-            Break ;
-            end ;
-         Dec(i) ;
-         end ;
-
-     FileStem := ANSILeftStr( FileName, Max(IndexNumberStart-1,0) ) ;
-
-     // Find next available (lowest) index number for this file name
-     IndexNum := 0 ;
-     repeat
-          Inc(IndexNum) ;
-          NewFileName := FileStem + format('_%.3d.idr',[IndexNum]) ;
-          until not FileExists(NewFileName) ;
-
-     // Return name
-     Result := NewFileName ;
-
-     end ;
+     XYStageFrm.Left := Left + 40 ;
+     XYStageFrm.Top := Top + 50 ;
+     XYStageFrm.Show ;
+     end;
 
 
 procedure TMainFrm.mnViewClick(Sender: TObject);
@@ -2440,6 +2418,8 @@ begin
      mnStimSetup.Enabled := True ;
      for i := 0 to MDIChildCount-1 do if MDIChildren[i].Name = 'WavGenFrm' then mnStimSetup.Enabled := False ;
 
+     if XYStageFrm.StageType <> xyNone then mnXYStage.Enabled := True
+                                       else mnXYStage.Enabled := False ;
      end;
 
 
@@ -2752,6 +2732,101 @@ begin
     Result := StrPas(vSpecialPath);
 
     end;
+
+function TMainFrm.LSControlLinesAvailable :Boolean ;
+// -------------------------------------------------------
+// Return TRUE if light source control lines are available
+// -------------------------------------------------------
+var
+    i : Integer ;
+begin
+     // Exit if no light source or D/A channels configured
+     Result := False ;
+     for i := 0 to High(MainFrm.IOConfig.LSControlLine) do
+         if MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSControlLine[i]) then Result := True ;
+     end ;
+
+function TMainFrm.LSNumControlLinesAvailable : Integer ;
+// -------------------------------------------------------
+// Return TRUE if light source control lines are available
+// -------------------------------------------------------
+var
+    NumLines : Integer ;
+    Done : Boolean ;
+begin
+     NumLines := 0 ;
+     while not Done do begin
+         if MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSControlLine[NumLines]) then Inc(NumLines)
+                                                                                  else Done := True ;
+         if NumLines > High(MainFrm.IOConfig.LSControlLine) then Done := True ;
+         end;
+     Result := NumLines ;
+     end ;
+
+
+function TMainFrm.CreateIndexedFileName(
+         FileName : String ) : String ;
+// ---------------------------------------------------
+// Append an (incremented) index number to end of file
+// ---------------------------------------------------
+var
+     i : Integer ;
+     ExtensionStart : Integer ;
+     IndexNumberStart : Integer ;
+     IndexNum : Integer ;
+     sDate,NewFileName : String ;
+     FileStem : String ;
+begin
+
+     // Create new file name based on date
+
+     DateTimeToString( sDate, 'yymmdd', Date() ) ;
+     FileName := DataDirectory  + sDate + '.idr' ;
+
+     // Find '_nnn' index number (if it exists)
+     i := Length(FileName) ;
+     ExtensionStart := Length(FileName)+1 ;
+     IndexNumberStart := -1 ;
+     While (i > 0) do begin
+         if FileName[i] = '.' then ExtensionStart := i ;
+         if FileName[i] = '_' then begin
+            IndexNumberStart := i ;
+            Break ;
+            end ;
+         Dec(i) ;
+         end ;
+
+     if ((ExtensionStart - IndexNumberStart) > 4)
+        or (ExtensionStart < 5) then IndexNumberStart := -1 ;
+
+     // Find next available (lowest) index number for this file name
+
+     FileStem :=  '' ;
+     if IndexNumberStart > 0 then begin
+        for i := 1 to IndexNumberStart-1 do
+            FileStem :=  FileStem + FileName[i] ;
+        end
+     else begin
+        for i := 1 to ExtensionStart-1 do
+            FileStem :=  FileStem + FileName[i] ;
+        end ;
+
+     IndexNum := 0 ;
+     repeat
+          Inc(IndexNum) ;
+          NewFileName := FileStem + format('_%.3d',[IndexNum]) ;
+          for i := ExtensionStart to Length(FileName) do
+              NewFileName := NewFileName + FileName[i] ;
+          until not FileExists(NewFileName) ;
+
+     // Return name
+     Result := NewFileName ;
+
+     end ;
+
+
+
+
 
 
 end.

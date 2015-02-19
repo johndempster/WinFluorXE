@@ -64,6 +64,7 @@ unit FileIOUnit;
 // 02.12.14 ......... LightSource.LaserWavelength etc. now supports 8 light sources 0..7
 //                    Keywords numbers 1..8 (LSLAS1WAV= .. LSLAS8WAV=
 // 23.01.14 ......... DARKLEVLO= and DARKLEVHI= added.
+// 3.2.15 ........... XYStage.Save/ReadSettings added
 interface
 
 uses
@@ -118,7 +119,7 @@ var
 implementation
 
 uses Main, shared, LabIOUnit, maths, AmpModule , RecUnit, ViewUnit,
-  LightSourceUnit, ZStageUnit;
+  LightSourceUnit, ZStageUnit, XYStageUnit;
 
 {$R *.DFM}
 
@@ -170,7 +171,7 @@ procedure TFileIO.SaveInitialisationFile(
 // ------------------------
 var
    Header : array[1..cNumIDRHeaderBytes] of ANSIchar ;
-   i,iSeq,iWav,ch : Integer ;
+   i,iStart,iEnd,iSeq,iWav,ch : Integer ;
    INIFileHandle : THandle ;
    Dev : Integer ;
 begin
@@ -409,10 +410,15 @@ begin
      AppendInt( Header, 'IOVCOM2=', MainFrm.IOConfig.VCommand[2] ) ;
      AppendInt( Header, 'IOLSSU=', MainFrm.IOConfig.LSShutter ) ;
      AppendLogical( Header, 'IOLSSUAH=', MainFrm.IOConfig.LSShutterActiveHigh ) ;
-     AppendInt( Header, 'IOLSWS=', MainFrm.IOConfig.LSWavelengthStart ) ;
-     AppendInt( Header, 'IOLSWE=', MainFrm.IOConfig.LSWavelengthEnd ) ;
-     AppendInt( Header, 'IOLSLS=', MainFrm.IOConfig.LSLaserStart ) ;
-     AppendInt( Header, 'IOLSLE=', MainFrm.IOConfig.LSLaserEnd ) ;
+//     AppendInt( Header, 'IOLSWS=', MainFrm.IOConfig.LSWavelengthStart ) ;
+//     AppendInt( Header, 'IOLSWE=', MainFrm.IOConfig.LSWavelengthEnd ) ;
+//     AppendInt( Header, 'IOLSLS=', MainFrm.IOConfig.LSLaserStart ) ;
+//     AppendInt( Header, 'IOLSLE=', MainFrm.IOConfig.LSLaserEnd ) ;
+
+     // Light source control outputs
+     for i := 0 to MaxLSControlLine do begin
+        AppendInt( Header, format('IOLSCON%d=',[i]), MainFrm.IOConfig.LSControlLine[i] ) ;
+        end ;
 
      // Emission filter control lines
      AppendInt( Header, 'IOEMFS=', MainFrm.IOConfig.EMFilterStart ) ;
@@ -542,6 +548,9 @@ begin
      // Save Z Stage control settings
      ZStage.SaveSettings( Header ) ;
 
+     // Save XY Stage control settings
+     XYStageFrm.SaveSettings( Header ) ;
+
      if FileWrite( INIFileHandle, Header, Sizeof(Header) ) <> Sizeof(Header) then
         ShowMessage( ' Initialisation file write failed ' ) ;
 
@@ -562,7 +571,7 @@ procedure TFileIO.LoadInitialisationFile(
 // ------------------------
 var
    Header : array[1..cNumIDRHeaderBytes] of ANSIchar ;
-   i,iWav,iSeq,ch : Integer ;
+   i,iStart,iEnd,iLine,iWav,iSeq,ch : Integer ;
    INIFileHandle : THandle ;
    iValue : Integer ;
    fValue : Single ;
@@ -913,10 +922,28 @@ begin
 
      ReadInt( Header, 'IOLSSU=', MainFrm.IOConfig.LSShutter ) ;
      ReadLogical( Header, 'IOLSSUAH=', MainFrm.IOConfig.LSShutterActiveHigh ) ;
-     ReadInt( Header, 'IOLSWS=', MainFrm.IOConfig.LSWavelengthStart ) ;
-     ReadInt( Header, 'IOLSWE=', MainFrm.IOConfig.LSWavelengthEnd ) ;
-     ReadInt( Header, 'IOLSLS=', MainFrm.IOConfig.LSLaserStart ) ;
-     ReadInt( Header, 'IOLSLE=', MainFrm.IOConfig.LSLaserEnd ) ;
+
+     // Read pre V3.7.2 light source control lines info
+     iStart := 0 ;
+     iEnd := 0 ;
+     ReadInt( Header, 'IOLSWS=', iStart ) ;
+     ReadInt( Header, 'IOLSWE=', iEnd ) ;
+     iLine := 0 ;
+     for i := iStart to iEnd do if iLine <= MaxLSControlLine then begin
+         MainFrm.IOConfig.LSControlLine[iLine] := i ;
+         Inc(iLine) ;
+         end;
+     ReadInt( Header, 'IOLSLS=', iStart ) ;
+     ReadInt( Header, 'IOLSLE=', iEnd ) ;
+     for i := iStart to iEnd do if iLine <= MaxLSControlLine then begin
+         MainFrm.IOConfig.LSControlLine[iLine] := i ;
+         Inc(iLine) ;
+         end;
+
+     // Light source control outputs (post V3.7.2)
+     for i := 0 to MaxLSControlLine do begin
+        ReadInt( Header, format('IOLSCON%d=',[i]), MainFrm.IOConfig.LSControlLine[i] ) ;
+        end ;
 
      // Emission filter control lines
      ReadInt( Header, 'IOEMFS=', MainFrm.IOConfig.EMFilterStart ) ;
@@ -1048,6 +1075,9 @@ begin
 
      // Read Z Stage control settings
      ZStage.ReadSettings( Header ) ;
+
+     // Read XY Stage control settings
+     XYStageFrm.ReadSettings( Header ) ;
 
      FileClose( INIFileHandle ) ;
 
@@ -1299,6 +1329,7 @@ begin
 
      if not SaveDialog.Execute then Exit ;
 
+     PInFrameBuf := Nil ;
      if MainFrm.ActiveMDIChild.Name = 'IntegrateFrm' then begin
         // Save current image from integrated image module
         //if IntegrateFrm.ImageAvailable then

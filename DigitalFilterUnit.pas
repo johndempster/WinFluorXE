@@ -204,7 +204,7 @@ var
    OutBuf : PSmallIntArray ;
    Work :  PSmallIntArray ;
    Temp,sum,sigma,aScale : single ;
-   i,j,k,Ch,Coeff,Src,Dest : Integer ;
+   i,j,Ch,Coeff,Src,Dest : Integer ;
    BufSize : Integer ;             { No. of samples in file I/O buffer }
    NumBuffersToDo : Integer ; { No. of input buffers to be processed }
    NumBuffersRead : Integer ;  // No. of buffer still to be read
@@ -410,7 +410,6 @@ const
 var
     i,j,ch : Integer ;
     iScan : Int64 ;
-    NumScansPerBlock : Integer ;
     NumScansRead : Integer ;
     Buf : Array[0..NumScansPerBuf*(MaxADCChannels)-1] of SmallInt ;
     FPSize : Integer ;
@@ -427,7 +426,6 @@ var
      TempHandle2 : Integer ;
      FilePointer : Integer ;
      iCutOff : Integer ;
-     iBlock  : Integer ;
      FilterOp : String ;
 
 begin

@@ -40,13 +40,14 @@ unit SnapUnit;
 // 09.07.14 Calibration bar now sized correctly from Cam1.PixelWidth
 // 02.12.14 Set Laser Intensity button name changed to Set Light Intensity
 // 26.12.15 Andor frame buffer increased to MaxBufferSize
+// 29.01.15 UpdateLightSourceDAC and UpdateLightSourceDig combined into UpdateLightSource
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, RangeEdit, ComCtrls, ValidatedEdit, IDRFile,
-  math, SESCam, mmsystem, ImageFile, clipbrd, Buttons, UITYpes ;
+  math, SESCam, mmsystem, ImageFile, clipbrd, Buttons, UITYpes, XYStageUnit ;
 
 type
   TSnapFrm = class(TForm)
@@ -237,8 +238,6 @@ type
               BitMap : TBitMap ) ; // Bit map to be written to
 
     procedure UpdateLightSource ;
-    procedure UpdateLightSourceDAC ;
-    procedure UpdateLightSourceDIG ;
     procedure UpdateEMFilterDIG ;
     procedure UpdateLightSourceShutter ;
 
@@ -308,7 +307,7 @@ var
 implementation
 
 uses Main, maths , SetCCDReadoutUnit, LightSourceUnit, LabIOUnit, RecUnit,
-  LogUnit, SetLasersUnit, ZStageUnit;
+  LogUnit, SetLasersUnit, ZStageUnit ;
 
 {$R *.dfm}
 
@@ -373,6 +372,9 @@ begin
         Close ;
         Exit ;
         end ;
+
+     // Display XY stage control
+     if XYStageFrm.Available and (not XYStageFrm.Visible) then XYStageFrm.Show ;
 
      // Set form at top left of MDI window
      Top := 20 ;
@@ -2188,102 +2190,23 @@ procedure TSnapFrm.UpdateLightSource ;
 // -------------------------------------
 // Update light source control waveforms
 // -------------------------------------
-begin
-
-     // Exit if no light source or D/A channels configured
-     if (not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthStart)) or
-        (not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthEnd)) or
-        (LightSource.DeviceType = lsNone) then Exit ;
-
-     if LabIO.Resource[MainFrm.IOConfig.LSWavelengthStart].ResourceType = DACOut then begin
-         // DAC output lines
-        UpdateLightSourceDAC ;
-        end
-     else begin
-        // Digital output lines
-        UpdateLightSourceDIG ;
-        end ;
-
-     ImageLabel := format( '%d (%d)',
-                   [MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Centre,
-                    MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Width]) ;
-
-     end ;
-
-
-procedure TSnapFrm.UpdateLightSourceDAC ;
-// ----------------------------------------
-// Update light source DAC control pattern
-// ----------------------------------------
 var
-     Dev : Integer ;
+     Dev,Chan,iResource,i : Integer ;
      iV : Integer ;
      FilterNums : Array[0..lsMaxVControl-1] of Integer ;
      Wavelengths : Array[0..lsMaxVControl-1] of Single ;
      Bandwidths : Array[0..lsMaxVControl-1] of Single ;
      VControl : Array[0..lsMaxVControl] of TLSVControl ;
      NumVControl : Integer ;
- //    NumWavelengths : Integer ;
-begin
-
-     // Exit if no light source or D/A channels configured
-     if (not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthStart)) or
-        (not MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSWavelengthEnd)) or
-        (LightSource.DeviceType = lsNone) then Exit ;
-
-     // Single wavelength excitatiom
-     FilterNums[0] := Max(cbWavelength.ItemIndex,0) ;
-     Wavelengths[0] :=MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Centre ;
-     Bandwidths[0] :=  MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Width ;
-//     NumWavelengths := 1 ;
-
-     // Fill D/A channel buffers with excitation light control voltages
-     // for each frame type in use
-
-     if rbEXCShutterOpen.Checked then begin
-        // Get voltages for selected wavelength
-        LightSource.WavelengthToVoltage( FilterNums[0],
-                                         Wavelengths[0],
-                                         Bandwidths[0],
-                                         VControl,
-                                         NumVControl );
-        end
-     else begin
-        // Get voltages for shutters closed condition
-        LightSource.ShutterClosedVoltages( VControl,
-                                           NumVControl ) ;
-        end ;
-
-     // Update default values for DAC channels in use
-     for iV := 0 to NumVControl-1 do begin
-         Dev := VControl[iV].Device ;
-         LabIO.DACOutState[Dev][VControl[iV].Chan] := VControl[iV].V ;
-         // Output to DAC channel (if it is not in use)
-         if not LabIO.DACActive[Dev] then begin
-            LabIO.WriteDAC( Dev, VControl[iV].V, VControl[iV].Chan) ;
-            end ;
-         end ;
-
-     end ;
-
-
-procedure TSnapFrm.UpdateLightSourceDIG ;
-// ----------------------------------------
-// Update light source digital output waveform
-// ----------------------------------------
-var
-     Device : Integer ;
-     iV : Integer ;
-     FilterNums : Array[0..lsMaxVControl-1] of Integer ;
-     Wavelengths : Array[0..lsMaxVControl-1] of Single ;
-     Bandwidths : Array[0..lsMaxVControl-1] of Single ;
-     VControl : Array[0..lsMaxVControl-1] of TLSVControl ;
-     NumVControl : Integer ;
+     V : single ;
      Bit : Word ;
      BitWord  : Word ;
      BitMask  : Word ;
 begin
 
+     // Exit if no light source or D/A channels configured
+     if LightSource.DeviceType = lsNone then Exit ;
+
      // Single wavelength excitatiom
      FilterNums[0] := Max(cbWavelength.ItemIndex,0) ;
      Wavelengths[0] :=MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Centre ;
@@ -2291,35 +2214,54 @@ begin
 
      if rbEXCShutterOpen.Checked then begin
         // Get voltages for selected wavelength
-        LightSource.WavelengthToVoltage( FilterNums[0],
-                                         Wavelengths[0],
-                                         Bandwidths[0],
-                                         VControl,
-                                         NumVControl );
+        LightSource.WavelengthToVoltage( FilterNums[0],Wavelengths[0],Bandwidths[0] );
         end
      else begin
         // Get voltages for shutters closed condition
-        LightSource.ShutterClosedVoltages( VControl,
-                                           NumVControl ) ;
+        LightSource.ShutterClosedVoltages ;
         end ;
 
-     // Update binary word
+     // Update DAC channels in use
+     // --------------------------
+     for i := 0 to LightSource.NumControlLines-1 do begin
+         iResource := MainFrm.IOConfig.LSControlLine[i] ;
+         if MainFRm.IOResourceAvailable(iResource) then begin
+            Dev := LabIO.Resource[iResource].Device ;
+            Chan := LabIO.Resource[iResource].StartChannel ;
+            V := LabIO.Resource[iResource].V ;
+            LabIO.DACOutState[Dev][Chan] := V ;
+            // Output to DAC channel (if it is not in use)
+            if not LabIO.DACActive[Dev] then LabIO.WriteDAC( Dev, V, Chan) ;
+            end;
+         end ;
+
+     // Update digital outputs in use
+     // -----------------------------
      BitWord := 0 ;
      BitMask := 0 ;
-     for iV := 0 to NumVControl-1 do begin
-         Bit := LabIO.BitMask(VControl[iV].Chan) ;
-         BitMask := BitMask or Bit ;
-         if VControl[iV].V <> 0.0 then BitWord := BitWord or Bit ;
+     Dev := 0 ;
+     for i := 0 to LightSource.NumControlLines-1 do begin
+         iResource := MainFrm.IOConfig.LSControlLine[i] ;
+         if MainFRm.IOResourceAvailable(iResource) then begin
+            Dev := LabIO.Resource[iResource].Device ;
+            Chan := LabIO.Resource[iResource].StartChannel ;
+            Bit := LabIO.BitMask(Chan) ;
+            BitMask := BitMask or Bit ;
+            if LabIO.Resource[iResource].V <> 0.0 then BitWord := BitWord or Bit ;
+            end;
          end ;
      BitMask := not BitMask ;
 
      // Update digital output port state
      // (If in use, leave update to existing process)
-     Device :=  VControl[0].Device ;
-     LabIO.DigOutState[Device] := (LabIO.DigOutState[Device] and BitMask) or BitWord ;
-     if not LabIO.DIGActive[Device] then begin
-        LabIO.WriteToDigitalOutPutPort( Device, LabIO.DigOutState[Device] ) ;
+     if Dev > 0 then begin
+        LabIO.DigOutState[Dev] := (LabIO.DigOutState[Dev] and BitMask) or BitWord ;
+        if not LabIO.DIGActive[Dev] then LabIO.WriteToDigitalOutPutPort( Dev, LabIO.DigOutState[Dev] ) ;
         end ;
+
+     ImageLabel := format( '%d (%d)',
+                   [MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Centre,
+                    MainFrm.EXCWavelengths[Max(cbWavelength.ItemIndex,0)].Width]) ;
 
      end ;
 

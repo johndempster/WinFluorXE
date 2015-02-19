@@ -203,6 +203,10 @@ object MainFrm: TMainFrm
         Caption = 'Excitation &Light Wavelengths'
         OnClick = mnEXCSetupClick
       end
+      object mnXYStage: TMenuItem
+        Caption = 'XY &Stage Control'
+        OnClick = mnXYStageClick
+      end
       object mnSetupIon: TMenuItem
         Caption = '&Ion Binding Equations'
         OnClick = mnSetupIonClick
@@ -310,7 +314,7 @@ object MainFrm: TMainFrm
     Left = 104
     Top = 200
     Bitmap = {
-      494C010112009400940010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011200D800D80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1053,5 +1057,10 @@ object MainFrm: TMainFrm
     EventF0SubtractF0 = False
     Left = 240
     Top = 208
+  end
+  object ApplicationEvents: TApplicationEvents
+    OnException = ApplicationEventsException
+    Left = 40
+    Top = 272
   end
 end

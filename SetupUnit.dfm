@@ -133,7 +133,6 @@ object SetupFrm: TSetupFrm
     TabOrder = 3
     object CameraTab: TTabSheet
       Caption = 'Camera'
-      ExplicitHeight = 396
       object GroupBox4: TGroupBox
         Left = 8
         Top = 0
@@ -148,9 +147,9 @@ object SetupFrm: TSetupFrm
         ParentFont = False
         TabOrder = 0
         object Label41: TLabel
-          Left = 10
+          Left = 42
           Top = 380
-          Width = 122
+          Width = 90
           Height = 14
           Alignment = taRightJustify
           Caption = 'Tempr. Set Point'
@@ -610,7 +609,7 @@ object SetupFrm: TSetupFrm
           Left = 45
           Top = 18
           Width = 60
-          Height = 20
+          Height = 22
           Hint = 
             'Label of upper half of camera image when split image mode select' +
             'ed'
@@ -623,7 +622,7 @@ object SetupFrm: TSetupFrm
           Left = 157
           Top = 18
           Width = 60
-          Height = 20
+          Height = 22
           Hint = 
             'Label of lower half of camera image when split image mode select' +
             'ed'
@@ -697,12 +696,259 @@ object SetupFrm: TSetupFrm
     object LightSourceTab: TTabSheet
       Caption = 'Light Source'
       ImageIndex = 1
-      ExplicitHeight = 396
+      object LSShutterGrp: TGroupBox
+        Left = 280
+        Top = 0
+        Width = 177
+        Height = 217
+        Caption = ' Shutter Control '
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 1
+        object Label43: TLabel
+          Left = 8
+          Top = 16
+          Width = 89
+          Height = 30
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Shutter closed wavelength'
+          WordWrap = True
+        end
+        object Label40: TLabel
+          Left = 8
+          Top = 80
+          Width = 89
+          Height = 30
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Frame blanking period'
+          WordWrap = True
+        end
+        object Label68: TLabel
+          Left = 7
+          Top = 49
+          Width = 89
+          Height = 30
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Opening time'
+          WordWrap = True
+        end
+        object edShutterClosedWavelength: TValidatedEdit
+          Left = 104
+          Top = 16
+          Width = 63
+          Height = 20
+          Hint = 'Laser #1 emission wavelength (nm)'
+          AutoSize = False
+          ShowHint = True
+          Text = ' 10 nm'
+          Value = 10.000000000000000000
+          Scale = 1.000000000000000000
+          Units = 'nm'
+          NumberFormat = '%.4g'
+          LoLimit = 1.000000000000000000
+          HiLimit = 100000.000000000000000000
+        end
+        object edShutterBlankingPeriod: TValidatedEdit
+          Left = 104
+          Top = 80
+          Width = 63
+          Height = 20
+          Hint = 
+            'Closed shutter blanking period at end of exposure cycle for CCD ' +
+            'readout'
+          AutoSize = False
+          ShowHint = True
+          Text = ' 0 ms'
+          Scale = 1000.000000000000000000
+          Units = 'ms'
+          NumberFormat = '%.4g'
+          LoLimit = -1.000000015047466E30
+          HiLimit = 1.000000015047466E29
+        end
+        object GroupBox3: TGroupBox
+          Left = 8
+          Top = 116
+          Width = 161
+          Height = 93
+          Caption = ' Shutter Control Output '
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+          object cbLSShutter: TComboBox
+            Left = 8
+            Top = 19
+            Width = 145
+            Height = 22
+            Hint = 'Shutter AO/DO control output line.'
+            Style = csDropDownList
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 0
+          end
+          object rbLSShutterActiveHigh: TRadioButton
+            Left = 8
+            Top = 48
+            Width = 89
+            Height = 17
+            Hint = 'Use TTL High (5V) to open shutter'
+            Caption = 'Active High'
+            Checked = True
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+            TabStop = True
+          end
+          object rbLSShutterActiveLow: TRadioButton
+            Left = 8
+            Top = 64
+            Width = 89
+            Height = 17
+            Hint = 'Use TTL Low (0V) to open shutter'
+            Caption = 'Active Low'
+            Color = clBtnFace
+            ParentColor = False
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 2
+          end
+        end
+        object edShutterChangeTime: TValidatedEdit
+          Left = 103
+          Top = 49
+          Width = 63
+          Height = 20
+          Hint = 'Shutter open/close switching time'
+          AutoSize = False
+          ShowHint = True
+          Text = ' 1000 ms'
+          Value = 1.000000000000000000
+          Scale = 1000.000000000000000000
+          Units = 'ms'
+          NumberFormat = '%.4g'
+          LoLimit = -1.000000015047466E30
+          HiLimit = 1.000000015047466E29
+        end
+      end
+      object EmFilterGrp: TGroupBox
+        Left = 280
+        Top = 224
+        Width = 177
+        Height = 169
+        Caption = ' Emission Filter '
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
+        object Label74: TLabel
+          Left = 7
+          Top = 95
+          Width = 89
+          Height = 18
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Change Time'
+          WordWrap = True
+        end
+        object EmFilterControlGrp: TGroupBox
+          Left = 8
+          Top = 16
+          Width = 161
+          Height = 73
+          Caption = ' Filter Control Outputs '
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 0
+          object Label72: TLabel
+            Left = 14
+            Top = 18
+            Width = 28
+            Height = 13
+            Alignment = taRightJustify
+            Caption = 'Start'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object Label73: TLabel
+            Left = 19
+            Top = 44
+            Width = 23
+            Height = 13
+            Alignment = taRightJustify
+            Caption = 'End'
+            Font.Charset = DEFAULT_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'MS Sans Serif'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object cbEMFilterStart: TComboBox
+            Left = 48
+            Top = 16
+            Width = 110
+            Height = 22
+            Hint = 'Start of emission filter DO output range'
+            Style = csDropDownList
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 0
+          end
+          object cbEmFilterEnd: TComboBox
+            Left = 48
+            Top = 44
+            Width = 110
+            Height = 22
+            Hint = 'End of emission filter DO output range'
+            Style = csDropDownList
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+          end
+        end
+        object edEmFilterChangeTime: TValidatedEdit
+          Left = 106
+          Top = 95
+          Width = 63
+          Height = 20
+          Hint = 'Emission filter switching time'
+          AutoSize = False
+          ShowHint = True
+          Text = ' 1000 ms'
+          Value = 1.000000000000000000
+          Scale = 1000.000000000000000000
+          Units = 'ms'
+          NumberFormat = '%.4g'
+          LoLimit = -1.000000015047466E30
+          HiLimit = 1.000000015047466E29
+        end
+      end
       object LightSourceGrp: TGroupBox
         Left = 8
         Top = 0
         Width = 265
-        Height = 393
+        Height = 418
         Caption = 'Light Source  '
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
@@ -711,6 +957,276 @@ object SetupFrm: TSetupFrm
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 0
+        object LSWaveGrp: TGroupBox
+          Left = 8
+          Top = 147
+          Width = 249
+          Height = 246
+          Caption = ' Light Source Control Outputs  '
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+          object LSControl0: TPanel
+            Left = 8
+            Top = 20
+            Width = 233
+            Height = 28
+            BevelOuter = bvNone
+            TabOrder = 0
+            object lbLSControl0: TLabel
+              Left = 88
+              Top = 1
+              Width = 28
+              Height = 13
+              Alignment = taRightJustify
+              Caption = 'Start'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object cbLSControl0: TComboBox
+              Tag = 1
+              Left = 123
+              Top = 1
+              Width = 110
+              Height = 22
+              Style = csDropDownList
+              TabOrder = 0
+              OnChange = cbLSControl0Change
+            end
+          end
+          object lsControl1: TPanel
+            Left = 8
+            Top = 47
+            Width = 233
+            Height = 28
+            BevelOuter = bvNone
+            TabOrder = 1
+            object lbLSControl1: TLabel
+              Left = 88
+              Top = 1
+              Width = 28
+              Height = 13
+              Alignment = taRightJustify
+              Caption = 'Start'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object cbLSControl1: TComboBox
+              Tag = 1
+              Left = 123
+              Top = 1
+              Width = 110
+              Height = 22
+              Style = csDropDownList
+              TabOrder = 0
+              OnChange = cbLSControl0Change
+            end
+          end
+          object lsControl2: TPanel
+            Left = 8
+            Top = 74
+            Width = 233
+            Height = 28
+            BevelOuter = bvNone
+            TabOrder = 2
+            object lbLSControl2: TLabel
+              Left = 88
+              Top = 1
+              Width = 28
+              Height = 13
+              Alignment = taRightJustify
+              Caption = 'Start'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object cbLSControl2: TComboBox
+              Tag = 1
+              Left = 123
+              Top = 1
+              Width = 110
+              Height = 22
+              Style = csDropDownList
+              TabOrder = 0
+              OnChange = cbLSControl0Change
+            end
+          end
+          object lsControl3: TPanel
+            Left = 8
+            Top = 101
+            Width = 233
+            Height = 28
+            BevelOuter = bvNone
+            TabOrder = 3
+            object lbLSControl3: TLabel
+              Left = 88
+              Top = 1
+              Width = 28
+              Height = 13
+              Alignment = taRightJustify
+              Caption = 'Start'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object cbLSControl03: TComboBox
+              Tag = 1
+              Left = 123
+              Top = 1
+              Width = 110
+              Height = 22
+              Style = csDropDownList
+              TabOrder = 0
+              OnChange = cbLSControl0Change
+            end
+          end
+          object lsControl4: TPanel
+            Left = 8
+            Top = 128
+            Width = 233
+            Height = 28
+            BevelOuter = bvNone
+            TabOrder = 4
+            object lbLSControl4: TLabel
+              Left = 88
+              Top = 1
+              Width = 28
+              Height = 13
+              Alignment = taRightJustify
+              Caption = 'Start'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object cbLSControl4: TComboBox
+              Tag = 1
+              Left = 123
+              Top = 1
+              Width = 110
+              Height = 22
+              Style = csDropDownList
+              TabOrder = 0
+              OnChange = cbLSControl0Change
+            end
+          end
+          object lsControl5: TPanel
+            Left = 8
+            Top = 155
+            Width = 233
+            Height = 28
+            BevelOuter = bvNone
+            TabOrder = 5
+            object lbLSControl5: TLabel
+              Left = 88
+              Top = 1
+              Width = 28
+              Height = 13
+              Alignment = taRightJustify
+              Caption = 'Start'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object cbLSControl05: TComboBox
+              Tag = 1
+              Left = 123
+              Top = 1
+              Width = 110
+              Height = 22
+              Style = csDropDownList
+              TabOrder = 0
+              OnChange = cbLSControl0Change
+            end
+          end
+          object lsControl6: TPanel
+            Left = 8
+            Top = 180
+            Width = 233
+            Height = 28
+            BevelOuter = bvNone
+            TabOrder = 6
+            object lbLSControl6: TLabel
+              Left = 88
+              Top = 1
+              Width = 28
+              Height = 13
+              Alignment = taRightJustify
+              Caption = 'Start'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object cbLSControl06: TComboBox
+              Tag = 1
+              Left = 123
+              Top = 1
+              Width = 110
+              Height = 22
+              Style = csDropDownList
+              TabOrder = 0
+              OnChange = cbLSControl0Change
+            end
+          end
+          object lsControl7: TPanel
+            Left = 8
+            Top = 206
+            Width = 233
+            Height = 30
+            BevelOuter = bvNone
+            TabOrder = 7
+            object lbLSControl7: TLabel
+              Left = 89
+              Top = 1
+              Width = 28
+              Height = 13
+              Alignment = taRightJustify
+              Caption = 'Start'
+              Font.Charset = DEFAULT_CHARSET
+              Font.Color = clWindowText
+              Font.Height = -12
+              Font.Name = 'MS Sans Serif'
+              Font.Style = [fsBold]
+              ParentFont = False
+            end
+            object cbLSControl7: TComboBox
+              Tag = 1
+              Left = 123
+              Top = 1
+              Width = 110
+              Height = 22
+              Style = csDropDownList
+              TabOrder = 0
+              OnChange = cbLSControl0Change
+            end
+          end
+        end
         object cbLightSource: TComboBox
           Left = 8
           Top = 20
@@ -872,62 +1388,6 @@ object SetupFrm: TSetupFrm
             NumberFormat = '%.4g'
             LoLimit = -1.000000015047466E29
             HiLimit = 1.000000015047466E29
-          end
-        end
-        object LSWaveGrp: TGroupBox
-          Left = 8
-          Top = 240
-          Width = 249
-          Height = 65
-          Caption = ' Wavelength Control Outputs (Range)  '
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 2
-          object Label2: TLabel
-            Left = 8
-            Top = 20
-            Width = 28
-            Height = 13
-            Caption = 'Start'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'MS Sans Serif'
-            Font.Style = [fsBold]
-            ParentFont = False
-          end
-          object Label21: TLabel
-            Left = 128
-            Top = 20
-            Width = 23
-            Height = 13
-            Caption = 'End'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'MS Sans Serif'
-            Font.Style = [fsBold]
-            ParentFont = False
-          end
-          object cbLSWavelengthStart: TComboBox
-            Left = 8
-            Top = 35
-            Width = 110
-            Height = 22
-            Style = csDropDownList
-            TabOrder = 0
-          end
-          object cbLSWavelengthEnd: TComboBox
-            Left = 128
-            Top = 35
-            Width = 110
-            Height = 22
-            Style = csDropDownList
-            TabOrder = 1
           end
         end
         object lsTIRFGrp: TGroupBox
@@ -1096,7 +1556,7 @@ object SetupFrm: TSetupFrm
           Left = 15
           Top = 158
           Width = 250
-          Height = 187
+          Height = 148
           Caption = ' LED/Lasers '
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
@@ -1105,38 +1565,12 @@ object SetupFrm: TSetupFrm
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 5
-          object Label38: TLabel
-            Left = 8
-            Top = 140
-            Width = 28
-            Height = 13
-            Caption = 'Start'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'MS Sans Serif'
-            Font.Style = [fsBold]
-            ParentFont = False
-          end
-          object Label39: TLabel
-            Left = 128
-            Top = 140
-            Width = 23
-            Height = 13
-            Caption = 'End'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'MS Sans Serif'
-            Font.Style = [fsBold]
-            ParentFont = False
-          end
           object LSLaserPage: TPageControl
             Left = 8
             Top = 16
             Width = 232
             Height = 121
-            ActivePage = Laser2Tab
+            ActivePage = Laser1Tab
             TabOrder = 0
             object Laser1Tab: TTabSheet
               Caption = 'LED/Laser 1'
@@ -1531,285 +1965,12 @@ object SetupFrm: TSetupFrm
               end
             end
           end
-          object cbLSLaserStart: TComboBox
-            Left = 8
-            Top = 155
-            Width = 110
-            Height = 22
-            Hint = 'Start of LED/Laser control AO output range'
-            Style = csDropDownList
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 1
-            OnChange = cbLSLaserStartChange
-          end
-          object cbLSLaserEnd: TComboBox
-            Left = 128
-            Top = 155
-            Width = 110
-            Height = 22
-            Hint = 'End of LED/Laser control AO output range'
-            Style = csDropDownList
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 2
-            OnChange = cbLSLaserStartChange
-          end
-        end
-      end
-      object LSShutterGrp: TGroupBox
-        Left = 280
-        Top = 0
-        Width = 177
-        Height = 217
-        Caption = ' Shutter Control '
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 1
-        object Label43: TLabel
-          Left = 8
-          Top = 16
-          Width = 89
-          Height = 30
-          Alignment = taRightJustify
-          AutoSize = False
-          Caption = 'Shutter closed wavelength'
-          WordWrap = True
-        end
-        object Label40: TLabel
-          Left = 8
-          Top = 80
-          Width = 89
-          Height = 30
-          Alignment = taRightJustify
-          AutoSize = False
-          Caption = 'Frame blanking period'
-          WordWrap = True
-        end
-        object Label68: TLabel
-          Left = 7
-          Top = 49
-          Width = 89
-          Height = 30
-          Alignment = taRightJustify
-          AutoSize = False
-          Caption = 'Opening time'
-          WordWrap = True
-        end
-        object edShutterClosedWavelength: TValidatedEdit
-          Left = 104
-          Top = 16
-          Width = 63
-          Height = 20
-          Hint = 'Laser #1 emission wavelength (nm)'
-          AutoSize = False
-          ShowHint = True
-          Text = ' 10 nm'
-          Value = 10.000000000000000000
-          Scale = 1.000000000000000000
-          Units = 'nm'
-          NumberFormat = '%.4g'
-          LoLimit = 1.000000000000000000
-          HiLimit = 100000.000000000000000000
-        end
-        object edShutterBlankingPeriod: TValidatedEdit
-          Left = 104
-          Top = 80
-          Width = 63
-          Height = 20
-          Hint = 
-            'Closed shutter blanking period at end of exposure cycle for CCD ' +
-            'readout'
-          AutoSize = False
-          ShowHint = True
-          Text = ' 0 ms'
-          Scale = 1000.000000000000000000
-          Units = 'ms'
-          NumberFormat = '%.4g'
-          LoLimit = -1.000000015047466E30
-          HiLimit = 1.000000015047466E29
-        end
-        object GroupBox3: TGroupBox
-          Left = 8
-          Top = 116
-          Width = 161
-          Height = 93
-          Caption = ' Shutter Control Output '
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 2
-          object cbLSShutter: TComboBox
-            Left = 8
-            Top = 19
-            Width = 145
-            Height = 22
-            Hint = 'Shutter AO/DO control output line.'
-            Style = csDropDownList
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 0
-          end
-          object rbLSShutterActiveHigh: TRadioButton
-            Left = 8
-            Top = 48
-            Width = 89
-            Height = 17
-            Hint = 'Use TTL High (5V) to open shutter'
-            Caption = 'Active High'
-            Checked = True
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 1
-            TabStop = True
-          end
-          object rbLSShutterActiveLow: TRadioButton
-            Left = 8
-            Top = 64
-            Width = 89
-            Height = 17
-            Hint = 'Use TTL Low (0V) to open shutter'
-            Caption = 'Active Low'
-            Color = clBtnFace
-            ParentColor = False
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 2
-          end
-        end
-        object edShutterChangeTime: TValidatedEdit
-          Left = 103
-          Top = 49
-          Width = 63
-          Height = 20
-          Hint = 'Shutter open/close switching time'
-          AutoSize = False
-          ShowHint = True
-          Text = ' 1000 ms'
-          Value = 1.000000000000000000
-          Scale = 1000.000000000000000000
-          Units = 'ms'
-          NumberFormat = '%.4g'
-          LoLimit = -1.000000015047466E30
-          HiLimit = 1.000000015047466E29
-        end
-      end
-      object EmFilterGrp: TGroupBox
-        Left = 280
-        Top = 224
-        Width = 177
-        Height = 169
-        Caption = ' Emission Filter '
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 2
-        object Label74: TLabel
-          Left = 7
-          Top = 95
-          Width = 89
-          Height = 18
-          Alignment = taRightJustify
-          AutoSize = False
-          Caption = 'Change Time'
-          WordWrap = True
-        end
-        object EmFilterControlGrp: TGroupBox
-          Left = 8
-          Top = 16
-          Width = 161
-          Height = 73
-          Caption = ' Filter Control Outputs '
-          Font.Charset = ANSI_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -11
-          Font.Name = 'Arial'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 0
-          object Label72: TLabel
-            Left = 14
-            Top = 18
-            Width = 28
-            Height = 13
-            Alignment = taRightJustify
-            Caption = 'Start'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'MS Sans Serif'
-            Font.Style = [fsBold]
-            ParentFont = False
-          end
-          object Label73: TLabel
-            Left = 19
-            Top = 44
-            Width = 23
-            Height = 13
-            Alignment = taRightJustify
-            Caption = 'End'
-            Font.Charset = DEFAULT_CHARSET
-            Font.Color = clWindowText
-            Font.Height = -12
-            Font.Name = 'MS Sans Serif'
-            Font.Style = [fsBold]
-            ParentFont = False
-          end
-          object cbEMFilterStart: TComboBox
-            Left = 48
-            Top = 16
-            Width = 110
-            Height = 22
-            Hint = 'Start of emission filter DO output range'
-            Style = csDropDownList
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 0
-          end
-          object cbEmFilterEnd: TComboBox
-            Left = 48
-            Top = 44
-            Width = 110
-            Height = 22
-            Hint = 'End of emission filter DO output range'
-            Style = csDropDownList
-            ParentShowHint = False
-            ShowHint = True
-            TabOrder = 1
-          end
-        end
-        object edEmFilterChangeTime: TValidatedEdit
-          Left = 106
-          Top = 95
-          Width = 63
-          Height = 20
-          Hint = 'Emission filter switching time'
-          AutoSize = False
-          ShowHint = True
-          Text = ' 1000 ms'
-          Value = 1.000000000000000000
-          Scale = 1000.000000000000000000
-          Units = 'ms'
-          NumberFormat = '%.4g'
-          LoLimit = -1.000000015047466E30
-          HiLimit = 1.000000015047466E29
         end
       end
     end
     object TabSheet1: TTabSheet
       Caption = 'Stimulus Outputs'
       ImageIndex = 2
-      ExplicitHeight = 396
       object GroupBox11: TGroupBox
         Left = 8
         Top = 0
@@ -2213,7 +2374,6 @@ object SetupFrm: TSetupFrm
     object AnalogInputTab: TTabSheet
       Caption = 'Analog Inputs && Timing'
       ImageIndex = 3
-      ExplicitHeight = 396
       object ADCGrp: TGroupBox
         Left = 8
         Top = 0
@@ -2335,14 +2495,14 @@ object SetupFrm: TSetupFrm
       end
     end
     object ZStageTab: TTabSheet
-      Caption = 'Z Stage'
+      Caption = 'XY / Z Stage'
       ImageIndex = 4
-      ExplicitHeight = 396
       object GroupBox13: TGroupBox
         Left = 3
         Top = 0
-        Width = 449
-        Height = 257
+        Width = 458
+        Height = 233
+        Caption = ' Z Stage '
         TabOrder = 0
         object Label62: TLabel
           Left = 141
@@ -2650,6 +2810,189 @@ object SetupFrm: TSetupFrm
             Units = 'um'
             NumberFormat = '%.4g'
             LoLimit = -1.000000015047466E29
+            HiLimit = 1.000000015047466E29
+          end
+        end
+      end
+      object XYStateGrp: TGroupBox
+        Left = 3
+        Top = 238
+        Width = 458
+        Height = 155
+        Caption = ' XY Stage '
+        TabOrder = 1
+        object Label2: TLabel
+          Left = 186
+          Top = 20
+          Width = 80
+          Height = 14
+          Alignment = taRightJustify
+          Caption = ' XY Stage Type'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object cbXYStageType: TComboBox
+          Left = 272
+          Top = 20
+          Width = 177
+          Height = 22
+          Hint = 'Analog output channel connected to Z stage control voltage input'
+          Style = csDropDownList
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 0
+        end
+        object GroupBox19: TGroupBox
+          Left = 167
+          Top = 44
+          Width = 280
+          Height = 101
+          Caption = ' Motors '
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 1
+          object Label21: TLabel
+            Left = 14
+            Top = 16
+            Width = 124
+            Height = 14
+            Caption = 'X Motor Serial Number'
+          end
+          object Label38: TLabel
+            Left = 14
+            Top = 44
+            Width = 124
+            Height = 14
+            Caption = 'Y Motor Serial Number'
+          end
+          object edXMotorSerialNumber: TEdit
+            Left = 144
+            Top = 16
+            Width = 105
+            Height = 22
+            TabOrder = 0
+          end
+          object edYMotorSerialNumber: TEdit
+            Left = 144
+            Top = 44
+            Width = 105
+            Height = 22
+            TabOrder = 1
+          end
+        end
+        object LimitsGrp: TGroupBox
+          Left = 8
+          Top = 16
+          Width = 153
+          Height = 129
+          Caption = ' Limits '
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 2
+          object Label39: TLabel
+            Left = 40
+            Top = 16
+            Width = 34
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'X min.'
+          end
+          object Label80: TLabel
+            Left = 39
+            Top = 40
+            Width = 36
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'X max.'
+          end
+          object Label81: TLabel
+            Left = 40
+            Top = 64
+            Width = 34
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'Y min.'
+          end
+          object Label82: TLabel
+            Left = 41
+            Top = 88
+            Width = 33
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'Y max'
+          end
+          object edXYStageXMin: TValidatedEdit
+            Left = 81
+            Top = 16
+            Width = 65
+            Height = 20
+            Hint = 'Lower limit of Z stage voltage range'
+            AutoSize = False
+            ShowHint = True
+            Text = ' 0 mm'
+            Scale = 1.000000000000000000
+            Units = 'mm'
+            NumberFormat = '%.4g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E29
+          end
+          object edXYStageXMax: TValidatedEdit
+            Left = 81
+            Top = 40
+            Width = 65
+            Height = 20
+            Hint = 'Lower limit of Z stage voltage range'
+            AutoSize = False
+            ShowHint = True
+            Text = ' 100 mm'
+            Value = 100.000000000000000000
+            Scale = 1.000000000000000000
+            Units = 'mm'
+            NumberFormat = '%.4g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E29
+          end
+          object edXYStageYMin: TValidatedEdit
+            Left = 81
+            Top = 64
+            Width = 65
+            Height = 20
+            Hint = 'Lower limit of Z stage voltage range'
+            AutoSize = False
+            ShowHint = True
+            Text = ' 0 mm'
+            Scale = 1.000000000000000000
+            Units = 'mm'
+            NumberFormat = '%.4g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E29
+          end
+          object edXYStageYMax: TValidatedEdit
+            Left = 81
+            Top = 88
+            Width = 65
+            Height = 20
+            Hint = 'Lower limit of Z stage voltage range'
+            AutoSize = False
+            ShowHint = True
+            Text = ' 75 mm'
+            Value = 75.000000000000000000
+            Scale = 1.000000000000000000
+            Units = 'mm'
+            NumberFormat = '%.4g'
+            LoLimit = -1.000000015047466E30
             HiLimit = 1.000000015047466E29
           end
         end
