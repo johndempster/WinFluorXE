@@ -2,8 +2,8 @@ object XYStageFrm: TXYStageFrm
   Left = 0
   Top = 0
   Caption = 'XY Stage Control'
-  ClientHeight = 328
-  ClientWidth = 352
+  ClientHeight = 352
+  ClientWidth = 369
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -12,6 +12,7 @@ object XYStageFrm: TXYStageFrm
   Font.Style = []
   FormStyle = fsStayOnTop
   OldCreateOrder = False
+  OnClose = FormClose
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnShow = FormShow
@@ -20,8 +21,8 @@ object XYStageFrm: TXYStageFrm
   object ListGrp: TGroupBox
     Left = 175
     Top = 0
-    Width = 173
-    Height = 324
+    Width = 186
+    Height = 344
     Caption = ' Stage Position List '
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
@@ -33,18 +34,19 @@ object XYStageFrm: TXYStageFrm
     object sgPositions: TStringGrid
       Left = 8
       Top = 18
-      Width = 153
-      Height = 176
+      Width = 169
+      Height = 204
       ColCount = 3
       DefaultRowHeight = 20
       FixedCols = 0
       RowCount = 3
+      Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
       TabOrder = 0
     end
     object bAddPosition: TButton
       Left = 8
-      Top = 200
-      Width = 150
+      Top = 228
+      Width = 169
       Height = 17
       Hint = 'Add current stage position to list'
       Caption = 'Add Position'
@@ -61,8 +63,8 @@ object XYStageFrm: TXYStageFrm
     end
     object bMoveTo: TButton
       Left = 8
-      Top = 246
-      Width = 100
+      Top = 274
+      Width = 120
       Height = 17
       Hint = 'Move to selected stage position'
       Caption = 'Move To'
@@ -76,8 +78,8 @@ object XYStageFrm: TXYStageFrm
       OnClick = bMoveToClick
     end
     object cbPosition: TComboBox
-      Left = 115
-      Top = 246
+      Left = 133
+      Top = 272
       Width = 45
       Height = 22
       Style = csDropDownList
@@ -85,8 +87,8 @@ object XYStageFrm: TXYStageFrm
     end
     object DeletePosition: TButton
       Left = 8
-      Top = 221
-      Width = 100
+      Top = 249
+      Width = 120
       Height = 17
       Hint = 'Delete selected stage position from list'
       Caption = 'Delete Position'
@@ -102,8 +104,8 @@ object XYStageFrm: TXYStageFrm
       OnClick = DeletePositionClick
     end
     object cbDeletePosition: TComboBox
-      Left = 115
-      Top = 221
+      Left = 133
+      Top = 247
       Width = 45
       Height = 22
       Style = csDropDownList
@@ -111,20 +113,20 @@ object XYStageFrm: TXYStageFrm
     end
     object CycleGrp: TGroupBox
       Left = 8
-      Top = 272
-      Width = 153
+      Top = 294
+      Width = 169
       Height = 41
       Caption = ' Time Lapse Action'
       TabOrder = 6
       object ckIncrementStagePosition: TCheckBox
         Left = 8
         Top = 16
-        Width = 137
+        Width = 158
         Height = 17
         Hint = 
           'Tick to increment stage position after each time lapse image seq' +
           'uence'
-        Caption = 'Incr. Stage Position'
+        Caption = 'Increment Stage Position'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -141,7 +143,7 @@ object XYStageFrm: TXYStageFrm
     Left = 8
     Top = 156
     Width = 161
-    Height = 167
+    Height = 188
     TabOrder = 1
     object bMoveUp: TButton
       Left = 65
@@ -234,10 +236,10 @@ object XYStageFrm: TXYStageFrm
       OnClick = bMoveDownClick
     end
     object GroupBox2: TGroupBox
-      Left = 10
-      Top = 108
-      Width = 136
-      Height = 49
+      Left = 8
+      Top = 114
+      Width = 73
+      Height = 65
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11
@@ -246,22 +248,39 @@ object XYStageFrm: TXYStageFrm
       ParentFont = False
       TabOrder = 5
       object rbCoarse: TRadioButton
-        Left = 8
-        Top = 12
+        Left = 4
+        Top = 10
         Width = 60
         Height = 17
+        Hint = 'Coarse steps (1 mm)'
         Caption = 'Coarse'
         Checked = True
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 0
         TabStop = True
       end
       object rbFine: TRadioButton
-        Left = 73
-        Top = 12
+        Left = 4
+        Top = 43
         Width = 60
         Height = 17
+        Hint = 'Fine steps (0.01 mm)'
         Caption = 'Fine'
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 1
+      end
+      object rbMedium: TRadioButton
+        Left = 4
+        Top = 26
+        Width = 60
+        Height = 17
+        Hint = 'Medium steps (0.1 mm)'
+        Caption = 'Medium'
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 2
       end
     end
   end
@@ -274,7 +293,7 @@ object XYStageFrm: TXYStageFrm
     object lbXPos: TLabel
       Left = 6
       Top = 45
-      Width = 25
+      Width = 13
       Height = 22
       Caption = 'X'
       Font.Charset = ANSI_CHARSET
@@ -287,7 +306,7 @@ object XYStageFrm: TXYStageFrm
     object lbYPos: TLabel
       Left = 6
       Top = 95
-      Width = 25
+      Width = 13
       Height = 22
       Caption = 'Y'
       Font.Charset = ANSI_CHARSET

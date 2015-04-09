@@ -59,6 +59,7 @@ type
     bSelectFilesToExport: TButton;
     OpenDialog: TOpenDialog;
     meFiles: TMemo;
+    ckMatchingFrameCount: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
     procedure bCancelClick(Sender: TObject);
@@ -149,6 +150,7 @@ procedure TExportImagesFrm.ExportFile ;
 // --------------------------------------------
 var
     FrameNum : Integer ; // Frame counter
+    NearestFrame : Integer ;
     PFrameBuf : PIntArray ; // Image frame buffer pointer
     FrameWidth : Integer ;  // Export frame width (pixels)
     FrameHeight : Integer ; // Export frame height (pixels)
@@ -166,7 +168,7 @@ var
     iROI,NumROIFiles : Integer ;
     iFT,iFile,iRep : Integer ;
     FileName,ExportFileName : String ;
-
+    Done,FrameLoaded : Boolean ;
 begin
 
      for iFile := 0 to meFiles.Lines.Count-1 do begin
@@ -317,11 +319,33 @@ begin
                   While FrameNum <= iEndFrame do begin
 
                       // Export selected frames
-                      if rbInterleaved.Checked or (MainFrm.IDRFile.TypeOfFrame(FrameNum)
-                         = FrameTypeListNum[iFT]) then begin
-
+                      if rbInterleaved.Checked or
+                         ((not ckMatchingFrameCount.Checked) and
+                          (MainFrm.IDRFile.TypeOfFrame(FrameNum) = FrameTypeListNum[iFT])) then begin
+                         // Load frame if all frames required or it matches the selected frame type
+                         FrameLoaded := MainFrm.IDRFile.LoadFrame32(FrameNum,PFrameBuf) ;
+                         end
+                      else if ckMatchingFrameCount.Checked then begin
+                         // Load nearest frame matching type of current frame
+                         Done := False ;
+                         for NearestFrame := FrameNum downto 1 do
+                             if MainFrm.IDRFile.TypeOfFrame(NearestFrame) = FrameTypeListNum[iFT] then begin
+                             Done := True ;
+                             Break ;
+                             end;
+                         if not Done then begin
+                            for NearestFrame := FrameNum to MainFrm.IDRFile.NumFrames do
+                                if MainFrm.IDRFile.TypeOfFrame(NearestFrame) = FrameTypeListNum[iFT] then begin
+                                Done := True ;
+                                Break ;
+                                end;
+                            end ;
                          // Load frame
-                         if not MainFrm.IDRFile.LoadFrame32(FrameNum,PFrameBuf) then break ;
+                         FrameLoaded := MainFrm.IDRFile.LoadFrame32(NearestFrame,PFrameBuf) ;
+                         end
+                      else FrameLoaded := False ;
+
+                      if FrameLoaded then begin
 
                          // If region of interest selected, extract it
                          if ROINum >= 0 then begin
@@ -335,18 +359,18 @@ begin
                                     end ;
                             end ;
 
-                          // Save frame
-                          Inc(NumFramesExported) ;
-                          ImageFile.SaveFrame32( NumFramesExported, PFrameBuf ) ;
+                         // Save frame
+                         Inc(NumFramesExported) ;
+                         ImageFile.SaveFrame32( NumFramesExported, PFrameBuf ) ;
 
-                          MainFrm.StatusBar.SimpleText := format(
-                          'Exporting %d/%d frames (%d) to %s',
-                          [FrameNum,iEndFrame,NumFramesExported,FileName]) ;
-                          Application.ProcessMessages ;
+                         MainFrm.StatusBar.SimpleText := format(
+                         'Exporting %d/%d frames (%d) to %s',
+                         [FrameNum,iEndFrame,NumFramesExported,FileName]) ;
+                         Application.ProcessMessages ;
 
-                          if bOK.Enabled then Break ;
+                         if bOK.Enabled then Break ;
 
-                          end ;
+                         end ;
 
                      FrameNum := FrameNum + iStep ;
 

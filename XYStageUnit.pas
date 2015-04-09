@@ -5,6 +5,8 @@ unit XYStageUnit;
 // 04.02.15 Started
 // 16.02.15 Supports Thorlabs MLS203 stage
 //          TMG17Motor controls created dynamically to avoid OLESYSERROR on  systems without MLS203s
+// 07.04.15 3 levels (coarse/medium/fine) of XY position control now available
+//          XY Position table can be directly edited by user
 
 interface
 
@@ -42,6 +44,7 @@ type
     lbYPos: TLabel;
     edStagePosition: TEdit;
     Timer: TTimer;
+    rbMedium: TRadioButton;
 
     procedure FormCreate(Sender: TObject);
     procedure bMoveLeftClick(Sender: TObject);
@@ -59,6 +62,7 @@ type
     procedure YMG17MotorHomeComplete(ASender: TObject; lChanID: Integer);
     procedure XMG17MotorMoveComplete(ASender: TObject; lChanID: Integer);
     procedure YMG17MotorMoveComplete(ASender: TObject; lChanID: Integer);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     { Private declarations }
     { Private declarations }
@@ -140,6 +144,14 @@ uses shared,math ;
 
 {$R *.dfm}
 
+procedure TXYStageFrm.FormClose(Sender: TObject; var Action: TCloseAction);
+// --------------
+// Form is closed
+// --------------
+begin
+    ReadPositionTable ;
+    end;
+
 procedure TXYStageFrm.FormCreate(Sender: TObject);
 // --------------------------------------
 // Initialisations when module is created
@@ -175,6 +187,7 @@ procedure TXYStageFrm.FormDestroy(Sender: TObject);
 // Tidy up when form is destroyed
 // ------------------------------
 begin
+
     CloseStage ;
     end;
 
@@ -195,7 +208,7 @@ begin
 
     // Fill position table string grid
     FillPositionTable ;
-    if NumPositions > 0 then
+    if FNumPositions > 0 then
        edStagePosition.Text := format('Stage Position = %d',[FPosition+1])
     else  edStagePosition.Text := '' ;
 
@@ -287,6 +300,7 @@ begin
      sgPositions.ColWidths[1] :=  sgPositions.Canvas.TextWidth('XXXXXXXXX') ;
      sgPositions.ColWidths[2] :=  sgPositions.Canvas.TextWidth('XXXXXXXXX') ;
 
+     sgPositions.RowCount := 1 ;
      sgPositions.Cells[0,0] := '#' ;
      sgPositions.Cells[1,0] := 'X (mm)' ;
      sgPositions.Cells[2,0] := 'Y (mm)' ;
@@ -295,7 +309,7 @@ begin
      cbDeletePosition.Clear ;
      cbDeletePosition.Items.Add('All') ;
 
-     for i := 0 to NumPositions-1 do begin
+     for i := 0 to FNumPositions-1 do begin
         sgPositions.RowCount := sgPositions.RowCount + 1 ;
         sgPositions.Cells[0,sgPositions.RowCount-1] := format('%d',[sgPositions.RowCount-1]);
         sgPositions.Cells[1,sgPositions.RowCount-1] := format('%.3f',[XPosition[i]]);
@@ -319,9 +333,9 @@ var
 begin
 
      FNumPositions := 0 ;
-     for i := 0 to Min(sgPositions.RowCount-1,MaxXYStagePositions) do begin
-        Val( sgPositions.Cells[1,i+1],XPosition[i],iChar) ;
-        Val( sgPositions.Cells[2,i+1],YPosition[i],iChar) ;
+     for i := 1 to Min(sgPositions.RowCount-1,MaxXYStagePositions) do begin
+        Val( sgPositions.Cells[1,i],XPosition[i-1],iChar) ;
+        Val( sgPositions.Cells[2,i],YPosition[i-1],iChar) ;
         Inc(FNumPositions) ;
         end ;
 
@@ -339,7 +353,7 @@ begin
     // Open communications with XY stage (if necessary)
     OpenStage ;
 
-    if NumPositions >= MaxXYStagePositions then Exit ;
+    if FNumPositions >= MaxXYStagePositions then Exit ;
 
     case FStageType of
       xyThorlabsMLS203 : begin
@@ -348,8 +362,8 @@ begin
         end;
       end;
 
-    XPosition[NumPositions] := X ;
-    YPosition[NumPositions] := Y ;
+    XPosition[FNumPositions] := X ;
+    YPosition[FNumPositions] := Y ;
     Inc(FNumPositions) ;
 
     FillPositionTable ;
@@ -362,7 +376,7 @@ procedure TXYStageFrm.bHomeClick(Sender: TObject);
 // Move to home position
 // ---------------------
 begin
-
+    exit ;
     XHomeAtTick := TickCount + 1 ;
     YHomeAtTick := High(Integer) ;
     CentreStageAtTick := High(Integer) ;
@@ -383,7 +397,8 @@ var
 begin
 
     if rbCoarse.Checked then Step := 1.0
-                        else Step := 0.1 ;
+    else if rbMedium.Checked then Step := 0.1
+    else Step := 0.01 ;
 
     case FStageType of
       xyThorlabsMLS203 : begin
@@ -406,7 +421,8 @@ var
 begin
 
     if rbCoarse.Checked then Step := 1.0
-                        else Step := 0.1 ;
+    else if rbMedium.Checked then Step := 0.1
+    else Step := 0.01 ;
 
     case FStageType of
       xyThorlabsMLS203 : begin
@@ -429,7 +445,8 @@ var
 begin
 
     if rbCoarse.Checked then Step := 1.0
-                        else Step := 0.1 ;
+    else if rbMedium.Checked then Step := 0.1
+    else Step := 0.01 ;
 
     case FStageType of
       xyThorlabsMLS203 : begin
@@ -486,7 +503,8 @@ var
 begin
 
     if rbCoarse.Checked then Step := 1.0
-                        else Step := 0.1 ;
+    else if rbMedium.Checked then Step := 0.1
+    else Step := 0.01 ;
 
     case FStageType of
       xyThorlabsMLS203 : begin
@@ -514,7 +532,7 @@ begin
        end
     else begin
        // Delete selected position
-       for i := 0 to NumPositions-1 do begin
+       for i := 0 to FNumPositions-1 do begin
            if i <= (cbDeletePosition.ItemIndex-1) then j := i
                                                   else j := i - 1 ;
            XPosition[j] := XPosition[i] ;
@@ -709,6 +727,9 @@ begin
     // Open communications with XY stage (if necessary)
     OpenStage ;
 
+    // Get data from table
+    ReadPositionTable ;
+
     NPos := sgPositions.RowCount -1 ;
     if NPos < 1 then begin
        FPosition := 0 ;
@@ -806,8 +827,8 @@ begin
       AppendInt( Header, 'XYXMSN=', XMotorID ) ;
       AppendInt( Header, 'XYYMSN=', YMotorID ) ;
 
-      AppendInt( Header, 'XYNPOS=', NumPositions ) ;
-      for i := 0 to NumPositions-1 do begin
+      AppendInt( Header, 'XYNPOS=', FNumPositions ) ;
+      for i := 0 to FNumPositions-1 do begin
         AppendDouble( Header, format('XYXP%d=',[i]), XPosition[i] ) ;
         AppendDouble( Header, format('XYYP%d=',[i]), YPosition[i] ) ;
         end;

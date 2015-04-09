@@ -3,8 +3,8 @@ object ExportImagesFrm: TExportImagesFrm
   Top = 177
   BorderStyle = bsDialog
   Caption = 'Export Images'
-  ClientHeight = 294
-  ClientWidth = 543
+  ClientHeight = 305
+  ClientWidth = 547
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -118,7 +118,7 @@ object ExportImagesFrm: TExportImagesFrm
     Left = 246
     Top = 120
     Width = 164
-    Height = 160
+    Height = 180
     Caption = ' Wavelengths  '
     TabOrder = 1
     object rbAllFrameTypes: TRadioButton
@@ -141,14 +141,14 @@ object ExportImagesFrm: TExportImagesFrm
       TabStop = True
     end
     object GroupBox5: TGroupBox
-      Left = 32
+      Left = 28
       Top = 32
-      Width = 121
-      Height = 49
+      Width = 125
+      Height = 82
       TabOrder = 1
       object rbInterleaved: TRadioButton
         Left = 8
-        Top = 28
+        Top = 12
         Width = 105
         Height = 17
         Hint = 'Export wavelengths interleaved in a single file'
@@ -163,7 +163,7 @@ object ExportImagesFrm: TExportImagesFrm
       end
       object rbSeparate: TRadioButton
         Left = 8
-        Top = 12
+        Top = 28
         Width = 105
         Height = 17
         Hint = 'Export wavelengths into separate files'
@@ -180,10 +180,25 @@ object ExportImagesFrm: TExportImagesFrm
         TabOrder = 1
         TabStop = True
       end
+      object ckMatchingFrameCount: TCheckBox
+        Left = 32
+        Top = 44
+        Width = 89
+        Height = 30
+        Caption = 'Matching frame count'
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
+        WordWrap = True
+      end
     end
     object rbSingleFrameType: TRadioButton
       Left = 8
-      Top = 88
+      Top = 120
       Width = 129
       Height = 17
       Hint = 
@@ -200,8 +215,8 @@ object ExportImagesFrm: TExportImagesFrm
     end
     object cbFrameType: TComboBox
       Left = 32
-      Top = 108
-      Width = 105
+      Top = 140
+      Width = 121
       Height = 22
       TabOrder = 3
       Text = 'cbROI'
@@ -211,7 +226,7 @@ object ExportImagesFrm: TExportImagesFrm
     Left = 416
     Top = 120
     Width = 121
-    Height = 160
+    Height = 180
     Caption = ' Format '
     TabOrder = 2
     object rbBioRad: TRadioButton
@@ -280,7 +295,7 @@ object ExportImagesFrm: TExportImagesFrm
     Left = 130
     Top = 120
     Width = 113
-    Height = 160
+    Height = 180
     Caption = ' Image '
     TabOrder = 5
     object rbWholeImage: TRadioButton
@@ -395,7 +410,7 @@ object ExportImagesFrm: TExportImagesFrm
   end
   object OpenDialog: TOpenDialog
     Options = [ofHideReadOnly, ofAllowMultiSelect, ofEnableSizing]
-    Left = 264
-    Top = 254
+    Left = 112
+    Top = 262
   end
 end

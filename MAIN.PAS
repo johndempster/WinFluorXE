@@ -186,6 +186,10 @@ unit Main;
 // 18.02.15 V3.7.2 JD Default file name prefix is date
 //                    Support for Thorlabs MLS203 stage added
 //                    Time courses can now be exported to MAT files
+// 09.04.15 V3.7.3 JD RecUnit: real time image display now updated at correct rates
+//                    when split rate multi-wavelength and split-CCD in use.
+//                    ExportImagesUnit: Match frame count option added to separate file export
+//                    No. of frames in separate wavelength files now matched to total no. of frames in file
 
 interface
 
@@ -773,7 +777,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.2 18-2-15 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.3 09-4-15 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
@@ -823,7 +827,7 @@ begin
 
     // Split image settings
     SplitImageName[0] := 'A' ;
-    SplitImageName[0] := 'B' ;
+    SplitImageName[1] := 'B' ;
     SplitImage := False ;
 
     BulbExposureMode := False ;
@@ -2755,6 +2759,7 @@ var
     Done : Boolean ;
 begin
      NumLines := 0 ;
+     Done := False ;
      while not Done do begin
          if MainFrm.IOResourceAvailable(MainFrm.IOConfig.LSControlLine[NumLines]) then Inc(NumLines)
                                                                                   else Done := True ;

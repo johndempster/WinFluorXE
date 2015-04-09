@@ -163,6 +163,8 @@ unit RecUnit;
 //          Andor frame buffer increased to MaxBufferSize
 // 27.01.15 .IDR data file closed and re-opened after each time lapse frame
 //          to preserve file directory entry
+// 08.04.15 Display now updated at rate of fastest frame type when split rate multi-wavelength sequences in use
+// 09.04.15 Not enough disk space check no longer stops camera and is reported in window title bar
 
 {$DEFINE USECONT}
 
@@ -1257,7 +1259,7 @@ begin
                             [SecsToMs*MainFrm.Cam1.ReadoutTime]) ;
 
    // Initialise frames counters
-   for i := 0 to NumFrameTypes-1 do begin
+   for i := 0 to High(LatestFrames) do begin
        FrameTypeCounter[i] := 0 ;
        LatestFrames[i] := -1 ;             // Index into frame buffer
        LatestROIValue[i] := 0 ;
@@ -2279,12 +2281,11 @@ var
      StartBit  : Word ;
      DigBufSize : Integer ;
      PDigBuf : PBig32bitArray ;
-
+     Temp : Array[0..MaxLightSourceCycleLength-1] of Integer ;
 begin
 
      // Default frame type cycle (if no light source)
      FrameTypeCycleLength := NumFramesPerCCD ;
-
      for i := 0 to FrameTypeCycleLength-1 do FrameTypeCycle[i] := i ;
      FrameTypeCycleCounter := 0 ;
 
@@ -2373,10 +2374,17 @@ begin
             end ;
 
          MainFrm.EXCSequence[0,MainFrm.EXCSequenceNum].DivideFactor := ActualDivideFactor ;
-         for i := 0 to NumFramesPerWavelengthCycle*NumFramesPerCCD-1 do FrameTypeCycle[i] := i ;
 
-         FrameTypeCycleLength := NumFramesPerWavelengthCycle*NumFramesPerCCD ; ;
+         // Add CCD sub-frames to frame type cycle
+         for j := 0 to NumFramesPerWavelengthCycle-1 do Temp[j] := FrameTypeCycle[j] ;
+         FrameTypeCycleLength := 0 ;
+         for j := 0 to NumFramesPerWavelengthCycle-1 do
+             for i := 0 to NumFramesPerCCD-1 do begin
+                 FrameTypeCycle[FrameTypeCycleLength] := (Temp[j]*NumFramesPerCCD)+i ;
+                 Inc(FrameTypeCycleLength);
+                 end;
          FrameTypeCycleCounter := 0 ;
+
          end ;
 
 
@@ -3177,7 +3185,9 @@ var
      DebugMessage : String ;
      NumFramesInHalfBuffer : Integer ;
      NumFramesToSave : Integer ;
-     iFrameType : Integer ;
+     iType,iFrameType : Integer ;
+     NextAvailableFrame : Integer ;
+     NextAvailableType : Integer ;
      OldPosition : Integer ;
      iBuf : Pointer ;
 begin
@@ -3372,7 +3382,7 @@ begin
 
            RecordingStatus := '' ;
 
-           RecordingStatus := format( ' %8.2f fps F=%3.3d/%3.3d (%3.3d%%) ',
+           RecordingStatus := format( ' %8.2f fps F=%3.3d/%3.3d (%3.3d%%)',
                                  [FrameRate,
                                   FrameNum+1,
                                   NumFramesInBuffer,
@@ -3410,17 +3420,29 @@ begin
            Inc(TimerTickCount) ;
 
            // Display frame
-           if (cbRecordingMode.ItemIndex = rmContinuous) or
-              (RecordingMode <> rmRecordingInProgress) then begin
-              if LatestFrames[FrameTypeToBeDisplayed] > 0 then begin
-                 DisplayImage( LatestFrames[FrameTypeToBeDisplayed]*NumPixelsPerFrame,
-                               FrameTypeToBeDisplayed,
-                               MainFrm.LUTs[FrameTypeToBeDisplayed*LUTSize],
-                               BitMaps[FrameTypeToBeDisplayed],
-                               Images[FrameTypeToBeDisplayed] ) ;
-                 LatestFrames[FrameTypeToBeDisplayed] := -1 ;
-                 Inc(FrameTypeToBeDisplayed) ;
+           if (cbRecordingMode.ItemIndex = rmContinuous) or (RecordingMode <> rmRecordingInProgress) then begin
+              // Find next available frame
+              NextAvailableFrame := -1 ;
+              for i  := FrameTypeToBeDisplayed to FrameTypeToBeDisplayed+NumFrameTypes-1 do begin
+                  iType := i mod NumFrameTypes ;
+                  if LatestFrames[iType] >= 0 then begin
+                     NextAvailableFrame := LatestFrames[iType] ;
+                     NextAvailableType := iType ;
+                     Break ;
+                     end;
+                  end;
+              // Display (if available)
+              if NextAvailableFrame >= 0 then begin
+                 DisplayImage( NextAvailableFrame*NumPixelsPerFrame,
+                               NextAvailableType,
+                               MainFrm.LUTs[NextAvailableType*LUTSize],
+                               BitMaps[NextAvailableType],
+                               Images[NextAvailableType] ) ;
+                 LatestFrames[NextAvailableType] := -1 ;
+
                  Dec(OptimiseContrastCount) ;
+                 // Update next priority frame to be displayed
+                 Inc(FrameTypeToBeDisplayed) ;
                  if FrameTypeToBeDisplayed >= NumFrameTypes then FrameTypeToBeDisplayed := 0 ;
                  end ;
 
@@ -3605,7 +3627,7 @@ begin
         // Optimise contrast if required
         if OptimiseContrastCount = 0 then begin
            bMaxContrast.Click ;
-           if ckAutoOptimise.Checked then OptimiseContrastCount := Max(Round(2.0/FrameInterval),NumFrameTypes) ;
+           if ckAutoOptimise.Checked then OptimiseContrastCount := Max(Round(2.0/FrameInterval),2*NumFrameTypes) ;
            end ;
 
         if (RecordingMode = rmRecordingInProgress) and
@@ -3821,6 +3843,8 @@ begin
 
     j := StartAt ;
     PCurrentFrame := PDisplayBufs[FrameType] ;
+    if PCurrentFrame = Nil then Exit ;
+
     if ByteImage then begin
        // 8 bit images
        for i := 0 to NumPixelsPerFrame-1 do begin
@@ -4331,14 +4355,10 @@ begin
      // Close other forms to avoid possible interruption of recording
      if MainFrm.FormExists('SealTestFrm') then SealTestFrm.Close ;
 
-     // Stop image capture
-     StopCamera ;
-
      // Recording not allowed if no data file open
      if not MainFrm.IDRFile.Open then begin
         // Report failure to record
-        MainFrm.StatusBar.SimpleText :=
-        ' Record Frame Sequence : Unable to record! No data file open! ' ;
+        Caption := 'Record Images & Signals: Unable to record! No data file open!' ;
         exit ;
         end ;
 
@@ -4346,18 +4366,21 @@ begin
      if MainFrm.IDRFile.NumFrames > 0 then begin
         if (MainFrm.IDRFile.FrameWidth <> FrameWidth) and
            (MainFrm.IDRFile.FrameHeight <> FrameHeight) then begin
-           MainFrm.StatusBar.SimpleText :=
-           ' Record : Unable to record! Camera frame size does not match existing frames in file! ' ;
+           Caption := 'Record Images & Signals: Unable to record! Camera frame size does not match existing frames in file!' ;
            Exit ;
            end ;
         end ;
 
      // Check for available disk space
      if not MainFrm.IDRFile.DiskSpaceAvailable( MainFrm.NumFramesRequired ) then begin
-        MainFrm.StatusBar.SimpleText :=
-        ' Record : Unable to record! Not enough disk space! ' ;
+        Caption := 'Record Images & Signals: Not enough disk space!' ;
         exit ;
         end ;
+
+     Caption := 'Record Images & Signals: RECORDING' ;
+
+     // Stop image capture
+     StopCamera ;
 
      // Enable file for writing
      if not MainFrm.IDRFile.WriteEnabled then MainFrm.IDRFile.WriteEnabled := True ;
@@ -4662,6 +4685,7 @@ begin
      RecordingMode := rmRecordingStopped ;
      TimeLapsePanel.Enabled := True ;
      BurstModePanel.Enabled := True ;
+     Caption := 'Record Images & Signals' ;
 
      // Ensure that no. of frames in file is a multiple of no. of frame type cycle
      MainFrm.IDRFile.NumFrames := MainFrm.IDRFile.NumFrames
@@ -4739,7 +4763,7 @@ procedure TRecordFrm.edFrameIntervalKeyPress(Sender: TObject;
 // --------------------------------
 begin
      if key = #13 then begin
-         OptimiseContrastCount := NumFrameTypes ;
+         OptimiseContrastCount := NumFrameTypes*2 ;
          RestartCamera ;
          // Report minimum readout time
         lbReadoutTime.Caption := format('Min.= %.4g ms',
@@ -6450,7 +6474,7 @@ procedure TRecordFrm.ckSplitCCDImageClick(Sender: TObject);
 // --------------------------
 begin
       MainFrm.SplitImage := ckSplitCCDImage.Checked ;
-      OptimiseContrastCount := NumFrameTypes ;
+      OptimiseContrastCount := NumFrameTypes*2 ;
       RestartCamera ;
       end;
 
