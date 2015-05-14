@@ -65,6 +65,7 @@ unit FileIOUnit;
 //                    Keywords numbers 1..8 (LSLAS1WAV= .. LSLAS8WAV=
 // 23.01.14 ......... DARKLEVLO= and DARKLEVHI= added.
 // 3.2.15 ........... XYStage.Save/ReadSettings added
+// 14.5.15 .......... CAMDEIL= MainFrm.Cam1.DisableExposureIntervalLimit added
 interface
 
 uses
@@ -216,6 +217,8 @@ begin
      AppendFloat( Header, 'CAMTEMPSET=', MainFrm.Cam1.CameraTemperatureSetPoint ) ;
 
      AppendFloat( Header, 'CAMADDRT=', MainFrm.Cam1.AdditionalReadoutTime ) ;
+
+     AppendLogical( Header, 'CAMDEIL=',  MainFrm.Cam1.DisableExposureIntervalLimit ) ;
 
      AppendLogical( Header, 'BULBEXP=', MainFrm.BulbExposureMode ) ;
 
@@ -672,6 +675,11 @@ begin
      fValue := MainFrm.Cam1.AdditionalReadoutTime ;
      ReadFloat( Header, 'CAMADDRT=', fValue ) ;
      MainFrm.Cam1.AdditionalReadoutTime := fValue ;
+
+     // Disable exposure interval limit checking
+     bValue := MainFrm.Cam1.DisableExposureIntervalLimit ;
+     ReadLogical( Header, 'CAMDEIL=', bValue ) ;
+     MainFrm.Cam1.DisableExposureIntervalLimit := bValue ;
 
      // Camera CCD readout A/D convert gain
      iValue := 0 ;

@@ -190,6 +190,7 @@ unit Main;
 //                    when split rate multi-wavelength and split-CCD in use.
 //                    ExportImagesUnit: Match frame count option added to separate file export
 //                    No. of frames in separate wavelength files now matched to total no. of frames in file
+// 14.05.15 V3.7.4 JD FrameInterval checking against readout time can be disabled for QImaging cameras
 
 interface
 
@@ -777,7 +778,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.3 09-4-15 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.4 14-5-15 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

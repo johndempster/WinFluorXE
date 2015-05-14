@@ -148,7 +148,7 @@ object SetupFrm: TSetupFrm
         TabOrder = 0
         object Label41: TLabel
           Left = 42
-          Top = 380
+          Top = 360
           Width = 90
           Height = 14
           Alignment = taRightJustify
@@ -244,7 +244,7 @@ object SetupFrm: TSetupFrm
         end
         object edTemperatureSetPoint: TValidatedEdit
           Left = 136
-          Top = 380
+          Top = 360
           Width = 81
           Height = 20
           AutoSize = False
@@ -351,6 +351,22 @@ object SetupFrm: TSetupFrm
             TabOrder = 0
             OnChange = cbCameraNamesChange
           end
+        end
+        object ckDisableExposureIntervalLimit: TCheckBox
+          Left = 12
+          Top = 380
+          Width = 205
+          Height = 25
+          Hint = 
+            'Q Imaging cameras only: Tick to allow exposure intervals less th' +
+            'an reported readout time of camera '
+          Alignment = taLeftJustify
+          Caption = 'Disable Exposure Time Checking'
+          Ctl3D = True
+          ParentCtl3D = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 8
         end
       end
       object GroupBox14: TGroupBox

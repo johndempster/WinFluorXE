@@ -36,6 +36,7 @@ unit SetupUnit;
 // 20.01.15 JD MainFrm.IOConfig.LSLaserStart/MainFrm.IOConfig.LSLaserEnd now set to None when
 //             laser not required
 // 23.01.15 JD DarkLevelLo and  DarkLeveHi added
+// 14.5.15  JD Disable Exposure Interval Limit check box added
 
 interface
 
@@ -318,6 +319,7 @@ type
     edXYStageYMin: TValidatedEdit;
     Label82: TLabel;
     edXYStageYMax: TValidatedEdit;
+    ckDisableExposureIntervalLimit: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure bOKClick(Sender: TObject);
@@ -486,6 +488,7 @@ begin
      edADCInterval.LoLimit := ADCMinInterval ;
 
      edTemperatureSetPoint.Value := MainFrm.Cam1.CameraTemperatureSetPoint ;
+     ckDisableExposureIntervalLimit.Checked := MainFrm.Cam1.DisableExposureIntervalLimit ;
 
      // XY stage
      XYStageFrm.GetList ( cbXYStageType.Items ) ;
@@ -1157,6 +1160,8 @@ begin
     MainFrm.CalibrationBarThickness := edCalibrationBarThickness.Value ;
 
     MainFrm.Cam1.CameraTemperatureSetPoint := edTemperatureSetPoint.Value ;
+
+    MainFrm.Cam1.DisableExposureIntervalLimit := ckDisableExposureIntervalLimit.Checked ;
 
     MainFrm.Cam1.AdditionalReadoutTime := edCameraReadoutTime.Value ;
 
