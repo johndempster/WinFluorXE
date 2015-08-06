@@ -191,6 +191,7 @@ unit Main;
 //                    ExportImagesUnit: Match frame count option added to separate file export
 //                    No. of frames in separate wavelength files now matched to total no. of frames in file
 // 14.05.15 V3.7.4 JD FrameInterval checking against readout time can be disabled for QImaging cameras
+// 30.06.15 V3.7.5 JD XYStage: Now reads actual stage position allowing positions set by joystick to be saved.
 
 interface
 
@@ -778,7 +779,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.4 14-5-15 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.5 30-6-15 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

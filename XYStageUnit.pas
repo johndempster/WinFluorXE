@@ -7,6 +7,7 @@ unit XYStageUnit;
 //          TMG17Motor controls created dynamically to avoid OLESYSERROR on  systems without MLS203s
 // 07.04.15 3 levels (coarse/medium/fine) of XY position control now available
 //          XY Position table can be directly edited by user
+// 30.06.15 Now reads actual stage position allowing positions set by joystick to be saved.
 
 interface
 
@@ -357,8 +358,8 @@ begin
 
     case FStageType of
       xyThorlabsMLS203 : begin
-        XMG17motor.GetAbsMovePos(0,X) ;
-        YMG17motor.GetAbsMovePos(0,Y) ;
+        XMG17motor.GetPosition(0,X) ;
+        YMG17motor.GetPosition(0,Y) ;
         end;
       end;
 
@@ -402,7 +403,7 @@ begin
 
     case FStageType of
       xyThorlabsMLS203 : begin
-        YMG17motor.GetAbsMovePos(0,Pos) ;
+        YMG17motor.GetPosition(0,Pos) ;
         Pos := Min(Max(Pos + Step,FYMin),FYMax) ;
         YMG17motor.SetAbsMovePos(0,Pos) ;
         YMG17motor.MoveAbsolute(0,false);
@@ -426,7 +427,7 @@ begin
 
     case FStageType of
       xyThorlabsMLS203 : begin
-        XMG17motor.GetAbsMovePos(0,Pos) ;
+        XMG17motor.GetPosition(0,Pos) ;
         Pos := Min(Max(Pos - Step,FXMin),FXMax) ;
         XMG17motor.SetAbsMovePos(0,Pos) ;
         XMG17motor.MoveAbsolute(0,false);
@@ -450,7 +451,7 @@ begin
 
     case FStageType of
       xyThorlabsMLS203 : begin
-        XMG17motor.GetAbsMovePos(0,Pos) ;
+        XMG17motor.GetPosition(0,Pos) ;
         Pos := Min(Max(Pos + Step,FXMin),FXMax) ;
         XMG17motor.SetAbsMovePos(0,Pos) ;
         XMG17motor.MoveAbsolute(0,false);
@@ -508,7 +509,7 @@ begin
 
     case FStageType of
       xyThorlabsMLS203 : begin
-        YMG17motor.GetAbsMovePos(0,Pos) ;
+        YMG17motor.GetPosition(0,Pos) ;
         Pos := Min(Max(Pos - Step,FYMin),FYMax) ;
         YMG17motor.SetAbsMovePos(0,Pos) ;
         YMG17motor.MoveAbsolute(0,false);
@@ -563,8 +564,6 @@ procedure TXYStageFrm.SetStageType( Value : Integer  ) ;
 // ---------------------------
 // Set type of XY stage in use
 // ---------------------------
-var
-    OldValue : Integer ;
 begin
 
     if (FStageType <> Value) then begin
@@ -607,7 +606,7 @@ begin
     // Open communications with XY stage (if necessary)
     OpenStage ;
 
-    XMG17motor.GetAbsMovePos(0,Pos) ;
+    XMG17motor.GetPosition(0,Pos) ;
     Result := Pos ;
     end;
 
@@ -711,7 +710,7 @@ begin
     // Open communications with XY stage (if necessary)
     OpenStage ;
 
-    YMG17motor.GetAbsMovePos(0,Pos) ;
+    YMG17motor.GetPosition(0,Pos) ;
     Result := Pos ;
     end;
 
