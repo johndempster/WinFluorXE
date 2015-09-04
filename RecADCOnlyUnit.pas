@@ -764,6 +764,7 @@ begin
                                ADCNumSamplesInBuffer div MainFrm.ADCNumChannels,
                                MainFrm.ADCVoltageRange,
                                True,
+                               MainFrm.ADCScanInterval,
                                FindTimingDevice,
                                True ) ;
 

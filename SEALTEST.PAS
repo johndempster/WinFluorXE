@@ -226,7 +226,7 @@ const
      MinPulseWidth = 0.0001 ;
      MaxPulseWidth = 1.0 ;
      MinTestChannels = 2 ;
-     ADCMinSamplingInterval = 2E-5 ;
+     //ADCMinSamplingInterval = 2E-5 ;
 type
     TTestPulse = record
                Duration : single ;
@@ -586,6 +586,7 @@ begin
                                        NumTestSamples,
                                        MainFrm.ADCVoltageRange,
                                        False,
+                                       ADCSamplingInterval,
                                        FindTimingDevice,
                                        True ) ;
 
@@ -723,7 +724,7 @@ begin
      TestPulse.RepeatPeriod := MaxFlt([TestPulse.RecordLength,0.1] ) ;
 
      ADCSamplingInterval := TestPulse.RecordLength / NumTestSamples ;
-     ADCSamplingInterval := Max(ADCSamplingInterval,(NumTestChannels+2)*ADCMinSamplingInterval) ;
+     ADCSamplingInterval := Max(ADCSamplingInterval,LabIO.DACMinUpdateInterval) ;
 
      { Create test pulse waveform }
      iStart := Max(Round(TestPulse.TStart/ADCSamplingInterval),1) ;

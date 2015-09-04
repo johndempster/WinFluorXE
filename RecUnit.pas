@@ -1115,6 +1115,7 @@ begin
                                ADCNumSamplesInBuffer div MainFrm.ADCNumChannels,
                                MainFrm.ADCVoltageRange,
                                True,
+                               DACUpdateInterval,
                                FindTimingDevice,
                                DeviceDACsInUse[FindTimingDevice] ) ;
 
@@ -1823,7 +1824,7 @@ begin
     Wait(0.1) ;
 
      // Time interval between DAC updates
-     DACUpdateInterval := MainFrm.ADCScanInterval ;
+     DACUpdateInterval := Max(MainFrm.ADCScanInterval,LabIO.DACMinUpdateInterval) ;
 
      // No. of DAC time points per camera frame
      NumDACPointsPerFrame := Round(MainFrm.Cam1.FrameInterval/DACUpdateInterval) ;

@@ -1,9 +1,9 @@
 object RecADCOnlyFrm: TRecADCOnlyFrm
   Left = 639
   Top = 8
-  Width = 600
-  Height = 897
   Caption = 'BioRad LaserSharp Image Capture'
+  ClientHeight = 870
+  ClientWidth = 592
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -370,7 +370,6 @@ object RecADCOnlyFrm: TRecADCOnlyFrm
         Width = 145
         Height = 21
         Hint = 'Stimulation program in current use'
-        ItemHeight = 13
         TabOrder = 1
         Text = 'cbStimProgram'
         OnChange = cbStimProgramChange
@@ -408,9 +407,9 @@ object RecADCOnlyFrm: TRecADCOnlyFrm
           BevelOuter = bvNone
           TabOrder = 0
           object lbVHold0: TLabel
-            Left = 24
+            Left = 25
             Top = 2
-            Width = 35
+            Width = 34
             Height = 14
             Alignment = taRightJustify
             Caption = 'Vout 0'
@@ -446,9 +445,9 @@ object RecADCOnlyFrm: TRecADCOnlyFrm
           BevelOuter = bvNone
           TabOrder = 1
           object Label7: TLabel
-            Left = 24
+            Left = 25
             Top = 0
-            Width = 35
+            Width = 34
             Height = 14
             Alignment = taRightJustify
             Caption = 'Vout 1'
@@ -484,9 +483,9 @@ object RecADCOnlyFrm: TRecADCOnlyFrm
           BevelOuter = bvNone
           TabOrder = 2
           object Label4: TLabel
-            Left = 24
+            Left = 25
             Top = 0
-            Width = 35
+            Width = 34
             Height = 14
             Alignment = taRightJustify
             Caption = 'Vout 2'
@@ -550,7 +549,6 @@ object RecADCOnlyFrm: TRecADCOnlyFrm
         Width = 145
         Height = 21
         Hint = 'Stimulation program in current use'
-        ItemHeight = 13
         TabOrder = 0
         Text = 'cbStimProgram'
         OnChange = cbPhotoStimProgramChange

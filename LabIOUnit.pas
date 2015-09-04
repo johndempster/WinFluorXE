@@ -44,6 +44,10 @@ unit LabIOUnit;
 // 09.07.13 JD .... PCI-6035E and PCI-6036E and now identified as having only one DMA channel (for A/D)
 //                  PCI-6052E identified as having 2 DMA channels.
 // 03.02.14 JD .... ClearNIBoardSettings added to _InitialiseBoards
+// 02.09.15 JD .... USB-6002 - USB-6005 devices supported.
+//                    DAQmx_Val_Falling changed to DAQmx_Val_Rising in DAQmxCfgSampClkTiming()
+//                    A/D and D/A timed by own on-board clocks and synchronised by pulse P.1.0 -> PFI0+PFI1
+
 interface
 
 uses
@@ -162,6 +166,7 @@ type
              nSamples : Integer ;
              ADCVoltageRange : Single ;
              CircularBuffer : Boolean ;
+             SamplingInterval : Double ;
              TimingDevice : SmallInt ;
              UseTimingDeviceDACClock : Boolean
              ) : Boolean ;
@@ -326,6 +331,8 @@ type
     NumADCVoltageRanges : Array[1..MaxDevices] of Integer ;
 
     DigitalWaveformCapable : Array[1..MaxDevices] of Boolean ;
+    DACClockTriggerSupported : Array[1..MaxDevices] of Boolean ;
+
     DigOutState : Array[1..MaxDevices] of Integer ;
     // Digital output buffer state
     DIG : Array[1..MaxDevices] of TDIG ;
@@ -369,6 +376,7 @@ type
              nSamples : Integer ;
              ADCVoltageRange : Single ;
              CircularBuffer : Boolean ;
+             SamplingInterval : Double ;
              TimingDevice : SmallInt ;
              UseTimingDeviceDACClock : Boolean
              ) : Boolean ;
@@ -676,6 +684,7 @@ function TLabIO.ADCToMemoryExtScan(
          nSamples : Integer ;
          ADCVoltageRange : Single ;
          CircularBuffer : Boolean ;
+         SamplingInterval : Double ;
          TimingDevice : SmallInt ;
          UseTimingDeviceDACClock : Boolean
          ) : Boolean ;
@@ -692,6 +701,7 @@ begin
                             nSamples,
                             ADCVoltageRange,
                             CircularBuffer,
+                            SamplingInterval,
                             TimingDevice,
                             UseTimingDeviceDACClock ) ;
                             
@@ -1070,6 +1080,10 @@ begin
           AnsiContainsText(DeviceBoardName[i],'635') or
           AnsiContainsText(DeviceBoardName[i],'636') then DigitalWaveformCapable[i] := True
                                                      else DigitalWaveformCapable[i] := False ;
+       // 6002-6005 devices do not support A/D triggering from DAC/DIG clock.
+       if AnsiContainsText(DeviceBoardName[i],'600') then DACClockTriggerSupported[i] := False
+                                                     else DACClockTriggerSupported[i] := True ;
+
        end ;
 
    for i := 1 to NumDevices do DeviceNumDMAChannels[i] := 2 ;
@@ -1119,7 +1133,11 @@ begin
             end ;
         end ;
 
-
+   // Set minimum DAC update interval
+   DACMinUpdateInterval := 5E-5 ;
+   for i := 1 to NumDevices do begin
+       if AnsiContainsText(DeviceBoardName[i],'600') then DACMinUpdateInterval := 2E-4 ;
+       end;
    Result := True ;
 
    end ;
@@ -1503,6 +1521,7 @@ function TLabIO.NIDAQMX_ADCToMemoryExtScan(
           nSamples : Integer ;               { Number of A/D samples ( per channel) (IN) }
           ADCVoltageRange : Single ;         { A/D input voltage range (V) (IN) }
           CircularBuffer : Boolean ;          { Repeated sampling into buffer (IN) }
+          SamplingInterval : Double ;
           TimingDevice : SmallInt ;           // Device supply ADC/DAC timing pulses
           UseTimingDeviceDACClock : Boolean
           ) : Boolean ;                      { Returns TRUE indicating A/D started }
@@ -1512,6 +1531,7 @@ function TLabIO.NIDAQMX_ADCToMemoryExtScan(
 var
    ChannelList : ANSIstring ;
    ClockSource : ANSIstring ;
+   TriggerSource : ANSIstring ;
    ch : Integer ;
    SampleMode : Integer ;
    SamplingRate : Double ;
@@ -1546,21 +1566,45 @@ begin
      if CircularBuffer then SampleMode := DAQmx_Val_ContSamps
                        else SampleMode := DAQmx_Val_FiniteSamps ;
 
-     // Set timing
-     if UseTimingDeviceDACClock then begin
-        ClockSource := '/' + DeviceName[TimingDevice] + '/ao/sampleclock' ;
-        end
-     else begin
-        ClockSource := '/' + DeviceName[TimingDevice] + '/do/sampleclock' ;     
-        end ;
-     SamplingRate := 200000.0 / (nChannels+1) ;
+     if DACClockTriggerSupported[TimingDevice] then begin
+        // Trigger A/D sampling from DAC or DIG update clock
+        if UseTimingDeviceDACClock then begin
+           ClockSource := '/' + DeviceName[TimingDevice] + '/ao/sampleclock' ;
+           end
+        else begin
+           ClockSource := '/' + DeviceName[TimingDevice] + '/do/sampleclock' ;
+           end ;
+        SamplingRate := 200000.0 / (nChannels+1) ;
 
-     CheckError( DAQmxCfgSampClkTiming( ADCTask[Device],
+        CheckError( DAQmxCfgSampClkTiming( ADCTask[Device],
                                              PANSIChar(ClockSource),
                                              SamplingRate,
-                                             DAQmx_Val_Falling ,
+                                             DAQmx_Val_Rising,
                                              SampleMode,
                                              nSamples));
+
+        // Request immediate start
+        CheckError(DAQmxDisableStartTrig(ADCTask[Device]));
+
+        end
+     else begin
+        // Time A/D sampling from on-board clock, start trigger by PFI1
+        SamplingRate := 1.0/Max(SamplingInterval,DACMinUpdateInterval) ;
+
+        CheckError( DAQmxCfgSampClkTiming( ADCTask[Device],
+                                             PANSIChar('onboardclock'),
+                                             SamplingRate,
+                                             DAQmx_Val_Rising,
+                                             SampleMode,
+                                             nSamples));
+
+       // Use PFI0 as shared trigger for AI and AO when AO/sampleclock not available
+       TriggerSource := '/' + DeviceName[Device] + '/pfi0' ;
+       CheckError( DAQmxCfgDigEdgeStartTrig( ADCTask[Device],
+                                             PANSIChar(TriggerSource),
+                                             DAQmx_Val_Rising )) ;
+
+        end;
 
      // Get clock rate set
      CheckError( DAQmxGetSampClkRate( ADCTask[Device], SamplingRate )) ;
@@ -1573,9 +1617,6 @@ begin
 
      // Set triggering
      // --------------
-
-     // Request immediate start
-     CheckError(DAQmxDisableStartTrig(ADCTask[Device]));
 
      // Start A/D task
      CheckError( DAQmxStartTask(ADCTask[Device])) ;
@@ -1724,7 +1765,7 @@ begin
         Err := DAQmxCfgSampClkTiming( ADCTask[DeviceNum],
                                       nil,
                                       SamplingRate,
-                                      DAQmx_Val_Falling ,
+                                      DAQmx_Val_Rising,
                                       DAQmx_Val_FiniteSamps,
                                       2);
 
@@ -1760,12 +1801,15 @@ function TLabIO.NIDAQMX_MemoryToDAC(
 var
     SampleMode : Integer ;
     ClockSource : ANSIString ;
+    TriggerSource : ANSIString ;
     ChannelList : ANSIString ;
     i,iFrom,iTo,nCopy,nSource,EndOffset : Integer ;
     NumSamplesWritten : Integer ;
     UpdateRate : Double ;
     NumPointsInBuffer : Integer ;
     IOBuf : PBig16bitArray ;
+    TaskHandle : Integer ;
+    Err : Integer ;
 begin
      Result := False ;
      if (Device < 1) or (Device > NumDevices) then Exit ;
@@ -1794,13 +1838,6 @@ begin
                                            DAQmx_Val_Volts,
                                            nil));
 
-     // Set D/A clock source
-     if TimingDevice <> Device then begin
-        ClockSource := '/' + DeviceName[TimingDevice] + '/ao/sampleclock' ;
-        end
-     else begin
-        ClockSource := 'onboardclock' ;
-        end ;
 
      // Configure buffer size
      if CircularBufferMode then begin
@@ -1815,14 +1852,42 @@ begin
 
      CheckError( DAQmxCfgOutputBuffer ( DACTask[Device], NumPointsInBuffer )) ;
 
-     // Set timing
-     UpdateRate := 1.0 / UpdateInterval ;
-     CheckError( DAQmxCfgSampClkTiming( DACTask[Device],
-                                        PANSIChar(ClockSource),
-                                        UpdateRate,
-                                        DAQmx_Val_Falling ,
-                                        SampleMode,
-                                        Int64(NumPointsInBuffer) )) ;
+     if DACClockTriggerSupported[Device] then begin
+        // Set D/A clock source
+        if TimingDevice <> Device then ClockSource := '/' + DeviceName[TimingDevice] + '/ao/sampleclock'
+                                  else ClockSource := 'onboardclock' ;
+
+        // Set timing
+        UpdateRate := 1.0 / UpdateInterval ;
+        CheckError( DAQmxCfgSampClkTiming( DACTask[Device],
+                                           PANSIChar(ClockSource),
+                                           UpdateRate,
+                                           DAQmx_Val_Rising,
+                                           SampleMode,
+                                           Int64(NumPointsInBuffer) )) ;
+
+        // Request immediate start
+        CheckError(DAQmxDisableStartTrig(DACTask[Device]));
+
+        end
+     else begin
+
+        // Set timing
+        UpdateRate := 1.0 / Max(UpdateInterval,DACMinUpdateInterval) ;
+        CheckError( DAQmxCfgSampClkTiming( DACTask[Device],
+                                           PANSIChar('onboardclock'),
+                                           UpdateRate,
+                                           DAQmx_Val_Rising,
+                                           SampleMode,
+                                           Int64(NumPointsInBuffer) )) ;
+
+        // Start when pulse received on PFI1
+        TriggerSource := '/' + DeviceName[Device] + '/PFI1' ;
+        CheckError( DAQmxCfgDigEdgeStartTrig( DACTask[Device],
+                                              PANSIChar(TriggerSource),
+                                              DAQmx_Val_Rising )) ;
+
+        end ;
 
      // Disable buffer regeneration, so waveform update is possible
      CheckError( DAQmxSetWriteRegenMode( DACTask[Device], DAQmx_Val_DoNotAllowRegen ));
@@ -1860,13 +1925,33 @@ begin
 
      FreeMem(IOBuf) ;
 
-     // Request immediate start
-     CheckError(DAQmxDisableStartTrig(DACTask[Device]));
      // Start D/A task
      CheckError( DAQmxStartTask(DACTask[Device])) ;
 
      // Restore FPU exceptions
      EnableFPUExceptions ;
+
+     if not DACClockTriggerSupported[Device] then begin
+        // Generate trigger pulse on P1.0 going to PFI0 and PFI1
+        CheckError( DAQmxCreateTask( '', TaskHandle ) ) ;
+        Err := DAQmxCreateDOChan( TaskHandle,
+                                  PANSIChar(DeviceName[Device] + '/port1/Line0'),
+                                  nil,
+                                  DAQmx_Val_ChanPerLine );
+        if Err = 0 then DAQmxWriteDigitalScalarU32( TaskHandle,     // Set = 0
+                                                    True,
+                                                    DefaultTimeOut,
+                                                    0,
+                                                    Nil ) ;
+        if Err = 0 then DAQmxWriteDigitalScalarU32( TaskHandle,    // Set = 1
+                                                    True,
+                                                    DefaultTimeOut,
+                                                    1,
+                                                    Nil ) ;
+        // Clear task
+        CheckError( DAQmxClearTask ( TaskHandle ) ) ;
+
+        end;
 
      DACActive[Device] := True ;
      Result := DACActive[Device] ;
@@ -2143,7 +2228,7 @@ begin
      CheckError( DAQmxCfgSampClkTiming( DIGTask[Device],
                                         PANSIChar(ClockSource),
                                         1.0/UpdateInterval,
-                                        DAQmx_Val_Falling ,
+                                        DAQmx_Val_Rising ,
                                         DAQmx_Val_ContSamps,
                                         Int64(NumPointsInBuffer))) ;
 

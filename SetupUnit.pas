@@ -37,7 +37,7 @@ unit SetupUnit;
 //             laser not required
 // 23.01.15 JD DarkLevelLo and  DarkLeveHi added
 // 14.5.15  JD Disable Exposure Interval Limit check box added
-
+// 03.9.15  JD edADCInterval.LoLimit now set to LabIO.DACMinUpdateInterval
 interface
 
 
@@ -485,7 +485,7 @@ begin
      edCalibrationBarSize.Value := MainFrm.CalibrationBarSize ;
      edCalibrationBarThickness.Value := MainFrm.CalibrationBarThickness ;
 
-     edADCInterval.LoLimit := ADCMinInterval ;
+     edADCInterval.LoLimit := LabIO.DACMinUpdateInterval ;
 
      edTemperatureSetPoint.Value := MainFrm.Cam1.CameraTemperatureSetPoint ;
      ckDisableExposureIntervalLimit.Checked := MainFrm.Cam1.DisableExposureIntervalLimit ;

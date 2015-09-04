@@ -20,6 +20,7 @@ unit RecPlotUnit;
 // 11.06.14 JD Ratio plot now has same duration as fluoresence plot when recording in time lapse mode
 // 16.06.14 flDisplayBuf now allocated internal to RecPlotUnit.pas add adjusted in size
 //          to match number of points in display
+// 02.09.15 Min/Max display compression now implemented in scADCDisplay component rather than this form.
 
 interface
 
@@ -28,6 +29,7 @@ uses
   Dialogs, StdCtrls, ValidatedEdit, ExtCtrls, HTMLLabel, ScopeDisplay, math, IDRFile, strutils, labiounit ;
 
 Const
+
     GreyLevelLimit = $FFFF ;
     MaxDisplayScans = 2000 ;
     MaxADCChannels = 8 ;
@@ -91,10 +93,12 @@ type
     procedure cbDenominatorChange(Sender: TObject);
     procedure edROISizeKeyPress(Sender: TObject; var Key: Char);
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
   private
     { Private declarations }
 
     pFLDisplayBuf : PIntArray ;   // Pointer to fluorescence time course data buffer
+    pRDisplayBuf : PIntArray  ;   // Pointer to ratio display buffer
     FLDisplayBufMaxPoints : Integer ; // Max. no. of points allowed in buffer
 
     FLLatestValues : Array[0..MaxFrameType] of Integer ;
@@ -109,23 +113,11 @@ type
     ADCMaxValue : Integer ;
     DACUpdateInterval : Single ;
 
-    ADCDisplayBuf : Array[0..((MaxADCChannels)*MaxDisplayScans*4)-1] of SmallInt ;
-
-    ADCNumScansPerBlock : Integer ;  // No. of A/D channel scans per display block
-    ADCNumPointsPerBlock : Integer ; // No. of A/D samples per display block
-    ADCMaxBlocksDisplayed : Integer ; // Max. no. of blocks in display
-    ADCNumBlocksDisplayed : Integer ; // Current no. of A/D min-max blocks displayed
-    ADCBlockCount : Integer ;
+    ADCDisplayBuf : PBig16BitArray ;
     ADCDispPointer : Integer ;
 
-    // A/D sample block Min./max. buffers
-    ADCyMin : Array[0..MaxADCChannels-1] of Integer ;
-    ADCyMax : Array[0..MaxADCChannels-1] of Integer ;
-    ADCyMinAt : Array[0..MaxADCChannels-1] of Integer ;
-    ADCyMaxAt : Array[0..MaxADCChannels-1] of Integer ;
-
     // Fluorescence ratio time course buffers
-    RDisplayBuf : Array[0..99999] of Integer ;    // Image time course buffer
+
     RatioExclusionThreshold : Single ;
 
     ResizeCounter : Integer ;
@@ -397,15 +389,19 @@ begin
     scFLDisplay.SetDataBuf( pFLDisplayBuf ) ;
 
     scRDisplay.MaxPoints := scFLDisplay.MaxPoints ;
+    if pRDisplayBuf <> Nil then FreeMem(pRDisplayBuf) ;
+    GetMem( pRDisplayBuf,scRDisplay.MaxPoints*4) ;
+    scRDisplay.NumBytesPerSample := 4 ;
+    scRDisplay.SetDataBuf( pRDisplayBuf ) ;
+
     scRDisplay.XMax := scFLDisplay.MaxPoints ;
     scRDisplay.TScale := scFLDisplay.TScale ;
 
     scFLDisplay.Invalidate ;
 
     // Set A/D channel display
-    if (MainFrm.ADCNumChannels > 0) and (ADCNumPointsPerBlock > 0) then begin
-       scADCDisplay.TScale := (MainFrm.ADCScanInterval*ADCNumScansPerBlock*edTDisplay.Scale)
-                         /ADCNumPointsPerBlock ;
+    if (MainFrm.ADCNumChannels > 0) then begin
+       scADCDisplay.TScale := (MainFrm.ADCScanInterval*edTDisplay.Scale) ;
        scADCDisplay.TUnits := edTDisplay.Units ;
        scADCDisplay.Invalidate ;
        end ;
@@ -422,9 +418,7 @@ procedure TRecPlotFrm.ADCInitialiseDisplay(
 // Initialise analogue inputs display
 // ------------------------------
 var
-     NumScans : Integer ;
      ch : Integer ;
-     NumSamplesPerBlock : Integer ;
 
 begin
 
@@ -442,20 +436,12 @@ begin
      scADCDisplay.NumChannels := MainFrm.ADCNumChannels ;
 
      // No. of multi-channel scans to be displayed
-     NumScans := Max( Round(edTDisplay.Value/DACUpdateInterval),2 ) ;
-     edTDisplay.Value := NumScans*DACUpdateInterval ;
+     scADCDisplay.MaxPoints := Max( Round(edTDisplay.Value/DACUpdateInterval),2 ) ;
+     if ADCDisplayBuf <> Nil then FreeMem(ADCDisplayBuf) ;
+     GetMem( ADCDisplayBuf, (scADCDisplay.MaxPoints+1)*MainFrm.ADCNumChannels*2 ) ;
+     scADCDisplay.SetDataBuf( ADCDisplayBuf ) ;
 
-     // Size of display compression block
-     ADCNumScansPerBlock := Max( NumScans div MaxDisplayScans,1) ;
-     NumSamplesPerBlock := ADCNumScansPerBlock*MainFrm.ADCNumChannels ;
-
-     // No. of displayed points per block
-     ADCNumPointsPerBlock := Min(ADCNumScansPerBlock,2) ;
-
-     // Max. number of points in display
-     ADCMaxBlocksDisplayed := Min( (NumScans div ADCNumScansPerBlock),
-                                   MaxDisplayScans )  ;
-     scADCDisplay.MaxPoints := ADCMaxBlocksDisplayed*ADCNumPointsPerBlock ;
+     edTDisplay.Value := scADCDisplay.MaxPoints*DACUpdateInterval ;
 
      // Add zero level cursors
      scADCDisplay.ClearHorizontalCursors ;
@@ -481,11 +467,8 @@ begin
      scADCDisplay.xMax := scADCDisplay.MaxPoints-1 ;
         // Enable/disable display calibration grid
         //scADCDisplay.DisplayGrid := MainFrm.mnDisplayGrid.Checked ;
-     scADCDisplay.SetDataBuf( @ADCDisplayBuf ) ;
 
      scADCDisplay.NumPoints := 0 ;
-     ADCNumBlocksDisplayed := 0 ;
-     ADCBlockCount := ADCNumScansPerBlock ;
      ADCDispPointer := 0 ;
      ADCDisplayFull := False ;
 
@@ -522,73 +505,27 @@ begin
 
      if ADCOldestScan = ADCLatestScan then Done := True
                                       else Done := False ;
+     ADCDisplayFull := False ;
      While not Done do begin
 
-        // Initialise block
-        if ADCBlockCount >= ADCNumScansPerBlock then begin
-           for ch := 0 to MainFrm.ADCNumChannels-1 do begin
-               ADCyMin[ch] := ADCMaxValue ;
-               ADCyMax[ch] := -ADCMaxValue -1 ;
-               end ;
-           ADCBlockCount := 0 ;
-           end ;
-
-        // Determine min. / max. value & order of samples within compression block
         for ch := 0 to MainFrm.ADCNumChannels-1 do begin
-
-            y := ADCBuf^[ADCOldestScan+ch] ;
-
-            if y < ADCyMin[ch] then begin
-               ADCyMin[ch] := y ;
-               ADCyMinAt[ch] := ADCBlockCount ;
-               end ;
-            if y > ADCyMax[ch] then begin
-               ADCyMax[ch] := y ;
-               ADCyMaxAt[ch] := ADCBlockCount ;
-               end ;
+            ADCDisplayBuf^[ADCDispPointer] := ADCBuf^[ADCOldestScan+ch] ;
+            Inc(ADCDispPointer) ;
             end ;
-        Inc(ADCBlockCount) ;
-
-        // When block complete ... write min./max. to display buffer
-        if ADCBlockCount >= ADCNumScansPerBlock then begin
-
-           // First point
-           for ch := 0 to MainFrm.ADCNumChannels-1 do begin
-               if ADCyMaxAt[ch] <= ADCyMinAt[ch] then
-                  ADCDisplayBuf[ADCDispPointer] := ADCyMax[ch]
-               else ADCDisplayBuf[ADCDispPointer] := ADCyMin[ch] ;
-               ADCDispPointer := ADCDispPointer + 1 ;
-               end ;
-
-           // Second point
-           if ADCBlockCount > 1 then begin
-              for ch := 0 to MainFrm.ADCNumChannels-1 do begin
-                  if ADCyMaxAt[ch] >= ADCyMinAt[ch] then
-                     ADCDisplayBuf[ADCDispPointer] := ADCyMax[ch]
-                  else ADCDisplayBuf[ADCDispPointer] := ADCyMin[ch] ;
-                  ADCDispPointer := ADCDispPointer + 1 ;
-                  end ;
-              end ;
-
-           Inc(ADCNumBlocksDisplayed) ;
-           end ;
 
         // Increment pointer to next available scan
         ADCOldestScan := ADCOldestScan + MainFrm.ADCNumChannels ;
         if ADCOldestScan >= ADCNumSamplesInBuffer then
            ADCOldestScan := ADCOldestScan - ADCNumSamplesInBuffer ;
-        if (ADCOldestScan = ADCLatestScan) or
-           (ADCNumBlocksDisplayed >= ADCMaxBlocksDisplayed) then Done := True ;
-
+        if ADCOldestScan = ADCLatestScan then Done := True ;
+        if ADCDispPointer >= (scADCDisplay.MaxPoints*scADCDisplay.NumChannels) then begin
+           Done := True ;
+           ADCDisplayFull := True ;
+           end;
         end ;
 
      // Display latest points added to display buffer
-     if  ADCNumBlocksDisplayed > 0 then begin
-         scADCDisplay.DisplayNewPoints( ADCDispPointer div MainFrm.ADCNumChannels );
-         end ;
-
-     if ADCNumBlocksDisplayed >= ADCMaxBlocksDisplayed then ADCDisplayFull := True
-                                                       else ADCDisplayFull := False ;
+     scADCDisplay.DisplayNewPoints( ADCDispPointer div MainFrm.ADCNumChannels );
 
      // Update numerical readout of A/D channel signals
      s := '' ;
@@ -752,11 +689,13 @@ begin
     scRDisplay.HorizontalCursors[0] := 0 ;
     //scRDisplay.ChanVisible[0] := True ;
 
-    scRDisplay.SetDataBuf( @RDisplayBuf ) ;
-    scRDisplay.NumBytesPerSample := 4 ;
-
     // Set display time scaling
     SetDisplayUnits ;
+
+{    if pRDisplayBuf <> Nil then FreeMem(pRDisplayBuf) ;
+    scRDisplay.NumBytesPerSample := 4 ;
+    GetMem( pRDisplayBuf,scRDisplay.MaxPoints*scRDisplay.NumBytesPerSample) ;
+    scRDisplay.SetDataBuf( pRDisplayBuf ) ;}
 
     // Update public ROI selection variables
     SelectedROI := cbROI.ItemIndex ;
@@ -837,13 +776,15 @@ begin
         scRDisplay.ChanScale[0] := 1.0 / YScale ;
         scRDisplay.ChanName[0] := cbNumerator.Text + '/' + cbDenominator.Text ;
         R := 0.0 ;
+        outputdebugstring(pchar(format('%d %d %d %d',
+        [scRDisplay.NumPoints,scRDisplay.MaxPoints,scFLDisplay.NumPoints,scFLDisplay.MaxPoints])));
         for i := scRDisplay.NumPoints-1 to scFLDisplay.NumPoints-1 do begin
             j := i*NumFrameTypes ;
             yNum := pIntArray(pFLDisplayBuf)^[j+iFTNum] ;
             yDen := pIntArray(pFLDisplayBuf)^[j+iFTDen] ;
             if yDen >= RatioExclusionThreshold then R := (yNum/yDen)
                                                else R := 0.0 ;
-            RDisplayBuf[i] := Round( R*YScale ) ;
+            pRDisplayBuf^[i] := Round( R*YScale ) ;
             end ;
         scRDisplay.DisplayNewPoints( scFLDisplay.NumPoints-1 );
 
@@ -1003,7 +944,6 @@ begin
      end ;
 
 
-
 procedure TRecPlotFrm.edTDisplayKeyPress(Sender: TObject; var Key: Char);
 // --------------------------------------------------------
 // Request display update when A/D display duration changed
@@ -1064,8 +1004,21 @@ procedure TRecPlotFrm.FormCreate(Sender: TObject);
 // ------------------------------------
 begin
     pFLDisplayBuf := Nil ;
+    pRDisplayBuf := Nil ;
+    ADCDisplayBuf := Nil ;
     FLDisplayBufMaxPoints := 0 ;
     end;
+
+procedure TRecPlotFrm.FormDestroy(Sender: TObject);
+// ------------------------------
+// Tidy up when form is destroyed
+// ------------------------------
+begin
+    if ADCDisplayBuf <> Nil then FreeMem(ADCDisplayBuf) ;
+    if pFLDisplayBuf <> Nil then FreeMem(pFLDisplayBuf) ;
+    if pRDisplayBuf <> Nil then FreeMem(pRDisplayBuf) ;
+    end;
+
 
 procedure TRecPlotFrm.ckDisplayFluorescenceClick(Sender: TObject);
 // --------------------------------------------------
