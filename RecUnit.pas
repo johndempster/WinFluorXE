@@ -165,6 +165,8 @@ unit RecUnit;
 //          to preserve file directory entry
 // 08.04.15 Display now updated at rate of fastest frame type when split rate multi-wavelength sequences in use
 // 09.04.15 Not enough disk space check no longer stops camera and is reported in window title bar
+// 10.09.15 Support for USB 6002-6003 added
+//          NIDAQmx_MemoryToDig() now handles boards which lack digital waveform support
 
 {$DEFINE USECONT}
 

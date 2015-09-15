@@ -471,11 +471,11 @@ type
     mnCameraSettings: TMenuItem;
     mnExportROITimeCourse: TMenuItem;
     mnDigitalFilter: TMenuItem;
-    Cam1: TSESCam;
     mnDirectControl: TMenuItem;
     IDRFile: TIDRFile;
     mnXYStage: TMenuItem;
     ApplicationEvents: TApplicationEvents;
+    Cam1: TSESCam;
     procedure FileNew1Execute(Sender: TObject);
     procedure FileOpen1Execute(Sender: TObject);
     procedure HelpAbout1Execute(Sender: TObject);

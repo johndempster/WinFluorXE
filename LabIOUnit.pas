@@ -2187,8 +2187,10 @@ var
     iFrom,iTo,nSource,nCopy,EndOffset : Integer ;
     IOBuf : PBig32bitArray ;
 begin
+
      Result := False ;
      if (Device < 1) or (Device > NumDevices) then Exit ;
+     if not DigitalWaveformCapable[Device] then Exit ;
 
      if Device > TimingDevice then begin
         ShowMessage('ERROR! Timing device must be last device number started.)') ;

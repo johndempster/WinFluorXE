@@ -314,7 +314,7 @@ object MainFrm: TMainFrm
     Left = 104
     Top = 200
     Bitmap = {
-      494C01011200E800E80010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C01011200E800EC0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -989,30 +989,6 @@ object MainFrm: TMainFrm
     Left = 168
     Top = 200
   end
-  object Cam1: TSESCam
-    SelectedCamera = 0
-    ComPort = 1
-    CCDClearPreExposure = False
-    CCDPostExposureReadout = False
-    ReadoutSpeed = 0
-    FrameInterval = 1.000000000000000000
-    TriggerMode = 0
-    AmpGain = 0
-    NumFramesInBuffer = 20
-    LensMagnification = 1.000000000000000000
-    CameraTemperatureSetPoint = -50.000000000000000000
-    CameraCoolingOn = True
-    CameraFanMode = 1
-    DisableEMCCD = False
-    CameraMode = 0
-    CameraADC = 0
-    ADCGain = 0
-    CCDVerticalShiftSpeed = 0
-    NumPixelShiftFrames = 1
-    DisableExposureIntervalLimit = False
-    Left = 40
-    Top = 112
-  end
   object IDRFile: TIDRFile
     NumFrames = 0
     NumFrameTypes = 1
@@ -1063,5 +1039,28 @@ object MainFrm: TMainFrm
     OnException = ApplicationEventsException
     Left = 40
     Top = 272
+  end
+  object Cam1: TSESCam
+    SelectedCamera = 0
+    ComPort = 1
+    CCDClearPreExposure = False
+    CCDPostExposureReadout = False
+    ReadoutSpeed = 0
+    FrameInterval = 1.000000000000000000
+    TriggerMode = 0
+    AmpGain = 0
+    NumFramesInBuffer = 20
+    LensMagnification = 1.000000000000000000
+    CameraTemperatureSetPoint = -50.000000000000000000
+    CameraCoolingOn = True
+    CameraFanMode = 1
+    DisableEMCCD = False
+    CameraMode = 0
+    CameraADC = 0
+    ADCGain = 0
+    CCDVerticalShiftSpeed = 0
+    NumPixelShiftFrames = 1
+    Left = 304
+    Top = 296
   end
 end
