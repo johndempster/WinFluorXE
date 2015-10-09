@@ -7,6 +7,7 @@ unit FilePropsUnit;
 // 13-07-10 File header text added to properties
 // 30.01.13 Z stack properties added
 // 19.01.15 File creation time displayed
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -390,6 +391,10 @@ procedure TFilePropsFrm.FormClose(Sender: TObject;
 // ----------------------
 begin
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 procedure TFilePropsFrm.bUpdateFilePropsClick(Sender: TObject);

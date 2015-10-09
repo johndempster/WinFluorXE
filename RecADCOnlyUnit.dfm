@@ -1,4 +1,5 @@
 object RecADCOnlyFrm: TRecADCOnlyFrm
+  Tag = 31
   Left = 639
   Top = 8
   Caption = 'BioRad LaserSharp Image Capture'

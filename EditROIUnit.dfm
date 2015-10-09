@@ -1,4 +1,5 @@
 object EditROIFrm: TEditROIFrm
+  Tag = 8
   Left = 428
   Top = 110
   Caption = 'Edit Regions of Interest'

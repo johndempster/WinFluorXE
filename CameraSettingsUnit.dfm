@@ -1,9 +1,10 @@
 object CameraSettingsFrm: TCameraSettingsFrm
+  Tag = 4
   Left = 670
   Top = 448
-  Width = 349
-  Height = 198
   Caption = 'Camera Settings'
+  ClientHeight = 171
+  ClientWidth = 341
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -86,7 +87,6 @@ object CameraSettingsFrm: TCameraSettingsFrm
       Width = 145
       Height = 21
       Style = csDropDownList
-      ItemHeight = 13
       TabOrder = 2
     end
   end
@@ -143,7 +143,7 @@ object CameraSettingsFrm: TCameraSettingsFrm
     object Label3: TLabel
       Left = 8
       Top = 56
-      Width = 128
+      Width = 127
       Height = 14
       Caption = 'Vertical Line Shift Time'
       Font.Charset = ANSI_CHARSET
@@ -159,7 +159,6 @@ object CameraSettingsFrm: TCameraSettingsFrm
       Width = 145
       Height = 21
       Hint = 'Voltage gain applied before A/D conversion'
-      ItemHeight = 13
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
@@ -174,7 +173,6 @@ object CameraSettingsFrm: TCameraSettingsFrm
         'Reduce time to increase frame rate at expense of pixel well dept' +
         'h.'
       Style = csDropDownList
-      ItemHeight = 13
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1

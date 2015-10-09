@@ -1,4 +1,5 @@
 object ExportROITimeCourseFrm: TExportROITimeCourseFrm
+  Tag = 14
   Left = 681
   Top = 158
   BorderStyle = bsDialog

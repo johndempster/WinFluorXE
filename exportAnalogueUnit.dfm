@@ -1,4 +1,5 @@
 object ExportAnalogueFrm: TExportAnalogueFrm
+  Tag = 12
   Left = 195
   Top = 387
   BorderStyle = bsDialog

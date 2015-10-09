@@ -66,13 +66,12 @@ unit FileIOUnit;
 // 23.01.14 ......... DARKLEVLO= and DARKLEVHI= added.
 // 3.2.15 ........... XYStage.Save/ReadSettings added
 // 14.5.15 .......... CAMDEIL= MainFrm.Cam1.DisableExposureIntervalLimit added
+// 24.9.15 .......... FPLEFTi= MainFrm.FormPos[i].left etc added
 interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
   ImageFile, IDRFile, StrUtils ;
-
-
 
 type
 
@@ -101,8 +100,6 @@ TOVERLAPPED = Record
     NumFileTypes : Integer ;
 
     Overlap : _Overlapped ;
-    pWriteBuf : PByteArray ;
-    FileTransferCount : Cardinal ;
 
   public
     { Public declarations }
@@ -553,6 +550,14 @@ begin
 
      // Save XY Stage control settings
      XYStageFrm.SaveSettings( Header ) ;
+
+     // Save form positions
+     for I := 0 to High(MainFrm.FormPos) do begin
+         AppendInt( Header, format('FPTOP%d=',[i]), MainFrm.FormPos[i].Top ) ;
+         AppendInt( Header, format('FPLEFT%d=',[i]), MainFrm.FormPos[i].Left) ;
+         AppendInt( Header, format('FPWIDTH%d=',[i]), MainFrm.FormPos[i].Width ) ;
+         AppendInt( Header, format('FPHEIGHT%d=',[i]), MainFrm.FormPos[i].Height) ;
+         end;
 
      if FileWrite( INIFileHandle, Header, Sizeof(Header) ) <> Sizeof(Header) then
         ShowMessage( ' Initialisation file write failed ' ) ;
@@ -1086,6 +1091,23 @@ begin
 
      // Read XY Stage control settings
      XYStageFrm.ReadSettings( Header ) ;
+
+     for I := 0 to High(MainFrm.FormPos) do begin
+         iValue := MainFrm.FormPos[i].Top ;
+         ReadInt( Header, format('FPTOP%d=',[i]), iValue) ;
+         MainFrm.FormPos[i].Top := iValue ;
+         iValue := MainFrm.FormPos[i].Left ;
+         ReadInt( Header, format('FPLEFT%d=',[i]), iValue) ;
+         MainFrm.FormPos[i].Left := iValue ;
+
+         iValue := MainFrm.FormPos[i].Width ;
+         ReadInt( Header, format('FPWIDTH%d=',[i]), iValue ) ;
+         MainFrm.FormPos[i].Width := iValue ;
+
+         iValue := MainFrm.FormPos[i].Height ;
+         ReadInt( Header, format('FPHEIGHT%d=',[i]), iValue) ;
+         MainFrm.FormPos[i].Height := iValue ;
+         end;
 
      FileClose( INIFileHandle ) ;
 

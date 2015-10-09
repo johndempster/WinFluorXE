@@ -34,6 +34,7 @@ unit RecADCOnlyUnit;
 //                stimulus repetition due to 2 second internal NIDAQmx buffering
 // 02.05.13 JD .. Single stimulus D/A buffer padding set to LabIO.InternalBufferDuration + 0.5s a
 //                to prevent stimulus repetition in single stimulus mode.
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -2081,13 +2082,11 @@ begin
          MainFrm.ADCChannelRecADCOnlyUnitVisible[ch] := scADCDisplay.ChanVisible[ch];
      end;
 
-     MainFrm.LastRecADCOnlyWidth := Width;
-     MainFrm.LastRecADCOnlyHeight := Height;
-     MainFrm.LastRecADCOnlyTop := Top;
-     MainFrm.LastRecADCOnlyLeft := Left;
-
      // Request destruction of form
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
 
      end;
 

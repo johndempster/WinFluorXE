@@ -1,9 +1,10 @@
 object StimulusDefaultsFrm: TStimulusDefaultsFrm
+  Tag = 46
   Left = 562
   Top = 291
-  Width = 538
-  Height = 244
   Caption = ' Stimulus Outputs (Default Settings)'
+  ClientHeight = 211
+  ClientWidth = 402
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -21,7 +22,7 @@ object StimulusDefaultsFrm: TStimulusDefaultsFrm
   object DIGGroup: TGroupBox
     Left = 8
     Top = 64
-    Width = 513
+    Width = 385
     Height = 105
     Caption = ' Digital Output States '
     Font.Charset = DEFAULT_CHARSET
@@ -288,23 +289,23 @@ object StimulusDefaultsFrm: TStimulusDefaultsFrm
   object DACGroup: TGroupBox
     Left = 8
     Top = 0
-    Width = 513
+    Width = 385
     Height = 57
-    Caption = ' DAC Output Holding Voltages '
+    Caption = ' Analogue Output Holding Voltages '
     TabOrder = 3
     object VCommand0Panel: TPanel
       Left = 8
       Top = 16
-      Width = 161
+      Width = 120
       Height = 33
       BevelOuter = bvNone
       TabOrder = 0
       object Label1: TLabel
         Left = 8
-        Top = 8
-        Width = 72
+        Top = 0
+        Width = 34
         Height = 14
-        Caption = 'Voltage O/P 1'
+        Caption = 'Vout.0'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -313,8 +314,8 @@ object StimulusDefaultsFrm: TStimulusDefaultsFrm
         ParentFont = False
       end
       object edVCommand0: TValidatedEdit
-        Left = 88
-        Top = 2
+        Left = 48
+        Top = 0
         Width = 65
         Height = 23
         Font.Charset = ANSI_CHARSET
@@ -331,18 +332,18 @@ object StimulusDefaultsFrm: TStimulusDefaultsFrm
       end
     end
     object VCommand1Panel: TPanel
-      Left = 176
+      Left = 130
       Top = 16
-      Width = 161
+      Width = 120
       Height = 33
       BevelOuter = bvNone
       TabOrder = 1
       object Label2: TLabel
         Left = 8
-        Top = 8
-        Width = 72
+        Top = 0
+        Width = 34
         Height = 14
-        Caption = 'Voltage O/P 2'
+        Caption = 'Vout.1'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -351,8 +352,8 @@ object StimulusDefaultsFrm: TStimulusDefaultsFrm
         ParentFont = False
       end
       object edVCommand1: TValidatedEdit
-        Left = 88
-        Top = 2
+        Left = 48
+        Top = 0
         Width = 65
         Height = 23
         Font.Charset = ANSI_CHARSET
@@ -369,18 +370,18 @@ object StimulusDefaultsFrm: TStimulusDefaultsFrm
       end
     end
     object VCommand2Panel: TPanel
-      Left = 344
+      Left = 250
       Top = 16
-      Width = 161
+      Width = 120
       Height = 33
       BevelOuter = bvNone
       TabOrder = 2
       object Label3: TLabel
         Left = 8
-        Top = 8
-        Width = 72
+        Top = 0
+        Width = 34
         Height = 14
-        Caption = 'Voltage O/P 3'
+        Caption = 'Vout.2'
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -389,8 +390,8 @@ object StimulusDefaultsFrm: TStimulusDefaultsFrm
         ParentFont = False
       end
       object edVCommand2: TValidatedEdit
-        Left = 88
-        Top = 2
+        Left = 48
+        Top = 0
         Width = 65
         Height = 23
         Font.Charset = ANSI_CHARSET

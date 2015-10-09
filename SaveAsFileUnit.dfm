@@ -1,10 +1,11 @@
 object SaveAsFileFrm: TSaveAsFileFrm
+  Tag = 34
   Left = 606
   Top = 313
   BorderStyle = bsDialog
   Caption = 'Save As Data File'
-  ClientHeight = 366
-  ClientWidth = 466
+  ClientHeight = 254
+  ClientWidth = 468
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText

@@ -1,4 +1,5 @@
 object PrintGraphFrm: TPrintGraphFrm
+  Tag = 28
   Left = 365
   Top = 277
   BorderStyle = bsDialog
@@ -88,11 +89,11 @@ object PrintGraphFrm: TPrintGraphFrm
       Width = 65
       Height = 17
       AutoSize = False
-      Text = ' 1.00  pts'
+      Text = ' 1 pts'
       Value = 1.000000000000000000
       Scale = 1.000000000000000000
       Units = 'pts'
-      NumberFormat = '%.f '
+      NumberFormat = '%.4g'
       LoLimit = 1.000000000000000000
       HiLimit = 100.000000000000000000
     end
@@ -143,11 +144,11 @@ object PrintGraphFrm: TPrintGraphFrm
       Width = 65
       Height = 17
       AutoSize = False
-      Text = ' 1.00  pts'
+      Text = ' 1 pts'
       Value = 1.000000000000000000
       Scale = 1.000000000000000000
       Units = 'pts'
-      NumberFormat = '%.f '
+      NumberFormat = '%.4g'
       LoLimit = 1.000000000000000000
       HiLimit = 100.000000000000000000
     end
@@ -157,11 +158,11 @@ object PrintGraphFrm: TPrintGraphFrm
       Width = 65
       Height = 17
       AutoSize = False
-      Text = ' 1.00  pts'
+      Text = ' 1 pts'
       Value = 1.000000000000000000
       Scale = 1.000000000000000000
       Units = 'pts'
-      NumberFormat = '%.f '
+      NumberFormat = '%.4g'
       LoLimit = 1.000000000000000000
       HiLimit = 100.000000000000000000
     end
@@ -379,7 +380,7 @@ object PrintGraphFrm: TPrintGraphFrm
           Left = 8
           Top = 72
           Width = 81
-          Height = 21
+          Height = 23
           Text = ' 0 pixels'
           Scale = 1.000000000000000000
           Units = 'pixels'

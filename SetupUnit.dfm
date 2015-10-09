@@ -1,10 +1,11 @@
 object SetupFrm: TSetupFrm
+  Tag = 41
   Left = 488
   Top = 114
   BorderStyle = bsDialog
   Caption = 'Camera/System Setup'
   ClientHeight = 600
-  ClientWidth = 485
+  ClientWidth = 534
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -54,7 +55,7 @@ object SetupFrm: TSetupFrm
   object CardGrp: TGroupBox
     Left = 8
     Top = 464
-    Width = 473
+    Width = 518
     Height = 97
     Caption = ' Interface Cards '
     Font.Charset = ANSI_CHARSET
@@ -99,7 +100,7 @@ object SetupFrm: TSetupFrm
     object meDeviceList: TMemo
       Left = 136
       Top = 13
-      Width = 329
+      Width = 344
       Height = 76
       Lines.Strings = (
         'meDeviceList')
@@ -127,9 +128,9 @@ object SetupFrm: TSetupFrm
   object TabPage: TPageControl
     Left = 8
     Top = 8
-    Width = 473
+    Width = 521
     Height = 450
-    ActivePage = CameraTab
+    ActivePage = TabSheet1
     TabOrder = 3
     object CameraTab: TTabSheet
       Caption = 'Camera'
@@ -383,7 +384,7 @@ object SetupFrm: TSetupFrm
         ParentFont = False
         TabOrder = 1
         object Label19: TLabel
-          Left = 39
+          Left = 59
           Top = 18
           Width = 105
           Height = 14
@@ -391,7 +392,7 @@ object SetupFrm: TSetupFrm
           Caption = 'Lens magnification'
         end
         object Label20: TLabel
-          Left = 92
+          Left = 112
           Top = 42
           Width = 52
           Height = 14
@@ -399,7 +400,7 @@ object SetupFrm: TSetupFrm
           Caption = 'Pixel size'
         end
         object Label23: TLabel
-          Left = 30
+          Left = 50
           Top = 66
           Width = 114
           Height = 14
@@ -407,7 +408,7 @@ object SetupFrm: TSetupFrm
           Caption = 'Calibration bar (size)'
         end
         object Label61: TLabel
-          Left = 22
+          Left = 42
           Top = 90
           Width = 122
           Height = 14
@@ -415,7 +416,7 @@ object SetupFrm: TSetupFrm
           Caption = 'Calibration bar (width)'
         end
         object edLensMagnification: TValidatedEdit
-          Left = 152
+          Left = 168
           Top = 18
           Width = 65
           Height = 20
@@ -429,7 +430,7 @@ object SetupFrm: TSetupFrm
           HiLimit = 1.000000015047466E29
         end
         object edPixelWidth: TValidatedEdit
-          Left = 152
+          Left = 168
           Top = 42
           Width = 65
           Height = 20
@@ -442,7 +443,7 @@ object SetupFrm: TSetupFrm
           HiLimit = 1.000000015047466E29
         end
         object edCalibrationBarSize: TValidatedEdit
-          Left = 152
+          Left = 168
           Top = 66
           Width = 65
           Height = 20
@@ -455,7 +456,7 @@ object SetupFrm: TSetupFrm
           HiLimit = 1.000000015047466E29
         end
         object edCalibrationBarThickness: TValidatedEdit
-          Left = 152
+          Left = 168
           Top = 90
           Width = 65
           Height = 20
@@ -471,7 +472,7 @@ object SetupFrm: TSetupFrm
       object GroupBox9: TGroupBox
         Left = 239
         Top = 0
-        Width = 225
+        Width = 246
         Height = 166
         Caption = ' Exposure Trigger Output '
         Font.Charset = ANSI_CHARSET
@@ -482,8 +483,8 @@ object SetupFrm: TSetupFrm
         ParentFont = False
         TabOrder = 2
         object Label16: TLabel
-          Left = 26
-          Top = 106
+          Left = 42
+          Top = 116
           Width = 115
           Height = 14
           Alignment = taRightJustify
@@ -491,8 +492,8 @@ object SetupFrm: TSetupFrm
           Caption = 'Trigger Delay'
         end
         object Label42: TLabel
-          Left = 26
-          Top = 130
+          Left = 42
+          Top = 140
           Width = 115
           Height = 14
           Alignment = taRightJustify
@@ -500,16 +501,16 @@ object SetupFrm: TSetupFrm
           Caption = 'Extra Readout Time'
         end
         object cbCameraStart: TComboBox
-          Left = 24
-          Top = 16
+          Left = 40
+          Top = 18
           Width = 193
           Height = 22
           Style = csDropDownList
           TabOrder = 0
         end
         object rbCameraStartActiveHigh: TRadioButton
-          Left = 24
-          Top = 40
+          Left = 40
+          Top = 42
           Width = 81
           Height = 17
           Caption = 'Active High'
@@ -518,16 +519,16 @@ object SetupFrm: TSetupFrm
           TabStop = True
         end
         object rbCameraStartActiveLow: TRadioButton
-          Left = 112
-          Top = 40
+          Left = 128
+          Top = 42
           Width = 89
           Height = 17
           Caption = 'Active Low'
           TabOrder = 2
         end
         object edCameraTriggerOffset: TValidatedEdit
-          Left = 145
-          Top = 106
+          Left = 161
+          Top = 116
           Width = 73
           Height = 20
           Hint = 
@@ -542,8 +543,8 @@ object SetupFrm: TSetupFrm
           HiLimit = 1.000000015047466E30
         end
         object edCameraReadoutTime: TValidatedEdit
-          Left = 145
-          Top = 130
+          Left = 161
+          Top = 140
           Width = 73
           Height = 20
           Hint = 'Extra readout camera readout time (subtracted from exposure)'
@@ -556,8 +557,8 @@ object SetupFrm: TSetupFrm
           HiLimit = 1.000000015047466E30
         end
         object ckCCDClearPreExposure: TCheckBox
-          Left = 24
-          Top = 72
+          Left = 40
+          Top = 78
           Width = 194
           Height = 17
           Hint = 'Clear CCD image area before exposure (triggered exposures only)'
@@ -566,8 +567,8 @@ object SetupFrm: TSetupFrm
           TabOrder = 5
         end
         object ckPostExposureReadout: TCheckBox
-          Left = 24
-          Top = 87
+          Left = 40
+          Top = 96
           Width = 194
           Height = 17
           Hint = 
@@ -580,8 +581,8 @@ object SetupFrm: TSetupFrm
           TabOrder = 6
         end
         object ckBulbExposureMode: TCheckBox
-          Left = 24
-          Top = 56
+          Left = 40
+          Top = 60
           Width = 194
           Height = 17
           Hint = 'Exposure time controlled by trigger output'
@@ -595,7 +596,7 @@ object SetupFrm: TSetupFrm
       object SplitImageGrp: TGroupBox
         Left = 240
         Top = 296
-        Width = 225
+        Width = 245
         Height = 49
         Caption = ' Split Image Labels '
         Font.Charset = ANSI_CHARSET
@@ -651,7 +652,7 @@ object SetupFrm: TSetupFrm
       object GroupBox18: TGroupBox
         Left = 240
         Top = 352
-        Width = 225
+        Width = 245
         Height = 57
         Caption = ' Camera Dark Level Range'
         Font.Charset = ANSI_CHARSET
@@ -2388,13 +2389,14 @@ object SetupFrm: TSetupFrm
       end
     end
     object AnalogInputTab: TTabSheet
-      Caption = 'Analog Inputs && Timing'
+      Caption = 'Analog Inputs && Amplifiers'
       ImageIndex = 3
       object ADCGrp: TGroupBox
         Left = 8
         Top = 0
-        Width = 265
-        Height = 73
+        Width = 226
+        Height = 129
+        Caption = ' Analog Inputs '
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -2403,26 +2405,12 @@ object SetupFrm: TSetupFrm
         ParentFont = False
         TabOrder = 0
         object Label10: TLabel
-          Left = 50
+          Left = 13
           Top = 16
-          Width = 79
-          Height = 13
-          Alignment = taRightJustify
-          Caption = 'A/D channels'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -12
-          Font.Name = 'MS Sans Serif'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object Label18: TLabel
-          Left = 45
-          Top = 42
-          Width = 84
+          Width = 81
           Height = 14
           Alignment = taRightJustify
-          Caption = 'A/D Input mode'
+          Caption = 'Input channels'
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
           Font.Height = -11
@@ -2430,29 +2418,97 @@ object SetupFrm: TSetupFrm
           Font.Style = [fsBold]
           ParentFont = False
         end
+        object Label18: TLabel
+          Left = 31
+          Top = 42
+          Width = 63
+          Height = 14
+          Alignment = taRightJustify
+          Caption = 'Input mode'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label83: TLabel
+          Left = 46
+          Top = 96
+          Width = 109
+          Height = 14
+          Alignment = taRightJustify
+          Caption = 'No. Channels In Use'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+        end
+        object Label85: TLabel
+          Left = 4
+          Top = 69
+          Width = 90
+          Height = 21
+          Alignment = taRightJustify
+          AutoSize = False
+          Caption = 'Voltage Range'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
         object cbADCIn: TComboBox
-          Left = 136
+          Left = 97
           Top = 16
-          Width = 121
+          Width = 120
           Height = 22
           Style = csDropDownList
           TabOrder = 0
+          OnChange = cbADCInChange
         end
         object cbADCInputMode: TComboBox
-          Left = 136
+          Left = 97
           Top = 42
-          Width = 121
+          Width = 120
           Height = 22
           TabOrder = 1
           Text = 'cbADCInputMode'
         end
+        object edNumChannels: TValidatedEdit
+          Left = 161
+          Top = 96
+          Width = 56
+          Height = 22
+          OnKeyPress = edNumChannelsKeyPress
+          AutoSize = False
+          Text = ' 0 '
+          Scale = 1.000000000000000000
+          NumberFormat = '%.0f'
+          LoLimit = -1.000000015047466E29
+          HiLimit = 16.000000000000000000
+        end
+        object cbADCVoltageRange: TComboBox
+          Left = 97
+          Top = 68
+          Width = 120
+          Height = 22
+          Style = csDropDownList
+          ParentShowHint = False
+          ShowHint = False
+          TabOrder = 3
+        end
       end
       object GroupBox7: TGroupBox
         Left = 8
-        Top = 79
-        Width = 265
-        Height = 69
-        Caption = ' Master Clock  '
+        Top = 132
+        Width = 226
+        Height = 74
+        Caption = ' Timing   '
         Font.Charset = ANSI_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -2461,12 +2517,12 @@ object SetupFrm: TSetupFrm
         ParentFont = False
         TabOrder = 1
         object Label11: TLabel
-          Left = 80
-          Top = 17
-          Width = 97
+          Left = 57
+          Top = 18
+          Width = 98
           Height = 13
           Alignment = taRightJustify
-          Caption = 'Timing resolution'
+          Caption = 'Sampling interval'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -12
@@ -2475,12 +2531,12 @@ object SetupFrm: TSetupFrm
           ParentFont = False
         end
         object Label5: TLabel
-          Left = 39
-          Top = 40
-          Width = 98
+          Left = 32
+          Top = 44
+          Width = 58
           Height = 13
           Alignment = taRightJustify
-          Caption = 'Clock synch. link'
+          Caption = 'Board link'
           Font.Charset = DEFAULT_CHARSET
           Font.Color = clWindowText
           Font.Height = -12
@@ -2489,9 +2545,9 @@ object SetupFrm: TSetupFrm
           ParentFont = False
         end
         object edADCInterval: TValidatedEdit
-          Left = 183
-          Top = 13
-          Width = 72
+          Left = 161
+          Top = 18
+          Width = 56
           Height = 22
           Text = ' 0 ms'
           Scale = 1000.000000000000000000
@@ -2501,12 +2557,297 @@ object SetupFrm: TSetupFrm
           HiLimit = 1.000000015047466E29
         end
         object cbClockSynchronisation: TComboBox
-          Left = 146
-          Top = 39
-          Width = 110
+          Left = 97
+          Top = 44
+          Width = 120
           Height = 22
           Style = csDropDownList
           TabOrder = 1
+        end
+      end
+      object GroupBox20: TGroupBox
+        Left = 8
+        Top = 211
+        Width = 226
+        Height = 103
+        Caption = ' Amplifier #1'
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
+        object Label84: TLabel
+          Left = 64
+          Top = 72
+          Width = 107
+          Height = 14
+          Alignment = taRightJustify
+          Caption = 'Vout 0 Divide Factor'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object cbAmplifier1: TComboBox
+          Left = 8
+          Top = 16
+          Width = 210
+          Height = 22
+          TabOrder = 0
+          Text = 'cbAmplifier1'
+        end
+        object edVDivide0: TValidatedEdit
+          Left = 177
+          Top = 72
+          Width = 41
+          Height = 20
+          AutoSize = False
+          Text = ' 0 X'
+          Scale = 1.000000000000000000
+          Units = 'X'
+          NumberFormat = '%.0f'
+          LoLimit = -1.000000015047466E29
+          HiLimit = 1.000000015047466E29
+        end
+        object GainTelPanel1: TPanel
+          Left = 26
+          Top = 44
+          Width = 93
+          Height = 25
+          BevelOuter = bvNone
+          Caption = 'l'
+          TabOrder = 2
+          object lbTelegraphChannel: TLabel
+            Left = 18
+            Top = 2
+            Width = 46
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'Gain Tel.'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            WordWrap = True
+          end
+          object edGainTelegraphChannel1: TValidatedEdit
+            Left = 66
+            Top = 2
+            Width = 22
+            Height = 20
+            AutoSize = False
+            Text = ' 0 '
+            Scale = 1.000000000000000000
+            NumberFormat = '%.0f'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 15.000000000000000000
+          end
+        end
+        object ModeTelPanel1: TPanel
+          Left = 130
+          Top = 44
+          Width = 93
+          Height = 25
+          BevelOuter = bvNone
+          TabOrder = 3
+          object Label86: TLabel
+            Left = 11
+            Top = 2
+            Width = 53
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'Mode Tel.'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            WordWrap = True
+          end
+          object edModeTelegraphChannel1: TValidatedEdit
+            Left = 66
+            Top = 2
+            Width = 22
+            Height = 20
+            AutoSize = False
+            Text = ' 0 '
+            Scale = 1.000000000000000000
+            NumberFormat = '%.0f'
+            LoLimit = -1.000000000000000000
+            HiLimit = 15.000000000000000000
+          end
+        end
+      end
+      object GroupBox21: TGroupBox
+        Left = 8
+        Top = 315
+        Width = 226
+        Height = 103
+        Caption = ' Amplifier #2'
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 3
+        object Label87: TLabel
+          Left = 64
+          Top = 72
+          Width = 107
+          Height = 14
+          Alignment = taRightJustify
+          Caption = 'Vout 1 Divide Factor'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          WordWrap = True
+        end
+        object cbAmplifier2: TComboBox
+          Left = 8
+          Top = 16
+          Width = 210
+          Height = 22
+          TabOrder = 0
+          Text = 'cbAmplifiers'
+        end
+        object edVDivide1: TValidatedEdit
+          Left = 177
+          Top = 72
+          Width = 41
+          Height = 20
+          AutoSize = False
+          Text = ' 0 X'
+          Scale = 1.000000000000000000
+          Units = 'X'
+          NumberFormat = '%.0f'
+          LoLimit = -1.000000015047466E29
+          HiLimit = 1.000000015047466E29
+        end
+        object GainTelPanel2: TPanel
+          Left = 17
+          Top = 44
+          Width = 93
+          Height = 25
+          BevelOuter = bvNone
+          Caption = 'l'
+          TabOrder = 2
+          object Label88: TLabel
+            Left = 14
+            Top = 2
+            Width = 46
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'Gain Tel.'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            WordWrap = True
+          end
+          object edGainTelegraphChannel2: TValidatedEdit
+            Left = 66
+            Top = 2
+            Width = 22
+            Height = 20
+            AutoSize = False
+            Text = ' 0 '
+            Scale = 1.000000000000000000
+            NumberFormat = '%.0f'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 15.000000000000000000
+          end
+        end
+        object ModeTelPanel2: TPanel
+          Left = 130
+          Top = 44
+          Width = 93
+          Height = 25
+          BevelOuter = bvNone
+          TabOrder = 3
+          object Label89: TLabel
+            Left = 11
+            Top = 2
+            Width = 53
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'Mode Tel.'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clBlack
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            WordWrap = True
+          end
+          object edModeTelegraphChannel2: TValidatedEdit
+            Left = 66
+            Top = 2
+            Width = 22
+            Height = 20
+            AutoSize = False
+            Text = ' 0 '
+            Scale = 1.000000000000000000
+            NumberFormat = '%.0f'
+            LoLimit = -1.000000000000000000
+            HiLimit = 15.000000000000000000
+          end
+        end
+      end
+      object ChannelsGrp: TGroupBox
+        Left = 240
+        Top = 0
+        Width = 236
+        Height = 418
+        Caption = ' Channel calibration table '
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 4
+        object ChannelTable: TStringGrid
+          Left = 8
+          Top = 16
+          Width = 218
+          Height = 390
+          Hint = 'Input channel scaling factors and calibration units'
+          ColCount = 4
+          DefaultColWidth = 50
+          DefaultRowHeight = 18
+          RowCount = 9
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -12
+          Font.Name = 'Arial'
+          Font.Style = []
+          ParentFont = False
+          ScrollBars = ssNone
+          TabOrder = 0
+          RowHeights = (
+            18
+            18
+            18
+            18
+            18
+            18
+            18
+            18
+            18)
         end
       end
     end
@@ -3011,6 +3352,269 @@ object SetupFrm: TSetupFrm
             LoLimit = -1.000000015047466E30
             HiLimit = 1.000000015047466E29
           end
+        end
+      end
+    end
+    object CapacityTab: TTabSheet
+      Caption = 'Cell Capacity'
+      ImageIndex = 5
+      object CapGrp: TGroupBox
+        Left = 4
+        Top = 0
+        Width = 185
+        Height = 305
+        Caption = ' Cell Capacity '
+        TabOrder = 0
+        object GroupBox22: TGroupBox
+          Left = 8
+          Top = 104
+          Width = 169
+          Height = 89
+          Caption = ' Capacity Compensation '
+          TabOrder = 0
+          object Label90: TLabel
+            Left = 7
+            Top = 37
+            Width = 65
+            Height = 15
+            Caption = 'Series Res.'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+          end
+          object Label91: TLabel
+            Left = 7
+            Top = 61
+            Width = 72
+            Height = 15
+            Caption = 'Cell Capacity'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+          end
+          object edCapRSeriesComp: TValidatedEdit
+            Left = 96
+            Top = 37
+            Width = 67
+            Height = 20
+            AutoSize = False
+            Text = ' 0 MOhm'
+            Scale = 0.000000999999997475
+            Units = 'MOhm'
+            NumberFormat = '%.5g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+          object edCapCellCapacityComp: TValidatedEdit
+            Left = 96
+            Top = 61
+            Width = 67
+            Height = 20
+            AutoSize = False
+            Text = ' 0 pF'
+            Scale = 999999995904.000000000000000000
+            Units = 'pF'
+            NumberFormat = '%.4g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+          object ckCapacityCompensationInUse: TCheckBox
+            Left = 8
+            Top = 16
+            Width = 145
+            Height = 17
+            BiDiMode = bdLeftToRight
+            Caption = 'Use compensation '
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentBiDiMode = False
+            ParentFont = False
+            TabOrder = 2
+          end
+        end
+        object GroupBox23: TGroupBox
+          Left = 8
+          Top = 32
+          Width = 169
+          Height = 65
+          TabOrder = 1
+          object Label92: TLabel
+            Left = 7
+            Top = 13
+            Width = 79
+            Height = 15
+            Caption = 'Excitation freq.'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+          end
+          object Label93: TLabel
+            Left = 7
+            Top = 37
+            Width = 73
+            Height = 15
+            Caption = 'Reversal Pot.'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+          end
+          object edCapFrequency: TValidatedEdit
+            Left = 96
+            Top = 13
+            Width = 67
+            Height = 20
+            AutoSize = False
+            Text = ' 10 Hz'
+            Value = 10.000000000000000000
+            Scale = 1.000000000000000000
+            Units = 'Hz'
+            NumberFormat = '%.5g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+          object edCapVRev: TValidatedEdit
+            Left = 96
+            Top = 37
+            Width = 67
+            Height = 20
+            AutoSize = False
+            Text = ' 0 mV'
+            Scale = 1000.000000000000000000
+            Units = 'mV'
+            NumberFormat = '%.4g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+        end
+        object GroupBox24: TGroupBox
+          Left = 8
+          Top = 200
+          Width = 169
+          Height = 97
+          Caption = ' Display ranges '
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Arial'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 2
+          object Label94: TLabel
+            Left = 67
+            Top = 72
+            Width = 23
+            Height = 15
+            Alignment = taRightJustify
+            Caption = 'C.m'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object Label95: TLabel
+            Left = 67
+            Top = 24
+            Width = 23
+            Height = 15
+            Alignment = taRightJustify
+            Caption = 'G.m'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object Label96: TLabel
+            Left = 71
+            Top = 48
+            Width = 19
+            Height = 15
+            Alignment = taRightJustify
+            Caption = 'G.s'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object edCapCmDisplayMax: TValidatedEdit
+            Left = 96
+            Top = 69
+            Width = 67
+            Height = 20
+            AutoSize = False
+            Text = ' 10 pF'
+            Value = 10.000000000000000000
+            Scale = 1.000000000000000000
+            Units = 'pF'
+            NumberFormat = '%.5g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+          object edCapGmDisplayMax: TValidatedEdit
+            Left = 96
+            Top = 21
+            Width = 67
+            Height = 20
+            AutoSize = False
+            Text = ' 10 nS'
+            Value = 10.000000000000000000
+            Scale = 1.000000000000000000
+            Units = 'nS'
+            NumberFormat = '%.5g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+          object edCapGsDisplayMax: TValidatedEdit
+            Left = 96
+            Top = 45
+            Width = 67
+            Height = 20
+            AutoSize = False
+            Text = ' 10 nS'
+            Value = 10.000000000000000000
+            Scale = 1.000000000000000000
+            Units = 'nS'
+            NumberFormat = '%.5g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+        end
+        object ckCapEnabled: TCheckBox
+          Left = 8
+          Top = 16
+          Width = 169
+          Height = 17
+          Caption = 'Enable'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
         end
       end
     end

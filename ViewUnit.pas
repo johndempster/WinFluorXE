@@ -74,6 +74,7 @@ unit ViewUnit;
 // 13.06.14 JD Error in horizontal display scroll position with display zooms <100% fixed
 // 17.06.14 12.5% display zoom added
 // 19.01.15 Frame time now has 3 fixed decimal places
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -800,9 +801,9 @@ begin
      // If not open it
      if not MainFrm.FormExists( 'ViewPlotFrm') then begin
         ViewPlotFrm := TViewPlotFrm.Create(Self) ;
-        ViewPlotFrm.Top := Top ;
+{        ViewPlotFrm.Top := Top ;
         ViewPlotFrm.Left := Left + Width + 10 ;
-        ViewPlotFrm.Width := Max( MainFrm.ClientWidth - (Width + Left) - 10, 50 ) ;
+        ViewPlotFrm.Width := Max( MainFrm.ClientWidth - (Width + Left) - 10, 50 ) ;}
         ViewPlotFrm.DisplayGrid := MainFrm.mnDisplayGrid.Checked ;
         Application.ProcessMessages ;
         end ;
@@ -2194,6 +2195,9 @@ begin
      MainFrm.DisplayZoomIndex := cbDisplayZoom.ItemIndex ;
 
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
 
      end;
 

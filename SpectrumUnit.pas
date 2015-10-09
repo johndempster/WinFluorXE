@@ -6,6 +6,7 @@ unit SpectrumUnit;
 // 24.03.07 Time course can now handle 100 lines
 //          tick spacing on spectrum now better
 // 01.04.07 Min-Max range of spectra now set to all frame range
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -302,6 +303,10 @@ procedure TSpectrumFrm.FormClose(Sender: TObject;
 // ----------
 begin
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 

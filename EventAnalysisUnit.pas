@@ -26,6 +26,9 @@ unit EventAnalysisUnit;
 //
 // 13.11.12 ... .LOADADC() now uses 64 bit scan counter
 // 29.01.14 Updated to Compile under both 32/64 bits (File handle now THandle)
+// 07.10.15 JD Many minor event detection bugs fixed. Display screens can now be expanded to display whole record
+//             Display vertical ranges updated when detection or fluorescence channels changed.
+//             Rolling baseline now initialised to baseline cursor position
 
 interface
 
@@ -38,7 +41,6 @@ uses
 const
     EventListFileExt = '.evl' ;
     MaxEvents = 30000 ;
-    // MaxDisplayPoints = 1048576 ;
     MaxDisplayPoints = 16777216;
     DetFluor = 0 ;
     DetFluorRatio = 1 ;
@@ -79,17 +81,6 @@ type
       Time : Single ;
       Accepted : Boolean ;
       end ;
-
- { TEventAnalysisSettings = packed record
-      DeadTime : Single ;
-      DetectionThreshold : Single ;
-      ThresholdDuration : Single ;
-      DetectionThresholdPolarity : Integer ;
-      DetectionSource : Integer ;
-      FixedBaseline : Boolean ;
-      RollingBaselinePeriod : Single ;
-      DisplayMax : Single ;
-      end ;}
 
   TEventAnalysisFrm = class(TForm)
     Page: TPageControl;
@@ -233,6 +224,10 @@ type
     scADCDisplay: TScopeDisplay;
     scAvgFlDisplay: TScopeDisplay;
     scAvgADCDisplay: TScopeDisplay;
+    bStop: TButton;
+    bPlotGraphStop: TButton;
+    edPlotStatus: TEdit;
+    edDetectStatus: TEdit;
     procedure FormResize(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure bDetectEventsClick(Sender: TObject);
@@ -319,6 +314,8 @@ type
     procedure cbSourceChange(Sender: TObject);
     procedure cbBackgroundChange(Sender: TObject);
     procedure cbEquationChange(Sender: TObject);
+    procedure bStopClick(Sender: TObject);
+    procedure bPlotGraphStopClick(Sender: TObject);
   private
     { Private declarations }
     MaxDisplayScans : Integer ;
@@ -355,25 +352,29 @@ type
     DetectEventsRunning : Boolean ;
     StopDetectEventsRunning : Boolean ;
 
-//    cDetBaselinePos : Integer ;
-//    cDetBaselineNeg : Integer ;
-//    cdetThreshold : Integer ;
-
     procedure SetupFluorescenceDisplay ;
 
     procedure DisplayADCChannels(
               StartEvent : Integer ;
               EndEvent : Integer ;
               var DisplayBuf : Array of SmallInt ;
-              scDisplay : TScopeDisplay
+              scDisplay : TScopeDisplay ;
+              ResetYRange : Boolean
               ) ;
 
     procedure DisplayFLIntensity(
               StartEvent : Integer ;
               EndEvent : Integer ;
               var DisplayBuf : Array of SmallInt ;
-              scDisplay : TScopeDisplay
+              scDisplay : TScopeDisplay ;
+              ResetYRange : Boolean
               ) ;
+
+    procedure UpdateYRange(
+         Chan : Integer ;
+         Ymin : single ;
+         YMax : single ;
+         scDisplay : TScopeDisplay ) ;
 
     procedure DisplayADCChannelAverages ;
     procedure DisplayFLIntensityAverages ;
@@ -412,7 +413,9 @@ type
 
     function GetDisplayGrid : Boolean ;
     procedure SetDisplayGrid( Value : Boolean ) ;
-    procedure UpdateDetDisplay( ResetYMagnification : Boolean ) ;
+    procedure UpdateDetDisplay( ResetYRange : Boolean ) ;
+    procedure UpdateDetCursors( CreateCursors : Boolean );
+
     procedure SetEventDisplayLimit ;
     
   public
@@ -429,7 +432,9 @@ type
     AvgFLBuf : Array[0..MaxDisplayPoints-1] of SmallInt ;
 
     procedure UpdateSettings ;
-    procedure DisplayEvent( EventNum : Integer ) ;
+    procedure DisplayEvent( EventNum : Integer ;
+                            ResetYRange : Boolean
+                            ) ;
     procedure CopyImageToClipboard ;
     procedure CopyDataToClipboard ;
     procedure Print ;
@@ -493,7 +498,7 @@ begin
          MainFrm.IDRFile.ADCChannel[cbDetectionSource.ItemIndex - MainFrm.IDRFile.NumFrameTypes].ADCUnits ;
 
     edThresholdLevel.Scale := 1.0 ;
-    edThresholdLevel.Value := MainFrm.IDRFile.EventDetectionThreshold ;
+    edThresholdLevel.Value := Abs(MainFrm.IDRFile.EventDetectionThreshold) ;
 
     rbFixedBaseline.Checked := MainFrm.IDRFile.EventFixedBaseline ;
     rbRollingBaseline.Checked := not MainFrm.IDRFile.EventFixedBaseline ;
@@ -530,10 +535,10 @@ begin
     rbDFOverF0.Checked := MainFrm.IDRFile.EventF0SubtractF0 ;
     rbFOverF0.Checked := not MainFrm.IDRFile.EventF0SubtractF0 ;
 
-    edThresholdLevel.Value := MainFrm.IDRFile.EventDetectionThreshold ;
+    edThresholdLevel.Value := Abs(MainFrm.IDRFile.EventDetectionThreshold) ;
     DetBaselineCursorY := MainFrm.IDRFile.EventBaselineLevel ;
     DetPosThresholdCursorY := DetBaselineCursorY + Round(edThresholdLevel.Value) ;
-    DetNegThresholdCursorY := DetBaselineCursorY + Round(edThresholdLevel.Value) ;
+    DetNegThresholdCursorY := DetBaselineCursorY - Round(edThresholdLevel.Value) ;
 
     SetEventDisplayLimit ;
 
@@ -545,7 +550,6 @@ begin
     PlotXSource := 0 ;
     PlotYVar := 0 ;
     PlotYSource := 0 ;
-
 
     // Add readout cursor to plot
     plPlot.ClearVerticalCursors ;
@@ -592,6 +596,8 @@ begin
 
     StopDetectEventsRunning := False ;
     DetectEventsRunning := False ;
+
+    bStop.Enabled := False ;
 
     end;
 
@@ -865,7 +871,7 @@ begin
        scFLDisplay.TScale := MainFrm.IDRFile.FrameInterval*MainFrm.IDRFile.NumFrameTypes ;
        end ;
 
-    scFLDisplay.TUnits := 'ms' ;
+    scFLDisplay.TUnits := 's' ;
 
     // Add zero level cursors
     scFLDisplay.ClearHorizontalCursors ;
@@ -886,8 +892,7 @@ begin
      scFLDisplay.ChanUnits[0] := '';
      scFLDisplay.ChanName[0] := MainFrm.IDRFile.FrameType[cbWavelength.ItemIndex] ;
      scFLDisplay.ChanScale[0] := 1.0 ;
-     scFLDisplay.yMin[0] := 0 ;
-     scFLDisplay.yMax[0] := scFLDisplay.MaxADCValue ;
+     UpdateYRange( 0, 0, MainFrm.GreyHi[cbWavelength.ItemIndex], scFLDisplay ) ;
      scFLDisplay.HorizontalCursors[0] := 0 ;
      scFLDisplay.ChanVisible[0] := True ;
 
@@ -964,7 +969,7 @@ begin
 
     Resize ;
 
-    if NumEvents > 0 then DisplayEvent( sbEventNum.Position ) ;
+    if NumEvents > 0 then DisplayEvent( sbEventNum.Position, True ) ;
 
     // Update detection display
     UpdateDetDisplay( True ) ;
@@ -973,7 +978,7 @@ begin
 
 
 procedure TEventAnalysisFrm.UpdateDetDisplay(
-          ResetYMagnification : Boolean ) ;
+          ResetYRange : Boolean ) ;
 // --------------------------------------
 // Update event detection channel display
 // --------------------------------------
@@ -993,6 +998,7 @@ begin
              scDetDisplay.ChanName[0] := MainFrm.IDRFile.FrameType[cbDetFluor.ItemIndex] ;
              scDetDisplay.ChanUnits[0] := '';
              scDetDisplay.ChanScale[0] := 1.0 ;
+             if ResetYRange then UpdateYRange(0,0,MainFrm.GreyHi[cbDetFluor.ItemIndex],scDetDisplay) ;
              DetSettingsPage.ActivePage := DetFluorSettingsTab ;
              end ;
 
@@ -1002,6 +1008,7 @@ begin
                                          MainFrm.IDRFile.FrameType[cbDetFluorRatioBottom.ItemIndex] ;
              scDetDisplay.ChanUnits[0] := '';
              scDetDisplay.ChanScale[0] := edDetRatioDisplayMax.Value/scDetDisplay.MaxADCValue ;
+             if ResetYRange then UpdateYRange(0,0,scDetDisplay.MaxADCValue,scDetDisplay) ;
              DetSettingsPage.ActivePage := DetFluorRatioSettingsTab ;
              end ;
 
@@ -1019,11 +1026,11 @@ begin
           MainFrm.IDRFile.EventDisplayDuration := edTDetDisplay.Value ;
           end
        else begin
-          scDetDisplay.TScale := MainFrm.IDRFile.FrameInterval*MainFrm.IDRFile.NumFrameTypes ;
+          scDetDisplay.TScale := MainFrm.IDRFile.FrameInterval{*MainFrm.IDRFile.NumFrameTypes} ;
           scDetDisplay.MaxPoints := Min( Round(edTDetDisplay.Value/scDetDisplay.TScale),
                                          MaxDisplayScans) ;
           sbDetDisplay.Min := 1 ;
-          sbDetDisplay.Max := Max(MainFrm.IDRFile.NumFrames-scDetDisplay.MaxPoints,2) ;
+          sbDetDisplay.Max := Max(MainFrm.IDRFile.NumFrames,2) ;
           edTDetDisplay.Value := scDetDisplay.MaxPoints*scDetDisplay.TScale ;
           MainFrm.IDRFile.EventDisplayDuration := edTDetDisplay.Value ;
           end ;
@@ -1043,9 +1050,12 @@ begin
        scDetDisplay.ChanName[0] := MainFrm.IDRFile.ADCChannel[ADCChan].ADCName ;
        scDetDisplay.ChanUnits[0] := MainFrm.IDRFile.ADCChannel[ADCChan].ADCUnits ;
        scDetDisplay.ChanScale[0] := MainFrm.IDRFile.ADCChannel[ADCChan].ADCSCale ;
-
+       if ResetYRange then begin
+          UpdateYRange(0,MainFrm.IDRFile.ADCChannel[ADCChan].YMin,
+                       MainFrm.IDRFile.ADCChannel[ADCChan].YMax,scDetDisplay) ;
+          end;
        sbDetDisplay.Min := 0 ;
-       sbDetDisplay.Max := Max(MainFrm.IDRFile.ADCNumScansInFile-scDetDisplay.MaxPoints,1) ;
+       sbDetDisplay.Max := Max(MainFrm.IDRFile.ADCNumScansInFile,1) ;
        DetSettingsPage.ActivePage := DetADCSettingsTab ;
        DetROIGrp.Visible := False ;
 
@@ -1070,30 +1080,15 @@ begin
     edThresholdDuration.LoLimit := 1.0 ;
     edThresholdDuration.Value := Temp ;
 
-    //edFixedBaselineLevel.Value := MainFrm.IDRFile.EventBaselineLevel ;
-    //edThresholdLevel.Value := MainFrm.IDRFile.EventDetectionThreshold ;
-    //DetBaseLineCursorY := MainFrm.IDRFile.EventBaselineLevel ;
-    //DetPosThresholdCursorY := DetBaseLineCursorY + Round(MainFrm.IDRFile.EventDetectionThreshold) ;
-    //DetNegThresholdCursorY := DetBaseLineCursorY - Round(MainFrm.IDRFile.EventDetectionThreshold) ;
+    if ResetYRange then begin
+       DetBaseLineCursorY := Round((scDetDisplay.YMin[0] + scDetDisplay.YMax[0])*0.5) ;
+       edThresholdLevel.Value := (scDetDisplay.YMax[0] - scDetDisplay.YMin[0])*0.05 ;
+       end;
+    DetPosThresholdCursorY := DetBaseLineCursorY + Abs(Round(edThresholdLevel.Value));
+    DetNegThresholdCursorY := DetBaseLineCursorY - Abs(Round(edThresholdLevel.Value));
 
-    // Add zero level cursors
-    scDetDisplay.ClearHorizontalCursors ;
-
-    DetBaseLineCursor := scDetDisplay.AddHorizontalCursor( 0, clRed, False, 'Baseline' ) ;
-    scDetDisplay.HorizontalCursors[DetBaseLineCursor] := DetBaseLineCursorY ;
-
-    case cbDetectionThresholdPolarity.ItemIndex of
-         PositiveGoing,PosNegGoing : Begin
-            DetPosThresholdCursor := scDetDisplay.AddHorizontalCursor( 0, clRed, False, 'Threshold(+)' ) ;
-            scDetDisplay.HorizontalCursors[DetPosThresholdCursor] := DetPosThresholdCursorY ;
-            end ;
-         end ;
-    case cbDetectionThresholdPolarity.ItemIndex of
-         NegativeGoing,PosNegGoing : Begin
-            DetNegThresholdCursor := scDetDisplay.AddHorizontalCursor( 0, clRed, False, 'Threshold(-)' ) ;
-            scDetDisplay.HorizontalCursors[DetNegThresholdCursor] := DetNegThresholdCursorY ;
-            end ;
-         end ;
+    // Create baseline & threshold cursors
+    UpdateDetCursors( True ) ;
 
     scDetDisplay.NumPoints := 0 ;
 
@@ -1102,30 +1097,14 @@ begin
 
     { Set channel information }
     scDetDisplay.ChanOffsets[0] := 0 ;
-
-    if ResetYMagnification then begin
-       scDetDisplay.yMin[0] := scDetDisplay.MinADCValue ;
-       scDetDisplay.yMax[0] := scDetDisplay.MaxADCValue ;
-       end ;
     scDetDisplay.ChanVisible[0] := True ;
 
     scDetDisplay.SetDataBuf( @DetBuf ) ;
     scDetDisplay.NumBytesPerSample := 4 ;
 
     scDetDisplay.ClearVerticalCursors ;
-
     scDetDisplay.AddVerticalCursor(-1,clGreen, '?y' ) ;
-    scDetDisplay.VerticalCursors[0] := -1 ;
-
-{    Temp := edDeadTime.Value* edDeadTime.Scale ;
-    edDeadTime.Scale := scDetDisplay.TScale ;
-    edDeadTime.LoLimit := 1.0 ;
-    edDeadTime.Value := Temp/edDeadTime.Scale ;}
-
- {   Temp := edRollingBaselinePeriod.Value*edRollingBaselinePeriod.Scale ;
-    edRollingBaselinePeriod.Scale := scDetDisplay.TScale ;
-    edRollingBaselinePeriod.LoLimit := 1.0 ;
-    edRollingBaselinePeriod.Value := Temp/edRollingBaselinePeriod.Scale ;}
+    scDetDisplay.VerticalCursors[0] := scDetDisplay.MaxPoints div 2 ;
 
     DetDisplayInitialised := True ;
 
@@ -1135,12 +1114,50 @@ begin
     end ;
 
 
+procedure TEventAnalysisFrm.UpdateDetCursors(
+          CreateCursors : Boolean );            // Create new set cursors if TRUE
+// -------------------------------
+// Update detection window cursors
+// -------------------------------
+begin
+
+    if CreateCursors then scDetDisplay.ClearHorizontalCursors ;
+
+    if CreateCursors then DetBaseLineCursor := scDetDisplay.AddHorizontalCursor(0,clRed,False,'Baseline' ) ;
+    scDetDisplay.HorizontalCursors[DetBaseLineCursor] := DetBaseLineCursorY ;
+
+    case cbDetectionThresholdPolarity.ItemIndex of
+         PositiveGoing : Begin
+            if CreateCursors then
+               DetPosThresholdCursor := scDetDisplay.AddHorizontalCursor( 0, clRed, False, 'Threshold(+)' ) ;
+            scDetDisplay.HorizontalCursors[DetPosThresholdCursor] := DetPosThresholdCursorY ;
+            end ;
+         NegativeGoing : Begin
+            if CreateCursors then
+               DetNegThresholdCursor := scDetDisplay.AddHorizontalCursor( 0, clRed, False, 'Threshold(-)' ) ;
+            scDetDisplay.HorizontalCursors[DetNegThresholdCursor] := DetNegThresholdCursorY ;
+            end ;
+         PosNegGoing : Begin
+            if CreateCursors then begin
+               DetPosThresholdCursor := scDetDisplay.AddHorizontalCursor( 0, clRed, False, 'Threshold(+)' ) ;
+               DetNegThresholdCursor := scDetDisplay.AddHorizontalCursor( 0, clRed, False, 'Threshold(-)' ) ;
+               end;
+            scDetDisplay.HorizontalCursors[DetPosThresholdCursor] := DetPosThresholdCursorY ;
+            scDetDisplay.HorizontalCursors[DetNegThresholdCursor] := DetNegThresholdCursorY ;
+            end ;
+         end ;
+
+    scDetDisplay.invalidate ;
+
+    end;
+
+
 procedure TEventAnalysisFrm.DisplayDetChannel ;
 // ----------------------------------
 // Display selected detection channel
 // ----------------------------------
 var
-    i,j,iFrame,ADCChan,NumScansRead,IROI,iBackg : Integer ;
+    i,j,iFrame,ADCChan,IROI,iBackg : Integer ;
     FrameType, FTTop, FTBottom : Integer ;
     InBuf : PSmallIntArray ;
     SubtractBackground : Boolean ;
@@ -1170,9 +1187,7 @@ begin
 
            j := 0 ;
            for iFrame := sbDetDisplay.Position to
-               sbDetDisplay.Position + scDetDisplay.MaxPoints-1
-{                    MainFrm.IDRFile.NumFrames)}
-               do begin
+               Min(sbDetDisplay.Position + scDetDisplay.MaxPoints,MainFrm.IDRFile.NumFrames) do begin
                y := Intensity( iROI, iFrame, FrameType ) ;
                if SubtractBackground then y := y - Intensity( iBackg, iFrame, FrameType ) ;
                DetBuf[j] := Round(y) ;
@@ -1201,7 +1216,7 @@ begin
            ExclusionThreshold := Round(edDetRatioExclusionThreshold.Value) ;
            j := 0 ;
            for iFrame := sbDetDisplay.Position to
-               sbDetDisplay.Position + scDetDisplay.MaxPoints-1 do begin
+               Min(sbDetDisplay.Position + scDetDisplay.MaxPoints,MainFrm.IDRFile.NumFrames) do begin
 
                yTop := Intensity( iROI, iFrame, FTTop ) ;
                if SubtractBackground then yTop := yTop - Intensity( iBackg, iFrame, FTTop ) ;
@@ -1226,15 +1241,14 @@ begin
             // Read data for A/D channel into display buffer
            ADCChan := cbDetectionSource.ItemIndex - ADCChannelSources ;
            GetMem( InBuf, scDetDisplay.MaxPoints*MainFrm.IDRFile.ADCNumChannels*2) ;
-           NumScansRead := MainFrm.IDRFile.LoadADC( Int64(sbDetDisplay.Position),
-                                                    scDetDisplay.MaxPoints,
-                                                    InBuf^ ) ;
+           scDetDisplay.NumPoints := Min(scDetDisplay.MaxPoints,
+                                      MainFrm.IDRFile.ADCNumScansInFile-sbDetDisplay.Position);
+           MainFrm.IDRFile.LoadADC( Int64(sbDetDisplay.Position),scDetDisplay.NumPoints,InBuf^ ) ;
            j := MainFrm.IDRFile.ADCChannel[ADCChan].ChannelOffset ;
-           for i := 0 to NumScansRead-1 do begin
+           for i := 0 to scDetDisplay.NumPoints-1 do begin
                DetBuf[i] := InBuf[j] ;
                j := j + MainFrm.IDRFile.ADCNumChannels ;
                end ;
-           scDetDisplay.NumPoints := NumScansRead ;
            FreeMem(InBuf) ;
            end ;
 
@@ -1259,7 +1273,7 @@ begin
      // Create event list file
      EventListFileName := ChangeFileExt( MainFrm.IDRFile.FileName, EventListFileExt ) ;
      FileHandle := FileCreate( EventListFileName ) ;
-     if FileHandle < 0 then begin
+     if NativeInt(FileHandle) < 0 then begin
         Exit ;
         end ;
 
@@ -1299,7 +1313,7 @@ begin
         // Open file
         FileHandle := FileOpen( EventListFileName, fmOpenRead ) ;
 
-        if FileHandle >= 0 then begin
+        if NativeInt(FileHandle) >= 0 then begin
 
            // Move to start of file
            FileSeek( FileHandle, 0, 0 ) ;
@@ -1334,16 +1348,17 @@ begin
      edPlotRange.HiValue := sbEventNum.Max ;
 
      if NumEvents > 0 then begin
-        DisplayEvent( sbEventNum.Position ) ;
+        DisplayEvent( sbEventNum.Position, True ) ;
         // Update available variables on X-Y plot page
         UpdatePlotVariables ;
         end ;
-        
+
      end ;
 
 
 procedure TEventAnalysisFrm.DisplayEvent(
-          EventNum : Integer
+          EventNum : Integer ;
+          ResetYRange : Boolean
           ) ;
 // ----------------------
 // Display selected event
@@ -1390,11 +1405,9 @@ begin
     MainFrm.IDRFile.EventF0DisplayMax := edDFDisplayMax.Value ;
     MainFrm.IDRFile.EventF0SubtractF0 := rbDFOverF0.Checked ;
 
+    DisplayADCChannels(EventNum,-1,ADCBuf,scADCDisplay,ResetYRange) ;
 
-
-    DisplayADCChannels(EventNum,-1,ADCBuf,scADCDisplay) ;
-    outputdebugstring(Pchar(format('Display Event %d',[EventNum]))) ;
-    DisplayFLIntensity(EventNum,-1,FLBuf,scFLDisplay) ;
+    DisplayFLIntensity(EventNum,-1,FLBuf,scFLDisplay,ResetYRange) ;
 
     ckEventRejected.Checked := not EventList[EventNum-1].Accepted ;
 
@@ -1413,7 +1426,8 @@ procedure TEventAnalysisFrm.DisplayADCChannels(
               StartEvent : Integer ;            // Starting event
               EndEvent : Integer ;              // End event
               var DisplayBuf : Array of SmallInt ;  // Display buffer
-              scDisplay : TScopeDisplay         // Display plotting area
+              scDisplay : TScopeDisplay ;        // Display plotting area
+              ResetYRange : boolean               // Update Y range
               ) ;
 // --------------------------------------
 // Display A/D channels of detected event
@@ -1424,7 +1438,7 @@ var
    NumAvg : Integer ;
    NumSamples : Integer ;
    EventNum : Integer ;
-   i : Integer ;
+   i,ch : Integer ;
    ySum : ^TSingleArray ;
    AverageMode : Boolean ;
 begin
@@ -1444,10 +1458,6 @@ begin
      // No. of time points in A/D display window
      NumADCDisplayScans := Min( Round(edTADCDisplay.Value/MainFrm.IDRFile.ADCSCanInterval),
                                 MaxDisplayScans) ;
-     //NumADCDisplayScans := Round(edTADCDisplay.Value/MainFrm.IDRFile.ADCSCanInterval);
-     //NumADCDisplayScans := Min( Round(edTFLDisplay.Value/MainFrm.IDRFile.ADCSCanInterval),
-     //                           MaxDisplayScans) ;
-
      edTADCDisplay.Value := NumADCDisplayScans*MainFrm.IDRFile.ADCSCanInterval ;
      NumSamples := NumADCDisplayScans*MainFrm.IDRFile.ADCNumChannels ;
 
@@ -1455,6 +1465,12 @@ begin
      scDisplay.xMin := 0 ;
      scDisplay.xMax := scDisplay.MaxPoints-1 ;
      scDisplay.RecordNumber := StartEvent ;
+
+     if ResetYRange then begin
+        for ch := 0 to scDisplay.NumChannels-1 do begin
+            UpdateYRange( ch, MainFrm.IDRFile.ADCChannel[ch].yMin,MainFrm.IDRFile.ADCChannel[ch].yMax,scDisplay);
+            end;
+        end ;
 
      // Allocate display data buffer
      scDisplay.SetDataBuf( @DisplayBuf ) ;
@@ -1472,9 +1488,8 @@ begin
          iDisplayStart := iEventStart - (NumADCDisplayScans div 5) ;
 
          // Read A/D data into buffer
-         scDisplay.NumPoints := MainFrm.IDRFile.LoadADC( iDisplayStart,
-                                                         NumADCDisplayScans,
-                                                         DisplayBuf ) ;
+         scDisplay.NumPoints := Min(MainFrm.IDRFile.ADCNumScansInFile - iDisplayStart,NumADCDisplayScans) ;
+         MainFrm.IDRFile.LoadADC( iDisplayStart,scDisplay.NumPoints,DisplayBuf);
 
          // Add to average buffer
          for i := 0 to NumSamples-1 do ySum[i] := ySum[i] + DisplayBuf[i] ;
@@ -1518,7 +1533,8 @@ procedure TEventAnalysisFrm.DisplayFLIntensity(
           StartEvent : Integer ;
           EndEvent : Integer ;
           var DisplayBuf : Array of SmallInt ;
-          scDisplay : TScopeDisplay
+          scDisplay : TScopeDisplay ;
+          ResetYRange : boolean
           ) ;
 // ----------------------------------
 // Display section of ROI time course
@@ -1587,25 +1603,15 @@ begin
        // Line scan files
        NumGroupsInFile := MainFrm.IDRFile.FrameHeight ;
        EventAtTime := EventList[StartEvent-1].Time ;
-       EventAtGroup := Max(Round((EventAtTime-MainFrm.IDRFile.ImageStartDelay)
-                                  /scDisplay.TScale),1) ;
+       EventAtGroup := Max(Round((EventAtTime-MainFrm.IDRFile.ImageStartDelay)/scDisplay.TScale),1) ;
        end
     else begin
        // Image files
        NumGroupsInFile := MainFrm.IDRFile.NumFrames div MainFrm.IDRFile.NumFrameTypes ;
        EventAtTime := EventList[StartEvent-1].Time ;
-       EventAtGroup := Max(Round((EventAtTime-MainFrm.IDRFile.ImageStartDelay)
-                                  /scDisplay.TScale),1) ;
+       EventAtGroup := Max(Round((EventAtTime-MainFrm.IDRFile.ImageStartDelay)/scDisplay.TScale),1) ;
        end ;
-    NumDisplayGroups := scDisplay.MaxPoints ;
-
-    {StartGroup := Max( EventAtGroup - (NumDisplayGroups div 5),1) ;
-    if not AverageMode then
-      StartGroup := Max(StartGroup, 0);
-    EndGroup := StartGroup + NumDisplayGroups - 1 ;}
-
-    // ROI# to be displayed
-    iROI := Integer(cbSource.Items.Objects[cbSource.ItemIndex]) ;
+    NumDisplayGroups := Max(Min(scDisplay.MaxPoints,NumGroupsInFile),1) ;
 
     // Background ROI# to be subtracted (if any)
     iBackg := Integer(cbBackground.Items.Objects[cbBackground.ItemIndex]) ;
@@ -1613,19 +1619,20 @@ begin
                                                             else SubtractBackground := False ;
 
     // Fluorescence display mode
-    if DisplayModePage.ActivePage = FTAB then FDMode := FDFluorescence
-    else if DisplayModePage.ActivePage = DFTAB then FDMode := FDRelativeChange
+    if DisplayModePage.ActivePage = DFTAB then FDMode := FDRelativeChange
     else if DisplayModePage.ActivePage = RATIOTAB then begin
         if ckUseEquation.Checked then FDMode := FDIonConc
         else if ckDivideByRMax.Checked then FDMode := FDRatioRMax
         else FDMode := FDRatio ;
-        end ;
+        end
+    else FDMode := FDFluorescence ;
 
     // Calculate reference intensity for dF/F0 plot
     case FDMode of
        FDFluorescence : begin
           scDisplay.ChanScale[0] := 1.0 ;
           scDisplay.ChanName[0] := cbWavelength.Text ;
+          if ResetYRange then UpdateYRange( 0, 0, Mainfrm.GreyHi[cbWavelength.ItemIndex], scDisplay ) ;
           end ;
        FDRelativeChange : begin
           if rbDFOverF0.Checked then begin
@@ -1640,16 +1647,19 @@ begin
              end ;
           scDisplay.ChanScale[0] := edDFDisplayMax.Value / scDisplay.MaxADCValue ;
           edRatioDisplayMax.Value := edRatioDisplayMax.Value ;
+          if ResetYRange then UpdateYRange( 0, 0, scDisplay.MaxADCValue, scDisplay ) ;
           end ;
        FDRatio : begin
           scDisplay.ChanName[0] := cbNumWave.Text + '/' + cbDenomWave.Text ;
           scDisplay.ChanScale[0] := edRatioDisplayMax.Value / scDisplay.MaxADCValue ;
           edDFDisplayMax.Value := edRatioDisplayMax.Value ;
+          if ResetYRange then UpdateYRange( 0, 0, scDisplay.MaxADCValue, scDisplay ) ;
           end ;
        FDRatioRMax : begin
           scDisplay.ChanName[0] := cbNumWave.Text + '/' + cbDenomWave.Text + '/RMax' ;
           scDisplay.ChanScale[0] := edRatioDisplayMax.Value / scDisplay.MaxADCValue ;
           edDFDisplayMax.Value := edRatioDisplayMax.Value ;
+          if ResetYRange then UpdateYRange( 0, 0, scDisplay.MaxADCValue, scDisplay ) ;
           end ;
        FDIonConc : begin
           RMax := MainFrm.IDRFile.Equation[cbEquation.ItemIndex].RMax ;
@@ -1658,6 +1668,7 @@ begin
           scDisplay.ChanName[0] := MainFrm.IDRFile.Equation[cbEquation.ItemIndex].Ion ;
           scDisplay.ChanScale[0] := edRatioDisplayMax.Value / scDisplay.MaxADCValue ;
           edDfDisplayMax.Value := edRatioDisplayMax.Value ;
+          if ResetYRange then UpdateYRange( 0, 0, scDisplay.MaxADCValue, scDisplay ) ;
           end ;
        else begin
           scDisplay.ChanScale[0] := edRatioDisplayMax.Value / scDisplay.MaxADCValue ;
@@ -1797,7 +1808,8 @@ begin
 
     if (scDisplay.VerticalCursors[FLReadoutCursor] < 0) or
         (scDisplay.VerticalCursors[FLReadoutCursor] > scDisplay.MaxPoints) then
-        scDisplay.VerticalCursors[FLReadoutCursor] := scDisplay.MaxPoints div 5 ;
+        scDisplay.VerticalCursors[FLReadoutCursor] := EventAtGroup - StartGroup ;
+    //    scDisplay.MaxPoints div 5 ;
 
     if (scDisplay.VerticalCursors[FLC0Cursor] < 0) or
         (scDisplay.VerticalCursors[FLC0Cursor] > scDisplay.MaxPoints) then
@@ -1817,6 +1829,19 @@ begin
     Dispose(yFL) ;
 
     end ;
+
+procedure TEventAnalysisFrm.UpdateYRange(
+         Chan : Integer ;                 // Channel to update
+         Ymin : single ;                  // Lower limit of Y range
+         YMax : single ;                  // Upper limit of Y range
+         scDisplay : TScopeDisplay ) ;    // Display control to update
+// -----------------------------
+// Update display vertical range
+// -----------------------------
+begin
+    scDisplay.YMin[Chan] := Ymin ;
+    scDisplay.YMax[Chan] := Ymax ;
+    end;
 
 
 function TEventAnalysisFrm.Intensity(
@@ -1875,13 +1900,13 @@ begin
 
            if MainFrm.IDRFile.LineScan then begin
               FrameNum := Group ;
-              iROI := Integer(cbSource.Items.Objects[cbSource.ItemIndex]) ;
+//              iROI := Integer(cbSource.Items.Objects[cbSource.ItemIndex]) ;
               SubtractBackground := False ;
               end
            else begin
               FrameNum := (Group-1)*MainFrm.IDRFile.NumFrameTypes + 1 ;
               FrameNum := Min(Max(FrameNum,1),MainFrm.IDRFile.NumFrames-1) ;
-              iROI := Integer(cbSource.Items.Objects[cbSource.ItemIndex]) ;
+//              iROI := Integer(cbSource.Items.Objects[cbSource.ItemIndex]) ;
               end ;
 
            y := Intensity( iROI, FrameNum, cbDFWavelength.ItemIndex  ) ;
@@ -1909,19 +1934,19 @@ procedure TEventAnalysisFrm.bDetectEventsClick(Sender: TObject);
 // Locate position of events within selected signal channel
 // --------------------------------------------------------
 var
-    iPoint,i : Integer ;
+    i : Integer ;
     iPolarity : Integer ;
     ExceedCount : Integer ;
     yDiff : Integer ;
     yThreshold : Integer ;
     Done : Boolean ;
-    NewDisplayNeeded : Boolean ;
     yBaseline : Integer ;
     iDetectedAt : Integer ;
     NumExceedCountsRequired : Integer ;
     RBAddFraction : Single ;
     RollingBaseline : Single ;
-    InitialiseRollingBaseline : Boolean ;
+    StatusUpdateCounter : Integer ;
+    EventDetected : Boolean ;
 begin
 
      // Allow user to clear event list
@@ -1931,6 +1956,7 @@ begin
         end ;
 
      bDetectEvents.Enabled := False ;
+     bStop.Enabled := True ;
 
      if DetectEventsRunning then Exit ;
 
@@ -1943,39 +1969,31 @@ begin
      sbDetDisplay.Position := sbDetDisplay.Min ;
 
      iPolarity := cbDetectionThresholdPolarity.ItemIndex ;
-     yThreshold := Round(edThresholdLevel.Value) ;
+     yThreshold := Abs(Round(edThresholdLevel.Value)) ;
      NumExceedCountsRequired := Max(Round(edThresholdDuration.Value),1) ;
      yBaseline := Round(edFixedBaselineLevel.Value) + scDetDisplay.ChanZero[0] ;
 
-     iPoint := 0 ;
      i := 0 ;
      ExceedCount := 0 ;
      NumEvents := 0 ;
      sbDetDisplay.Position := sbDetDisplay.Min ;
-     NewDisplayNeeded := True ;
-     InitialiseRollingBaseline := True ;
+     RollingBaseline := DetBaseLineCursorY ;
+     iDetectedAt := 0 ;
      Done := False ;
+     DisplayDetChannel ;
+     StatusUpdateCounter := 0 ;
+     EventDetected := False ;
      while not Done do begin
 
          // Update buffer and display
-         if NewDisplayNeeded then begin
-            i := 0 ;
+         if i >= scDetDisplay.MaxPoints then begin
+            sbDetDisplay.Position := sbDetDisplay.Position + scDetDisplay.MaxPoints ;
+            i := i - scDetDisplay.MaxPoints ;
             DisplayDetChannel ;
-           MainFrm.StatusBar.SimpleText := format(
-                                           'Detecting Events: %d events detected %.4g/%.4gs',
-                                           [NumEvents,
-                                            sbDetDisplay.Position*scDetDisplay.TScale,
-                                            sbDetDisplay.Max*scDetDisplay.TScale]) ;
-            NewDisplayNeeded := False ;
-            Application.ProcessMessages ;
             end ;
 
          // Update rolling average baseline
          if rbRollingBaseline.Checked then begin
-            if InitialiseRollingBaseline then begin
-               RollingBaseline := DetBuf[i] ;
-               InitialiseRollingBaseline := False ;
-               end ;
             RBAddFraction := scDetDisplay.TScale/edRollingBaselinePeriod.Value ;
             RollingBaseline := (1.0-RBAddFraction)*RollingBaseline +  RBAddFraction*DetBuf[i] ;
             yBaseline := Round(RollingBaseline) ;
@@ -1989,7 +2007,7 @@ begin
                                          else ExceedCount := 0 ;
                   end ;
               NegativeGoing : begin
-                  if yDiff <= yThreshold then Inc(ExceedCount)
+                  if yDiff <= (-yThreshold) then Inc(ExceedCount)
                                          else ExceedCount := 0 ;
                   end ;
               else begin
@@ -2007,29 +2025,35 @@ begin
            if NumEvents < High(EventList) then Inc(NumEvents) ;
            sbEventNum.Max := Max(NumEvents,1) ;
            sbEventNum.Position :=  sbEventNum.Max ;
+           i := iDetectedAt + Round(edDeadTime.Value/scDetDisplay.TScale) ;
            // Set pointer to start detecting again after dead time
-           sbDetDisplay.Position := sbDetDisplay.Position +
-                                    iDetectedAt +
-                                    Round(edDeadTime.Value/scDetDisplay.TScale) ;
-           NewDisplayNeeded := True ;
            ExceedCount := 0 ;
-           MainFrm.StatusBar.SimpleText := format(
-                                           'Detecting Events: %d events detected %.4g/%.4gs',
-                                           [NumEvents,
-                                            iPoint*scDetDisplay.TScale,
-                                            sbDetDisplay.Max*scDetDisplay.TScale]) ;
            Application.ProcessMessages ;
-           end
-        else begin
-           // Next point
-           Inc(i) ;
-           if i >= scDetDisplay.NumPoints then begin
-              NewDisplayNeeded := True ;
-              sbDetDisplay.Position := sbDetDisplay.Position + scDetDisplay.MaxPoints ;
-              end ;
+           EventDetected := True ;
            end ;
 
-        if sbDetDisplay.Position >= sbDetDisplay.Max then Done := True ;
+        // Next point
+        Inc(i) ;
+
+        Inc(StatusUpdateCounter) ;
+        if (StatusUpdateCounter >= 1000) or EventDetected then begin
+           edDetectStatus.Text := format('%.0f/%.0fs Events %d',
+                                  [(i + sbDetDisplay.Position)*scDetDisplay.TScale,
+                                   sbDetDisplay.Max*scDetDisplay.TScale,
+                                   NumEvents]) ;
+           // Update baseline/threshold cursors
+           DetBaseLineCursorY := yBaseline ;
+           DetPosThresholdCursorY :=  yBaseline + yThreshold ;
+           DetNegThresholdCursorY :=  yBaseline - yThreshold ;
+           UpdateDetCursors(False) ;
+           StatusUpdateCounter := 0 ;
+           EventDetected := False ;
+        end;
+
+
+        if (sbDetDisplay.Position + i) >= sbDetDisplay.Max then Done := True ;
+        if not bStop.Enabled then Done := True ;
+
         end ;
 
      sbEventNum.Max := Max(NumEvents,1) ;
@@ -2048,6 +2072,7 @@ begin
      LoadEventList ;
 
      bDetectEvents.Enabled := True ;
+     bStop.Enabled := False ;
      DetectEventsRunning := False ;
 
      scADCDisplay.StorageMode := ckSuperimposeEvents.Checked ;
@@ -2067,11 +2092,8 @@ procedure TEventAnalysisFrm.cbDetectionSourceChange(Sender: TObject);
 // Detection source changed
 // ------------------------
 begin
-
-
      //Update detection display settings
      UpdateDetDisplay( True ) ;
-
      end ;
 
 
@@ -2080,7 +2102,8 @@ procedure TEventAnalysisFrm.sbEventNumChange(Sender: TObject);
 // Event selection slider changed
 // ------------------------------
 begin
-     DisplayEvent( sbEventNum.Position ) ;
+     ResetCursors ;
+     DisplayEvent( sbEventNum.Position, False ) ;
      end;
 
 
@@ -2092,11 +2115,11 @@ procedure TEventAnalysisFrm.edEventNumKeyPress(Sender: TObject;
 begin
      if Key = #13 then begin
         sbEventNum.Position := Round(EdEventNum.LoValue) ;
-        DisplayEvent( sbEventNum.Position ) ;
+        DisplayEvent( sbEventNum.Position, False ) ;
         end ;
      end;
 
-     
+
 procedure TEventAnalysisFrm.edTADCDisplayKeyPress(Sender: TObject;
   var Key: Char);
 // -------------------------------
@@ -2106,7 +2129,7 @@ begin
      if Key = #13 then begin
         ResetCursors ;
         ckSuperimposeEvents.Checked := False ;
-        DisplayEvent( sbEventNum.Position ) ;
+        DisplayEvent( sbEventNum.Position, False ) ;
 
         end ;
      end;
@@ -2121,7 +2144,7 @@ begin
      if Key = #13 then begin
         ResetCursors ;
         ckSuperimposeEvents.Checked := False ;
-        DisplayEvent( sbEventNum.Position ) ;
+        DisplayEvent( sbEventNum.Position, False ) ;
         end ;
      end;
 
@@ -2163,7 +2186,7 @@ procedure TEventAnalysisFrm.cbFluorescenceDisplayChange(Sender: TObject);
 // ---------------------------------
 begin
      SetupFluorescenceDisplay ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, True ) ;
     end;
 
 
@@ -2361,19 +2384,7 @@ procedure TEventAnalysisFrm.FormClose(Sender: TObject;
 begin
      Action := caFree ;
 
-     // Save stored settings
-     MainFrm.IDRFile.EventDisplayDuration := edDeadTime.Value ;
-     MainFrm.IDRFile.EventDetectionThreshold := edThresholdLevel.Value ;
-     MainFrm.IDRFile.EventDetectionThresholdPolarity :=
-        cbDetectionThresholdPolarity.ItemIndex ;
-//     MainFrm.EventAnalysis.DifferentialThreshold := ckDifferentialThreshold.Checked ;
-
-     MainFrm.IDRFile.EventBaselineLevel := Round(edFixedBaselineLevel.Value) ;
-     MainFrm.IDRFile.EventDetectionThreshold := edThresholdLevel.Value ;
-
-     MainFrm.IDRFile.EventDetectionSource := cbDetectionSource.ItemIndex ;
-     MainFrm.IDRFile.EventRatioDisplayMax := edRatioDisplayMax.Value ;
-
+    // Save stored settings
     MainFrm.IDRFile.EventDisplayDuration := edTDetDisplay.Value ;
 
     MainFrm.IDRFile.EventDeadTime := edDeadTime.Value ;
@@ -2385,6 +2396,7 @@ begin
     MainFrm.IDRFile.EventBackgROI := cbBackground.ItemIndex ;
     MainFrm.IDRFile.EventFixedBaseline := rbFixedBaseline.Checked ;
     MainFrm.IDRFile.EventRollingBaselinePeriod := edRollingBaselinePeriod.Value ;
+    MainFrm.IDRFile.EventBaselineLevel := Round(edFixedBaselineLevel.Value) ;
     MainFrm.IDRFile.EventRatioDisplayMax := edDetRatioDisplayMax.Value ;
 
     MainFrm.IDRFile.EventRatioExclusionThreshold := Round(edRatioExclusionThreshold.Value) ;
@@ -2400,7 +2412,6 @@ begin
     MainFrm.IDRFile.EventF0UseConstant := rbF0Constant.Checked ;
     MainFrm.IDRFile.EventF0DisplayMax := edDFDisplayMax.Value ;
     MainFrm.IDRFile.EventF0SubtractF0 := rbDFOverF0.Checked ;
-
 
      end;
 
@@ -2486,7 +2497,7 @@ begin
      scAvgADCDisplay.VerticalCursors[AvgADCReadoutCursor] := scAvgADCDisplay.MaxPoints div 5 ;
 
      // Get A/D channel data for this event (held in ADCBuf)
-     DisplayADCChannels(StartAtEvent,EndAtEvent,AvgADCBuf,scAvgADCDisplay) ;
+     DisplayADCChannels(StartAtEvent,EndAtEvent,AvgADCBuf,scAvgADCDisplay,false) ;
 
      scAvgADCDisplay.VerticalCursors[0] := scADCDisplay.VerticalCursors[0] ;
      scAvgADCDisplay.Invalidate ;
@@ -2551,8 +2562,7 @@ begin
      AvgFLReadoutCursor := scAvgFLDisplay.AddVerticalCursor(-1,clGreen,'?y') ;
      scAvgFLDisplay.VerticalCursors[AvgFLReadoutCursor] := scFLDisplay.VerticalCursors[FLReadoutCursor] ;
 
-         outputdebugstring(Pchar(format('DisplayFLIntensityAverages %d %d',[StartAtEvent,EndAtEvent]))) ;
-     DisplayFLIntensity(StartAtEvent,EndAtEvent,AvgFLBuf,scAvgFLDisplay) ;
+     DisplayFLIntensity(StartAtEvent,EndAtEvent,AvgFLBuf,scAvgFLDisplay,true) ;
 
      scAvgFLDisplay.VerticalCursors[0] := scFLDisplay.VerticalCursors[0] ;
      scAvgFLDisplay.Invalidate ;
@@ -2590,7 +2600,7 @@ procedure TEventAnalysisFrm.cbSourceClick(Sender: TObject);
 // Source ROI changed
 // ------------------
 begin
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 
@@ -2599,7 +2609,7 @@ procedure TEventAnalysisFrm.cbBackgroundClick(Sender: TObject);
 // Background ROI changed
 // -----------------------
 begin
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 procedure TEventAnalysisFrm.scAvgFlDisplayMouseDown(Sender: TObject;
@@ -2723,6 +2733,9 @@ begin
 
      if NumEvents <= 0 then Exit ;
 
+     bPlotGraph.Enabled := False ;
+     bPlotGraphStop.Enabled := True ;
+
      // Select range of events to be plotted
      if rbPlotAllEvents.Checked then begin
         StartAtEvent := 1 ;
@@ -2747,11 +2760,11 @@ begin
      plPlot.YAxisLabel := PlotAxisLabel( cbYVar, cbYSource ) ;
 
      for EventNum := StartAtEvent to EndAtEvent do
-         if EventList[EventNum-1].Accepted then begin
+         if EventList[EventNum-1].Accepted and bPlotGraphStop.Enabled then begin
 
          // Read in sample data for event
          sbEventNum.Position :=  EventNum ;
-         DisplayEvent( sbEventNum.Position ) ;
+         DisplayEvent( sbEventNum.Position, false ) ;
 
          // Calculate X axis variables
          XOK := AnalyseEvent( XAxis,
@@ -2774,9 +2787,15 @@ begin
                              Variables[cbXVar.ItemIndex,XAxis],
                              Variables[cbYVar.ItemIndex,YAxis] ) ;
 
+         edPlotStatus.Text := format('Events %d/%d',[EventNum,EndAtEvent]);
+         Application.ProcessMessages ;
+
          end ;
 
      plPlot.VerticalCursors[0] := (plPlot.XAxisMin + plPlot.XAxisMax)*0.5 ;
+
+     bPlotGraph.Enabled := True ;
+     bPlotGraphStop.Enabled := False ;
 
      end ;
 
@@ -2937,8 +2956,9 @@ begin
    case PeakPolarity of
         pPositivePeak : YPeak := -1E30 ;
         pNegativePeak : YPeak := 1E30 ;
-        pAbsolutePeak : YPeak := 0.0 ;
+        else YPeak := 0.0 ;
         end ;
+   PeakAt := 0 ;
 
    for i := Min(StartPoint,EndPoint) to Max(StartPoint,EndPoint) do begin
 
@@ -3063,6 +3083,11 @@ begin
      end;
 
 
+procedure TEventAnalysisFrm.bPlotGraphStopClick(Sender: TObject);
+begin
+     bPlotGraphStop.Enabled := False ;
+     end;
+
 procedure TEventAnalysisFrm.cbXVarChange(Sender: TObject);
 begin
      PlotXVar := cbXVar.ItemIndex ;
@@ -3095,12 +3120,15 @@ procedure TEventAnalysisFrm.PageChange(Sender: TObject);
 // --------------------
 begin
 
-     if Page.ActivePage = AverageTab then begin
+     if Page.ActivePage = DetectTab then begin
+        DisplayDetChannel ;
+        end
+     else if Page.ActivePage = AverageTab then begin
         scAvgFLDisplay.DisplaySelected := True ;
         end
      else if Page.ActivePage = ViewTab then begin
         scFLDisplay.DisplaySelected := True ;
-        DisplayEvent( sbEventNum.Position ) ;
+        DisplayEvent( sbEventNum.Position, true ) ;
         end
      else if Page.ActivePage = PlotTab then begin
         UpdatePlotVariables ;
@@ -3119,12 +3147,17 @@ begin
      end;
 
 
+procedure TEventAnalysisFrm.bStopClick(Sender: TObject);
+begin
+     bStop.Enabled := False ;
+     end;
+
 procedure TEventAnalysisFrm.cbWavelengthChange(Sender: TObject);
 // --------------------------
 // Display wavelength changed
 // --------------------------
 begin
-    DisplayEvent( sbEventNum.Position ) ;
+    DisplayEvent( sbEventNum.Position, true ) ;
     end ;
 
 
@@ -3163,7 +3196,7 @@ begin
         // Set cursor to -1 to force reset to defaults
         for i := 0 to scFLDisplay.NumVerticalCursors-1 do
             scFLDisplay.VerticalCursors[i] := -1 ;
-        DisplayEvent( sbEventNum.Position ) ;
+        DisplayEvent( sbEventNum.Position, false ) ;
         end ;
      end;
 
@@ -3176,7 +3209,7 @@ begin
      edTFLDisplay.Value := edTFLDisplay.Value*0.5 ;
      ResetCursors ;
      ckSuperimposeEvents.Checked := False ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 procedure TEventAnalysisFrm.bTFLDisplayDoubleClick(Sender: TObject);
@@ -3187,7 +3220,7 @@ begin
      edTFLDisplay.Value := edTFLDisplay.Value*2.0 ;
      ResetCursors ;
      ckSuperimposeEvents.Checked := False ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 
@@ -3213,7 +3246,7 @@ begin
      edTADCDisplay.Value := edTADCDisplay.Value*2.0 ;
      ResetCursors ;
      ckSuperimposeEvents.Checked := False ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
 
      end;
 
@@ -3225,7 +3258,7 @@ begin
      edTADCDisplay.Value := edTADCDisplay.Value*0.5 ;
      ResetCursors ;
      ckSuperimposeEvents.Checked := False ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
 
      end;
 
@@ -3269,7 +3302,7 @@ procedure TEventAnalysisFrm.FormActivate(Sender: TObject);
 // Form is now active form
 // -----------------------
 begin
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 procedure TEventAnalysisFrm.s(Sender: TObject;
@@ -3284,7 +3317,7 @@ begin
         // Set cursor to -1 to force reset to defaults
         for i := 0 to scFLDisplay.NumVerticalCursors-1 do
             scFLDisplay.VerticalCursors[i] := -1 ;
-        DisplayEvent( sbEventNum.Position ) ;
+        DisplayEvent( sbEventNum.Position, false ) ;
         end ;
      end;
 
@@ -3300,7 +3333,7 @@ begin
         // Set cursor to -1 to force reset to defaults
         for i := 0 to scFLDisplay.NumVerticalCursors-1 do
             scFLDisplay.VerticalCursors[i] := -1 ;
-        DisplayEvent( sbEventNum.Position ) ;
+        DisplayEvent( sbEventNum.Position, true ) ;
         end ;
      end;
 
@@ -3315,7 +3348,7 @@ begin
      // Set cursor to -1 to force reset to defaults
      for i := 0 to scFLDisplay.NumVerticalCursors-1 do
          scFLDisplay.VerticalCursors[i] := -1 ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 
@@ -3329,13 +3362,13 @@ begin
      // Set cursor to -1 to force reset to defaults
      for i := 0 to scFLDisplay.NumVerticalCursors-1 do
          scFLDisplay.VerticalCursors[i] := -1 ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 
 procedure TEventAnalysisFrm.DisplayModePageChange(Sender: TObject);
 begin
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, true ) ;
      end;
 
 procedure TEventAnalysisFrm.DisplayModePageChanging(Sender: TObject;
@@ -3350,42 +3383,42 @@ begin
 procedure TEventAnalysisFrm.cbNumWaveChange(Sender: TObject);
 begin
      cbDetFluorRatioTop.ItemIndex := cbNumWave.ItemIndex ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 procedure TEventAnalysisFrm.cbDenomWaveChange(Sender: TObject);
 begin
      cbDetFluorRatioBottom.ItemIndex := cbDenomWave.ItemIndex ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 procedure TEventAnalysisFrm.ckUseEquationClick(Sender: TObject);
 begin
      if ckUseEquation.Checked then ckDivideByRmax.Checked := False ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 procedure TEventAnalysisFrm.ckDivideByRMaxClick(Sender: TObject);
 begin
      if ckDivideByRmax.Checked then ckUseEquation.Checked := False ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 
 procedure TEventAnalysisFrm.edRatioRMaxKeyPress(Sender: TObject;
   var Key: Char);
 begin
-     if Key = #13 then DisplayEvent( sbEventNum.Position ) ;
+     if Key = #13 then DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 procedure TEventAnalysisFrm.rbDFOverF0Click(Sender: TObject);
 begin
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 procedure TEventAnalysisFrm.rbFOverF0Click(Sender: TObject);
 begin
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 procedure TEventAnalysisFrm.SetDisplayGrid( Value : Boolean ) ;
@@ -3516,18 +3549,16 @@ procedure TEventAnalysisFrm.scDetDisplayCursorChange(Sender: TObject);
 // -----------------------------------
 begin
 
-      if rbFixedBaseline.Checked then
-
       // If baseline cursor changed ... move thresholds
       if DetBaselineCursorY <> scdetDisplay.HorizontalCursors[DetBaselineCursor] then begin
          DetBaselineCursorY := scdetDisplay.HorizontalCursors[DetBaselineCursor] ;
          case cbDetectionThresholdPolarity.ItemIndex of
              PositiveGoing : begin
-                DetPosThresholdCursorY := DetBaselineCursorY + Round(edThresholdLevel.Value) ;
+                DetPosThresholdCursorY := DetBaselineCursorY + Abs(Round(edThresholdLevel.Value)) ;
                 scdetDisplay.HorizontalCursors[DetPosThresholdCursor] := DetPosThresholdCursorY ;
                 end ;
              NegativeGoing : begin
-                DetNegThresholdCursorY := DetBaselineCursorY + Round(edThresholdLevel.Value) ;
+                DetNegThresholdCursorY := DetBaselineCursorY - Abs(Round(edThresholdLevel.Value)) ;
                 scdetDisplay.HorizontalCursors[DetNegThresholdCursor] := detNegThresholdCursorY ;
                 end ;
              PosNegGoing : begin
@@ -3546,10 +3577,11 @@ begin
       // If positive threshold cursor changed ...
       case cbDetectionThresholdPolarity.ItemIndex of
            PositiveGoing,PosNegGoing : begin
-              if DetPosThresholdCursorY <>
-                 scdetDisplay.HorizontalCursors[DetPosThresholdCursor] then begin
+              if DetPosThresholdCursorY <> scdetDisplay.HorizontalCursors[DetPosThresholdCursor] then begin
                  DetPosThresholdCursorY := scdetDisplay.HorizontalCursors[DetPosThresholdCursor] ;
-                 edThresholdLevel.Value := DetPosThresholdCursorY - DetBaselineCursorY ;
+                 edThresholdLevel.Value := Abs(Max(DetPosThresholdCursorY - DetBaselineCursorY,0)) ;
+                 DetPosThresholdCursorY := DetBaselineCursorY + Abs(Round(edThresholdLevel.Value)) ;
+                 scdetDisplay.HorizontalCursors[DetPosThresholdCursor] := DetPosThresholdCursorY ;
                  if cbDetectionThresholdPolarity.ItemIndex = PosNegGoing then begin
                     DetNegThresholdCursorY := DetBaselineCursorY - Round(edThresholdLevel.Value) ;
                     scdetDisplay.HorizontalCursors[DetNegThresholdCursor] := DetNegThresholdCursorY ;
@@ -3561,10 +3593,11 @@ begin
       // If Negative threshold cursor changed ...
       case cbDetectionThresholdPolarity.ItemIndex of
            NegativeGoing,PosNegGoing : begin
-              if DetNegThresholdCursorY <>
-                 scdetDisplay.HorizontalCursors[DetNegThresholdCursor] then begin
+              if DetNegThresholdCursorY <> scdetDisplay.HorizontalCursors[DetNegThresholdCursor] then begin
                  DetNegThresholdCursorY := scdetDisplay.HorizontalCursors[DetNegThresholdCursor] ;
-                 edThresholdLevel.Value := DetNegThresholdCursorY - DetBaselineCursorY ;
+                 edThresholdLevel.Value := Abs(Min(DetNegThresholdCursorY - DetBaselineCursorY,0)) ;
+                 DetNegThresholdCursorY := DetBaselineCursorY - Abs(Round(edThresholdLevel.Value)) ;
+                 scdetDisplay.HorizontalCursors[DetNegThresholdCursor] := DetNegThresholdCursorY ;
                  if cbDetectionThresholdPolarity.ItemIndex = PosNegGoing then begin
                     DetPosThresholdCursorY := DetBaselineCursorY  + Round(edThresholdLevel.Value);
                     scdetDisplay.HorizontalCursors[DetPosThresholdCursor] := DetPosThresholdCursorY ;
@@ -3574,6 +3607,7 @@ begin
            end ;
 
       end;
+
 
 procedure TEventAnalysisFrm.cbDetROIChange(Sender: TObject);
 // ---------------------
@@ -3623,7 +3657,7 @@ begin
           2 : DisplayModePage.ActivePage := dFTab ;
           end ;
 
-       DisplayEvent( sbEventNum.Position ) ;
+       DisplayEvent( sbEventNum.Position, true ) ;
 
        end;
 
@@ -3662,7 +3696,7 @@ procedure TEventAnalysisFrm.ckEnableSeparateADCDisplayDurationClick(
 begin
 
     SetEventDisplayLimit ;
-    DisplayEvent( sbEventNum.Position ) ;
+    DisplayEvent( sbEventNum.Position, false ) ;
     
     end;
 
@@ -3717,14 +3751,18 @@ begin
      if Key = #13 then begin
         case cbDetectionThresholdPolarity.ItemIndex of
              PositiveGoing : begin
-                scdetDisplay.HorizontalCursors[DetPosThresholdCursor] := DetBaselineCursorY + Round(edThresholdLevel.Value) ;
+                DetPosThresholdCursorY := DetBaselineCursorY + Abs(Round(edThresholdLevel.Value)) ;
+                scdetDisplay.HorizontalCursors[DetPosThresholdCursor] := DetPosThresholdCursorY ;
                 end ;
              NegativeGoing : Begin
-                scdetDisplay.HorizontalCursors[DetNegThresholdCursor] := DetBaselineCursorY + Round(edThresholdLevel.Value) ;
+                DetNegThresholdCursorY := DetBaselineCursorY - Abs(Round(edThresholdLevel.Value)) ;
+                scdetDisplay.HorizontalCursors[DetNegThresholdCursor] := DetNegThresholdCursorY ;
                 end ;
              PosNegGoing : Begin
-                scdetDisplay.HorizontalCursors[DetPosThresholdCursor] := DetBaselineCursorY + Round(edThresholdLevel.Value) ;
-                scdetDisplay.HorizontalCursors[DetNegThresholdCursor] := DetBaselineCursorY - Round(edThresholdLevel.Value) ;
+                DetPosThresholdCursorY := DetBaselineCursorY + Abs(Round(edThresholdLevel.Value)) ;
+                DetNegThresholdCursorY := DetBaselineCursorY - Abs(Round(edThresholdLevel.Value)) ;
+                scdetDisplay.HorizontalCursors[DetPosThresholdCursor] := DetPosThresholdCursorY ;
+                scdetDisplay.HorizontalCursors[DetNegThresholdCursor] := DetNegThresholdCursorY ;
                 end ;
              end ;
         end ;
@@ -3740,7 +3778,7 @@ begin
         edDetRatioDisplayMax.Value := edRatioDisplayMax.Value ;
         ResetCursors ;
         ckSuperimposeEvents.Checked := False ;
-        DisplayEvent( sbEventNum.Position ) ;
+        DisplayEvent( sbEventNum.Position, false ) ;
         end ;
      end;
 
@@ -3749,7 +3787,7 @@ procedure TEventAnalysisFrm.edRatioExclusionThresholdKeyPress(
 begin
      if Key = #13 then begin
         edDetRatioExclusionThreshold.Value := edRatioExclusionThreshold.Value ;
-        DisplayEvent( sbEventNum.Position ) ;
+        DisplayEvent( sbEventNum.Position, false ) ;
         end ;
      end;
 
@@ -3767,7 +3805,7 @@ procedure TEventAnalysisFrm.cbSourceChange(Sender: TObject);
 // ------------------
 begin
      cbDetROI.ItemIndex := cbSource.ItemIndex ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 procedure TEventAnalysisFrm.cbBackgroundChange(Sender: TObject);
@@ -3776,14 +3814,14 @@ procedure TEventAnalysisFrm.cbBackgroundChange(Sender: TObject);
 // -----------------------
 begin
      cbDetBackgROI.ItemIndex := cbBackground.ItemIndex ;
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 procedure TEventAnalysisFrm.cbEquationChange(Sender: TObject);
 // ----------------------------
 // Ion-binding Equation changed
 // ----------------------------
 begin
-     DisplayEvent( sbEventNum.Position ) ;
+     DisplayEvent( sbEventNum.Position, false ) ;
      end;
 
 end.

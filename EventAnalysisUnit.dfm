@@ -1,8 +1,9 @@
 object EventAnalysisFrm: TEventAnalysisFrm
+  Tag = 9
   Left = 695
   Top = 111
   Caption = 'Event Detection & Analysis'
-  ClientHeight = 623
+  ClientHeight = 653
   ClientWidth = 692
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -28,26 +29,22 @@ object EventAnalysisFrm: TEventAnalysisFrm
     Left = 2
     Top = 2
     Width = 692
-    Height = 623
+    Height = 643
     ActivePage = DetectTab
     TabOrder = 0
     OnChange = PageChange
     object DetectTab: TTabSheet
       Caption = 'Detect events'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object DetectGrp: TGroupBox
         Left = 0
         Top = 0
         Width = 169
-        Height = 569
+        Height = 601
         TabOrder = 0
         object DetectCritGrp: TGroupBox
           Left = 8
-          Top = 304
+          Top = 330
           Width = 153
           Height = 257
           Caption = ' Detection Criteria '
@@ -278,7 +275,7 @@ object EventAnalysisFrm: TEventAnalysisFrm
         end
         object GroupBox10: TGroupBox
           Left = 8
-          Top = 40
+          Top = 70
           Width = 153
           Height = 257
           Caption = ' Detection Channel '
@@ -300,16 +297,12 @@ object EventAnalysisFrm: TEventAnalysisFrm
             Top = 125
             Width = 140
             Height = 130
-            ActivePage = DetFluorRatioSettingsTab
+            ActivePage = detFluorSettingsTab
             Style = tsFlatButtons
             TabOrder = 1
             object detFluorSettingsTab: TTabSheet
               Caption = 'detFluorSettingsTab'
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label2: TLabel
                 Left = 4
                 Top = 2
@@ -333,10 +326,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
               Caption = 'DetFluorRatioSettingsTab'
               ImageIndex = 1
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label14: TLabel
                 Left = 25
                 Top = 0
@@ -443,7 +432,7 @@ object EventAnalysisFrm: TEventAnalysisFrm
                 Text = ' 10 '
                 Value = 10.000000000000000000
                 Scale = 1.000000000000000000
-                NumberFormat = '%.0f'
+                NumberFormat = '%.4g'
                 LoLimit = -1.000000015047466E30
                 HiLimit = 1.000000015047466E30
               end
@@ -452,10 +441,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
               Caption = 'DetADCSettingsTab'
               ImageIndex = 2
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
             end
           end
           object DetROIGrp: TGroupBox
@@ -518,6 +503,29 @@ object EventAnalysisFrm: TEventAnalysisFrm
               OnClick = cbDetBackgROIClick
             end
           end
+        end
+        object bStop: TButton
+          Left = 125
+          Top = 40
+          Width = 36
+          Height = 17
+          Caption = 'Stop'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 3
+          OnClick = bStopClick
+        end
+        object edDetectStatus: TEdit
+          Left = 10
+          Top = 40
+          Width = 109
+          Height = 22
+          ReadOnly = True
+          TabOrder = 4
         end
       end
       object detDisplayGrp: TGroupBox
@@ -635,10 +643,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
     end
     object ViewTab: TTabSheet
       Caption = 'View Events'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object ViewGrp: TGroupBox
         Left = 0
         Top = 0
@@ -780,7 +784,7 @@ object EventAnalysisFrm: TEventAnalysisFrm
             Top = 41
             Width = 145
             Height = 232
-            ActivePage = dFTab
+            ActivePage = FTab
             Style = tsFlatButtons
             TabHeight = 18
             TabOrder = 0
@@ -789,10 +793,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
             object FTab: TTabSheet
               Caption = 'Fluor'
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label3: TLabel
                 Left = 5
                 Top = 2
@@ -816,10 +816,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
               Caption = 'F/F0'
               ImageIndex = 1
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label5: TLabel
                 Left = 5
                 Top = 2
@@ -1008,10 +1004,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
               ImageIndex = 2
               ParentFont = False
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label4: TLabel
                 Left = 16
                 Top = 60
@@ -1468,10 +1460,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
     object AverageTab: TTabSheet
       Caption = 'Average Events'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object AvgGrp: TGroupBox
         Left = 0
         Top = 0
@@ -1650,19 +1638,15 @@ object EventAnalysisFrm: TEventAnalysisFrm
     object PlotTab: TTabSheet
       Caption = 'Plot Graphs'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object PlotGrp: TGroupBox
-        Left = 0
+        Left = -1
         Top = 0
         Width = 169
-        Height = 553
+        Height = 481
         TabOrder = 0
         object GroupBox6: TGroupBox
           Left = 8
-          Top = 70
+          Top = 94
           Width = 153
           Height = 83
           Caption = ' Range '
@@ -1736,7 +1720,7 @@ object EventAnalysisFrm: TEventAnalysisFrm
         end
         object bSetAxes: TButton
           Left = 8
-          Top = 40
+          Top = 68
           Width = 153
           Height = 20
           Caption = 'Set Axes'
@@ -1751,7 +1735,7 @@ object EventAnalysisFrm: TEventAnalysisFrm
         end
         object XGrp: TGroupBox
           Left = 8
-          Top = 152
+          Top = 180
           Width = 153
           Height = 145
           Caption = ' X Axis Variable '
@@ -1841,7 +1825,7 @@ object EventAnalysisFrm: TEventAnalysisFrm
         end
         object GroupBox5: TGroupBox
           Left = 8
-          Top = 296
+          Top = 330
           Width = 153
           Height = 145
           Caption = ' Y Axis Variable '
@@ -1922,6 +1906,29 @@ object EventAnalysisFrm: TEventAnalysisFrm
               HiLimit = 1.000000015047466E30
             end
           end
+        end
+        object bPlotGraphStop: TButton
+          Left = 110
+          Top = 40
+          Width = 50
+          Height = 17
+          Caption = 'Stop'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 5
+          OnClick = bPlotGraphStopClick
+        end
+        object edPlotStatus: TEdit
+          Left = 8
+          Top = 40
+          Width = 96
+          Height = 22
+          ReadOnly = True
+          TabOrder = 6
         end
       end
       object PlotDisplayGrp: TGroupBox

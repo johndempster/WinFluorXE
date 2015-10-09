@@ -13,6 +13,7 @@ unit HistogramUnit;
 // 04.04.05 Problems with Binwidth scalibng fixed
 // 03.05.06 Invalid memory access problem fixed
 // 12.07.07 Cursor readout now displayed within plot
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 

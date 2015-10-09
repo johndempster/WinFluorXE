@@ -29,6 +29,8 @@ unit TimeCourseUnit;
 // 25.08.12 Line is no longer truncated when more than 10000 frames/lines in plot
 // 31.12.12 Fix issue with plotting different length fluorescence and ADC channels
 // 21.08.14 Unused PlotNum removed from PlotROIIntensity() and other plot functions
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+
 interface
 
 uses
@@ -1336,6 +1338,10 @@ procedure TTimeCourseFrm.FormClose(Sender: TObject;
 // -----------------------------
 begin
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 

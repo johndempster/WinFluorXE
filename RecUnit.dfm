@@ -1,4 +1,5 @@
 object RecordFrm: TRecordFrm
+  Tag = 33
   Left = 1124
   Top = 26
   Caption = 'Record Images & Signals'
@@ -439,10 +440,6 @@ object RecordFrm: TRecordFrm
         object StimulatorTab: TTabSheet
           Caption = 'Stimulator'
           ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object cbStimProgram: TComboBox
             Left = 2
             Top = 0
@@ -610,10 +607,6 @@ object RecordFrm: TRecordFrm
         object PhotoStimTab: TTabSheet
           Caption = 'Photo Stim.'
           ImageIndex = 2
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object cbPhotoStimProgram: TComboBox
             Left = 2
             Top = 0
@@ -830,10 +823,6 @@ object RecordFrm: TRecordFrm
           object SlidersTab: TTabSheet
             Caption = 'Sliders'
             ImageIndex = 1
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label5: TLabel
               Left = 14
               Top = 0

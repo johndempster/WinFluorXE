@@ -1,4 +1,5 @@
 object ViewLineFrm: TViewLineFrm
+  Tag = 49
   Left = 364
   Top = 126
   Caption = 'View Line Scans'

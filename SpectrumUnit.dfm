@@ -1,4 +1,5 @@
 object SpectrumFrm: TSpectrumFrm
+  Tag = 44
   Left = 383
   Top = 168
   Caption = 'Spectral Analysis'
@@ -28,10 +29,6 @@ object SpectrumFrm: TSpectrumFrm
     TabOrder = 0
     object SpectrumTab: TTabSheet
       Caption = 'Spectrum'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object plSpectrum: TXYPlotDisplay
         Left = 192
         Top = 8
@@ -64,10 +61,10 @@ object SpectrumFrm: TSpectrumFrm
         PrinterFontName = 'Arial'
         PrinterLineWidth = 1
         PrinterMarkerSize = 5
-        PrinterLeftMargin = 3
-        PrinterRightMargin = 3
-        PrinterTopMargin = 3
-        PrinterBottomMargin = 3
+        PrinterLeftMargin = 1
+        PrinterRightMargin = 1
+        PrinterTopMargin = 1
+        PrinterBottomMargin = 1
         PrinterDisableColor = False
         MetafileWidth = 500
         MetafileHeight = 400
@@ -325,10 +322,10 @@ object SpectrumFrm: TSpectrumFrm
         PrinterFontName = 'Arial'
         PrinterLineWidth = 1
         PrinterMarkerSize = 5
-        PrinterLeftMargin = 2
-        PrinterRightMargin = 2
-        PrinterTopMargin = 2
-        PrinterBottomMargin = 2
+        PrinterLeftMargin = 0
+        PrinterRightMargin = 0
+        PrinterTopMargin = 0
+        PrinterBottomMargin = 0
         PrinterDisableColor = False
         MetafileWidth = 500
         MetafileHeight = 400

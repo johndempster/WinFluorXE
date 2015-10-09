@@ -1,4 +1,5 @@
 object SmoothDifferentiateFrm: TSmoothDifferentiateFrm
+  Tag = 42
   Left = 308
   Top = 171
   Caption = 'Smooth / Differentiate'

@@ -1,9 +1,10 @@
 object SetCCDReadoutFrm: TSetCCDReadoutFrm
+  Tag = 37
   Left = 777
   Top = 526
-  Width = 219
-  Height = 152
   Caption = 'Set CCD Area'
+  ClientHeight = 125
+  ClientWidth = 211
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

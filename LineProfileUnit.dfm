@@ -1,9 +1,10 @@
 object LineProfileFrm: TLineProfileFrm
+  Tag = 19
   Left = 786
   Top = 157
-  Width = 506
-  Height = 469
   Caption = 'Line Profile'
+  ClientHeight = 442
+  ClientWidth = 498
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -29,6 +30,10 @@ object LineProfileFrm: TLineProfileFrm
     TabOrder = 0
     object LineProfileTab: TTabSheet
       Caption = 'Line Profile'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object plPlot: TXYPlotDisplay
         Left = 152
         Top = 7
@@ -61,10 +66,10 @@ object LineProfileFrm: TLineProfileFrm
         PrinterFontName = 'Arial'
         PrinterLineWidth = 1
         PrinterMarkerSize = 5
-        PrinterLeftMargin = 12
-        PrinterRightMargin = 12
-        PrinterTopMargin = 12
-        PrinterBottomMargin = 12
+        PrinterLeftMargin = 10
+        PrinterRightMargin = 10
+        PrinterTopMargin = 10
+        PrinterBottomMargin = 10
         PrinterDisableColor = False
         MetafileWidth = 500
         MetafileHeight = 400
@@ -84,7 +89,7 @@ object LineProfileFrm: TLineProfileFrm
         object Label5: TLabel
           Left = 8
           Top = 8
-          Width = 65
+          Width = 64
           Height = 14
           Caption = 'Frame Type'
           Font.Charset = DEFAULT_CHARSET
@@ -114,7 +119,6 @@ object LineProfileFrm: TLineProfileFrm
           Width = 121
           Height = 23
           Style = csDropDownList
-          ItemHeight = 15
           ParentShowHint = False
           ShowHint = False
           TabOrder = 0
@@ -131,7 +135,6 @@ object LineProfileFrm: TLineProfileFrm
           Font.Height = -12
           Font.Name = 'Arial'
           Font.Style = []
-          ItemHeight = 15
           ParentFont = False
           TabOrder = 1
           OnChange = cbROIChange
@@ -261,10 +264,10 @@ object LineProfileFrm: TLineProfileFrm
         PrinterFontName = 'Arial'
         PrinterLineWidth = 1
         PrinterMarkerSize = 5
-        PrinterLeftMargin = 11
-        PrinterRightMargin = 11
-        PrinterTopMargin = 11
-        PrinterBottomMargin = 11
+        PrinterLeftMargin = 9
+        PrinterRightMargin = 9
+        PrinterTopMargin = 9
+        PrinterBottomMargin = 9
         PrinterDisableColor = False
         MetafileWidth = 500
         MetafileHeight = 400
@@ -284,7 +287,7 @@ object LineProfileFrm: TLineProfileFrm
         object Label2: TLabel
           Left = 8
           Top = 8
-          Width = 31
+          Width = 30
           Height = 14
           Caption = 'Track'
           Font.Charset = DEFAULT_CHARSET
@@ -315,7 +318,6 @@ object LineProfileFrm: TLineProfileFrm
           Width = 121
           Height = 23
           Style = csDropDownList
-          ItemHeight = 15
           ParentShowHint = False
           ShowHint = False
           TabOrder = 1

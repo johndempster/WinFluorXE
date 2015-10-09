@@ -1,4 +1,5 @@
 object RecPlotFrm: TRecPlotFrm
+  Tag = 32
   Left = 662
   Top = 272
   Caption = 'Time Course Plots (Live)'

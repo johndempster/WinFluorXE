@@ -39,6 +39,7 @@ unit Sealtest;
   08.07.10 .. JD Empty flag samples remaining at end of buffer when buffer timeout occurs
               now set to last valid value for each channel in buffer (fixes problem with PCI-61XX
               cards which collect 4 samples too few when using external clock triggering)
+  16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
   ==================================================}
 
 interface
@@ -1238,7 +1239,6 @@ begin
      MainFrm.SealTest.HoldingVoltage2 := edHoldingVoltage2.Value ;
      MainFrm.SealTest.HoldingVoltage3 := edHoldingVoltage3.Value ;
 
-
      // Free DAC buffers
      for Device := 1 to LabIO.NumDevices do begin
          if DACBufs[Device] <> Nil then FreeMem( DACBufs[Device] ) ;
@@ -1255,6 +1255,9 @@ begin
      { Close the form }
      Action := caFree ;
      MainFrm.mnSealTest.enabled := True ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
 
      end;
 

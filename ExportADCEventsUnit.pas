@@ -223,7 +223,7 @@ begin
      for EventNum := StartAt to EndAt do begin
 
          // Load event (in event analysis module)
-         EventAnalysisFrm.DisplayEvent( EventNum ) ;
+         EventAnalysisFrm.DisplayEvent( EventNum, false ) ;
 
          // Copy required channels
          j := 0 ;
@@ -355,7 +355,7 @@ begin
      for EventNum := StartAt to EndAt do begin
 
          // Load event (in event analysis module)
-         EventAnalysisFrm.DisplayEvent( EventNum ) ;
+         EventAnalysisFrm.DisplayEvent( EventNum, false ) ;
 
          // Copy required channels
          j := 0 ;

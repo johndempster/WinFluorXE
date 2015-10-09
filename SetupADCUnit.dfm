@@ -1,9 +1,10 @@
 object SetupADCFrm: TSetupADCFrm
+  Tag = 39
   Left = 296
   Top = 333
-  Width = 655
-  Height = 457
   Caption = 'Setup Patch Clamp / Analogue Inputs'
+  ClientHeight = 430
+  ClientWidth = 647
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -109,7 +110,6 @@ object SetupADCFrm: TSetupADCFrm
       Width = 92
       Height = 23
       Style = csDropDownList
-      ItemHeight = 15
       ParentShowHint = False
       ShowHint = False
       TabOrder = 2
@@ -160,9 +160,9 @@ object SetupADCFrm: TSetupADCFrm
     Caption = ' Amplifier #1'
     TabOrder = 2
     object Label15: TLabel
-      Left = 37
+      Left = 38
       Top = 70
-      Width = 112
+      Width = 111
       Height = 15
       Alignment = taRightJustify
       Caption = 'Vout 0 Divide Factor'
@@ -179,7 +179,6 @@ object SetupADCFrm: TSetupADCFrm
       Top = 16
       Width = 185
       Height = 23
-      ItemHeight = 15
       TabOrder = 0
       Text = 'cbAmplifier1'
       OnChange = cbAmplifier1Change
@@ -207,9 +206,9 @@ object SetupADCFrm: TSetupADCFrm
       Caption = 'l'
       TabOrder = 2
       object lbTelegraphChannel: TLabel
-        Left = 17
+        Left = 18
         Top = 2
-        Width = 47
+        Width = 46
         Height = 14
         Alignment = taRightJustify
         Caption = 'Gain Tel.'
@@ -242,9 +241,9 @@ object SetupADCFrm: TSetupADCFrm
       BevelOuter = bvNone
       TabOrder = 3
       object Label4: TLabel
-        Left = 10
+        Left = 11
         Top = 2
-        Width = 54
+        Width = 53
         Height = 14
         Alignment = taRightJustify
         Caption = 'Mode Tel.'
@@ -310,9 +309,9 @@ object SetupADCFrm: TSetupADCFrm
     Caption = ' Amplifier #2'
     TabOrder = 5
     object Label5: TLabel
-      Left = 37
+      Left = 38
       Top = 70
-      Width = 112
+      Width = 111
       Height = 15
       Alignment = taRightJustify
       Caption = 'Vout 1 Divide Factor'
@@ -329,7 +328,6 @@ object SetupADCFrm: TSetupADCFrm
       Top = 16
       Width = 185
       Height = 23
-      ItemHeight = 15
       TabOrder = 0
       Text = 'cbAmplifiers'
       OnChange = cbAmplifier1Change
@@ -357,9 +355,9 @@ object SetupADCFrm: TSetupADCFrm
       Caption = 'l'
       TabOrder = 2
       object Label7: TLabel
-        Left = 17
+        Left = 18
         Top = 2
-        Width = 47
+        Width = 46
         Height = 14
         Alignment = taRightJustify
         Caption = 'Gain Tel.'
@@ -392,9 +390,9 @@ object SetupADCFrm: TSetupADCFrm
       BevelOuter = bvNone
       TabOrder = 3
       object Label8: TLabel
-        Left = 10
+        Left = 11
         Top = 2
-        Width = 54
+        Width = 53
         Height = 14
         Alignment = taRightJustify
         Caption = 'Mode Tel.'
@@ -470,6 +468,7 @@ object SetupADCFrm: TSetupADCFrm
         Scale = 0.000000999999997475
         Units = 'MOhm'
         NumberFormat = '%.5g'
+        LoLimit = -1.000000015047466E30
         HiLimit = 1.000000015047466E30
       end
       object edCapCellCapacityComp: TValidatedEdit
@@ -482,6 +481,7 @@ object SetupADCFrm: TSetupADCFrm
         Scale = 999999995904.000000000000000000
         Units = 'pF'
         NumberFormat = '%.4g'
+        LoLimit = -1.000000015047466E30
         HiLimit = 1.000000015047466E30
       end
       object ckCapacityCompensationInUse: TCheckBox

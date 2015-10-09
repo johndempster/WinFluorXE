@@ -167,6 +167,8 @@ unit RecUnit;
 // 09.04.15 Not enough disk space check no longer stops camera and is reported in window title bar
 // 10.09.15 Support for USB 6002-6003 added
 //          NIDAQmx_MemoryToDig() now handles boards which lack digital waveform support
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 09.10.15 .. JD Auto contrast adjustment now works reliably.
 
 {$DEFINE USECONT}
 
@@ -811,10 +813,6 @@ begin
      if MainFrm.FormExists('SnapFrm')then SnapFrm.StopLiveImaging ;
 
      ckSplitCCDImage.Checked := MainFrm.SplitImage ;
-
-     // Set form at top left of MDI window
-     Top := 20 ;
-     Left := 20 ;
 
      // Open time course plotting window
      CheckRecPlotFrmExists ;
@@ -3443,7 +3441,7 @@ begin
                                Images[NextAvailableType] ) ;
                  LatestFrames[NextAvailableType] := -1 ;
 
-                 Dec(OptimiseContrastCount) ;
+                 if OptimiseContrastCount > 0 then Dec(OptimiseContrastCount) ;
                  // Update next priority frame to be displayed
                  Inc(FrameTypeToBeDisplayed) ;
                  if FrameTypeToBeDisplayed >= NumFrameTypes then FrameTypeToBeDisplayed := 0 ;
@@ -3630,7 +3628,8 @@ begin
         // Optimise contrast if required
         if OptimiseContrastCount = 0 then begin
            bMaxContrast.Click ;
-           if ckAutoOptimise.Checked then OptimiseContrastCount := Max(Round(2.0/FrameInterval),2*NumFrameTypes) ;
+           if ckAutoOptimise.Checked then OptimiseContrastCount := Max(Round(2.0/FrameInterval),2*NumFrameTypes)
+                                     else OptimiseContrastCount := -1 ; // Turns count off
            end ;
 
         if (RecordingMode = rmRecordingInProgress) and
@@ -3689,7 +3688,6 @@ begin
           IDRFileXY.OpenFile( XYStageFileNames[XYStageFrm.Position]) ;
           IDRFileXY.WriteEnabled := True ;
           GetMem( iBuf, NumPixelsPerFrame*SizeOf(Integer) ) ;
-          outputdebugstring(pchar(format('%s %d %d',[XYStageFileNames[XYStageFrm.Position],XYStageLastFrame,MainFrm.IDRFile.NumFrames])));
           while XYStageLastFrame <= MainFrm.IDRFile.NumFrames do begin
                MainFrm.IDRFile.LoadFrame( XYStageLastFrame, iBuf ) ;
                IDRFileXY.SaveFrame( IDRFileXY.NumFrames + 1, iBuf ) ;
@@ -4343,6 +4341,9 @@ begin
      // Request destruction of form
      Action := caFree ;
 
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 
@@ -4832,7 +4833,7 @@ begin
      SetDisplayIntensityRange( MainFrm.GreyLo[SelectedFrameType],
                                MainFrm.GreyHi[SelectedFrameType] ) ;
 
-     OptimiseContrastCount := -1 ;
+     //OptimiseContrastCount := -1 ;
 
      end;
 
@@ -5653,9 +5654,12 @@ begin
      // If not open it
      if not Exists then begin
         RecPlotFrm := TRecPlotFrm.Create(Self) ;
+{        MainFrm.SetFormPosition( RecPlotFrm,
+                                 Self.Left + Self.Width + 10,
+                                 RecPlotFrm.Top,
+                                 MainFrm.ClientWidth - (Left + Width + 10) - 10,
+                                 RecPlotFrm.Height);}
         RecPlotFrm.DisplayGrid := MainFrm.mnDisplayGrid.Checked ;
-        RecPlotFrm.Left := Left + Width + 10 ;
-        RecPlotFrm.Width := MainFrm.ClientWidth - RecPlotFrm.Left - 10 ;
         Application.ProcessMessages ;
         Result := True ;
         end ;
@@ -6218,6 +6222,7 @@ procedure TRecordFrm.ckAutoOptimiseClick(Sender: TObject);
 // ----------------------------------
 begin
     MainFrm.ContrastAutoOptimise := ckAutoOptimise.Checked ;
+    if MainFrm.ContrastAutoOptimise then OptimiseContrastCount := Max(Round(2.0/FrameInterval),2*NumFrameTypes)
     end;
 
 procedure TRecordFrm.ckContrast6SDOnlyClick(Sender: TObject);

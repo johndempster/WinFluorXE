@@ -1,9 +1,10 @@
 object SetupIonFrm: TSetupIonFrm
+  Tag = 40
   Left = 518
   Top = 317
-  Width = 296
-  Height = 278
   Caption = 'Ion Binding Equations'
+  ClientHeight = 251
+  ClientWidth = 288
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText

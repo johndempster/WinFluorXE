@@ -32,6 +32,7 @@ object MainFrm: TMainFrm
     SimplePanel = True
   end
   object MainMenu1: TMainMenu
+    Tag = 21
     Images = ImageList1
     Left = 40
     Top = 200
@@ -195,10 +196,6 @@ object MainFrm: TMainFrm
         Caption = '&Camera/System Setup'
         OnClick = mnCameraSetupClick
       end
-      object mnSetupADC: TMenuItem
-        Caption = '&Analogue Inputs / Patch Clamp'
-        OnClick = mnSetupADCClick
-      end
       object mnEXCSetup: TMenuItem
         Caption = 'Excitation &Light Wavelengths'
         OnClick = mnEXCSetupClick
@@ -314,7 +311,7 @@ object MainFrm: TMainFrm
     Left = 104
     Top = 200
     Bitmap = {
-      494C01011200E800EC0010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010112001801180110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1060,6 +1057,7 @@ object MainFrm: TMainFrm
     ADCGain = 0
     CCDVerticalShiftSpeed = 0
     NumPixelShiftFrames = 1
+    DisableExposureIntervalLimit = False
     Left = 304
     Top = 296
   end

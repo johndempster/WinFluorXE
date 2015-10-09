@@ -26,17 +26,19 @@ unit ViewPlotUnit;
 //             (rather than MainFrm.IDRFile.MaxROIInUse) to avoid memory access violations
 // 13.11.12 ... .LOADADC() now uses 64 bit scan counter
 // 16.01.15 ... ROI time calculation skipped if no ROIs defined
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 24.09.15 .. JD Min/Max display compression now implemented in scADCDisplay component rather than this form.
+//             ADCBuf,FLDisplayBuf & RDisplayBuf now allocated dynamically
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ValidatedEdit, ExtCtrls, ScopeDisplay, HTMLLabel,IDRFile,
-  math, strutils, mmsystem, excsetupunit ;
+  math, strutils, mmsystem, excsetupunit, labiounit ;
 
 Const
     GreyLevelLimit = $FFFF ;
-    MaxDisplayScans = 2000 ;
     MaxADCChannels = 8 ;
     MaxFrames = 100000 ;
     ROITimeCourseBufEmptyFlag = -(High(Integer)-1) ;
@@ -110,20 +112,13 @@ type
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
+    //ADCDisplayScansPerPoint : Single ;
 
-    //NumFrameTypes : Integer ;
-
-    ADCBuf : Array[0..(MaxDisplayScans*MaxADCChannels*2)-1] of SmallInt ;
-
-    ADCDisplayScansPerPoint : Single ;
-    //ADCDisplayCursorUpdated : Boolean ;
-
-    FLDisplayBuf : Array[0..(MaxFrames*(MaxFrameType+1))-1] of Integer ; // Fluorescence display buffer
-    //FLDisplayCursorUpdated : Boolean ;
-
-    RDisplayBuf : Array[0..MaxFrames-1] of Integer ;   // Ratio display buffer
-
+    ADCBuf : PBig16BitArray ;
+    FLDisplayBuf : PIntArray ;
+    RDisplayBuf : PIntArray ;
     ROITimeCourseBuf : PIntArray ;
+
     ROITCSPacing : Integer ;
 
     ROITCNumFrames : Integer ;     // No. of points in time course buffer
@@ -141,11 +136,7 @@ type
     FLReadoutCursor : Integer ;  // Fluorescence readout cursor index on scFLDisplay
     RReadoutCursor : Integer ;  // Fluorescence readout cursor index on scRDisplay
 
-    // Display counters
-    NumScans : Integer ;
-    NumScansPerBlock : Integer ;
-    NumSamplesPerBlock : Integer ;
-    NumPointsPerBlock : Integer ;
+    //NumScans : Integer ;
 
     ROIPixelList : Array[0..cMaxROIs] of PROIPixelList ;
     ROINumPixels : Array[0..cMaxROIs] of Integer ;
@@ -369,8 +360,10 @@ begin
          scFLDisplay.ChanVisible[ch] := True ;
          end ;
 
-    scFLDisplay.SetDataBuf( @FLDisplayBuf ) ;
-    scFLDisplay.NumBytesPerSample := 4 ;
+    if FLDisplayBuf <> Nil then FreeMem(FLDisplayBuf) ;
+    Getmem( FLDisplayBuf, scFLDisplay.MaxPoints*scFLDisplay.NumChannels*SizeOf(Integer));
+    scFLDisplay.SetDataBuf( FLDisplayBuf ) ;
+    scFLDisplay.NumBytesPerSample := SizeOf(Integer) ;
 
     scFLDisplay.ClearVerticalCursors ;
     FLReadoutCursor := scFLDisplay.AddVerticalCursor(-1,clGreen,'?y') ;
@@ -406,8 +399,10 @@ begin
     scRDisplay.HorizontalCursors[0] := 0 ;
     scRDisplay.ChanVisible[0] := True ;
 
-    scRDisplay.SetDataBuf( @RDisplayBuf ) ;
-    scRDisplay.NumBytesPerSample := 4 ;
+    if RDisplayBuf <> Nil then FreeMem(RDisplayBuf) ;
+    Getmem( RDisplayBuf, Max(scRDisplay.MaxPoints*scRDisplay.NumChannels,1)*SizeOf(Integer));
+    scRDisplay.NumBytesPerSample := SizeOf(Integer) ;
+    scRDisplay.SetDataBuf( RDisplayBuf ) ;
 
     scRDisplay.ClearVerticalCursors ;
     RReadoutCursor := scRDisplay.AddVerticalCursor(-1,clGreen,'?y') ;
@@ -429,14 +424,13 @@ begin
 
        // No. of points in A/D window
        MainFrm.ADCDisplayWindow := edTDisplay.Value ;
-       scADCDisplay.MaxPoints := MaxDisplayScans*2 ;
-       //Round( MainFrm.ADCDisplayWindow/MainFrm.IDRFile.ADCScanInterval) ;
-       edTDisplay.Value := MainFrm.ADCDisplayWindow ;
+       scADCDisplay.MaxPoints := Round(edTDisplay.Value/MainFrm.IDRFile.ADCScanInterval);
 
        scADCDisplay.NumPoints := 0 ;
        scADCDisplay.NumChannels := MainFrm.IDRFile.ADCNumChannels ;
        scADCDisplay.xMax := scADCDisplay.MaxPoints-1 ;
        scADCDisplay.xMin := 0 ;
+       scADCDisplay.TScale := MainFrm.IDRFile.ADCSCanInterval ;
        { Set channel information }
        for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do begin
            scADCDisplay.ChanOffsets[ch] := MainFrm.IDRFile.ADCChannel[ch].ChannelOffset ;
@@ -450,11 +444,14 @@ begin
            end ;
 
        // Allocate A/D buffer
-       scADCDisplay.SetDataBuf( @ADCBuf ) ;
+       if ADCBuf <> Nil then FreeMem( ADCBuf ) ;
+       GetMem( ADCBuf, scADCDisplay.MaxPoints*MainFrm.IDRFile.ADCNumChannels*2 ) ;
+       scADCDisplay.SetDataBuf( ADCBuf ) ;
 
        scADCDisplay.ClearVerticalCursors ;
        ADCReadoutCursor := scADCDisplay.AddVerticalCursor(-1,clGreen,'?y') ;
        scADCDisplay.VerticalCursors[ADCReadoutCursor] := scADCDisplay.MaxPoints div 2 ;
+
        scFLDisplay.DisplaySelected := False ;
 
        end ;
@@ -476,49 +473,19 @@ procedure TViewPlotFrm.DisplayADCChannels ;
 // ------------------------------------------
 // Display analogue signals stored on file
 // ------------------------------------------
-const
-
-     NumScansPerBuf = 1024 ;
 var
-
-    NumSamplesPerBuf : Integer ;
-    NumScansRead : Integer ;
-    NumScansToRead : Integer ;
-    BufStartScan : Int64 ;
-    NumSamplesRead : Integer ;
     StartScan : Int64 ;
     CursorScan : Integer ;
-    BlockCount : Integer ;
-    NumPoints : Integer ;
-    iDisp : Integer ;
-    Done : Boolean ;
-    yMin : Array[0..MaxADCChannels-1] of Integer ;
-    yMax : Array[0..MaxADCChannels-1] of Integer ;
-    yMinAt : Array[0..MaxADCChannels-1] of Integer ;
-    yMaxAt : Array[0..MaxADCChannels-1] of Integer ;
-    Buf : Array[0..(NumScansPerBuf*MaxADCChannels)-1] of SmallInt ;
-    i,ch,y : Integer ;
+    i : Integer ;
     MarkerAt : Integer ;
     TMarkerScale : Single ;
     CursorTime,StartTime : Single ;
+    NumScans : Integer ;
 begin
 
      // No. of multi-channel scans to be displayed
      NumScans := Max( Round(edTDisplay.Value/MainFrm.IDRFile.ADCScanInterval),1 ) ;
-
-     // Size of display compression block
-     NumScansPerBlock := Max( NumScans div MaxDisplayScans,1 ) ;
-     NumSamplesPerBlock := NumScansPerBlock*MainFrm.IDRFile.ADCNumChannels ;
-     // No. of display points per compression block
-     NumPointsPerBlock := Min(NumScansPerBlock,2) ;
-     ADCDisplayScansPerPoint := NumScansPerBlock / NumPointsPerBlock ;
-
-     // Max. number of points in display
-     scADCDisplay.MaxPoints := Min( Trunc(NumScans/ADCDisplayScansPerPoint),
-                                     MaxDisplayScans*2 ) ;
-
-     // No. of samples in file I/O buffer
-     NumSamplesPerBuf := MainFrm.IDRFile.ADCNumChannels*NumScansPerBuf ;
+     scADCDisplay.MaxPoints := NumScans ;
 
      // Find starting scan number
      CursorTime := CurrentFrame*MainFrm.IDRFile.FrameInterval ;
@@ -527,95 +494,19 @@ begin
      StartTime := scFLDisplay.XOffset*MainFrm.IDRFile.FrameInterval ;
 
      StartScan := Round( StartTime/MainFrm.IDRFile.ADCScanInterval ) ;
-
-     scADCDisplay.XOffset := Round(StartScan / ADCDisplayScansPerPoint) ;
-
-     scADCDisplay.VerticalCursors[ADCReadoutCursor] := Round ( (CursorScan - StartScan)/
-                                                               ADCDisplayScansPerPoint ) ;
+     scADCDisplay.XOffset := Cardinal(StartScan) ;
+     scADCDisplay.VerticalCursors[ADCReadoutCursor] := Cardinal ( (CursorScan - StartScan) ) ;
 
      // Set display time units
      SetDisplayUnits ;
 
-     // Initialise counters
-     BlockCount := NumScansPerBlock ;
-     NumSamplesRead := NumSamplesPerBuf ;
-     i := NumSamplesRead ;
-     BufStartScan := StartScan ;
-     iDisp := 0 ;
-     NumPoints := 0 ;
-     Done := False ;
-
-     // Read samples from file
-     While not Done do begin
-
-        // Initialise block
-        if BlockCount >= NumScansPerBlock then begin
-           for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do begin
-               yMin[ch] := MainFrm.IDRFile.ADCMaxValue ;
-               yMax[ch] := -yMin[ch] -1 ;
-               end ;
-           BlockCount := 0 ;
-           end ;
-
-        // Load new buffer
-        if i >= NumSamplesRead then begin
-           NumScansToRead := Min(NumScansPerBuf,MainFrm.IDRFile.ADCNumScansInFile-BufStartScan) ;
-           NumScansRead := MainFrm.IDRFile.LoadADC( BufStartScan,NumScansToRead,Buf ) ;
-
-           NumSamplesRead := NumScansRead*MainFrm.IDRFile.ADCNumChannels ;
-           BufStartScan := BufStartScan + NumScansPerBuf ;
-           i := 0 ;
-           if NumSamplesRead <= 0 then Break ;
-           end ;
-
-        // Determine min. / max. value & order of samples within compression block
-        for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do begin
-
-            // Get A/D sample
-            y := Buf[i] ;
-
-            if y < yMin[ch] then begin
-               yMin[ch] := y ;
-               yMinAt[ch] := BlockCount ;
-               end ;
-            if y > yMax[ch] then begin
-               yMax[ch] := y ;
-               yMaxAt[ch] := BlockCount ;
-               end ;
-            Inc(i) ;
-            end ;
-        Inc(BlockCount) ;
-
-        // When block complete ... write min./max. to display buffer
-        if BlockCount >= NumScansPerBlock then begin
-
-           // First point
-           for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do begin
-               if yMaxAt[ch] <= yMinAt[ch] then ADCBuf[iDisp] := yMax[ch]
-                                           else ADCBuf[iDisp] := yMin[ch] ;
-               Inc(iDisp) ;
-               end ;
-           Inc(NumPoints) ;
-
-           // Second point
-           if BlockCount > 1 then begin
-              for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do begin
-                  if yMaxAt[ch] >= yMinAt[ch] then ADCBuf[iDisp] := yMax[ch]
-                                              else ADCBuf[iDisp] := yMin[ch] ;
-                  Inc(iDisp) ;
-                  end ;
-              Inc(NumPoints) ;
-              end ;
-
-           end ;
-
-        if (NumPoints >= scADCDisplay.MaxPoints) or
-           ( NumSamplesRead <= 0) then Done := True ;
-
-        end ;
-
-     scADCDisplay.NumPoints := NumPoints ;
-
+     // Read data from file
+     if ADCBuf <> Nil then FreeMem( ADCBuf ) ;
+     GetMem( ADCBuf, scADCDisplay.MaxPoints*MainFrm.IDRFile.ADCNumChannels*2 ) ;
+     scADCDisplay.SetDataBuf( ADCBuf ) ;
+     scADCDisplay.NumPoints := MainFrm.IDRFile.LoadADC( StartScan,
+                                                        Min(NumScans,MainFrm.IDRFile.ADCNumScansInFile-StartScan),
+                                                        ADCBuf^ ) ;
      scADCDisplay.xMin := 0 ;
      scADCDisplay.xMax := scADCDisplay.MaxPoints-1 ;
 
@@ -772,14 +663,6 @@ begin
     scRDisplay.XMax := scFLDisplay.XMax ;
     scRDisplay.Invalidate ;
 
-    // Set A/D channel display
-    if (MainFrm.IDRFile.ADCNumChannels > 0) and (NumPointsPerBlock > 0) then begin
-       scADCDisplay.TScale := (MainFrm.IDRFile.ADCScanInterval*NumScansPerBlock*edTDisplay.Scale)
-                         /NumPointsPerBlock ;
-       scADCDisplay.TUnits := edTDisplay.Units ;
-       scADCDisplay.Invalidate ;
-       end ;
-
     end ;
 
 
@@ -833,6 +716,10 @@ var
 begin
 
     if AtFrame < 1 then Exit ;
+
+    // Update A/D signals display
+    if MainFrm.IDRFile.ADCNumChannels > 0 then DisplayADCChannels ;
+
     if ROITCNumFramesDone < MainFrm.IDRFile.NumFrames then Exit ;
 
     // Find starting frame group
@@ -843,7 +730,14 @@ begin
     CursorGroup := AtFrame ;
     StartGroup := Max( CursorGroup - (NumDisplayFrames div 2), 1 ) ;
     scFLDisplay.XOffset := StartGroup ;
-    NumDisplayFrames := Min( MainFrm.IDRFile.NumFrames, MainFrm.IDRFile.NumFrames-StartGroup );
+    NumDisplayFrames := Min( NumDisplayFrames, MainFrm.IDRFile.NumFrames-StartGroup );
+
+    // Allocate buffer
+    if FLDisplayBuf <> Nil then FreeMem(FLDisplayBuf) ;
+    Getmem( FLDisplayBuf, scFLDisplay.MaxPoints*scFLDisplay.NumChannels*SizeOf(Integer));
+    scFLDisplay.SetDataBuf( FLDisplayBuf ) ;
+    scFLDisplay.NumBytesPerSample := SizeOf(Integer) ;
+
     scFLDisplay.VerticalCursors[FLReadoutCursor] := CursorGroup - StartGroup ;
 
     // Plot selected fluorescence ROI
@@ -858,7 +752,7 @@ begin
         // Copy time course data into display buffer
         j := ((iROI-1)*ROITCSpacing) + (StartGroup*scFLDisplay.NumChannels)  ;
         for i := 0 to NumDisplayFrames*scFLDisplay.NumChannels-1 do begin
-            FLDisplayBuf[i] := ROITimeCourseBuf^[j] ;
+            FLDisplayBuf^[i] := ROITimeCourseBuf^[j] ;
             Inc(j) ;
             end ;
 
@@ -866,7 +760,7 @@ begin
         if iSubROI > 0 then begin
            j := ((iSubROI-1)*ROITCSpacing) + (StartGroup*scFLDisplay.NumChannels)  ;
            for i := 0 to NumDisplayFrames*scFLDisplay.NumChannels-1 do begin
-               FLDisplayBuf[i] := FLDisplayBuf[i] - ROITimeCourseBuf^[j] ;
+               FLDisplayBuf^[i] := FLDisplayBuf^[i] - ROITimeCourseBuf^[j] ;
                Inc(j) ;
                end ;
            end ;
@@ -890,9 +784,6 @@ begin
     if MainFrm.IDRFile.SpectralDataFile and ckDisplayR.Checked then ckDisplayR.Checked := False ;
 
     if ckDisplayR.Checked then DisplayRatio( AtFrame ) ;
-
-    // Update A/D signals display
-    if MainFrm.IDRFile.ADCNumChannels > 0 then DisplayADCChannels ;
 
     end ;
 
@@ -933,6 +824,11 @@ begin
     NumDisplayGroups := Min( NumDisplayGroups, MainFrm.IDRFile.NumFrames-StartGroup );
     scRDisplay.VerticalCursors[RReadoutCursor] := CursorGroup - StartGroup ;
 
+    if RDisplayBuf <> Nil then FreeMem(RDisplayBuf) ;
+    Getmem( RDisplayBuf, Max(scRDisplay.MaxPoints*scRDisplay.NumChannels,1)*SizeOf(Integer));
+    scRDisplay.NumBytesPerSample := SizeOf(Integer) ;
+    scRDisplay.SetDataBuf( RDisplayBuf ) ;
+
     // Frame #1 is at normally at index=NumFrameTypes in time course buffer
     // In spectral data files index=1 for frame #1
     //if MainFrm.IDRFile.SpectralDataFile then jOffset := -NumFrameTypes + 1
@@ -968,15 +864,15 @@ begin
        MainFrm.IDRFile.FrameType[cbDenominator.ItemIndex] ;
 
     yThreshold := edRatioExclusionThreshold.Value ;
-    for i := 0 to MainFrm.IDRFile.NumFrames-1 do begin
+    for i := 0 to NumDisplayGroups-1 do begin
 
         // Calculate ratio
         yNum := ROITimeCourseBuf^[jROINum] ;
         if SubtractROI then yNum := yNum - ROITimeCourseBuf[jSubNum] ;
         yDen := ROITimeCourseBuf^[jROIDen] ;
         if SubtractROI then yDen := yDen - ROITimeCourseBuf^[jSubDen] ;
-        if yDen >= yThreshold then RDisplayBuf[i] := Round((yNum/yDen)*YScale)
-                              else RDisplayBuf[i] := 0 ;
+        if yDen >= yThreshold then RDisplayBuf^[i] := Round((yNum/yDen)*YScale)
+                              else RDisplayBuf^[i] := 0 ;
 
         // Increment pointers
         jROINum := jROINum + NumFrameTypes ;
@@ -1387,6 +1283,7 @@ begin
      MainFrm.ADCDisplayWindow := edTDisplay.Value ;
      SetDisplayUnits ;
      DisplayTimeCourse( CurrentFrame )
+
      end;
 
 procedure TViewPlotFrm.bTDisplayHalfClick(Sender: TObject);
@@ -1475,10 +1372,6 @@ begin
            end ;
 
         end ;
-
-    // Give this control focus to avoid left/right cursor control arrow keys
-    // from changing other controls
-    //edRDisplayMax.Setfocus ;
 
     end;
 
@@ -1631,6 +1524,9 @@ begin
         Action := caFree ;
         end
      else Action := caMinimize ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
 
      end;
 
@@ -1966,10 +1862,15 @@ procedure TViewPlotFrm.FormDestroy(Sender: TObject);
 var
     i : Integer ;
 begin
-     if ROITimeCourseBuf <> Nil then begin
-           FreeMem( ROITimeCourseBuf ) ;
-           ROITimeCourseBuf := Nil ;
-           end ;
+
+     if ROITimeCourseBuf <> Nil then FreeMem( ROITimeCourseBuf ) ;
+     ROITimeCourseBuf := Nil ;
+     if FLDisplayBuf <> Nil then Freemem(FLDisplayBuf) ;
+     FLDisplayBuf := Nil ;
+     if RDisplayBuf <> Nil then Freemem(RDisplayBuf) ;
+     RDisplayBuf := Nil ;
+     if ADCBuf <> Nil then FreeMem(ADCBuf) ;
+     ADCBuf := Nil ;
 
      for i := 0 to High(ROIPixelList) do begin
          if ROIPixelList[i] <> Nil then FreeMem(ROIPixelList[i]) ;
@@ -1988,6 +1889,10 @@ var
 begin
 
     ROITimeCourseBuf := Nil ;
+    ADCBuf := Nil ;
+    FLDisplayBuf := Nil ;
+    RDisplayBuf := Nil ;
+
     for i := 0 to High(ROIPixelList) do ROIPixelList[i] := Nil ;
     for i := 0 to High(ROINumPixels) do ROINumPixels[i] := 0 ;
 

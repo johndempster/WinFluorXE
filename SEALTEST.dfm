@@ -1,4 +1,5 @@
 object SealTestFrm: TSealTestFrm
+  Tag = 35
   Left = 532
   Top = 298
   Caption = 'Signals Monitor (Seal Test)'

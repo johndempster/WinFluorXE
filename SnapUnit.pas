@@ -41,6 +41,7 @@ unit SnapUnit;
 // 02.12.14 Set Laser Intensity button name changed to Set Light Intensity
 // 26.12.15 Andor frame buffer increased to MaxBufferSize
 // 29.01.15 UpdateLightSourceDAC and UpdateLightSourceDig combined into UpdateLightSource
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -1660,6 +1661,9 @@ begin
 
      // Request destruction of form
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
 
      end;
 

@@ -1,4 +1,5 @@
 object LabIO: TLabIO
+  Tag = 17
   OldCreateOrder = False
   OnCreate = DataModuleCreate
   Height = 480

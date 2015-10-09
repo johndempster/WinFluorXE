@@ -1,4 +1,5 @@
 object AVIFrm: TAVIFrm
+  Tag = 3
   Left = 394
   Top = 289
   BorderStyle = bsDialog

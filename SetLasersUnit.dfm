@@ -1,4 +1,5 @@
 object SetLasersFrm: TSetLasersFrm
+  Tag = 38
   Left = 590
   Top = 268
   Caption = 'Set Light Source Intensity'
@@ -55,11 +56,9 @@ object SetLasersFrm: TSetLasersFrm
         AutoSize = False
         ShowHint = True
         Text = ' 0 %'
-        Value = 0.000000000000000000
         Scale = 1.000000000000000000
         Units = '%'
         NumberFormat = '%.4g'
-        LoLimit = 0.000000000000000000
         HiLimit = 100.000000000000000000
       end
     end
@@ -97,11 +96,9 @@ object SetLasersFrm: TSetLasersFrm
         AutoSize = False
         ShowHint = True
         Text = ' 0 %'
-        Value = 0.000000000000000000
         Scale = 1.000000000000000000
         Units = '%'
         NumberFormat = '%.4g'
-        LoLimit = 0.000000000000000000
         HiLimit = 100.000000000000000000
       end
     end
@@ -139,11 +136,9 @@ object SetLasersFrm: TSetLasersFrm
         AutoSize = False
         ShowHint = True
         Text = ' 0 %'
-        Value = 0.000000000000000000
         Scale = 1.000000000000000000
         Units = '%'
         NumberFormat = '%.4g'
-        LoLimit = 0.000000000000000000
         HiLimit = 100.000000000000000000
       end
     end
@@ -181,11 +176,9 @@ object SetLasersFrm: TSetLasersFrm
         AutoSize = False
         ShowHint = True
         Text = ' 0 %'
-        Value = 0.000000000000000000
         Scale = 1.000000000000000000
         Units = '%'
         NumberFormat = '%.4g'
-        LoLimit = 0.000000000000000000
         HiLimit = 100.000000000000000000
       end
     end
@@ -223,11 +216,9 @@ object SetLasersFrm: TSetLasersFrm
         AutoSize = False
         ShowHint = True
         Text = ' 0 %'
-        Value = 0.000000000000000000
         Scale = 1.000000000000000000
         Units = '%'
         NumberFormat = '%.4g'
-        LoLimit = 0.000000000000000000
         HiLimit = 100.000000000000000000
       end
     end
@@ -265,11 +256,9 @@ object SetLasersFrm: TSetLasersFrm
         AutoSize = False
         ShowHint = True
         Text = ' 0 %'
-        Value = 0.000000000000000000
         Scale = 1.000000000000000000
         Units = '%'
         NumberFormat = '%.4g'
-        LoLimit = 0.000000000000000000
         HiLimit = 100.000000000000000000
       end
     end
@@ -307,11 +296,9 @@ object SetLasersFrm: TSetLasersFrm
         AutoSize = False
         ShowHint = True
         Text = ' 0 %'
-        Value = 0.000000000000000000
         Scale = 1.000000000000000000
         Units = '%'
         NumberFormat = '%.4g'
-        LoLimit = 0.000000000000000000
         HiLimit = 100.000000000000000000
       end
     end
@@ -349,11 +336,9 @@ object SetLasersFrm: TSetLasersFrm
         AutoSize = False
         ShowHint = True
         Text = ' 0 %'
-        Value = 0.000000000000000000
         Scale = 1.000000000000000000
         Units = '%'
         NumberFormat = '%.4g'
-        LoLimit = 0.000000000000000000
         HiLimit = 100.000000000000000000
       end
     end

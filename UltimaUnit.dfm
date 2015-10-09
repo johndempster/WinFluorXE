@@ -1,4 +1,5 @@
 object Ultima: TUltima
+  Tag = 48
   OldCreateOrder = False
   OnCreate = DataModuleCreate
   Height = 362

@@ -1,4 +1,5 @@
 object DigitalFilterFrm: TDigitalFilterFrm
+  Tag = 5
   Left = 272
   Top = 199
   Caption = 'Filter Analog Signals'
@@ -69,10 +70,6 @@ object DigitalFilterFrm: TDigitalFilterFrm
       object LPFilter: TTabSheet
         Caption = 'LPFilter'
         TabVisible = False
-        ExplicitLeft = 0
-        ExplicitTop = 0
-        ExplicitWidth = 0
-        ExplicitHeight = 0
         object Label1: TLabel
           Left = 1
           Top = 2

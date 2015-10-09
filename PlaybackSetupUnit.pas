@@ -5,6 +5,7 @@ unit PlaybackSetupUnit;
 // by Nicholas Schwarz
 //------------------------------------------------------------------------------
 // 13.11.12 ... .LOADADC() now uses 64 bit scan counter
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -145,7 +146,10 @@ begin
   // Close window
   Action := caFree;
 
-end;
+  // Save position/size of form within parent window
+  MainFrm.SaveFormPosition( Self ) ;
+
+  end;
 
 // -----------------------------------------------------------------------------
 

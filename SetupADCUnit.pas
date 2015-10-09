@@ -11,6 +11,7 @@ unit SetupADCUnit;
 //             Gain and mode telegraphs now updated correctly
 //             Two amplifiers supported
 // 09.09.10 .. Cell capacity calculation setup added
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -129,9 +130,6 @@ begin
         (MainFrm.IOConfig.ADCIn <= MaxResources) then
         Device := LabIO.Resource[MainFrm.IOConfig.ADCIn].Device
      else Device := 0 ;
-
-     // Disable menu option
-     MainFrm.mnSetupADC.Enabled := False ;
 
      // Close any form which might be acquiring images
      if MainFrm.FormExists('RecADCOnlyFrm') then RecADCOnlyFrm.Close ;
@@ -305,8 +303,11 @@ procedure TSetupADCFrm.FormClose(Sender: TObject;
 // Close and destroy form
 // -----------------------
 begin
-     MainFrm.mnSetupADC.Enabled := True ;
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 

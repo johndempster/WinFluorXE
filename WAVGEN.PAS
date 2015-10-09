@@ -51,6 +51,7 @@ unit Wavgen;
                  stimulus amplitude display
   31.01.13 .. DE Allow existing waveforms to be dragged and dropped
   24.04.13 .. JD SelectDirectory() dialog now used to select protocol folder
+  16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
   =====================================================================}
 interface
 
@@ -1452,6 +1453,10 @@ begin
          end ;
 
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 

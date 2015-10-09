@@ -1,4 +1,5 @@
 object RatioFrm: TRatioFrm
+  Tag = 30
   Left = 626
   Top = 349
   Caption = 'Create Ratio/Ion Conc. Image'
@@ -439,7 +440,7 @@ object RatioFrm: TRatioFrm
     NumFrameTypes = 1
     FrameWidth = 0
     FrameHeight = 0
-    PixelDepth = 0
+    PixelDepth = 1
     NumZSections = 1
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000

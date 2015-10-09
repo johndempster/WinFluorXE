@@ -1,5 +1,5 @@
 unit Main;
-// ================================================
+// ================================================                                                        average
 // WinFluor - Fluorescence Image Capture Program
 // (c) J. Dempster, University of Strathclyde, 2001-8
 // All Rights Reserved
@@ -192,6 +192,11 @@ unit Main;
 //                    No. of frames in separate wavelength files now matched to total no. of frames in file
 // 14.05.15 V3.7.4 JD FrameInterval checking against readout time can be disabled for QImaging cameras
 // 30.06.15 V3.7.5 JD XYStage: Now reads actual stage position allowing positions set by joystick to be saved.
+// 25.09.15 V3.7.6 JD LED light source: Inverted TTL LED control (0=ON,5V=OFF) now works correctly
+//                    USB-6002-5 interface cards now supported
+//                    Analog channel and amplifier setup now on Analog Channel & Amplifiers page of
+//                    Camera / System setup.
+//                    Display time course trace compression now handled by Scopedisplay component.
 
 interface
 
@@ -446,7 +451,6 @@ type
     mnAverage: TMenuItem;
     mnLineProfile: TMenuItem;
     mnComputedImage: TMenuItem;
-    mnSetupADC: TMenuItem;
     mnSetupIon: TMenuItem;
     mnCopyPlotImage: TMenuItem;
     mnPrintImage: TMenuItem;
@@ -507,7 +511,6 @@ type
     procedure mnAverageClick(Sender: TObject);
     procedure mnLineProfileClick(Sender: TObject);
     procedure mnComputedImageFrmClick(Sender: TObject);
-    procedure mnSetupADCClick(Sender: TObject);
     procedure mnSetupIonClick(Sender: TObject);
     procedure mnRecordMenuClick(Sender: TObject);
     procedure mnCopyPlotImageClick(Sender: TObject);
@@ -711,14 +714,11 @@ type
 
     StartStimOnRecord : Boolean ;
 
-    LastRecADCOnlyWidth : Integer;
-    LastRecADCOnlyHeight : Integer;
-    LastRecADCOnlyTop : Integer;
-    LastRecADCOnlyLeft : Integer;
-
     RecordADCSignalsOnly: Boolean;
 
     ProgramName : string ;
+
+    FormPos : Array[0..99] of TRect ;   // form positions
 
     procedure SetPalette( BitMap : TBitMap ; PaletteType : TPaletteType ) ;
 
@@ -738,6 +738,15 @@ type
     function FormExists( FormName : String ) : Boolean ;
     function LSControlLinesAvailable :Boolean ;
     function LSNumControlLinesAvailable : Integer ;
+    procedure SetFormPosition(
+          Form : TForm ;             // Form
+          Left : Integer ;           // Left edge of form
+          Top : Integer ;            // Top edge
+          Width : Integer ;          // Form width
+          Height : Integer           // Form height
+          ) ;
+    procedure SaveFormPosition(
+          Form : TForm ) ;
   end;
 
 // Corrected system function call template
@@ -758,7 +767,7 @@ implementation
 uses About, RecUnit, ViewUnit, TimeCourseUnit,
   LabIOUnit, HistogramUnit, FileIOUnit,
   mmsystem, AVIUnit , AverageUnit,
-  LineProfileUnit, RatioUnit, StrUtils , SetupADCUnit, SetupIonUnit,
+  LineProfileUnit, RatioUnit, StrUtils , SetupIonUnit,
   RecADCOnlyUnit, exportAnalogueUnit, ViewLineUnit,
   LogUnit, LightSourceUnit, ExportImagesUnit, Wavgen,
   FilePropsUnit, SaveAsFileUnit, RecPlotUnit, StimulusDefaultsUnit,
@@ -779,7 +788,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.5 30-6-15 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.6 25-9-15 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
@@ -1181,12 +1190,14 @@ begin
           end ;
        end ;
 
-    LastRecADCOnlyWidth := -1;
-    LastRecADCOnlyHeight := -1;
-    LastRecADCOnlyTop := -1;
-    LastRecADCOnlyLeft := -1;
-
     RecordADCSignalsOnly := False;
+
+    // Set main form position
+    SetFormPosition( MainFrm,
+                     20,
+                     20,
+                     Screen.Width - 40,
+                     Screen.Height - 80 );
 
     end;
 
@@ -1355,6 +1366,9 @@ begin
      // Shut down N.I. laboratory interfaces
      LabIO.Close ;
 
+     // Save position/size of form
+     SaveFormPosition( Self ) ;
+
      // Save settings to ini file
      FileIO.SaveInitialisationFile( SettingsDirectory + InitialisationFileName ) ;
 
@@ -1378,17 +1392,7 @@ begin
          else begin
             RecADCOnlyFrm := TRecADCOnlyFrm.Create(Self) ;
             RecADCOnlyFrm.DisplayGrid := mnDisplayGrid.Checked ;
-            if LastRecADCOnlyWidth = -1 then
-            begin
-              RecADCOnlyFrm.Left := 20 ;
-              RecADCOnlyFrm.Top := 20 ;
-            end else
-            begin
-              RecADCOnlyFrm.Width := LastRecADCOnlyWidth;
-              RecADCOnlyFrm.Height := LastRecADCOnlyHeight;
-              RecADCOnlyFrm.Top := LastRecADCOnlyTop;
-              RecADCOnlyFrm.Left := LastRecADCOnlyLeft;
-            end
+            SetFormPosition( RecADCOnlyFrm,20,20,RecADCOnlyFrm.Width,RecADCOnlyFrm.Height);
           end ;
         end
      else begin
@@ -1400,15 +1404,16 @@ begin
             end
          else begin
             RecordFrm := TRecordFrm.Create(Self) ;
-            RecordFrm.Left := 20 ;
-            RecordFrm.Top := 20 ;
-            RecordFrm.Width := (3*ClientWidth) div 5 ;
-            RecordFrm.Height := ClientHeight - RecordFrm.Top - 40 ;
+            SetFormPosition( RecordFrm,20,20,
+                             (3*ClientWidth) div 5,
+                             ClientHeight - RecordFrm.Top - 40);
             // Update location of plotting form
             if FormExists( 'RecPlotFrm' ) then begin
                 RecPlotFrm.DisplayGrid := mnDisplayGrid.Checked ;
-                RecPlotFrm.Left := RecordFrm.Left + RecordFrm.Width + 10 ;
-                RecPlotFrm.Width := ClientWidth - RecPlotFrm.Left - 10 ;
+                SetFormPosition( RecPlotFrm,
+                                 RecordFrm.Left + RecordFrm.Width + 10,RecordFrm.Top,
+                                 ClientWidth - RecordFrm.Left - RecordFrm.Width - 20,
+                                 RecPlotFrm.Height);
                 end ;
             end ;
         end ;
@@ -1573,6 +1578,7 @@ begin
          else begin
             ViewLineFrm := TViewLineFrm.Create(Self) ;
             ViewLineFrm.DisplayGrid := mnDisplayGrid.Checked ;
+            SetFormPosition( ViewLineFrm,10,10,ViewLineFrm.Width,ViewLineFrm.Height);
             end ;
          end
       else begin
@@ -1584,14 +1590,17 @@ begin
             end
          else begin
             ViewFrm := TViewFrm.Create(Self) ;
-            ViewFrm.Left := 10 ;
-            ViewFrm.Top := 10 ;
-            ViewFrm.Width := (3*ClientWidth) div 5 ;
+            SetFormPosition( ViewFrm,10,10,
+                             (3*ClientWidth) div 5,
+                             ClientHeight - ViewFrm.Top - 40);
             // Update location of plotting form
             if FormExists( 'ViewPlotFrm' ) then begin
                ViewPlotFrm.DisplayGrid := mnDisplayGrid.Checked ;
-               ViewPlotFrm.Left := ViewFrm.Left + ViewFrm.Width + 10 ;
-               ViewPlotFrm.Width := ClientWidth - ViewPlotFrm.Left - 10 ;
+               SetFormPosition( ViewPlotFrm,
+                                ViewFrm.Left + ViewFrm.Width + 10,
+                                ViewFrm.Top,
+                                ClientWidth - ViewFrm.Left - ViewFrm.Width - 20,
+                                ViewPlotFrm.Height);
                end ;
             end ;
 
@@ -1613,8 +1622,7 @@ begin
        end
     else begin
        TimeCourseFrm := TTimeCourseFrm.Create(Self) ;
-       TimeCourseFrm.Left := 10 ;
-       TimeCourseFrm.Top := 10 ;
+       SetFormPosition( TimeCourseFrm,10,10,TimeCourseFrm.Width,TimeCourseFrm.Height);
        end ;
 
     end ;
@@ -1628,8 +1636,7 @@ begin
     if FormExists( 'SetupFrm' ) then SetupFrm.SetFocus
     else begin
        SetupFrm := TSetupFrm.Create(Self) ;
-       SetupFrm.Left := 10 ;
-       SetupFrm.Top := 10 ;
+       SetFormPosition( SetupFrm,10,10,SetupFrm.Width,SetupFrm.Height);
        end ;
     end ;
 
@@ -1647,8 +1654,7 @@ begin
        end
     else begin
        HistogramFrm := THistogramFrm.Create(Self) ;
-       HistogramFrm.Left := 10 ;
-       HistogramFrm.Top := 10 ;
+       SetFormPosition( HistogramFrm,10,10,HistogramFrm.Width,HistogramFrm.Height);
        end ;
 
     end ;
@@ -1886,6 +1892,8 @@ procedure TMainFrm.FormCreate(Sender: TObject);
 // ------------------------------------
 // Initialisations when form is created
 // ------------------------------------
+var
+    i : Integer ;
 begin
 
     // Create program folder path
@@ -1920,6 +1928,14 @@ begin
             ShowMessage( 'Unable to create protocols folder' + PProtDirectory) ;
          end ;
 
+     // Initialise form positions
+     for i := 0 to High(FormPos) do begin
+         FormPos[i].Left := 0 ;
+         FormPos[i].Top := 0 ;
+         FormPos[i].Width := 0 ;
+         FormPos[i].Height := 0 ;
+         end;
+
      end;
 
 
@@ -1936,8 +1952,7 @@ begin
        end
     else begin
        WavGenFrm := TWavGenFrm.Create(Self) ;
-       WavGenFrm.Left := 40 ;
-       WavGenFrm.Top := 40 ;
+       SetFormPosition( WavGenFrm,40,40,WavGenFrm.Width,WavGenFrm.Height);
        end ;
 
     end ;
@@ -1951,8 +1966,7 @@ begin
     if FormExists( 'ExcSetupFrm' ) then ExcSetupFrm.SetFocus
     else begin
        ExcSetupFrm := TExcSetupFrm.Create(Self) ;
-       ExcSetupFrm.Left := 10 ;
-       ExcSetupFrm.Top := 10 ;
+       SetFormPosition( ExcSetupFrm,10,10,ExcSetupFrm.Width,ExcSetupFrm.Height);
        end ;
     end ;
 
@@ -1962,18 +1976,16 @@ procedure TMainFrm.mnSealTestClick(Sender: TObject);
 // Run pipette seal test/monitor
 // -----------------------------
 begin
-         // Analogue-only recording module
-         if FormExists( 'SealTestFrm' ) then begin
-            if SealTestFrm.WindowState = wsMinimized then SealTestFrm.WindowState := wsNormal ;
-            SealTestFrm.BringToFront ;
-            SealTestFrm.SetFocus ;
-            end
-         else begin
-            SealTestFrm := TSealTestFrm.Create(Self) ;
-            SealTestFrm.DisplayGrid := mnDisplayGrid.Checked ;
-            SealTestFrm.Left := 20 ;
-            SealTestFrm.Top := 20 ;
-            end ;
+
+    if FormExists( 'SealTestFrm' ) then begin
+       if SealTestFrm.WindowState = wsMinimized then SealTestFrm.WindowState := wsNormal ;
+       SealTestFrm.BringToFront ;
+       SealTestFrm.SetFocus ;
+       end
+    else begin
+       SealTestFrm := TSealTestFrm.Create(Self) ;
+       SetFormPosition( SealTestFrm,20,20,SealTestFrm.Width,SealTestFrm.Height);
+       end ;
     end ;
 
 
@@ -2038,8 +2050,7 @@ begin
       if FormExists( 'AVIFrm' ) then AVIFrm.SetFocus
       else begin
          AVIFrm := TAVIFrm.Create(Self) ;
-         AVIFrm.Left := 10 ;
-         AVIFrm.Top := 10 ;
+         SetFormPosition( AVIFrm,10,10,AVIFrm.Width,AVIFrm.Height);
          end ;
       end;
 
@@ -2135,8 +2146,7 @@ begin
        end
     else begin
        AverageFrm := TAverageFrm.Create(Self) ;
-       AverageFrm.Left := 20 ;
-       AverageFrm.Top := 20 ;
+       SetFormPosition( AverageFrm,20,20,AverageFrm.Width,AverageFrm.Height);
        end ;
 
     end ;
@@ -2155,8 +2165,7 @@ begin
        end
     else begin
        LineProfileFrm := TLineProfileFrm.Create(Self) ;
-       LineProfileFrm.Left := 40 ;
-       LineProfileFrm.Top := 40 ;
+       SetFormPosition( LineProfileFrm,40,40,LineProfileFrm.Width,LineProfileFrm.Height);
        end ;
 
     end ;
@@ -2175,24 +2184,9 @@ begin
        end
     else begin
        RatioFrm := TRatioFrm.Create(Self) ;
-       RatioFrm.Left := 20 ;
-       RatioFrm.Top := 20 ;
+       SetFormPosition( RatioFrm,20,20,RatioFrm.Width,RatioFrm.Height);
        end ;
 
-    end ;
-
-
-procedure TMainFrm.mnSetupADCClick(Sender: TObject);
-// ------------------------------
-// Open analogue inputs setup box
-// ------------------------------
-begin
-    if FormExists( 'SetupADCFrm' ) then SetupADCFrm.SetFocus
-    else begin
-       SetupADCFrm := TSetupADCFrm.Create(Self) ;
-       SetupADCFrm.Left := 20 ;
-       SetupADCFrm.Top := 20 ;
-       end ;
     end ;
 
 
@@ -2204,8 +2198,7 @@ begin
     if FormExists( 'SetupIonFrm' ) then SetupIonFrm.SetFocus
     else begin
        SetupIonFrm := TSetupIonFrm.Create(Self) ;
-       SetupIonFrm.Left := 10 ;
-       SetupIonFrm.Top := 10 ;
+       SetFormPosition( SetupIonFrm,10,10,SetupIonFrm.Width,SetupIonFrm.Height);
        end ;
     end ;
 
@@ -2270,8 +2263,13 @@ procedure TMainFrm.mnRecordADCOnlyClick(Sender: TObject);
 // Open A/D only recording window
 // ------------------------------
 begin
-     RecADCOnlyFrm := TRecADCOnlyFrm.Create(Self) ;
-     end;
+
+    if FormExists( 'RecADCOnlyFrm' ) then RecADCOnlyFrm.SetFocus
+    else begin
+       RecADCOnlyFrm := TRecADCOnlyFrm.Create(Self) ;
+       SetFormPosition( RecADCOnlyFrm,20,20,RecADCOnlyFrm.Width,RecADCOnlyFrm.Height);
+       end ;
+    end ;
 
 
 procedure TMainFrm.mnExportImagesClick(Sender: TObject);
@@ -2476,8 +2474,7 @@ begin
        end
     else begin
        FilePropsFrm := TFilePropsFrm.Create(Self) ;
-       FilePropsFrm.Left := 10 ;
-       FilePropsFrm.Top := 10 ;
+       SetFormPosition( FilePropsFrm,10,10,FilePropsFrm.Width,FilePropsFrm.Height);
        end ;
 
      end;
@@ -2516,8 +2513,7 @@ begin
     if FormExists( 'StimulusDefaultsFrm' ) then StimulusDefaultsFrm.SetFocus
     else begin
        StimulusDefaultsFrm := TStimulusDefaultsFrm.Create(Self) ;
-       StimulusDefaultsFrm.Left := 50 ;
-       StimulusDefaultsFrm.Top := 50 ;
+       SetFormPosition( StimulusDefaultsFrm,50,50,StimulusDefaultsFrm.Width,StimulusDefaultsFrm.Height);
        end ;
     end ;
 
@@ -2603,9 +2599,9 @@ begin
        end
     else begin
        SnapFrm := TSnapFrm.Create(Self) ;
-       SnapFrm.Left := 20 ;
-       SnapFrm.Top := 20 ;
-       SnapFrm.Width := (ClientWidth div 2) - SnapFrm.Left ;
+       SetFormPosition( SnapFrm,20,20,
+                        ClientWidth - SnapFrm.Left - 40,
+                        ClientHeight - SnapFrm.Top - 40);
        end ;
 
     end ;
@@ -2624,8 +2620,7 @@ begin
        end
     else begin
        PhotoStimFrm := TPhotoStimFrm.Create(Self) ;
-       PhotoStimFrm.Left := 20 ;
-       PhotoStimFrm.Top := 20 ;
+       SetFormPosition( PhotoStimFrm,20,20,PhotoStimFrm.Width,PhotoStimFrm.Height);
        end ;
 
     end ;
@@ -2831,9 +2826,44 @@ begin
 
      end ;
 
+procedure TMainFrm.SetFormPosition(
+          Form : TForm ;             // Form
+          Left : Integer ;           // Left edge of form
+          Top : Integer ;            // Top edge
+          Width : Integer ;          // Form width
+          Height : Integer           // Form height
+          ) ;
+// -----------------
+// Set form position
+// -----------------
+begin
 
+     if FormPos[Form.Tag].Width = 0 then begin
+        FormPos[Form.Tag].Left := Left ;
+        FormPos[Form.Tag].Top := Top ;
+        FormPos[Form.Tag].Width := Width ;
+        FormPos[Form.Tag].Height := Height ;
+        end;
 
+     Form.Left := FormPos[Form.Tag].Left ;
+     Form.Top := FormPos[Form.Tag].Top ;
+     Form.Width := FormPos[Form.Tag].Width ;
+     Form.Height := FormPos[Form.Tag].Height ;
+     end ;
 
+procedure TMainFrm.SaveFormPosition(
+          Form : TForm               // Form
+          ) ;
+// ------------------
+// Save form position
+// ------------------
+begin
+
+    FormPos[Form.Tag].Left := Form.Left ;
+    FormPos[Form.Tag].Top := Form.Top ;
+    FormPos[Form.Tag].Width := Form.Width ;
+    FormPos[Form.Tag].Height := Form.Height ;
+    end ;
 
 
 end.

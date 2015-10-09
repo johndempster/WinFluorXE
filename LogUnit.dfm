@@ -1,4 +1,5 @@
 object LogFrm: TLogFrm
+  Tag = 20
   Left = 367
   Top = 326
   Caption = 'Log'

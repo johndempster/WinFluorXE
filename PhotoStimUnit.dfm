@@ -1,4 +1,5 @@
 object PhotoStimFrm: TPhotoStimFrm
+  Tag = 24
   Left = 513
   Top = 356
   Caption = 'Edit Photo-Stimulus'

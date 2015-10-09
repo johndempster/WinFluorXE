@@ -4,6 +4,7 @@ unit SetCCDReadoutUnit;
 // ---------------------------------------
 // 20.02.07 Limits of range now set correctly
 // 22.05.13 Cancel now closes form rather than hides (avoiding form error)
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -98,6 +99,10 @@ procedure TSetCCDReadoutFrm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 end.

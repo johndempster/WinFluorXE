@@ -38,6 +38,10 @@ unit SetupUnit;
 // 23.01.15 JD DarkLevelLo and  DarkLeveHi added
 // 14.5.15  JD Disable Exposure Interval Limit check box added
 // 03.9.15  JD edADCInterval.LoLimit now set to LabIO.DACMinUpdateInterval
+// 16.09.15 JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 25.09.15 JD Analog Channels & Amplifiers setup transferred from setupadcfrm to
+//             Analog Channels & Amplifiers page of this form. Capacity page added
+
 interface
 
 
@@ -320,6 +324,53 @@ type
     Label82: TLabel;
     edXYStageYMax: TValidatedEdit;
     ckDisableExposureIntervalLimit: TCheckBox;
+    Label83: TLabel;
+    edNumChannels: TValidatedEdit;
+    Label85: TLabel;
+    cbADCVoltageRange: TComboBox;
+    GroupBox20: TGroupBox;
+    Label84: TLabel;
+    cbAmplifier1: TComboBox;
+    edVDivide0: TValidatedEdit;
+    GainTelPanel1: TPanel;
+    lbTelegraphChannel: TLabel;
+    edGainTelegraphChannel1: TValidatedEdit;
+    ModeTelPanel1: TPanel;
+    Label86: TLabel;
+    edModeTelegraphChannel1: TValidatedEdit;
+    GroupBox21: TGroupBox;
+    Label87: TLabel;
+    cbAmplifier2: TComboBox;
+    edVDivide1: TValidatedEdit;
+    GainTelPanel2: TPanel;
+    Label88: TLabel;
+    edGainTelegraphChannel2: TValidatedEdit;
+    ModeTelPanel2: TPanel;
+    Label89: TLabel;
+    edModeTelegraphChannel2: TValidatedEdit;
+    ChannelsGrp: TGroupBox;
+    ChannelTable: TStringGrid;
+    CapacityTab: TTabSheet;
+    CapGrp: TGroupBox;
+    GroupBox22: TGroupBox;
+    Label90: TLabel;
+    Label91: TLabel;
+    edCapRSeriesComp: TValidatedEdit;
+    edCapCellCapacityComp: TValidatedEdit;
+    ckCapacityCompensationInUse: TCheckBox;
+    GroupBox23: TGroupBox;
+    Label92: TLabel;
+    Label93: TLabel;
+    edCapFrequency: TValidatedEdit;
+    edCapVRev: TValidatedEdit;
+    GroupBox24: TGroupBox;
+    Label94: TLabel;
+    Label95: TLabel;
+    Label96: TLabel;
+    edCapCmDisplayMax: TValidatedEdit;
+    edCapGmDisplayMax: TValidatedEdit;
+    edCapGsDisplayMax: TValidatedEdit;
+    ckCapEnabled: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure bOKClick(Sender: TObject);
@@ -335,6 +386,8 @@ type
     procedure cbCameraADCChange(Sender: TObject);
     procedure cbCameraNamesChange(Sender: TObject);
     procedure cbLSControl0Change(Sender: TObject);
+    procedure cbADCInChange(Sender: TObject);
+    procedure edNumChannelsKeyPress(Sender: TObject; var Key: Char);
   private
     { Private declarations }
     CameraOpenRequired : Boolean ;
@@ -351,7 +404,10 @@ type
    Function GetLSControlSetting(
             Panel : TPanel ) : Integer ;
    procedure GetAllLSControlSetting ;
-
+   procedure UpdateChannelEditTable ;
+   procedure GetChannelsFromEditTable ;
+   procedure UpdateAmplifierSettings ;
+   procedure GetADCVoltageRangeList ;
   public
     { Public declarations }
   end;
@@ -364,6 +420,12 @@ implementation
 uses Main, shared, LabIOUnit, TimeCourseUnit, AmpModule , LightSourceUnit,
   RecUnit, SnapUnit, RecADCOnlyUnit, Sealtest, LogUnit, ZStageUnit, XYStageUnit;
 
+const
+     // Channel calibration table column definitions
+     ChNum = 0 ;
+     ChName = 1 ;
+     ChCal = 2 ;
+     ChUnits = 3 ;
 
 {$R *.DFM}
 
@@ -520,6 +582,46 @@ begin
      edDarkLevelLo.Value := MainFrm.DarkLevelLo ;
      edDarkLevelHi.Value := MainFrm.DarkLevelHi ;
 
+     // Analogue input settings
+     edNumChannels.Value := MainFrm.ADCNumChannels ;
+     edADCInterval.Value := MainFrm.ADCScanInterval ;
+
+     // Analog & Patch clamp page
+
+     // Get available A/D input voltage ranges and add to list
+     GetADCVoltageRangeList ;
+
+     // Setup Amplifier #1 telegraph options
+     Amplifier.GetList( cbAmplifier1.Items ) ;
+     cbAmplifier1.ItemIndex := cbAmplifier1.Items.IndexofObject(TObject(Amplifier.AmplifierType[1])) ;
+     Amplifier.GetList( cbAmplifier2.Items ) ;
+     cbAmplifier2.ItemIndex := cbAmplifier2.Items.IndexofObject(TObject(Amplifier.AmplifierType[2])) ;
+
+     edGainTelegraphChannel1.Value := Amplifier.GainTelegraphChannel[1] ;
+     edModeTelegraphChannel1.Value := Amplifier.ModeTelegraphChannel[1] ;
+     edGainTelegraphChannel2.Value := Amplifier.GainTelegraphChannel[2] ;
+     edModeTelegraphChannel2.Value := Amplifier.ModeTelegraphChannel[2] ;
+
+     // Command voltage divide factor
+     edVDivide0.Value := MainFrm.VCommand[0].DivideFactor ;
+     edVDivide1.Value := MainFrm.VCommand[1].DivideFactor ;
+
+     // Get channel settings
+     UpdateAmplifierSettings ;
+     UpdateChannelEditTable ;
+
+     // Capacity page
+
+     ckCapEnabled.Checked := MainFrm.Cap.Enabled ;
+     edCapFrequency.Value := MainFrm.Cap.Frequency ;
+     edCapVRev.Value :=  MainFrm.Cap.VRev ;
+     ckCapacityCompensationInUse.Checked := MainFrm.Cap.CompensationInUse ;
+     edCapRSeriesComp.Value :=  MainFrm.Cap.RSeriesComp ;
+     edCapCellCapacityComp.Value := MainFrm.Cap.CellCapacityComp ;
+     edCapGmDisplayMax.Value :=  MainFrm.Cap.GmDisplayMax ;
+     edCapGsDisplayMax.Value :=  MainFrm.Cap.GsDisplayMax ;
+     edCapCmDisplayMax.Value :=  MainFrm.Cap.CmDisplayMax ;
+
      ClientWidth := TabPage.Left + TabPage.Width + 5 ;
      ClientHeight := bOk.Top + bOk.Height + 5 ;
 
@@ -527,6 +629,40 @@ begin
      ckAutoReset.Checked := MainFrm.AutoResetInterfaceCards ;
 
      end ;
+
+procedure TSetupFrm.GetADCVoltageRangeList ;
+// ---------------------------------------------------------
+// Get available A/D input voltage ranges and add to list
+// ---------------------------------------------------------
+var
+    i,Device : Integer ;
+begin
+     { Set up A/D Converter voltage range selection box }
+     // Get A/D converter device
+     if (MainFrm.IOConfig.ADCIn >= 0) and
+        (MainFrm.IOConfig.ADCIn <= MaxResources) then
+        Device := LabIO.Resource[MainFrm.IOConfig.ADCIn].Device
+     else Device := 0 ;
+
+     cbADCVoltageRange.clear ;
+     if Device > 0 then begin
+        // Get ranges supported by interface
+        for i := 0 to LabIO.NumADCVoltageRanges[Device]-1 do begin
+            cbADCVoltageRange.items.add(
+            format(' +/- %.3g V ',[LabIO.ADCVoltageRanges[Device,i]] )) ;
+            if Abs((MainFrm.ADCVoltageRange/LabIO.ADCVoltageRanges[Device,i])-1.0)
+               < 1E-2 then cbADCVoltageRange.ItemIndex := i ;
+            if Abs((MainFrm.ADCVoltageRange/LabIO.ADCVoltageRanges[Device,i])-1.0)
+               < 1E-2 then cbADCVoltageRange.ItemIndex := i ;
+            end ;
+        end
+     else begin
+        cbADCVoltageRange.items.add(
+        format(' +/- %.3g V ',[MainFrm.ADCVoltageRange] )) ;
+        cbADCVoltageRange.ItemIndex := 0 ;
+        end ;
+     end ;
+
 
 procedure TSetupFrm.DisplayLightSourceSettingsPanels ;
 // ------------------------------------------------------------
@@ -611,6 +747,9 @@ begin
      LABIO.GetADCInputModes( cbADCInputMode.Items ) ;
      cbADCInputMode.ItemIndex := Min(LABIO.ADCInputMode,cbADCInputMode.Items.Count-1) ;
 
+     // Get of A/D input voltage ranges
+     GetADCVoltageRangeList ;
+
      // Camera start trigger line options
      // ---------------------------------
 
@@ -627,7 +766,7 @@ begin
          else if (LabIO.Resource[i].ResourceType = DIGOut) and
                  LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
             // Digital outputs
-            s := format('Device %d: PO.%d',
+            s := format('Device %d: P0.%d',
                  [LabIO.Resource[i].Device,
                   LabIO.Resource[i].StartChannel]) ;
                 cbCameraStart.Items.AddObject(s,TObject(i))
@@ -686,7 +825,7 @@ begin
          if (LabIO.Resource[i].ResourceType = DIGOut) and
                  LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
                  // Digital outputs
-                 s := format('Device %d: PO0.%d',
+                 s := format('Device %d: P0.%d',
                      [LabIO.Resource[i].Device,
                       LabIO.Resource[i].StartChannel]) ;
                 cbEMFilterStart.Items.AddObject(s,TObject(i))
@@ -706,7 +845,7 @@ begin
     for i := 0 to LabIO.NumResources-1 do
          if (LabIO.Resource[i].ResourceType = DIGOut) and
             LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
-         s := format('Device %d: PO0.%d',
+         s := format('Device %d: P0.%d',
               [LabIO.Resource[i].Device,
                LabIO.Resource[i].StartChannel]) ;
          cbDigitalStimStart.Items.AddObject(s,TObject(i))
@@ -793,7 +932,7 @@ begin
      cbLSShutter.Items.AddObject('None',TObject(MaxResources+1)) ;
      for i := 0 to LabIO.NumResources-1 do
          if (LabIO.Resource[i].ResourceType = DIGOut) then begin
-         s := format('Device %d: PO0.%d',
+         s := format('Device %d: P0.%d',
               [LabIO.Resource[i].Device,
                LabIO.Resource[i].StartChannel]) ;
          cbLSShutter.Items.AddObject(s,TObject(i))
@@ -869,7 +1008,7 @@ begin
                  (not LightSource.DACOutputsRequired) and
                  LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
                  // Digital outputs
-                 s := format('Device %d: PO0.%d',
+                 s := format('Device %d: P0.%d',
                      [LabIO.Resource[i].Device,
                       LabIO.Resource[i].StartChannel]) ;
                 ComboBox.Items.AddObject(s,TObject(i))
@@ -1019,17 +1158,25 @@ procedure TSetupFrm.bOKClick(Sender: TObject);
 // Update settings and close setup form
 // ------------------------------------
 var
-    BadChar : Integer ;
+    BadChar,ADCDevice : Integer ;
 begin
 
     Screen.Cursor := crDefault ;
 
     // Update I/O configuration
-    MainFrm.IOConfig.ADCIn :=
-    Integer(cbADCIn.Items.Objects[cbADCIn.ItemIndex]) ;
+    MainFrm.IOConfig.ADCIn := Integer(cbADCIn.Items.Objects[cbADCIn.ItemIndex]) ;
 
     // A/D channel input mode
     LABIO.ADCInputMode := cbADCInputMode.ItemIndex ;
+
+    if (MainFrm.IOConfig.ADCIn >= 0) and
+        (MainFrm.IOConfig.ADCIn <= MaxResources) then begin
+        ADCDevice := LabIO.Resource[MainFrm.IOConfig.ADCIn].Device ;
+        MainFrm.ADCVoltageRange := LabIO.ADCVoltageRanges[ ADCDevice,cbADCVoltageRange.ItemIndex] ;
+       MainFrm.ADCVoltageRange := LabIO.ADCVoltageRanges[ ADCDevice,cbADCVoltageRange.ItemIndex] ;
+       end
+     else MainFrm.ADCVoltageRange := 10.0 ;
+
 
     MainFrm.IOConfig.CameraStart :=
     Integer(cbCameraStart.Items.Objects[cbCameraStart.ItemIndex]) ;
@@ -1147,7 +1294,6 @@ begin
 
     MainFrm.ADCScanInterval := edADCInterval.Value ;
 
-
     // Camera video mode
     MainFrm.Cam1.CameraMode := cbCameraMode.ItemIndex ;
 
@@ -1206,6 +1352,45 @@ begin
     // Auto reset interface cards
     MainFrm.AutoResetInterfaceCards := ckAutoReset.Checked ;
 
+    // Get settings from channel table
+    GetChannelsFromEditTable ;
+
+    // Ensure amplifier settings are up to date
+    UpdateAmplifierSettings ;
+
+    // Analogue input settings
+    MainFrm.ADCNumChannels := Round(edNumChannels.Value)  ;
+
+    // Channel scanning interval
+    MainFrm.ADCScanInterval := edADCInterval.Value ;
+
+
+    // Setup Amplifier telegraph options
+    Amplifier.AmplifierType[1] := Integer(cbAmplifier1.Items.Objects[cbAmplifier1.ItemIndex]) ;
+    Amplifier.GainTelegraphChannel[1] := Round(edGainTelegraphChannel1.Value) ;
+    Amplifier.ModeTelegraphChannel[1] := Round(edModeTelegraphChannel1.Value) ;
+    Amplifier.AmplifierType[2] := Integer(cbAmplifier2.Items.Objects[cbAmplifier2.ItemIndex]) ;
+    Amplifier.GainTelegraphChannel[2] := Round(edGainTelegraphChannel2.Value) ;
+    Amplifier.ModeTelegraphChannel[2] := Round(edModeTelegraphChannel2.Value) ;
+
+    // Get command voltage divide factor
+    // (If an amplifier is defined, it over-rides user entered setting
+    MainFrm.VCommand[0].DivideFactor := edVDivide0.Value ;
+    Amplifier.GetCommandVoltageDivideFactor(1,MainFrm.VCommand[0].DivideFactor) ;
+    MainFrm.VCommand[1].DivideFactor := edVDivide1.Value ;
+    Amplifier.GetCommandVoltageDivideFactor(2,MainFrm.VCommand[1].DivideFactor) ;
+
+    // Capacity calculation
+    MainFrm.Cap.Enabled := ckCapEnabled.Checked ;
+    MainFrm.Cap.Frequency := edCapFrequency.Value ;
+    MainFrm.Cap.VRev := edCapVRev.Value ;
+    MainFrm.Cap.CompensationInUse := ckCapacityCompensationInUse.Checked ;
+    MainFrm.Cap.RSeriesComp := edCapRSeriesComp.Value ;
+    MainFrm.Cap.CellCapacityComp := edCapCellCapacityComp.Value ;
+    MainFrm.Cap.GmDisplayMax := edCapGmDisplayMax.Value ;
+    MainFrm.Cap.GsDisplayMax := edCapGsDisplayMax.Value ;
+    MainFrm.Cap.CmDisplayMax := edCapCmDisplayMax.Value ;
+
     Close ;
 
     end;
@@ -1243,6 +1428,10 @@ procedure TSetupFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
      MainFrm.mnCameraSetup.Enabled := True ;
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 
@@ -1342,6 +1531,18 @@ begin
         end ;
      end;
 
+procedure TSetupFrm.edNumChannelsKeyPress(Sender: TObject; var Key: Char);
+// ---------------------------
+// No. of A/D channels changed
+// ---------------------------
+begin
+     if key = #13 then begin
+        GetChannelsFromEditTable ;
+        MainFrm.ADCNumChannels :=  Round(edNumChannels.Value) ;
+        UpdateChannelEditTable ;
+        end ;
+     end ;
+
 procedure TSetupFrm.bResetDevicesClick(Sender: TObject);
 begin
 
@@ -1398,6 +1599,15 @@ begin
         end ;
 
      end;
+
+procedure TSetupFrm.cbADCInChange(Sender: TObject);
+// --------------------------
+// A/D input channels changed
+// --------------------------
+begin
+    MainFrm.IOConfig.ADCIn := Integer(cbADCIn.Items.Objects[cbADCIn.ItemIndex]) ;
+    GetADCVoltageRangeList ;
+    end;
 
 procedure TSetupFrm.cbCameraADCChange(Sender: TObject);
 // -------------------
@@ -1546,6 +1756,96 @@ begin
 
 
       end ;
+
+procedure TSetupFrm.UpdateChannelEditTable ;
+// ----------------------------
+// Update channel editing table
+// ----------------------------
+var
+     ch : Integer ;
+begin
+
+     { Set A/D input channel calibration table }
+     ChannelTable.cells[ChNum,0] := 'Ch.' ;
+     ChannelTable.colwidths[ChNum] := ChannelTable.DefaultColWidth div 2 ;
+     ChannelTable.cells[ChName,0] := 'Name' ;
+     ChannelTable.colwidths[ChName] := ChannelTable.DefaultColWidth ;
+     ChannelTable.cells[ChCal,0] := 'V/Units' ;
+     ChannelTable.colwidths[ChCal] := (5*ChannelTable.DefaultColWidth) div 4 ;
+     ChannelTable.cells[ChUnits,0] := 'Units' ;
+     ChannelTable.colwidths[ChUnits] := ChannelTable.DefaultColWidth ;
+     ChannelTable.RowCount := MainFrm.ADCNumChannels + 1;
+     ChannelTable.options := [goEditing,goHorzLine,goVertLine] ;
+
+     for ch := 0 to MainFrm.ADCNumChannels-1 do begin
+         ChannelTable.cells[ChNum,ch+1] := IntToStr(ch) ;
+         ChannelTable.cells[ChName,ch+1] := MainFrm.ADCChannel[ch].ADCName ;
+         ChannelTable.cells[ChCal,ch+1] := Format( '%5.4g',
+                                           [MainFrm.ADCChannel[ch].ADCCalibrationFactor] ) ;
+         ChannelTable.cells[ChUnits,ch+1] := MainFrm.ADCChannel[ch].ADCUnits ;
+         end ;
+
+     end ;
+
+
+procedure TSetupFrm.GetChannelsFromEditTable ;
+// --------------------------------------------
+// Get channel calibration data from edit table
+// --------------------------------------------
+var
+    ch : Integer ;
+begin
+
+    for ch := 0 to MainFrm.ADCNumChannels-1 do begin
+       MainFrm.ADCChannel[ch].ADCName := ChannelTable.cells[ChName,ch+1] ;
+       MainFrm.ADCChannel[ch].ADCCalibrationFactor := ExtractFloat(
+                                             ChannelTable.cells[ChCal,ch+1],
+                                             MainFrm.ADCChannel[ch].ADCCalibrationFactor);
+       MainFrm.ADCChannel[ch].ADCUnits := ChannelTable.cells[ChUnits,ch+1] ;
+       end ;
+    end ;
+
+
+procedure TSetupFrm.UpdateAmplifierSettings ;
+// ----------------------------------------------
+// Update channel settings when amplifier changed
+// ----------------------------------------------
+var
+    ch : Integer ;
+
+begin
+
+     Amplifier.AmplifierType[1] := Integer(cbAmplifier1.Items.Objects[cbAmplifier1.ItemIndex]) ;
+     GainTelPanel1.Visible := Amplifier.NeedsGainTelegraphChannel[1] ;
+     ModeTelPanel1.Visible := Amplifier.NeedsModeTelegraphChannel[1] ;
+
+     Amplifier.AmplifierType[2] := Integer(cbAmplifier2.Items.Objects[cbAmplifier2.ItemIndex]) ;
+     GainTelPanel2.Visible := Amplifier.NeedsGainTelegraphChannel[2] ;
+     ModeTelPanel2.Visible := Amplifier.NeedsModeTelegraphChannel[2] ;
+
+     // Update channels 0 & 1 settings which depend upon amplifier
+     for ch := 0 to MainFrm.ADCNumChannels-1 do begin
+
+         Amplifier.GetChannelSettings( ch,
+                                       MainFrm.ADCChannel[ch].ADCName,
+                                       MainFrm.ADCChannel[ch].ADCUnits,
+                                       MainFrm.ADCChannel[ch].ADCCalibrationFactor,
+                                       MainFrm.ADCChannel[ch].ADCAmplifierGain ) ;
+
+        end ;
+
+     // Get command voltage divide factor
+     // (If an amplifier is defined, it over-rides user entered setting
+     MainFrm.VCommand[0].DivideFactor := edVDivide0.Value ;
+     Amplifier.GetCommandVoltageDivideFactor(1,MainFrm.VCommand[0].DivideFactor) ;
+     edVDivide0.Value := MainFrm.VCommand[0].DivideFactor  ;
+     MainFrm.VCommand[1].DivideFactor := edVDivide1.Value ;
+     Amplifier.GetCommandVoltageDivideFactor(2,MainFrm.VCommand[1].DivideFactor) ;
+     edVDivide1.Value := MainFrm.VCommand[1].DivideFactor  ;
+
+     end ;
+
+
 
 
 end.

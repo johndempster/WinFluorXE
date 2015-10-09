@@ -1,9 +1,10 @@
 object WavGenFrm: TWavGenFrm
+  Tag = 52
   Left = 550
   Top = 379
-  Width = 649
-  Height = 569
   Caption = 'Stimulus Editor'
+  ClientHeight = 542
+  ClientWidth = 641
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -3562,7 +3563,6 @@ object WavGenFrm: TWavGenFrm
           Top = 80
           Width = 177
           Height = 23
-          ItemHeight = 15
           TabOrder = 1
           Text = 'cbNextProgram'
           OnChange = cbNextProgramChange
@@ -4488,7 +4488,7 @@ object WavGenFrm: TWavGenFrm
     object Label2: TLabel
       Left = 8
       Top = 16
-      Width = 82
+      Width = 81
       Height = 14
       Caption = 'Vout Waveforms'
       Font.Charset = DEFAULT_CHARSET

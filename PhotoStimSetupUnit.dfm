@@ -1,4 +1,5 @@
 object PhotoStimSetupFrm: TPhotoStimSetupFrm
+  Tag = 23
   Left = 716
   Top = 422
   BorderStyle = bsDialog
@@ -172,7 +173,7 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
         object Label48: TLabel
           Left = 21
           Top = 58
-          Width = 58
+          Width = 57
           Height = 14
           Caption = 'Voltage Pi:'
         end
@@ -189,7 +190,6 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
           Width = 89
           Height = 35
           BevelOuter = bvNone
-          ParentBackground = True
           TabOrder = 0
           object rbConoptics302A1: TRadioButton
             Left = 0
@@ -216,7 +216,6 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
           Width = 89
           Height = 33
           BevelOuter = bvNone
-          ParentBackground = True
           TabOrder = 1
           object rbPolarizationCrossA1: TRadioButton
             Left = 0
@@ -325,14 +324,14 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
         object Label3: TLabel
           Left = 11
           Top = 58
-          Width = 68
+          Width = 67
           Height = 14
           Caption = 'Min Voltage:'
         end
         object Label4: TLabel
           Left = 9
           Top = 82
-          Width = 70
+          Width = 69
           Height = 14
           Caption = 'Max Voltage:'
         end
@@ -467,6 +466,10 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
       Font.Style = [fsBold]
       ImageIndex = 2
       ParentFont = False
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label35: TLabel
         Left = 311
         Top = 10
@@ -572,7 +575,7 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
         object Label9: TLabel
           Left = 21
           Top = 58
-          Width = 58
+          Width = 57
           Height = 14
           Caption = 'Voltage Pi:'
         end
@@ -589,7 +592,6 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
           Width = 89
           Height = 35
           BevelOuter = bvNone
-          ParentBackground = True
           TabOrder = 0
           object rbConoptics302A2: TRadioButton
             Left = 0
@@ -616,7 +618,6 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
           Width = 89
           Height = 33
           BevelOuter = bvNone
-          ParentBackground = True
           TabOrder = 1
           object rbPolarizationCrossA2: TRadioButton
             Left = 0
@@ -725,14 +726,14 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
         object Label17: TLabel
           Left = 11
           Top = 58
-          Width = 68
+          Width = 67
           Height = 14
           Caption = 'Min Voltage:'
         end
         object Label18: TLabel
           Left = 9
           Top = 82
-          Width = 70
+          Width = 69
           Height = 14
           Caption = 'Max Voltage:'
         end
@@ -861,6 +862,10 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
     object Attenuator3Tab: TTabSheet
       Caption = 'Attenuator 3'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label19: TLabel
         Left = 17
         Top = 10
@@ -1018,7 +1023,7 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
         object Label24: TLabel
           Left = 21
           Top = 58
-          Width = 58
+          Width = 57
           Height = 14
           Caption = 'Voltage Pi:'
           Font.Charset = ANSI_CHARSET
@@ -1047,7 +1052,6 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
           Width = 89
           Height = 35
           BevelOuter = bvNone
-          ParentBackground = True
           TabOrder = 0
           object rbConoptics302A3: TRadioButton
             Left = 0
@@ -1086,7 +1090,6 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
           Width = 89
           Height = 33
           BevelOuter = bvNone
-          ParentBackground = True
           TabOrder = 1
           object rbPolarizationCrossA3: TRadioButton
             Left = 0
@@ -1230,7 +1233,7 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
         object Label28: TLabel
           Left = 11
           Top = 58
-          Width = 68
+          Width = 67
           Height = 14
           Caption = 'Min Voltage:'
           Font.Charset = ANSI_CHARSET
@@ -1243,7 +1246,7 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
         object Label29: TLabel
           Left = 9
           Top = 82
-          Width = 70
+          Width = 69
           Height = 14
           Caption = 'Max Voltage:'
           Font.Charset = ANSI_CHARSET
@@ -1424,6 +1427,10 @@ object PhotoStimSetupFrm: TPhotoStimSetupFrm
     object PrairieView: TTabSheet
       Caption = 'PrairieView'
       ImageIndex = 4
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object Label31: TLabel
         Left = 9
         Top = 10

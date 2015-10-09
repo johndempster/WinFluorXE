@@ -9,6 +9,7 @@ unit AverageUnit;
 // 09.05.08 ... Dual-rate, multiwavelength support added
 // 10.09.09 ... Frame differences added
 // 13.11.12 ... A/D data now copied by 1 Mbyte buffers and using 64 bit scan counter ADCCopy()
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -420,6 +421,9 @@ begin
      for i := 0 to MainFrm.IDRFile.NumFrameTypes-1 do FreeMem( PAvgBuf[i] ) ;
 
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
 
      end;
 

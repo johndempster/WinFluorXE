@@ -11,6 +11,7 @@ unit LineProfileUnit;
 // 12.07.07 Cursor readout now displayed within plot
 // 10.09.09 JD Edge tracking facility added
 //             Pixel intensity now scaled by .IDRFile.IntensityScale & .IDRFile.IntensityOffset
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -719,6 +720,10 @@ begin
 
      // Request destruction of form object
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 

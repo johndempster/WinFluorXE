@@ -1,4 +1,5 @@
 object DynamicProtocolSetupFrm: TDynamicProtocolSetupFrm
+  Tag = 7
   Left = 1291
   Top = 460
   BorderStyle = bsDialog
@@ -105,7 +106,6 @@ object DynamicProtocolSetupFrm: TDynamicProtocolSetupFrm
     Top = 16
     Width = 89
     Height = 21
-    ItemHeight = 13
     TabOrder = 2
     Text = 'cbChannel'
   end
@@ -114,7 +114,6 @@ object DynamicProtocolSetupFrm: TDynamicProtocolSetupFrm
     Top = 16
     Width = 89
     Height = 21
-    ItemHeight = 13
     TabOrder = 3
     Text = 'cbDirection'
   end
@@ -206,7 +205,6 @@ object DynamicProtocolSetupFrm: TDynamicProtocolSetupFrm
     Width = 145
     Height = 21
     Hint = 'Stimulation program in current use'
-    ItemHeight = 13
     TabOrder = 8
     Text = 'cbStimProgram'
   end
@@ -216,7 +214,6 @@ object DynamicProtocolSetupFrm: TDynamicProtocolSetupFrm
     Width = 145
     Height = 21
     Hint = 'Stimulation program in current use'
-    ItemHeight = 13
     TabOrder = 9
     Text = 'cbPhotoStimProgram'
   end

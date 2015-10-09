@@ -1,4 +1,5 @@
 object PrintRecFrm: TPrintRecFrm
+  Tag = 29
   Left = 470
   Top = 256
   BorderStyle = bsDialog
@@ -386,6 +387,8 @@ object PrintRecFrm: TPrintRecFrm
       Left = 0
       Top = 0
       Caption = 'Clipboard'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox4: TGroupBox
         Left = 4
         Top = 2

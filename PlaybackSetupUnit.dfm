@@ -1,4 +1,5 @@
 object PlaybackSetupFrm: TPlaybackSetupFrm
+  Tag = 25
   Left = 873
   Top = 194
   BorderStyle = bsDialog
@@ -435,7 +436,7 @@ object PlaybackSetupFrm: TPlaybackSetupFrm
     NumFrameTypes = 1
     FrameWidth = 0
     FrameHeight = 0
-    PixelDepth = 0
+    PixelDepth = 1
     NumZSections = 1
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000

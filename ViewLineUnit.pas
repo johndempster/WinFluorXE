@@ -24,6 +24,7 @@ unit ViewLineUnit;
 //          not agree, and half-range button would stop at a limit based on
 //          window width)
 // 13.11.12 ... .LOADADC() now uses 64 bit scan counter
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -1402,6 +1403,9 @@ begin
      if IMaxAt <> Nil then FreeMem( IMaxAt ) ;
 
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
 
      end;
 

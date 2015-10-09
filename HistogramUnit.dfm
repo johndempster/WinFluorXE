@@ -1,9 +1,10 @@
 object HistogramFrm: THistogramFrm
+  Tag = 16
   Left = 678
   Top = 245
-  Width = 578
-  Height = 496
   Caption = 'Pixel Intensity Histogram'
+  ClientHeight = 469
+  ClientWidth = 570
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -52,10 +53,10 @@ object HistogramFrm: THistogramFrm
     PrinterFontName = 'Arial'
     PrinterLineWidth = 1
     PrinterMarkerSize = 5
-    PrinterLeftMargin = 18
-    PrinterRightMargin = 18
-    PrinterTopMargin = 18
-    PrinterBottomMargin = 18
+    PrinterLeftMargin = 16
+    PrinterRightMargin = 16
+    PrinterTopMargin = 16
+    PrinterBottomMargin = 16
     PrinterDisableColor = False
     MetafileWidth = 500
     MetafileHeight = 400
@@ -88,7 +89,7 @@ object HistogramFrm: THistogramFrm
     object Label5: TLabel
       Left = 8
       Top = 48
-      Width = 65
+      Width = 64
       Height = 15
       Caption = 'Frame Type'
       Font.Charset = DEFAULT_CHARSET
@@ -105,7 +106,6 @@ object HistogramFrm: THistogramFrm
       Height = 23
       Hint = 'Source of images for intensity histogram'
       Style = csDropDownList
-      ItemHeight = 15
       ParentShowHint = False
       ShowHint = False
       TabOrder = 0
@@ -195,7 +195,6 @@ object HistogramFrm: THistogramFrm
       Height = 23
       Hint = 'Type of image frame to be used'
       Style = csDropDownList
-      ItemHeight = 15
       ParentShowHint = False
       ShowHint = False
       TabOrder = 3
@@ -253,7 +252,6 @@ object HistogramFrm: THistogramFrm
         Font.Height = -12
         Font.Name = 'Arial'
         Font.Style = []
-        ItemHeight = 15
         ParentFont = False
         TabOrder = 2
         OnChange = cbROIChange

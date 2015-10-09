@@ -1,4 +1,5 @@
 object SnapFrm: TSnapFrm
+  Tag = 43
   Left = 809
   Top = 531
   Caption = 'Record Image'

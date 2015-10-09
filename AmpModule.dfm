@@ -1,4 +1,5 @@
 object Amplifier: TAmplifier
+  Tag = 1
   OldCreateOrder = True
   OnCreate = AmplifierCreate
   OnDestroy = DataModuleDestroy

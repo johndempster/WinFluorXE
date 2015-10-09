@@ -7,7 +7,7 @@ unit SetupIonUnit;
 // 18.08.06 ... RMax / Keff boxes labels now
 // 23.08.06 ... Equations in use now saved to IDR file correctly
 // 30.08.10 ... Access violation when equation with blank name added fixed
-
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -333,6 +333,10 @@ procedure TSetupIonFrm.FormClose(Sender: TObject;
 begin
      MainFrm.mnSetupIon.Enabled := True ;
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 procedure TSetupIonFrm.bCancelClick(Sender: TObject);

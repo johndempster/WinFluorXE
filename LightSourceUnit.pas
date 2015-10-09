@@ -39,6 +39,8 @@ unit LightSourceUnit;
 //             lsMaxLasers increased from 3 to 8
 //             Light source intensities default to 50%
 // 17.02.15 JD Eight light source control lines can now be set individually to DAC or DIG outputs
+// 22.09.15 JD LEDFilterNumToVoltage() Now sets LED voltage correctly when LED off voltage is greater than on voltage
+//             as used with TTL gated LED light sources
 
 interface
 
@@ -919,7 +921,8 @@ begin
             LabIO.Resource[iResource].V := LEDOffVoltage ;
             LabIO.Resource[iResource].Delay := 0.0 ;
             if i = FilterNum then begin
-               LabIO.Resource[iResource].V := (LEDMaxVoltage - LEDOffVoltage)*LaserIntensity[FilterNum]*0.01;
+               LabIO.Resource[iResource].V := ((LEDMaxVoltage - LEDOffVoltage)*LaserIntensity[FilterNum]*0.01)
+                                              + LEDOffVoltage;
                end;
             end;
          end ;

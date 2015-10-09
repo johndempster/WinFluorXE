@@ -21,6 +21,7 @@ unit RecPlotUnit;
 // 16.06.14 flDisplayBuf now allocated internal to RecPlotUnit.pas add adjusted in size
 //          to match number of points in display
 // 02.09.15 Min/Max display compression now implemented in scADCDisplay component rather than this form.
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -31,9 +32,7 @@ uses
 Const
 
     GreyLevelLimit = $FFFF ;
-    MaxDisplayScans = 2000 ;
     MaxADCChannels = 8 ;
-    MaxFrames = 100000 ;
     MaxROIsRecPlot = 100 ;
 
 type
@@ -390,8 +389,8 @@ begin
 
     scRDisplay.MaxPoints := scFLDisplay.MaxPoints ;
     if pRDisplayBuf <> Nil then FreeMem(pRDisplayBuf) ;
-    GetMem( pRDisplayBuf,scRDisplay.MaxPoints*4) ;
     scRDisplay.NumBytesPerSample := 4 ;
+    GetMem( pRDisplayBuf,scRDisplay.MaxPoints*4) ;
     scRDisplay.SetDataBuf( pRDisplayBuf ) ;
 
     scRDisplay.XMax := scFLDisplay.MaxPoints ;
@@ -494,7 +493,6 @@ procedure TRecPlotFrm.ADCUpdateDisplay(
 var
     Done : Boolean ;
     ch : Integer ;
-    y : Integer ;
     s : String ;
 begin
 
@@ -554,7 +552,7 @@ begin
                          TimeLapseInterval,
                          False ) ;
     ADCInitialiseDisplay( ADCBuf,ADCMaxValue,DACUpdateInterval) ;
-    SetDisplayUnits ;
+    //SetDisplayUnits ;
 
     end ;
 
@@ -742,7 +740,6 @@ begin
    // Resize controls on form (if required)
    ResizeControls ;
 
-   //outputdebugString(PChar(format('FLDisplayPointer %d',[FLDisplayPointer]))) ;
      if FLDisplayPointer < (scFLDisplay.MaxPoints*NumFrameTypes) then begin
         scFLDisplay.DisplayNewPoints( (FLDisplayPointer div NumFrameTypes)-1 );
         FLDisplayFull := False ;
@@ -776,12 +773,10 @@ begin
         scRDisplay.ChanScale[0] := 1.0 / YScale ;
         scRDisplay.ChanName[0] := cbNumerator.Text + '/' + cbDenominator.Text ;
         R := 0.0 ;
-        outputdebugstring(pchar(format('%d %d %d %d',
-        [scRDisplay.NumPoints,scRDisplay.MaxPoints,scFLDisplay.NumPoints,scFLDisplay.MaxPoints])));
-        for i := scRDisplay.NumPoints-1 to scFLDisplay.NumPoints-1 do begin
+        for i := Max(scRDisplay.NumPoints-1,0) to scFLDisplay.NumPoints-1 do begin
             j := i*NumFrameTypes ;
-            yNum := pIntArray(pFLDisplayBuf)^[j+iFTNum] ;
-            yDen := pIntArray(pFLDisplayBuf)^[j+iFTDen] ;
+            yNum := pFLDisplayBuf^[j+iFTNum] ;
+            yDen := pFLDisplayBuf^[j+iFTDen] ;
             if yDen >= RatioExclusionThreshold then R := (yNum/yDen)
                                                else R := 0.0 ;
             pRDisplayBuf^[i] := Round( R*YScale ) ;
@@ -995,6 +990,9 @@ begin
                    else Action := caMinimize ;
 
      MainFrm.ROISize := Round(edROISize.Value) ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
 
      end;
 

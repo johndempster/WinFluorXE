@@ -1,10 +1,11 @@
 object AverageFrm: TAverageFrm
+  Tag = 2
   Left = 187
   Top = 222
   BorderStyle = bsDialog
   Caption = 'Average/Subtract Frames'
-  ClientHeight = 212
-  ClientWidth = 309
+  ClientHeight = 177
+  ClientWidth = 310
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -224,7 +225,7 @@ object AverageFrm: TAverageFrm
     NumFrameTypes = 1
     FrameWidth = 0
     FrameHeight = 0
-    PixelDepth = 0
+    PixelDepth = 1
     NumZSections = 1
     ZSpacing = 1.000000000000000000
     IntensityScale = 1.000000000000000000
@@ -262,7 +263,7 @@ object AverageFrm: TAverageFrm
     EventF0UseConstant = False
     EventF0DisplayMax = 10.000000000000000000
     EventF0SubtractF0 = False
-    Left = 48
-    Top = 160
+    Left = 80
+    Top = 136
   end
 end

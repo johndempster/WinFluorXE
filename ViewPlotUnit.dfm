@@ -1,4 +1,5 @@
 object ViewPlotFrm: TViewPlotFrm
+  Tag = 50
   Left = 641
   Top = 362
   Caption = 'Time Course Plots (File)'

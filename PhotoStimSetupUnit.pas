@@ -2,6 +2,7 @@ unit PhotoStimSetupUnit;
 //
 // 21.11.12 PrarieView.log changed to PrairieView.log to work with PV 4.3
 //          PraireView log file is now named prairieview.log rather than prarieview.log as in pre V4.3 versions
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -292,7 +293,10 @@ begin
   // Really close the form
   Action := caFree;
 
-end;
+  // Save position/size of form within parent window
+  MainFrm.SaveFormPosition( Self ) ;
+
+  end;
 
 procedure TPhotoStimSetupFrm.FormShow(Sender: TObject);
 begin

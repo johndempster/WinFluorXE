@@ -8,6 +8,7 @@ unit XYStageUnit;
 // 07.04.15 3 levels (coarse/medium/fine) of XY position control now available
 //          XY Position table can be directly edited by user
 // 30.06.15 Now reads actual stage position allowing positions set by joystick to be saved.
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -141,7 +142,7 @@ const
 
 implementation
 
-uses shared,math ;
+uses shared,math , MAIN;
 
 {$R *.dfm}
 
@@ -151,6 +152,10 @@ procedure TXYStageFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 // --------------
 begin
     ReadPositionTable ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
     end;
 
 procedure TXYStageFrm.FormCreate(Sender: TObject);

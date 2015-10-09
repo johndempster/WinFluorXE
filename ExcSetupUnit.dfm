@@ -1,4 +1,5 @@
 object ExcSetupFrm: TExcSetupFrm
+  Tag = 10
   Left = 556
   Top = 115
   Caption = 'Excitation Light Setup'

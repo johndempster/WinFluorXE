@@ -1,4 +1,5 @@
 object ZStage: TZStage
+  Tag = 54
   OldCreateOrder = False
   OnCreate = DataModuleCreate
   Height = 150

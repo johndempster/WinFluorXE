@@ -1,4 +1,5 @@
 object FilePropsFrm: TFilePropsFrm
+  Tag = 15
   Left = 342
   Top = 154
   Caption = 'File Properties'

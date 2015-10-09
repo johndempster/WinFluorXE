@@ -23,6 +23,7 @@ unit AVIUnit;
 // 17.02.13 ... 'AVIFileOpenA' & 'AVIFileCreateStreamA';changed to 'AVIFileOpenW' and 'AVIFileCreateStreamW'
 //              now runs correctly when compiled by Delphi XEn
 // 09.04.14 ... Analog traces now plotted correctly, fixing bug introduced 13.11.12
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 {$O-}
 interface
@@ -1285,6 +1286,10 @@ begin
 procedure TAVIFrm.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 

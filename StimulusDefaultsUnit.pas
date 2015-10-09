@@ -6,6 +6,8 @@ unit StimulusDefaultsUnit;
 // 21.12.07 Digital default settungs now limited to digital stimulus channels
 // 11.01.08 Default digital output states now held in LabIO.DigOutState[Device]
 // 04.10.09 NS .. Added third DAC channel, Vout2
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 08.10.15 .. JD Voltage outputs re-arranged and renamed Vout.0 etc.
 
 interface
 
@@ -251,6 +253,10 @@ procedure TStimulusDefaultsFrm.FormClose(Sender: TObject;
 // -----------------------
 begin
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 end.

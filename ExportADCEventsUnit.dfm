@@ -1,4 +1,5 @@
 object ExportEventsFrm: TExportEventsFrm
+  Tag = 11
   Left = 306
   Top = 136
   BorderStyle = bsDialog

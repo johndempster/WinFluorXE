@@ -1,4 +1,5 @@
 object XYStageFrm: TXYStageFrm
+  Tag = 53
   Left = 0
   Top = 0
   Caption = 'XY Stage Control'

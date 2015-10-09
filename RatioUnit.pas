@@ -7,6 +7,7 @@ unit RatioUnit;
 // 09.05.08 ... Dual-rate, multiwavelength support added
 // 21.011000ssssCaimagenowworks
 // 13.11.12 ... A/D data now copied by 1 Mbyte buffers and using 64 bit scan counter ADCCopy()
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -692,6 +693,9 @@ begin
      FreeMem( FrameList ) ;
 
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
 
      end;
 

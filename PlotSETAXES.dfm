@@ -1,4 +1,5 @@
 object PlotSetAxesFrm: TPlotSetAxesFrm
+  Tag = 27
   Left = 376
   Top = 123
   BorderStyle = bsDialog
@@ -88,7 +89,6 @@ object PlotSetAxesFrm: TPlotSetAxesFrm
       Height = 22
       Hint = 'Linear or logarithmic axis scaling '
       Style = csDropDownList
-      ItemHeight = 14
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
@@ -253,7 +253,6 @@ object PlotSetAxesFrm: TPlotSetAxesFrm
       Height = 22
       Hint = 'Linear or logarithmic axis scaling '
       Style = csDropDownList
-      ItemHeight = 14
       ParentShowHint = False
       ShowHint = True
       TabOrder = 0
@@ -387,7 +386,7 @@ object PlotSetAxesFrm: TPlotSetAxesFrm
     object Label5: TLabel
       Left = 8
       Top = 16
-      Width = 32
+      Width = 31
       Height = 14
       Caption = 'X Axis'
       Font.Charset = DEFAULT_CHARSET
@@ -400,7 +399,7 @@ object PlotSetAxesFrm: TPlotSetAxesFrm
     object Label6: TLabel
       Left = 8
       Top = 40
-      Width = 33
+      Width = 32
       Height = 14
       Caption = 'Y Axis'
       Font.Charset = DEFAULT_CHARSET
@@ -442,6 +441,8 @@ object PlotSetAxesFrm: TPlotSetAxesFrm
       Left = 0
       Top = 0
       Caption = 'XYGraph'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object TraceGrp: TGroupBox
         Left = 32
         Top = 0
@@ -535,7 +536,6 @@ object PlotSetAxesFrm: TPlotSetAxesFrm
           Font.Height = -11
           Font.Name = 'Arial'
           Font.Style = []
-          ItemHeight = 14
           ParentFont = False
           TabOrder = 1
           Items.Strings = (

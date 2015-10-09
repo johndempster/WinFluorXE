@@ -11,6 +11,7 @@ unit ExcSetupUnit;
 // 21.01
 // 05.03.14 Emission filter control and fractional exposure control added
 // 05.09.14 spectrum step size lower limit reduced to 1 nm
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -356,6 +357,10 @@ procedure TExcSetupFrm.FormClose(Sender: TObject;
   var Action: TCloseAction);
 begin
      Action := caFree ;
+
+     // Save position/size of form within parent window
+     MainFrm.SaveFormPosition( Self ) ;
+
      end;
 
 procedure TExcSetupFrm.bCancelClick(Sender: TObject);

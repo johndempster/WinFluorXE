@@ -1,4 +1,5 @@
 object SetAxesFrm: TSetAxesFrm
+  Tag = 36
   Left = 475
   Top = 174
   BorderStyle = bsDialog
@@ -484,6 +485,8 @@ object SetAxesFrm: TSetAxesFrm
       Left = 0
       Top = 0
       Caption = 'Histogram'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox1: TGroupBox
         Left = 8
         Top = 0

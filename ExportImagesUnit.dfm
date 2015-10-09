@@ -1,4 +1,5 @@
 object ExportImagesFrm: TExportImagesFrm
+  Tag = 13
   Left = 271
   Top = 177
   BorderStyle = bsDialog

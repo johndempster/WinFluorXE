@@ -5,6 +5,7 @@ unit SmoothDifferentiateUnit;
 // by Nicholas Schwarz
 //----------------------------------------------------------------------------//
 // 13.11.12 ... JD .LOADADC() now uses 64 bit scan counter
+// 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 
 interface
 
@@ -347,6 +348,10 @@ begin
   if m_Result <> Nil then begin
     FreeMem(m_Result);
     m_Result := Nil;
+
+  // Save position/size of form within parent window
+  MainFrm.SaveFormPosition( Self ) ;
+
   end;
 
   // Save window state
