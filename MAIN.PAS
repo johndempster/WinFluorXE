@@ -197,6 +197,7 @@ unit Main;
 //                    Analog channel and amplifier setup now on Analog Channel & Amplifiers page of
 //                    Camera / System setup.
 //                    Display time course trace compression now handled by Scopedisplay component.
+//                    Auto contrast adjustment now works.
 
 interface
 
@@ -788,7 +789,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.6 25-9-15 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.6 12-10-15 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
