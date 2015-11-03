@@ -198,6 +198,7 @@ unit Main;
 //                    Camera / System setup.
 //                    Display time course trace compression now handled by Scopedisplay component.
 //                    Auto contrast adjustment now works.
+// 19.10.15 V3.7.7 JD Copy Graph Data now uses compression for large data traces
 
 interface
 
@@ -789,7 +790,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.6 12-10-15 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.7 19-10-15 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
