@@ -169,6 +169,8 @@ unit RecUnit;
 //          NIDAQmx_MemoryToDig() now handles boards which lack digital waveform support
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 09.10.15 .. JD Auto contrast adjustment now works reliably.
+// 06.11.15 .. JD FP divide error caused by /frameInterval in auto contrast function on opening of form on some PCs fixed
+//
 
 {$DEFINE USECONT}
 
@@ -445,9 +447,6 @@ type
     FrameNum : Integer ;
     CameraStartFrame : Integer ;                       // First frame after camera start
 
-    // Contains FrameCounter number of frame type on display
-    //FrameDisplayed : Array[0..2*MaxFrameType] of Integer ;
-
     // Multi-wavelength sequence
     NumFramesPerWavelengthCycle : Integer ;
     FilterNums : Array[0..MaxLightSourceCycleLength-1] of Integer ;
@@ -666,6 +665,8 @@ type
   function AreImagesDark(
            pBuf : Pointer ;
            NumPixels : Integer ) : Boolean ;
+
+  procedure ResetAutoOptimiseCount ;
 
   public
     { Public declarations }
@@ -3628,15 +3629,13 @@ begin
         // Optimise contrast if required
         if OptimiseContrastCount = 0 then begin
            bMaxContrast.Click ;
-           if ckAutoOptimise.Checked then OptimiseContrastCount := Max(Round(2.0/FrameInterval),2*NumFrameTypes)
-                                     else OptimiseContrastCount := -1 ; // Turns count off
+           ResetAutoOptimiseCount ;
            end ;
 
         if (RecordingMode = rmRecordingInProgress) and
            (NumFramesDone >= NumFramesRequired) then begin
            MainFrm.StatusBar.SimpleText := format( 'Recording Complete: %d Frames collected',
                                                        [NumFramesDone]) ;
-           //MainFrm.Recording := False ;
            bStop.Click ;
            end ;
 
@@ -3709,6 +3708,19 @@ begin
      TimerProcBusy := False ;
 
      end;
+
+procedure TRecordFrm.ResetAutoOptimiseCount ;
+// ----------------------------------------
+// Reset auto contrast optimisation counter
+// ----------------------------------------
+begin
+     if ckAutoOptimise.Checked then begin
+        if FrameInterval > 0.0 then OptimiseContrastCount := Max(Round(2.0/FrameInterval),2*NumFrameTypes)
+                               else OptimiseContrastCount := 0 ;
+        end
+     else OptimiseContrastCount := -1 ; // Turns count off
+     end ;
+
 
 function TRecordFrm.AreImagesDark(
           pBuf : Pointer ;
@@ -4613,7 +4625,8 @@ var
 begin
       if cbRecordingMode.ItemIndex = rmContinuous then FrameInterval := edFrameInterval.Value
                                                   else FrameInterval := edTimeLapseInterval.Value ;
-      Result := Round(edRecordingPeriod.Value/FrameInterval) ;
+      if FrameInterval > 0.0 then Result := Round(edRecordingPeriod.Value/FrameInterval)
+                             else Result := 1 ;
       Result := Max(Result div FrameTypeCycleLength,1)*FrameTypeCycleLength ;
       edRecordingPeriod.Value := FrameInterval*Result ;
       if cbRecordingMode.ItemIndex <> rmContinuous then Result := Result*FrameTypeCycleLength ;
@@ -4627,9 +4640,12 @@ function TRecordFrm.GetTimeLapseFrameInterval : Integer ;
 // Get valid time lapse frame interval
 // -----------------------------------
 begin
-     Result := Max( Round( edTimeLapseInterval.Value/
-                           (edFrameInterval.Value*NumFrameTypes)),2)*NumFrameTypes ;
-     edTimeLapseInterval.Value := edFrameInterval.Value*Result ;
+     if (edFrameInterval.Value*NumFrameTypes) > 0.0 then begin
+        Result := Max( Round( edTimeLapseInterval.Value/(edFrameInterval.Value*NumFrameTypes)),2)*NumFrameTypes ;
+        edTimeLapseInterval.Value := edFrameInterval.Value*Result ;
+        end
+     else Result := 2 ;
+
      Result := Result*NumFramesPerCCD ;
      MainFrm.IDRFile.FrameInterval := edTimeLapseInterval.Value/NumFrameTypes ;
      Mainfrm.TimeLapseInterval :=  edTimeLapseInterval.Value ;
@@ -4879,9 +4895,9 @@ begin
 
 
 procedure TRecordFrm.FormResize(Sender: TObject);
-// ------------------------------------------------
+// ----------------------
 // Request a form resize
-// ------------------------------------------------
+// ----------------------
 begin
 
     FormResizeCounter := 5 ;
@@ -4900,7 +4916,7 @@ begin
     RecPlotFrm.FLInitialiseDisplay( TimeLapseMode,
                                     FrameTypes,
                                     NumFrameTypes,
-                                    MainFrm.Cam1.FrameInterval/NumFramesPerCCD,
+                                    MainFrm.Cam1.FrameInterval/Max(NumFramesPerCCD,1),
                                     MainFrm.TimeLapseInterval,
                                     True ) ;
 
@@ -5641,24 +5657,11 @@ function TRecordFrm.CheckRecPlotFrmExists : Boolean ;
 // -------------------------------------------
 // Check that time course plotting form exists
 // -------------------------------------------
-var
-    i : Integer ;
-    Exists : Boolean ;
 begin
-     // Is there a RecPlotFrm window open?
-     Result := False ;
-     Exists := False ;
-     for i := 0 to MainFrm.MDIChildCount-1 do
-         if MainFrm.MDIChildren[i].Name = 'RecPlotFrm' then Exists := True ;
 
-     // If not open it
-     if not Exists then begin
+     // If RecPlotFrm does not exist, open it
+     if not MainFrm.FormExists('RecPlotFrm') then begin
         RecPlotFrm := TRecPlotFrm.Create(Self) ;
-{        MainFrm.SetFormPosition( RecPlotFrm,
-                                 Self.Left + Self.Width + 10,
-                                 RecPlotFrm.Top,
-                                 MainFrm.ClientWidth - (Left + Width + 10) - 10,
-                                 RecPlotFrm.Height);}
         RecPlotFrm.DisplayGrid := MainFrm.mnDisplayGrid.Checked ;
         Application.ProcessMessages ;
         Result := True ;
@@ -6222,8 +6225,9 @@ procedure TRecordFrm.ckAutoOptimiseClick(Sender: TObject);
 // ----------------------------------
 begin
     MainFrm.ContrastAutoOptimise := ckAutoOptimise.Checked ;
-    if MainFrm.ContrastAutoOptimise then OptimiseContrastCount := Max(Round(2.0/FrameInterval),2*NumFrameTypes)
+    ResetAutoOptimiseCount ;
     end;
+
 
 procedure TRecordFrm.ckContrast6SDOnlyClick(Sender: TObject);
 // --------------------------------------------------

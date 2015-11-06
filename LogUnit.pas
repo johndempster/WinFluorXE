@@ -46,7 +46,6 @@ procedure TLogFrm.AddLine( LineText : String );
 // ---------------
 begin
     meLog.Lines.Add(TimeToStr(Time) + ' ' + LineText ) ;
-    //SaveLogToFile ;
     end;
 
 
@@ -56,7 +55,6 @@ procedure TLogFrm.AddLineNoTime( LineText : String );
 // -------------------------------
 begin
     meLog.Lines.Add( LineText ) ;
-    //SaveLogToFile ;
     end;
 
 
