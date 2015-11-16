@@ -581,7 +581,6 @@ var
     NumROIs : Integer ;
     NewSettings : Boolean ;
     NewPlot : Boolean ;
-    SourceAvailable : Boolean ;
 begin
 
     if TimerProcRunning then Exit ;

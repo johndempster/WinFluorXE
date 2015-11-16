@@ -368,8 +368,6 @@ procedure TPhotoStimFrm.ImageDblClick(Sender: TObject);
 // ------------------------------------------
 var
   DisplayRect : TRect;      // Display rectangle
-  XValue, YValue : Single;  // Target position in um
-  TargetPos : TPoint;       // Zoom adjusted position in pixels
 begin
 
   // Check that max number of points is not exceeded

@@ -987,10 +987,14 @@ begin
     else Panel.Visible := True ;
 
     // Local components
+    Lab := Nil ;
+    ComboBox := Nil ;
     for i  := 0 to Panel.ControlCount-1 do begin
         if ANSIContainsText(Panel.Controls[i].Name,'cbLS') then ComboBox := TComboBox(Panel.Controls[i])
         else if ANSIContainsText(Panel.Controls[i].Name,'lbLS') then Lab := TLabel(Panel.Controls[i]) ;
         end;
+
+    if (Lab = Nil) and (ComboBox = Nil) then Exit ;
 
     Lab.Caption := LineName ;
 
@@ -1033,16 +1037,18 @@ var
     i : Integer ;
 begin
 
-    if not Panel.Visible then begin
-       Result := 0 ;
-       Exit ;
-       end;
+    Result := 0 ;
+    if not Panel.Visible then Exit ;
 
     // Local components
+    ComboBox := Nil ;
     for i  := 0 to Panel.ControlCount-1 do begin
         if ANSIContainsText(Panel.Controls[i].Name,'cbLS') then ComboBox := TComboBox(Panel.Controls[i]) ;
         end;
+    if ComboBox = Nil then Exit ;
+
     Result := Integer(ComboBox.Items.Objects[ComboBox.ItemIndex]) ;
+
     end;
 
 procedure TSetupFrm.NewCamera ;

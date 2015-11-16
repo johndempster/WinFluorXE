@@ -66,10 +66,10 @@ object LineProfileFrm: TLineProfileFrm
         PrinterFontName = 'Arial'
         PrinterLineWidth = 1
         PrinterMarkerSize = 5
-        PrinterLeftMargin = 10
-        PrinterRightMargin = 10
-        PrinterTopMargin = 10
-        PrinterBottomMargin = 10
+        PrinterLeftMargin = 9
+        PrinterRightMargin = 9
+        PrinterTopMargin = 9
+        PrinterBottomMargin = 9
         PrinterDisableColor = False
         MetafileWidth = 500
         MetafileHeight = 400
@@ -232,6 +232,10 @@ object LineProfileFrm: TLineProfileFrm
     object EdgeTrackTab: TTabSheet
       Caption = 'Edge Track'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object plEdgePlot: TXYPlotDisplay
         Left = 146
         Top = 7
@@ -264,10 +268,10 @@ object LineProfileFrm: TLineProfileFrm
         PrinterFontName = 'Arial'
         PrinterLineWidth = 1
         PrinterMarkerSize = 5
-        PrinterLeftMargin = 9
-        PrinterRightMargin = 9
-        PrinterTopMargin = 9
-        PrinterBottomMargin = 9
+        PrinterLeftMargin = 8
+        PrinterRightMargin = 8
+        PrinterTopMargin = 8
+        PrinterBottomMargin = 8
         PrinterDisableColor = False
         MetafileWidth = 500
         MetafileHeight = 400

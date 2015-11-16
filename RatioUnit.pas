@@ -577,6 +577,8 @@ var
 
 begin
 
+     Result := 0.0 ;
+
      LeftEdge := MinInt([ROI.TopLeft.X,ROI.BottomRight.X]) ;
      RightEdge := MaxInt([ROI.TopLeft.X,ROI.BottomRight.X]) ;
      TopEdge := MinInt([ROI.TopLeft.Y,ROI.BottomRight.y]) ;

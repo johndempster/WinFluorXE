@@ -116,7 +116,6 @@ var
     Done : Boolean ;
     OK : Boolean ;
     i : Integer ;
-    iEnd : Integer ;
     FileName : String ;
     s : String ;
     NumFramesTotal : Integer ;
@@ -301,10 +300,9 @@ var
     OutFrame : Integer ;
     ftype : Integer ;
 
-    Done : Boolean ;
     OK : Boolean ;
     i : Integer ;
-    iEnd,iTemp : Integer ;
+    iTemp : Integer ;
     FileName : String ;
     s : String ;
 begin

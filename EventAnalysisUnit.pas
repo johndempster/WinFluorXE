@@ -1480,6 +1480,7 @@ begin
      NumAvg := 0 ;
 
      // Calculate average
+     iDisplayStart := 0 ;
      for EventNum := StartEvent to EndEvent do
          if EventList[EventNum-1].Accepted or (not AverageMode) then begin
 

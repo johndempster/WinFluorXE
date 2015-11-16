@@ -1380,7 +1380,7 @@ begin
        else begin
            // Fluorescence ratio plot
            PlotList[NumPlots].ROIPlot := True ;
-           PlotList[NumPlots].FrameType := i ;
+           PlotList[NumPlots].FrameType := 0 ;
            PlotList[NumPlots].Name :=  'Ratio' ;
            PlotList[NumPlots].Units := '' ;
            PlotList[NumPlots].Index := Integer(cbROI.Items.Objects[cbROI.ItemIndex]) ;

@@ -42,6 +42,7 @@ unit SnapUnit;
 // 26.12.15 Andor frame buffer increased to MaxBufferSize
 // 29.01.15 UpdateLightSourceDAC and UpdateLightSourceDig combined into UpdateLightSource
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 16.11.15 .. JD Cam1.MonochromeImages=TRUE. Flag to select monochrome images from colour cameras added
 
 interface
 
@@ -531,6 +532,8 @@ begin
 
    Timer.Enabled := False ;
    MainFrm.StatusBar.SimpleText := 'Wait ... Starting camera' ;
+
+   MainFrm.Cam1.MonochromeImage := True ; // Acquire monochrome image
 
    // Set camera trigger mode
    MainFrm.Cam1.TriggerMode := CamFreeRun ;

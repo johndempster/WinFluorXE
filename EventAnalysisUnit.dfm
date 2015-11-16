@@ -36,6 +36,10 @@ object EventAnalysisFrm: TEventAnalysisFrm
     object DetectTab: TTabSheet
       Caption = 'Detect events'
       ImageIndex = 3
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object DetectGrp: TGroupBox
         Left = 0
         Top = 0
@@ -303,6 +307,10 @@ object EventAnalysisFrm: TEventAnalysisFrm
             object detFluorSettingsTab: TTabSheet
               Caption = 'detFluorSettingsTab'
               TabVisible = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label2: TLabel
                 Left = 4
                 Top = 2
@@ -326,6 +334,10 @@ object EventAnalysisFrm: TEventAnalysisFrm
               Caption = 'DetFluorRatioSettingsTab'
               ImageIndex = 1
               TabVisible = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label14: TLabel
                 Left = 25
                 Top = 0
@@ -441,6 +453,10 @@ object EventAnalysisFrm: TEventAnalysisFrm
               Caption = 'DetADCSettingsTab'
               ImageIndex = 2
               TabVisible = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
             end
           end
           object DetROIGrp: TGroupBox
@@ -643,6 +659,10 @@ object EventAnalysisFrm: TEventAnalysisFrm
     end
     object ViewTab: TTabSheet
       Caption = 'View Events'
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object ViewGrp: TGroupBox
         Left = 0
         Top = 0
@@ -793,6 +813,10 @@ object EventAnalysisFrm: TEventAnalysisFrm
             object FTab: TTabSheet
               Caption = 'Fluor'
               TabVisible = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label3: TLabel
                 Left = 5
                 Top = 2
@@ -816,6 +840,10 @@ object EventAnalysisFrm: TEventAnalysisFrm
               Caption = 'F/F0'
               ImageIndex = 1
               TabVisible = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label5: TLabel
                 Left = 5
                 Top = 2
@@ -1004,6 +1032,10 @@ object EventAnalysisFrm: TEventAnalysisFrm
               ImageIndex = 2
               ParentFont = False
               TabVisible = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label4: TLabel
                 Left = 16
                 Top = 60
@@ -1460,6 +1492,10 @@ object EventAnalysisFrm: TEventAnalysisFrm
     object AverageTab: TTabSheet
       Caption = 'Average Events'
       ImageIndex = 1
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object AvgGrp: TGroupBox
         Left = 0
         Top = 0
@@ -1638,6 +1674,10 @@ object EventAnalysisFrm: TEventAnalysisFrm
     object PlotTab: TTabSheet
       Caption = 'Plot Graphs'
       ImageIndex = 2
+      ExplicitLeft = 0
+      ExplicitTop = 0
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object PlotGrp: TGroupBox
         Left = -1
         Top = 0

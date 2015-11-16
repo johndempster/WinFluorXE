@@ -261,7 +261,6 @@ const
 var
     FrameNum : Integer ; // Frame counter
     PFrameBuf : Pointer ; // Image frame buffer pointer
-    PixelDepth : Integer ;
     i,j : Integer ;
     Done : Boolean ;
     OK : Boolean ;

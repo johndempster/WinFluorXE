@@ -170,7 +170,7 @@ unit RecUnit;
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 09.10.15 .. JD Auto contrast adjustment now works reliably.
 // 06.11.15 .. JD FP divide error caused by /frameInterval in auto contrast function on opening of form on some PCs fixed
-//
+// 16.11.15 .. JD Cam1.MonochromeImages=TRUE. Flag to select monochrome images from colour cameras added
 
 {$DEFINE USECONT}
 
@@ -1199,6 +1199,9 @@ begin
       if MainFrm.BulbExposureMode then MainFrm.Cam1.TriggerMode := CamBulbMode
                                   else MainFrm.Cam1.TriggerMode := CamExtTrigger ;
    end;
+
+   // Acquire monochrome image
+   MainFrm.Cam1.MonochromeImage := True ;
 
    // Set camera gain
    MainFrm.Cam1.AmpGain := cbCameraGain.ItemIndex ;
