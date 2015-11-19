@@ -3704,7 +3704,6 @@ begin
 
        end;
 
-
     // Update A/D signal display
     if MainFrm.ADCNumChannels > 0 then UpdateADCDisplay ;
 

@@ -200,7 +200,7 @@ unit Main;
 //                    Auto contrast adjustment now works.
 // 19.10.15 V3.7.7 JD Copy Graph Data now uses compression for large data traces
 // 06.11.15 V3.7.8 JD FP divide error in Record Images & Signals on some computers fixed.
-// 16.11.15        JD Point Grey Grasshopper camera support added
+// 18.11.15        JD Point Grey Grasshopper camera support added
 
 interface
 
@@ -792,7 +792,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.8 16-11-15 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.7.8 18-11-15 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
