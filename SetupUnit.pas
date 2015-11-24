@@ -41,6 +41,8 @@ unit SetupUnit;
 // 16.09.15 JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 25.09.15 JD Analog Channels & Amplifiers setup transferred from setupadcfrm to
 //             Analog Channels & Amplifiers page of this form. Capacity page added
+// 20.11.15 JD Software-upated digital outputs now available for use a light source outputs
+//             (but with timing precision limitations)
 
 interface
 
@@ -822,8 +824,7 @@ begin
      cbEMFilterStart.Clear ;
      cbEMFilterStart.Items.AddObject('None',TObject(MaxResources+1)) ;
      for i := 0 to LabIO.NumResources-1 do begin
-         if (LabIO.Resource[i].ResourceType = DIGOut) and
-                 LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
+         if (LabIO.Resource[i].ResourceType = DIGOut) then begin
                  // Digital outputs
                  s := format('Device %d: P0.%d',
                      [LabIO.Resource[i].Device,
@@ -1009,8 +1010,7 @@ begin
             ComboBox.Items.AddObject(s,TObject(i))
             end
          else if (LabIO.Resource[i].ResourceType = DIGOut) and
-                 (not LightSource.DACOutputsRequired) and
-                 LabIO.DigitalWaveFormCapable[LabIO.Resource[i].Device] then begin
+                 (not LightSource.DACOutputsRequired) then begin
                  // Digital outputs
                  s := format('Device %d: P0.%d',
                      [LabIO.Resource[i].Device,

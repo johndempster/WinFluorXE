@@ -31,7 +31,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ValidatedEdit, ExtCtrls, ScopeDisplay, RangeEdit,
-  HTMLLabel, ClipBrd, Printers, Math, strutils ;
+  HTMLLabel, ClipBrd, Printers, Math, strutils, system.types ;
 
 type
   TSmallIntArray = Array[0..9999999] of SmallInt ;
@@ -299,7 +299,6 @@ procedure TViewLineFrm.FormResize(Sender: TObject);
 const
     MinDisplayHeight = 100 ;
 var
-    NumDisplayChannels : Integer ;
     NumDisplays : Integer ;
     DisplayHeight : Integer ;
     iTop : Integer ;
@@ -689,16 +688,9 @@ procedure TViewLineFrm.DisplayLineScanImage ;
 var
      StartLine : Integer ;
      NumDisplayLines : Integer ;
-     i,j,x,y,Line : Integer ;
+     x,y : Integer ;
      PBMLine : PByteArray ;
-     IPix : Integer ;
-     BlockCount : Integer ;
-     BlockNum : Integer ;
-     iFrom : Integer ;
-     iTo : Integer ;
      DisplayLine : Single ;
-     Done : Boolean ;
-     pBufStart : Pointer ;
 begin
 
      // No. of scans lines displayed
@@ -762,15 +754,12 @@ procedure TViewLineFrm.LoadLineScanImage(
 // ----------------------------------------------
 var
      StartLine : Integer ;
-     NumDisplayLines : Integer ;
-     i,j,x,y,Line : Integer ;
-     PBMLine : PByteArray ;
+     i,j,x,Line : Integer ;
      IPix : Integer ;
      BlockCount : Integer ;
      BlockNum : Integer ;
      iFrom : Integer ;
      iTo : Integer ;
-     DisplayLine : Single ;
      Done : Boolean ;
      pBufStart : Pointer ;
 begin
@@ -886,8 +875,7 @@ procedure TViewLineFrm.DisplayPixelIntensityTimeCourse ;
 // Display time course of intensity at selected pixel within line
 // --------------------------------------------------------------
 var
-    i,j,x,y,y0 : Integer ;
-    BlockNum : Integer ;
+    i,x : Integer ;
     NumPointsPerRow : Integer ;
     NumPixelsAvg : Integer ;
     HalfNumPixelsAvg : Integer ;

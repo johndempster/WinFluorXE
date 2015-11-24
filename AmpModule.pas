@@ -3216,7 +3216,7 @@ procedure TAmplifier.GetAxoclamp900AChannelSettings(
 // -----------------------------------
 var
     Err,iSignal,iMode : Integer ;
-    ScaleFactor,ISCale : Double ;
+    ISCale : Double ;
     HeadstageType : Integer ;
 begin
 
@@ -3294,7 +3294,6 @@ var
     Err,iMode : Integer ;
     SerialNum : Array[0..15] of Char ;
     DemoMode : Boolean ;
-    Devicename : Array[0..32] of Char ;
 begin
 
      if Axoclamp900AOpen then Exit ;

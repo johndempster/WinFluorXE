@@ -2298,16 +2298,11 @@ begin
         DAQmxGetWriteSpaceAvail( DIGTask[iDev], NumPointsToWrite ) ;
         if NumPointsToWrite = 0 then continue ;
 
-        //t1 := Timegettime ;
-        //tt := t1-t0 ;
-        //t0 := t1 ;
-
         GetMem( IOBuf, NumPointsToWrite*SizeOf(Integer)) ;
 
         // Copy DAC data into output buffer
         iPointer := DIG[iDev].Pointer ;
 
-        //nChannels := DIG[iDev].NumChannels ;
         CircularBuffer := DIG[iDev].CircularBuffer ;
         EndOfBuf := DIG[iDev].EndOfBuf ;
         iFrom := DIG[iDev].Pointer ;

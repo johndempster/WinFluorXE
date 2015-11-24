@@ -171,6 +171,8 @@ unit RecUnit;
 // 09.10.15 .. JD Auto contrast adjustment now works reliably.
 // 06.11.15 .. JD FP divide error caused by /frameInterval in auto contrast function on opening of form on some PCs fixed
 // 16.11.15 .. JD Cam1.MonochromeImages=TRUE. Flag to select monochrome images from colour cameras added
+// 20.11.15 .. JD UpdateSoftwareTimedDigitalOutputs() added. Digital outputs updated at 50 ms intervals
+//                from Timer() event if laboratory interface does not support hardware timed updates.
 
 {$DEFINE USECONT}
 
@@ -667,6 +669,8 @@ type
            NumPixels : Integer ) : Boolean ;
 
   procedure ResetAutoOptimiseCount ;
+
+  procedure UpdateSoftwareTimedDigitalOutputs( ElapsedTimeMs : single ) ;
 
   public
     { Public declarations }
@@ -3248,7 +3252,6 @@ begin
        FormResizeCounter := 0 ;
        end ;
 
-
     if RecordingMode <> rmRecordingInProgress then begin
        // Determine if recording to file is possible
        bRecord.Enabled := True ;
@@ -3707,9 +3710,34 @@ begin
     // Update A/D signal display
     if MainFrm.ADCNumChannels > 0 then UpdateADCDisplay ;
 
+    // Update digital outputs if laboratory interface does not support
+    // hardware timed digital output updates (e.g. USB-6002/3, E-series devices)
+    UpdateSoftwareTimedDigitalOutputs(TimeNow-TStart) ;
+
      TimerProcBusy := False ;
 
      end;
+
+
+procedure TRecordFrm.UpdateSoftwareTimedDigitalOutputs( ElapsedTimeMs : single ) ;
+// -----------------------------------------------------------------
+// Update digital outputs on device which lack clock driven updating
+// -----------------------------------------------------------------
+var
+    Dev,iDigAt : Integer ;
+begin
+
+    // Find index of next digital output word in circular buffer
+    iDigAt := Max(Round((ElapsedTimeMs*1E-3)/DACUpdateInterval),0) mod NumDACPointsPerCycle ;
+
+     // Allocate and clear digital waveform buffers
+     for Dev := 1 to LabIO.NumDevices do if
+        (DigBufs[Dev] <> Nil) and (not LabIO.DigitalWaveformCapable[Dev]) then begin
+         LabIO.WriteToDigitalOutPutPort( Dev, DigBufs[Dev,iDigAt] ) ;
+         end ;
+
+    end;
+
 
 procedure TRecordFrm.ResetAutoOptimiseCount ;
 // ----------------------------------------

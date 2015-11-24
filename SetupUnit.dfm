@@ -134,10 +134,6 @@ object SetupFrm: TSetupFrm
     TabOrder = 3
     object CameraTab: TTabSheet
       Caption = 'Camera'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox4: TGroupBox
         Left = 8
         Top = 0
@@ -717,10 +713,6 @@ object SetupFrm: TSetupFrm
     object LightSourceTab: TTabSheet
       Caption = 'Light Source'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LSShutterGrp: TGroupBox
         Left = 280
         Top = 0
@@ -1605,10 +1597,6 @@ object SetupFrm: TSetupFrm
               Font.Name = 'Arial'
               Font.Style = [fsBold]
               ParentFont = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label7: TLabel
                 Left = 9
                 Top = 4

@@ -532,9 +532,9 @@ procedure THistogramFrm.DisplayHistogram ;
 // Update histogram display
 // ------------------------
 var
-    z,PlotNum,HistNum : Integer ;
+    z : Integer ;
     ZStart,ZEnd : Integer ;
-    xLo,xMid,xHi,y,Temp : Single ;
+    xLo,xMid,xHi,y : Single ;
     HalfBinWidth : Single ;
 begin
 
