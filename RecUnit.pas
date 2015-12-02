@@ -173,6 +173,7 @@ unit RecUnit;
 // 16.11.15 .. JD Cam1.MonochromeImages=TRUE. Flag to select monochrome images from colour cameras added
 // 20.11.15 .. JD UpdateSoftwareTimedDigitalOutputs() added. Digital outputs updated at 50 ms intervals
 //                from Timer() event if laboratory interface does not support hardware timed updates.
+// 25.11.15 .. JD FP divide by zero fixed when no interface units available fixed.
 
 {$DEFINE USECONT}
 
@@ -784,6 +785,9 @@ begin
      LoadNextProtocolFile := False ;
      RestartRecording := False ;
      ContinuedRecording := False ;
+
+     // Time interval between DAC updates
+     DACUpdateInterval := Max(MainFrm.ADCScanInterval,LabIO.DACMinUpdateInterval) ;
 
      end;
 
@@ -3727,8 +3731,10 @@ var
     Dev,iDigAt : Integer ;
 begin
 
+    if DACUpdateInterval <= 0.0 then Exit ;
+
     // Find index of next digital output word in circular buffer
-    iDigAt := Max(Round((ElapsedTimeMs*1E-3)/DACUpdateInterval),0) mod NumDACPointsPerCycle ;
+    iDigAt := Max(Round((ElapsedTimeMs*1E-3)/DACUpdateInterval),0) mod Max(NumDACPointsPerCycle,1) ;
 
      // Allocate and clear digital waveform buffers
      for Dev := 1 to LabIO.NumDevices do if
