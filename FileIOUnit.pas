@@ -67,6 +67,7 @@ unit FileIOUnit;
 // 3.2.15 ........... XYStage.Save/ReadSettings added
 // 14.5.15 .......... CAMDEIL= MainFrm.Cam1.DisableExposureIntervalLimit added
 // 24.9.15 .......... FPLEFTi= MainFrm.FormPos[i].left etc added
+// 18.01.16 ......... ImageFile.CreateFile() now uses .NumFrames rather than single frames flag
 interface
 
 uses
@@ -1290,7 +1291,7 @@ begin
                                  MainFrm.IDRFile.FrameHeight,
                                  MainFrm.IDRFile.NumBytesPerPixel*8,
                                  1,
-                                 False ) ;
+                                 MainFrm.IDRFile.NumFrames ) ;
 
      if not OK then begin
         MainFrm.StatusBar.SimpleText := 'Unable to create : ' + SaveDialog.FileName ;
@@ -1375,7 +1376,7 @@ begin
                                        MainFrm.Cam1.FrameHeight,
                                        TIFPixelDepth,
                                        1,
-                                       True ) ;
+                                       1 ) ;
            end ;
         end
      else if MainFrm.ActiveMDIChild.Name = 'ViewFrm' then begin
@@ -1387,7 +1388,7 @@ begin
                                        MainFrm.IDRFile.FrameHeight,
                                        MainFrm.IDRFile.NumBytesPerPixel*8,
                                        1,
-                                       True ) ;
+                                       1 ) ;
            end ;
         end ;
 

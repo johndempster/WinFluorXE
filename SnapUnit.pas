@@ -43,6 +43,7 @@ unit SnapUnit;
 // 29.01.15 UpdateLightSourceDAC and UpdateLightSourceDig combined into UpdateLightSource
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 16.11.15 .. JD Cam1.MonochromeImages=TRUE. Flag to select monochrome images from colour cameras added
+// 18.01.16 ......... ImageFile.CreateFile() now uses .NumFrames rather than single frames flag
 
 interface
 
@@ -2416,7 +2417,7 @@ begin
                                   MainFrm.Cam1.FrameHeight,
                                   MainFrm.Cam1.NumBytesPerPixel*8,
                                   1,
-                                  False ) then Exit ;
+                                  1 ) then Exit ;
 
      // Save image
      ImageFile.SaveFrame32( 1, PDisplayBuf ) ;

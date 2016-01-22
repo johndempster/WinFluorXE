@@ -20,6 +20,7 @@ unit ExportImagesUnit;
 //              User can no longer changed export name
 //              (n) added to end of files when file name already exists
 // 24.09.14 ... Long file names can now be exported again (Word Wrap = False in meFiles memo box)
+// 22.01.16 ... Calibration data now exported
 interface
 
 uses
@@ -309,10 +310,16 @@ begin
                                                FrameHeight,
                                                MainFrm.IDRFile.NumBytesPerPixel*8,
                                                1,
-                                               False ) then begin
+                                               1 ) then begin
                      MainFrm.StatusBar.SimpleText := 'Unable to create : ' + FileName ;
                      Break ;
                      end ;
+
+                  // Copy calibration
+                  ImageFile.ResolutionUnit := MainFrm.IDRFile.ResolutionUnits ;
+                  ImageFile.XResolution :=  MainFrm.IDRFile.XResolution ;
+                  ImageFile.YResolution :=  MainFrm.IDRFile.XResolution ;
+                  ImageFile.TResolution :=  MainFrm.IDRFile.FrameInterval ;
 
                   FrameNum := iStartFrame ;
                   NumFramesExported := 0 ;

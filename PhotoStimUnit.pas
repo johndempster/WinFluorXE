@@ -2,6 +2,7 @@ unit PhotoStimUnit;
 // ------------------------------
 // Photo stimulus protocol editor
 // ------------------------------
+// 18.01.16 ......... ImageFile.CreateFile() now uses .NumFrames rather than single frames flag
 
 interface
 
@@ -1032,7 +1033,7 @@ begin
                          SavePic.Bitmap.Width,
                          SavePic.Bitmap.Height,
                          8, NumComponentsPerPixel,
-                         True);
+                         1);
 
     // Save buffer to file
     ImageFile.SaveFrame(1, Buf);

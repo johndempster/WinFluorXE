@@ -204,6 +204,7 @@ unit Main;
 // 20.11.15 V3.7.9 JD RecUnit.pas Digital outputs updated at 50 ms intervals from Timer() event
 //                    if laboratory interface does not support hardware timed updates.
 // 25.11.15 V3.8.0 JD recunit.pas FP divide by zero fixed when no interface units available fixed.
+// 22.01.16 V3.8.1 JD Files larger than 2GB now exported in BIG TIFF format
 
 interface
 
@@ -795,7 +796,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.0 25-11-15 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.1 22-1-16 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
