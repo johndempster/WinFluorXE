@@ -310,7 +310,8 @@ begin
                                                FrameHeight,
                                                MainFrm.IDRFile.NumBytesPerPixel*8,
                                                1,
-                                               1 ) then begin
+                                               (iEndFrame-iStartFrame) div Max(iStep,1)
+                                               ) then begin
                      MainFrm.StatusBar.SimpleText := 'Unable to create : ' + FileName ;
                      Break ;
                      end ;
