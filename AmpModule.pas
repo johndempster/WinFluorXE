@@ -63,6 +63,9 @@ unit AmpModule;
 // 23.07.14 Multiclamp support updated to support MultiClamp Commander V2.0 API (same as WinWCP)
 //          to fix problems Josh GoldBerg's problems
 //          TCopyDataStruct now defined with NativeInts for 64 bit compatibility
+// 04.03.16 Multiclamp 700A: Now Com port # now correctly isolated from message code
+//          allowing Amplifier #1/#2 to be correctly selected instead of #3/#4
+//          AppHookFunc() copied from WinWCP
 
 interface
 
@@ -913,7 +916,8 @@ var
     AddChannel : Boolean ;
     TData : TMC_TELEGRAPH_DATA ;
     i,Err,iChan : Integer ;
-    SerialNum : Cardinal ;
+    SerialNum,MaxSerialNum,MinSerialNum,SN : Cardinal ;
+    MaxComPortID,MinComPortID,ComPortID : Cardinal ;
 begin
   Result := False; //I just do this by default
 
@@ -926,24 +930,40 @@ begin
          // Copy telegraph data into record
          TData := PMC_TELEGRAPH_DATA(PCopyDataStruct(Message.lParam)^.lpData)^ ;
          if TData.Version < 6 then begin
-            // API V1.x
-            iChan := (TData.AxoBusID*2) + TData.ChannelID ;
-            iChan := Max(0,Min(iChan,High(MCTelegraphData))) ;
-//            LogFrm.AddLine(format(
-//            'Multiclamp V1.1: Message from Device=%d AxobusID=%d ComPortID=%d Ch.=%d',
-//            [TData.AxoBusID,TData.ComPortID,TData.ChannelID]));
+            // API V1.x (Multiclamp 700A)
+            // Assign channel based upon COM port # and channelID
+            MaxComPortID := 0 ;
+            MinComPortID := High(MinComPortID) ;
+            for i  := 0 to MCNumChannels-1 do begin
+                ComPortID := MCChannels[i] and $FF ;
+                if ComPortID > MaxComPortID then MaxComPortID := ComPortID ;
+                if ComPortID < MinComPortID then MinComPortID := ComPortID ;
+                end ;
+            if TData.ComPortID = MinComPortID then iChan := TData.ChannelID -1
+                                              else iChan := TData.ChannelID +1 ;
+            iChan := Min(Max(iChan,0),3);
+            Logfrm.AddLine( format(
+            'Multiclamp V1.1: Message received from ComPortID=%d ChannelID=%d as Amplifier #%d',
+            [TData.ComPortID,TData.ChannelID,iChan+1]));
             end
          else begin
-            // API V2.x
-            iChan := 0 ;
+            // API V2.x (Multiclamp 700B)
+            // Assign channel based upon Device serial number and ChannelID
+            Val( ANSIString(TData.SerialNumber), SerialNum, Err ) ;
+            if Err <> 0 then SerialNum := MCChannels[0] and $FFFFFFF ;
+            MaxSerialNum := 0 ;
+            MinSerialNum := High(MinSerialNum) ;
             for i  := 0 to MCNumChannels-1 do begin
-               Val( ANSIString(TData.SerialNumber), SerialNum, Err ) ;
-               if Err <> 0 then SerialNum := 0 ;
-               if ((TData.ChannelID shl 28) or SerialNum) = MCChannels[i] then iChan := i ;
-               end ;
-//             LogFrm.AddLine(format(
-//             'Multiclamp V2.x: Message from Device=%s  Ch.=%d',
-//             [ANSIString(TData.SerialNumber),TData.ChannelID]));
+                SN := MCChannels[i] and $FFFFFFF ;
+                if SN > MaxSerialNum then MaxSerialNum := SN ;
+                if SN < MinSerialNum then MinSerialNum := SN ;
+                end ;
+            if SerialNum = MinSerialNum then iChan := TData.ChannelID -1
+                                        else iChan := TData.ChannelID +1 ;
+            iChan := Min(Max(iChan,0),3);
+             Logfrm.AddLine( format(
+             'Multiclamp V2.x: Message received from Device=%s  ChannelID=%d as Amplifier #%d',
+             [ANSIString(TData.SerialNumber),TData.ChannelID,iChan+1]));
             end ;
          MCTelegraphData[iChan] := TData ;
          Result := True ;
@@ -954,7 +974,7 @@ begin
     if (Message.Msg = MCIDMessageID) or (Message.Msg = MCReconnectMessageID) then begin
          AddChannel := True ;
          for i := 0 to MCNumChannels-1 do if MCChannels[i] = Message.lParam then AddChannel := False ;
-         LogFrm.AddLine(format('Multiclamp: MCIDMessage received ID=%x',[Message.lParam]));
+         Logfrm.AddLine( format('Multiclamp: Channel detected ID=%x',[Message.lParam]) );
 
          if AddChannel then begin
              // Store server device/channel ID in list
@@ -962,9 +982,9 @@ begin
              // Open connection to this device/channel
              if not PostMessage(HWND_BROADCAST,MCOpenMessageID,Application.Handle,MCChannels[MCNumChannels] ) then
                 ShowMessage( 'MultiClamp Commander (Open Message Failed)' ) ;
-             MainFrm.StatusBar.SimpleText := format('Multiclamp: MCOpenMessageID broadcast to device %x',
+             MainFrm.StatusBar.SimpleText := format('Multiclamp: MCOpenMessageID broadcast to channel %x',
              [MCChannels[MCNumChannels]]) ;
-             LogFrm.AddLine(MainFrm.StatusBar.SimpleText) ;
+             Logfrm.AddLine( MainFrm.StatusBar.SimpleText ) ;
              Inc(MCNumChannels) ;
              end ;
          Result := True ;

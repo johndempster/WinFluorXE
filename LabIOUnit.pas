@@ -47,6 +47,7 @@ unit LabIOUnit;
 // 02.09.15 JD .... USB-6002 - USB-6005 devices supported.
 //                    DAQmx_Val_Falling changed to DAQmx_Val_Rising in DAQmxCfgSampClkTiming()
 //                    A/D and D/A timed by own on-board clocks and synchronised by pulse P.1.0 -> PFI0+PFI1
+// 11.03.16 JD .... Single Ended (RSE) analogue input mode now correctly selected
 
 interface
 
@@ -67,7 +68,7 @@ const
     DefaultTimeOut = 1.0 ;
     MaxADCSamples = 1000000 ;
 
-    imSingleEnded = 0  ; // Single ended A/D input mode
+    imSingleEndedNRSE = 0  ; // Single ended A/D input mode
     imDifferential = 1 ; // Differential input mode
     imBNC2110 = 2 ;      // Standard mode for BNC-2110 panel (differential)
     imBNC2090 = 3 ;      // Standard mode for BNC 2090 panel (SE)
@@ -1490,13 +1491,14 @@ function TLabIO.NIDAQMX_ADCInputModeCode(
 // ---------------------------------------------------------
 begin
      // Set A/D input mode
-     if (InputMode = imDifferential) or (InputMode = imBNC2110) then begin
-        if ANSIContainsText( DeviceBoardName[Device], '61' ) then begin
-           Result := DAQmx_Val_PseudoDiff;
-           end
-        else Result := DAQmx_Val_Diff ;
+     if (InputMode = imDifferential) or (InputMode = imBNC2110) then
+        begin
+        if ANSIContainsText(DeviceBoardName[Device],'61') then Result := DAQmx_Val_PseudoDiff
+                                                          else Result := DAQmx_Val_Diff ;
         end
+     else if InputMode = imSingleEndedRSE then Result := DAQmx_Val_RSE
      else Result := DAQmx_Val_NRSE ;
+
      end ;
 
 
@@ -1506,7 +1508,7 @@ procedure TLabIO.GetADCInputModes( InputModes :TStrings ) ;
 // ----------------------------------------
 begin
     InputModes.Clear ;
-    InputModes.Add( 'Single Ended') ;
+    InputModes.Add( 'Single Ended (NRSE)') ;
     InputModes.Add( 'Differential') ;
     InputModes.Add( 'BNC 2110 ') ;
     InputModes.Add( 'BNC 2090 ') ;

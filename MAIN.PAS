@@ -205,6 +205,10 @@ unit Main;
 //                    if laboratory interface does not support hardware timed updates.
 // 25.11.15 V3.8.0 JD recunit.pas FP divide by zero fixed when no interface units available fixed.
 // 22.01.16 V3.8.1 JD Files larger than 2GB now exported in BIG TIFF format
+// 04.03.16 V3.8.2 JD Access violation when loading settings from file with Andor cameras fixed (andorunit.pas)
+//                    Multiclamp 700A now recognised correctly again.
+// 11.03.16 V3.8.3 JD Single Ended (RSE) analogue input mode now correctly selected (instead of Single Ended (NRSE)
+//                    which was selected by mistake.
 
 interface
 
@@ -796,7 +800,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.1 22-1-16 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.3 11-3-16 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
