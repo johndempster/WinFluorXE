@@ -48,6 +48,7 @@ unit LabIOUnit;
 //                    DAQmx_Val_Falling changed to DAQmx_Val_Rising in DAQmxCfgSampClkTiming()
 //                    A/D and D/A timed by own on-board clocks and synchronised by pulse P.1.0 -> PFI0+PFI1
 // 11.03.16 JD .... Single Ended (RSE) analogue input mode now correctly selected
+// 31.03.16 JD .... PCIe-632X boards now recognised as DigitalWaveformCapable
 
 interface
 
@@ -1077,6 +1078,7 @@ begin
        DeviceBoardName[i] := PCharArrayToString(CBuf) ;
        if AnsiContainsText(DeviceBoardName[i],'622') or
           AnsiContainsText(DeviceBoardName[i],'625') or
+          AnsiContainsText(DeviceBoardName[i],'632') or
           AnsiContainsText(DeviceBoardName[i],'634') or
           AnsiContainsText(DeviceBoardName[i],'635') or
           AnsiContainsText(DeviceBoardName[i],'636') then DigitalWaveformCapable[i] := True

@@ -365,12 +365,6 @@ $
 
 
 
-
-
-
-
-
-
 $
 $
 1
@@ -378,23 +372,23 @@ $
 TRUE
 
 Strathclyde Electrophysiology Software
-WinFluor (64 bit)
+WinFluor (32 bit)
 {42CDCAEE-ED4E-4721-9E90-11CC1424FF53}
 {5B9FFEA0-55DE-4A0B-9DC2-B372AD732427}
-3.8.2
+3.8.3
 English
 WinFluor Setup
 WinFluor Setup Installation
 Strathclyde Electrophysiology Software
 All rights reserved
-{E4B807C6-A5BE-4526-9760-05D0126D2AFF}
+{2C072124-3A03-46AC-920D-3C20E6624133}
 Strathlcyde University
 Strathlcyde University
 http://spider.science.strath.ac.uk/sipbs/showPage.php?page=software_imaging
 http://spider.science.strath.ac.uk/sipbs/showPage.php?page=software_imaging
 All rights reserved
 FALSE
-WinFluor V3.8.2 64 bit Setup
+WinFluor V3.8.3 32 bit Setup
 TRUE
 FALSE
 
