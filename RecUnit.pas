@@ -174,6 +174,7 @@ unit RecUnit;
 // 20.11.15 .. JD UpdateSoftwareTimedDigitalOutputs() added. Digital outputs updated at 50 ms intervals
 //                from Timer() event if laboratory interface does not support hardware timed updates.
 // 25.11.15 .. JD FP divide by zero fixed when no interface units available fixed.
+// 11.05.16 .. JD Additional divide by zero checks added
 
 {$DEFINE USECONT}
 
@@ -3013,8 +3014,8 @@ begin
             end ;
 
         // Save as default value
-        LabIO.DACOutState[Device][DACChannel] := DACBufs[Device]^[DACChannel]
-                                                 / LabIO.DACScale[Device] ;
+
+        LabIO.DACOutState[Device][DACChannel] := DACBufs[Device]^[DACChannel] / LabIO.DACScale[Device] ;
 
         end ;
 
@@ -4287,7 +4288,7 @@ begin
           i := i + iStep ;
           Inc(NAvg) ;
           end ;
-       ZMean := ZSum / nAvg ;
+       ZMean := ZSum / Max(nAvg,1) ;
 
        ZSum := 0.0 ;
        nAvg := 0 ;
@@ -4298,7 +4299,7 @@ begin
           i := i + iStep ;
           Inc(NAvg) ;
           end ;
-       ZSD := Sqrt( ZSum / (NumPixels-1) ) ;
+       ZSD := Sqrt( ZSum / Max(NumPixels-1,1) ) ;
 
        ZLo := Max( Round(ZMean - 3*ZSD),0) ;
        ZHi := Min( Round(ZMean + 3*ZSD), MainFrm.Cam1.GreyLevelMax );

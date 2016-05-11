@@ -1368,6 +1368,7 @@ procedure TSealTestFrm.UpdateChannelScalingFactors ;
 // ------------------------------
 var
    ch : Integer ;
+   Denom : single ;
 begin
      for ch := 0 to NumTestChannels-1 do begin
 
@@ -1376,14 +1377,14 @@ begin
             TestChannel[ch].ADCCalibrationFactor := 0.001 ;
 
          // Ensure that amplifier gain is non-zero
-         if TestChannel[ch].ADCAmplifierGain = 0.0 then
+         if TestChannel[ch].ADCAmplifierGain = 0.0  then
             TestChannel[ch].ADCAmplifierGain := 1.0 ;
 
          // Calculate bits->units scaling factor
-         TestChannel[ch].ADCScale := MainFrm.ADCVoltageRange /
-                                     (TestChannel[ch].ADCCalibrationFactor*
-                                     TestChannel[ch].ADCAmplifierGain
-                                     *(LabIO.ADCMaxValue[ADCDevice]+1) ) ;
+         Denom := TestChannel[ch].ADCCalibrationFactor*TestChannel[ch].ADCAmplifierGain*
+                  (LabIO.ADCMaxValue[ADCDevice]+1) ;
+         if Abs(Denom) > 1E-10 then TestChannel[ch].ADCScale := MainFrm.ADCVoltageRange / Denom
+                               else TestChannel[ch].ADCScale := 1.0 ;
          end ;
      end ;
 

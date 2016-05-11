@@ -22,6 +22,7 @@ unit RecPlotUnit;
 //          to match number of points in display
 // 02.09.15 Min/Max display compression now implemented in scADCDisplay component rather than this form.
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 11.05.16 .. JD Additional divide by zero checks added
 
 interface
 
@@ -365,7 +366,7 @@ begin
 
     if TimeLapseMode then begin
        // Time lapse mode
-        TFrameGroupInterval := TimeLapseInterval  / NumFrameTypes ; // / scFLDisplay.NumChannels 29/7/10;
+        TFrameGroupInterval := TimeLapseInterval  / Max(NumFrameTypes,1) ; // / scFLDisplay.NumChannels 29/7/10;
        end
     else begin
        // Continuous recording
@@ -608,7 +609,7 @@ begin
        // Time lapse mode
        scFLDisplay.MaxPoints := Round( MainFrm.ADCDisplayWindow/TimeLapseInterval ) ;
        MainFrm.ADCDisplayWindow := scFLDisplay.MaxPoints*TimeLapseInterval ;
-       scFLDisplay.TScale := TimeLapseInterval / NumFrameTypes ;
+       scFLDisplay.TScale := TimeLapseInterval / Max(NumFrameTypes,1) ;
        end
     else begin
        // Continuous recording
@@ -658,7 +659,7 @@ begin
     scRDisplay.NumPoints := 0 ;
 
     if TimeLapseMode then begin
-       scRDisplay.TScale := TimeLapseInterval / NumFrameTypes ;
+       scRDisplay.TScale := TimeLapseInterval / Max(NumFrameTypes,1) ;
        end
     else begin
        scRDisplay.TScale := FrameInterval ;
@@ -679,7 +680,7 @@ begin
     scRDisplay.ChanOffsets[0] := 0 ;
     scRDisplay.ChanUnits[0] := '' ;
     scRDisplay.ChanName[0] := cbNumerator.Text + '/' + cbDenominator.Text ;
-    scRDisplay.ChanScale[0] := edRDisplayMax.Value / scRDisplay.MaxADCValue ;
+    scRDisplay.ChanScale[0] := edRDisplayMax.Value / Max(scRDisplay.MaxADCValue,1.0) ;
     if UpdateYRange then begin
        scRDisplay.yMin[0] := 0 ;
        scRDisplay.yMax[0] := MainFrm.Cam1.GreyLevelMax ;
@@ -767,9 +768,8 @@ begin
         iFTNum := cbNumerator.ItemIndex ;
         iFTDen := cbDenominator.ItemIndex ;
 
-        if scRDisplay.ChanScale[0] > 0.0 then
-           YScale := 1.0 / scRDisplay.ChanScale[0]
-        else YScale := 1.0 ;
+        if scRDisplay.ChanScale[0] > 0.0 then YScale := 1.0 / scRDisplay.ChanScale[0]
+                                         else YScale := 1.0 ;
         scRDisplay.ChanScale[0] := 1.0 / YScale ;
         scRDisplay.ChanName[0] := cbNumerator.Text + '/' + cbDenominator.Text ;
         R := 0.0 ;
@@ -1172,7 +1172,7 @@ procedure TRecPlotFrm.edRDisplayMaxKeyPress(Sender: TObject;
 // -----------------------------
 begin
      if Key = #13 then begin
-        scRDisplay.ChanScale[0] := edRDisplayMax.Value / scRDisplay.MaxADCValue ;
+        scRDisplay.ChanScale[0] := edRDisplayMax.Value / Max(scRDisplay.MaxADCValue,1.0) ;
         MainFrm.TimeCourseRatioDisplayMax := edRDisplayMax.Value ;
         end ;
      end;

@@ -70,7 +70,7 @@ object RecPlotFrm: TRecPlotFrm
     Height = 49
     CursorChangeInProgress = False
     NumChannels = 1
-    NumPoints = 0
+    NumPoints = 1
     MaxPoints = 1024
     XMin = 0
     XMax = 1023

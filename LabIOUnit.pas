@@ -49,6 +49,7 @@ unit LabIOUnit;
 //                    A/D and D/A timed by own on-board clocks and synchronised by pulse P.1.0 -> PFI0+PFI1
 // 11.03.16 JD .... Single Ended (RSE) analogue input mode now correctly selected
 // 31.03.16 JD .... PCIe-632X boards now recognised as DigitalWaveformCapable
+// 10.05.16 JD .... Digital outputs not supported by USB 621X boards
 
 interface
 
@@ -334,6 +335,7 @@ type
 
     DigitalWaveformCapable : Array[1..MaxDevices] of Boolean ;
     DACClockTriggerSupported : Array[1..MaxDevices] of Boolean ;
+    DigitalOutputsSupported : Array[1..MaxDevices] of Boolean ;
 
     DigOutState : Array[1..MaxDevices] of Integer ;
     // Digital output buffer state
@@ -496,9 +498,6 @@ const
    Timebase_10ms = 5 ;
    TimeBasePeriod : Array[-3..5] of Single = (5E-8,0.0,2E-7,0.0,1E-6,1E-5,1E-4,1E-3,1E-2) ;
 
-
-
-
 type
 
    { NIDAQ.DLL procedure  variables }
@@ -536,6 +535,7 @@ var
 begin
     for i := 1 to MaxDevices do DeviceBoardName[i] := '' ;
     for i := 1 to MaxDevices do DigitalWaveformCapable[i] := False ;
+    for i := 1 to MaxDevices do DigitalOutputsSupported[i] := False ;
     for i := 1 to MaxDevices do DeviceName[i] := '' ;
     for i := 1 to MaxDevices do NumDACs[i] := 0 ;
     for i := 1 to MaxDevices do NumADCs[i] := 0 ;
@@ -962,6 +962,8 @@ begin
     // Save default digital output state
     DigOutState[Device] := Pattern ;
 
+    if not DigitalOutputsSupported[Device] then Exit ;
+
     case FNIDAQAPI of
         NIDAQMX : NIDAQMX_WriteToDigitalOutPutPort( Device,Pattern ) ;
         NIDAQ : NIDAQ_WriteToDigitalOutPutPort( Device,Pattern ) ;
@@ -1087,6 +1089,10 @@ begin
        if AnsiContainsText(DeviceBoardName[i],'600') then DACClockTriggerSupported[i] := False
                                                      else DACClockTriggerSupported[i] := True ;
 
+       // Digital outputs supported (all except USB-621X devices)
+       if AnsiContainsText(DeviceBoardName[i],'621') then DigitalOutputsSupported[i] := False
+                                                     else DigitalOutputsSupported[i] := True ;
+
        end ;
 
    for i := 1 to NumDevices do DeviceNumDMAChannels[i] := 2 ;
@@ -1126,14 +1132,18 @@ begin
            end
         else DACScale[DeviceNum] := 1.0 ;
 
-        // Digital O/P ports
-        for i := 0 to 7 do begin
-            Resource[NumResources].Device := DeviceNum ;
-            Resource[NumResources].ResourceType := DIGOut ;
-            Resource[NumResources].StartChannel := i ;
-            Resource[NumResources].EndChannel := i ;
-            Inc(NumResources) ;
-            end ;
+        // Digital O/P ports (Except 621X series USB devices)
+        if DigitalOutputsSupported[DeviceNum] then
+           begin
+           for i := 0 to 7 do
+               begin
+               Resource[NumResources].Device := DeviceNum ;
+               Resource[NumResources].ResourceType := DIGOut ;
+               Resource[NumResources].StartChannel := i ;
+               Resource[NumResources].EndChannel := i ;
+               Inc(NumResources) ;
+               end ;
+           end;
         end ;
 
    // Set minimum DAC update interval
@@ -1764,7 +1774,7 @@ begin
 
      // Set sampling rate (ensuring that it can be supported by board)
 
-     SamplingRate := 1.0 / SamplingInterval ;
+     SamplingRate := 1.0 / Max(SamplingInterval,1E-7) ;
      Repeat
         Err := DAQmxCfgSampClkTiming( ADCTask[DeviceNum],
                                       nil,
@@ -1779,7 +1789,7 @@ begin
         Until Err = 0 ;
 
      // Return actual sampling interval
-     SamplingInterval := 1.0 / ActualSamplingRate ;
+     SamplingInterval := 1.0 / Max(ActualSamplingRate,1E-7) ;
 
      // Clear task
      CheckError( DAQmxClearTask(ADCTask[DeviceNum])) ;
@@ -1862,7 +1872,7 @@ begin
                                   else ClockSource := 'onboardclock' ;
 
         // Set timing
-        UpdateRate := 1.0 / UpdateInterval ;
+        UpdateRate := 1.0 / Max(UpdateInterval,1E-8) ;
         CheckError( DAQmxCfgSampClkTiming( DACTask[Device],
                                            PANSIChar(ClockSource),
                                            UpdateRate,
@@ -3085,7 +3095,7 @@ begin
      CheckError( AO_VScale( DeviceNum, 0, 4.9, iValue16 ) ) ;
      if iValue16 > (DACMaxValue[DeviceNum] div 2) then DACMaxVolts[DeviceNum] := 5.0
                                                   else DACMaxVolts[DeviceNum] := 10.0 ;
-     DACScale[DeviceNum] := DACMaxValue[DeviceNum] / DACMaxVolts[DeviceNum] ;
+     DACScale[DeviceNum] := DACMaxValue[DeviceNum] / Max(DACMaxVolts[DeviceNum],1E-6) ;
 
      end ;
 
@@ -3203,7 +3213,7 @@ begin
                        else CheckError(DAQ_DB_Config(Device, 0)) ;
 
      { Set internal gain for A/D converter's programmable amplifier }
-     Gain := Trunc( (ADCVoltageRangeAtX1Gain[Device] + 0.001) / ADCVoltageRange ) ;
+     Gain := Trunc( (ADCVoltageRangeAtX1Gain[Device] + 0.001) / Max(ADCVoltageRange,1E-6) ) ;
      if Gain < 1 then Gain := -1 ;
 
      // Define A/D channel offset sequence within A/D sample buffer

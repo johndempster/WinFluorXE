@@ -210,6 +210,8 @@ unit Main;
 // 11.03.16 V3.8.3 JD Single Ended (RSE) analogue input mode now correctly selected (instead of Single Ended (NRSE)
 //                    which was selected by mistake.
 // 31.03.16 V3.8.4 JD PCIe-632X boards now recognised as DigitalWaveformCapable
+// 10.05.16 V3.8.5 JD Digital outputs not supported by USB 621X boards to avoid error messages
+//                    Additional FP divide by zero checks added to RecUnit.pas and sealtest.pas
 
 interface
 
@@ -801,7 +803,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.4 31-3-16 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.5 11-5-16 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
