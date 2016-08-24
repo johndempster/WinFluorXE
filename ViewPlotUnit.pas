@@ -29,6 +29,8 @@ unit ViewPlotUnit;
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 24.09.15 .. JD Min/Max display compression now implemented in scADCDisplay component rather than this form.
 //             ADCBuf,FLDisplayBuf & RDisplayBuf now allocated dynamically
+// 24.08.16 .. JD Time course plot data now stored in <filename>.TCB file to avoid
+//             recomputing plot every time window is opened.
 
 interface
 
@@ -123,6 +125,7 @@ type
 
     ROITCNumFrames : Integer ;     // No. of points in time course buffer
     ROITCNumFramesDone : Integer ; // No. of points comluted in TC buffer
+    ROITCNumBytes : Integer ;      // No. of bytes in TC buffer
     //ROITCNumGroups : Integer ;     // No. of frame type groups
 
     ROITCRunning : Boolean ;
@@ -286,7 +289,8 @@ procedure TViewPlotFrm.NewFile ;
 // -----------------------------------------------
 var
      ch,i : Integer ;
-
+     TCBFileName : string ;
+     FileHandle : THandle ;
 begin
 
      Caption := 'Time Course: ' + MainFrm.IDRFile.FileName ;
@@ -311,8 +315,8 @@ begin
 
     // Create time course buffer point -> -> frame # pointer list
     if ROITimeCourseBuf <> Nil then FreeMem( ROITimeCourseBuf ) ;
-    GetMem( ROITimeCourseBuf,
-            MainFrm.IDRFile.NumFrames*MainFrm.IDRFile.NumFrameTypes*Max(MainFrm.IDRFile.MaxROIInUse+1,1)*4) ;
+    ROITCNumBytes := MainFrm.IDRFile.NumFrames*MainFrm.IDRFile.NumFrameTypes*Max(MainFrm.IDRFile.MaxROIInUse+1,1)*4 ;
+    GetMem( ROITimeCourseBuf, ROITCNumBytes ) ;
     ROITCNumFrames := MainFrm.IDRFile.NumFrames ;
 
     sbDisplay.Max := MainFrm.IDRFile.NumFrames - 1 ;
@@ -459,10 +463,18 @@ begin
     // Set display time units
     SetDisplayUnits ;
 
-    // Clear ROI time course available flags
-    NewFLTimeCourseRequired ;
-
-    //for i := 0 to High(ROIExclusionThreshold) do ROIExclusionThreshold[i] := 0 ;
+    // Load plot from .TCB storage file (if it exists)
+    TCBFileName :=  ChangeFileExt(Mainfrm.IDRFile.FileName,'.TCB') ;
+    if FileExists(TCBFileName) then begin
+       FileHandle := FileOpen( TCBFileName, fmOpenRead );
+       if NativeInt(FileHandle) <> -1 then begin
+          FileRead( FileHandle,ROITimeCourseBuf^,ROITCNumBytes);
+          FileClose( FileHandle) ;
+          ROITCNumFramesDone := ROITCNumFrames ;
+          end
+       else NewFLTimeCourseRequired ;
+       end
+    else NewFLTimeCourseRequired ;
 
     PlotAvailable := True ;
 
@@ -1732,6 +1744,7 @@ var
     y : Single ;
     Done,ROIsAvailable : Boolean ;
     LatestValue : Array[0..MaxLightSourceCycleLength+1] of Integer ;
+    FileHandle : THandle ;
 begin
 
     if ROITCRunning then Exit ;
@@ -1797,6 +1810,9 @@ begin
 
         end ;
 
+     //
+     // Time course complete
+     //
      if ROITCNumFramesDone >= NumFrames then begin
         // Fill in remaining time points with most recent values
         for iROI := 1 to MainFrm.IDRFile.MaxROIInUse do
@@ -1826,6 +1842,13 @@ begin
                end ;
 
            end ;
+
+        // Save plot to .TCB storage file
+        FileHandle := FileCreate( ChangeFileExt(Mainfrm.IDRFile.FileName,'.TCB'));
+        if NativeInt(FileHandle) <> -1 then begin
+           FileWrite( FileHandle,ROITimeCourseBuf^,ROITCNumBytes);
+           FileClose( FileHandle) ;
+           end;
 
         // Update display if computation complete
         sbDisplay.Position := 1 ;

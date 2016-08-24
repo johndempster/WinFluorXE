@@ -75,7 +75,7 @@ object ViewPlotFrm: TViewPlotFrm
     OnCursorChange = scRDisplayCursorChange
     CursorChangeInProgress = False
     NumChannels = 1
-    NumPoints = 0
+    NumPoints = 1
     MaxPoints = 1024
     XMin = 0
     XMax = 1023
