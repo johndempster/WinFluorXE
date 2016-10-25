@@ -214,6 +214,7 @@ unit Main;
 //                    Additional FP divide by zero checks added to RecUnit.pas and sealtest.pas
 // 24.08.16 V3.8.6 JD Time course plot data now stored in <filename>.TCB file to avoid
 //                    recomputing plot every time window is opened.
+// 25.10.16           Tested with Point Grey Grasshopper 3 camera
 
 interface
 
@@ -805,7 +806,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.6 24-8-16 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.6 25-10-16 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
