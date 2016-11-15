@@ -14,12 +14,13 @@ unit exportAnalogueUnit;
   19/01/10 ... Export to Igor binary wave added
   13.11.12 ... .LOADADC() now uses 64 bit scan counter
   17.02.15 ... MAT file export now working correctly
+  14.11.16 ... Multiple files can now be selected for export
   }
 interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, RangeEdit, ADCDataFile, maths, math, MATFileWriterUnit, labIOUnit ;
+  StdCtrls, RangeEdit, ADCDataFile, maths, math, MATFileWriterUnit, labIOUnit, UITYpes ;
 
 type
   TExportAnalogueFrm = class(TForm)
@@ -36,11 +37,8 @@ type
     ckCh5: TCheckBox;
     ckCh6: TCheckBox;
     ckCh7: TCheckBox;
-    GroupBox3: TGroupBox;
-    edFileName: TEdit;
     GroupBox2: TGroupBox;
     rbABF: TRadioButton;
-    bChangeName: TButton;
     bOK: TButton;
     bCancel: TButton;
     SaveDialog: TSaveDialog;
@@ -49,18 +47,23 @@ type
     ExportFile: TADCDataFile;
     rbMAT: TRadioButton;
     rbIBW: TRadioButton;
+    FilesToExportGrp: TGroupBox;
+    bSelectFilesToExport: TButton;
+    meFiles: TMemo;
+    bClearList: TButton;
+    OpenDialog: TOpenDialog;
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
-    procedure bChangeNameClick(Sender: TObject);
-    procedure rbABFClick(Sender: TObject);
     procedure bCancelClick(Sender: TObject);
     procedure ckCh0Click(Sender: TObject);
     procedure rbIBWClick(Sender: TObject);
   private
     { Private declarations }
     ExportFileName : string ;
+    FileOnDisplay : string ;
+    procedure ExportToFile ;
     procedure SetChannel( CheckBox : TCheckBox ; ch : Integer ) ;
-    procedure UpdateSettings ;
+    function CreateExportFileName : string ;
   public
     { Public declarations }
   end;
@@ -97,9 +100,15 @@ begin
      SetChannel( ckCh7, 7 ) ;
 
      { Update O/P file name channel selection options }
-     ExportFileName := MainFrm.IDRFile.FileName ;
-     UpdateSettings ;
+     ExportFileName := CreateExportFileName ;
      ChannelsGrp.Enabled := True ;
+
+     // Keep record of currently open file
+     FileOnDisplay := MainFrm.IDRFile.FileName ;
+
+     // Add currently open file to export list
+     meFiles.Clear ;
+     meFiles.Lines.Add(MainFrm.IDRFile.FileName) ;
 
      end;
 
@@ -122,13 +131,22 @@ begin
 
 
 procedure TExportAnalogueFrm.bOKClick(Sender: TObject);
+// ------------
+// Export files
+// ------------
+begin
+    ExportToFile ;
+    end;
+
+
+procedure TExportAnalogueFrm.ExportToFile ;
 // -------------------------------------------------
 // Copy selected section of data file to export file
 // -------------------------------------------------
 const
    NumScansPerBuf = 256 ;
 var
-   StartAt,EndAt,ch,i,j,ifrom,iTo,izero : Integer ;
+   StartAt,EndAt,ch,i,j,ifrom,iTo,izero,iFile : Integer ;
    UseChannel : Array[0..ChannelLimit] of Boolean ;
    InBuf : Array[0..NumScansPerBuf*(ChannelLimit+1)-1] of SmallInt ;
    OutBuf : Array[0..NumScansPerBuf*(ChannelLimit+1)-1] of SmallInt ;
@@ -147,197 +165,191 @@ var
    TMat : PBigDoubleArray ;        // Time data array
    YMat : PBigDoubleArray ;        // Time data array
    Writer : TMATFileWriter ;
+   FileName : string ;
 begin
 
      bOK.Enabled := False ;
 
-     if rbAllRecords.Checked then begin
-        StartAt := 0 ;
-        EndAt := MainFrm.IDRFile.ADCNumScansInFile ;
-        end
-     else begin
-        StartAt := Round(edRange.LoValue/MainFrm.IDRFile.ADCSCanInterval) ;
-        EndAt := Round(edRange.HiValue/MainFrm.IDRFile.ADCSCanInterval) ;
-        end ;
+     for iFile := 0 to meFiles.Lines.Count-1 do begin
 
-     // If destination file already exists, allow user to abort
-     if FileExists( ExportFileName ) then begin
-        if MessageDlg( ExportFileName + ' exists! Overwrite?!',
-           mtConfirmation, [mbYes, mbNo], 0) <> mrYes then begin
-           bOK.Enabled := True ;
-           Exit ;
-           end ;
-         end ;
+         // Close existing file
+         MainFrm.IDRFile.CloseFile ;
 
-     // Channels to be exported
-     UseChannel[0] :=  ckCh0.Checked ;
-     UseChannel[1] :=  ckCh1.Checked ;
-     UseChannel[2] :=  ckCh2.Checked ;
-     UseChannel[3] :=  ckCh3.Checked ;
-     UseChannel[4] :=  ckCh4.Checked ;
-     UseChannel[5] :=  ckCh5.Checked ;
-     UseChannel[6] :=  ckCh6.Checked ;
-     UseChannel[7] :=  ckCh7.Checked ;
+         // Open file to export
+         MainFrm.IDRFile.OpenFile( meFiles.Lines[iFile]) ;
+         ExportFileName := CreateExportFileName ;
 
-     // Export file type
-     if rbABF.Checked then ExportType := ftAxonABF
-     else if rbASCII.Checked then ExportType := ftASC
-     else if rbIBW.Checked then ExportType := ftIBW
-     else ExportType := ftEDR ;
-
-     // Check MAT-File export option
-     // Added by NS 18 February 2009
-     if rbMAT.Checked then begin
-        NumScansToExport := EndAt - StartAt + 1 ;
-        GetMem( TMat, NumScansToExport*SizeOf(Double) ) ;
-        GetMem( YMat, MainFrm.IDRFile.ADCNumChannels*NumScansToExport*SizeOf(Double) ) ;
-        Writer := TMATFileWriter.Create();
-        Writer.OpenMATFile( ExportFileName ) ;
-        Writer.WriteFileHeader;
-        end
-     else begin
-        // Create empty export data file
-        ExportFile.CreateDataFile( ExportFileName, ExportType ) ;
-        // Set file parameters
-        ExportFile.NumChannelsPerScan := MainFrm.IDRFile.ADCNumChannels ;
-        ExportFile.NumScansPerRecord := EndAt - StartAt + 1 ;
-        ExportFile.MaxADCValue := MainFrm.IDRFile.ADCMaxValue ;
-        ExportFile.MinADCValue := -MainFrm.IDRFile.ADCMaxValue - 1 ;
-        ExportFile.ScanInterval := MainFrm.IDRFile.ADCSCanInterval ;
-        ExportFile.IdentLine := MainFrm.IDRFile.Ident ;
-        ExportFile.RecordNum := 1 ;
-        ExportFile.ABFAcquisitionMode := ftGapFree ;
-
-        chOut := 0 ;
-        for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do if UseChannel[ch] then begin
-          ExportFile.ChannelOffset[chOut] := chOut ;
-          ExportFile.ChannelADCVoltageRange[chOut] := MainFrm.IDRFile.ADCVoltageRange ;
-          ExportFile.ChannelName[ch] := MainFrm.IDRFile.ADCChannel[chOut].ADCName ;
-          ExportFile.ChannelUnits[ch] := MainFrm.IDRFile.ADCChannel[chOut].ADCUnits ;
-          ExportFile.ChannelScale[ch] := MainFrm.IDRFile.ADCChannel[chOut].ADCSCale ;
-          ExportFile.ChannelCalibrationFactor[chOut] := MainFrm.IDRFile.ADCChannel[ch].ADCCalibrationFactor ;
-          ExportFile.ChannelGain[chOut] := MainFrm.IDRFile.ADCChannel[ch].ADCAmplifierGain ;
-          Inc(chOut) ;
-          end ;
-        ExportFile.NumChannelsPerScan := chOut ;
-        end ;
-
-     { Copy records }
-     InScan := StartAt ;
-     NumScansToCopy := EndAt - StartAt + 1 ;
-     OutScan := 0 ;
-     nScansExported := 0 ;
-     Done := False ;
-     While (not Done) and (not bOK.Enabled) do begin
-
-         // Read from buffer
-         NumScansToRead := Min( NumScansToCopy,NumScansPerBuf ) ;
-         NumScansRead := MainFrm.IDRFile.LoadADC( InScan, NumScansToRead, InBuf ) ;
-         if NumScansRead <= 0 then Done := True ;
-
-         // Copy required channels
-
-         // Write to export file
-         if rbMat.Checked then begin
-            // Export to MAT file
-            nChannelsExported :=  0 ;
-            for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do if UseChannel[ch] then begin
-                ifrom := MainFrm.IDRFile.ADCChannel[ch].ChannelOffset ;
-                iZero := MainFrm.IDRFile.ADCChannel[ch].ADCZero ;
-                YScale := MainFrm.IDRFile.ADCChannel[ch].ADCScale ;
-                iTo := NumScansToExport*nChannelsExported + nScansExported ;
-                for i := 0 to NumScansRead-1 do begin
-                    YMat^[iTo] := (InBuf[iFrom] - iZero)*YScale ;
-                    inc(iTo) ;
-                    iFrom := iFrom + MainFrm.IDRFile.ADCNumChannels ;
-                    end ;
-                Inc(nChannelsExported) ;
-                end ;
-            nScansExported := nScansExported + NumScansRead ;
+         //Select range
+         if rbAllRecords.Checked then
+            begin
+            StartAt := 0 ;
+            EndAt := MainFrm.IDRFile.ADCNumScansInFile ;
             end
-         else begin
-            // All other formats
-            j := 0 ;
-            for i := 0 to NumScansRead-1 do begin
-                for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do if UseChannel[ch] then begin
-                    OutBuf[j] := InBuf[i*MainFrm.IDRFile.ADCNumChannels +
-                                    MainFrm.IDRFile.ADCChannel[ch].ChannelOffset] ;
-                    Inc(j) ;
-                    end ;
-                end ;
-            ExportFile.SaveADCBuffer( OutScan, NumScansRead, OutBuf ) ;
-            OutScan := OutScan + NumScansRead ;
+         else
+            begin
+            StartAt := Round(edRange.LoValue/MainFrm.IDRFile.ADCSCanInterval) ;
+            EndAt := Round(edRange.HiValue/MainFrm.IDRFile.ADCSCanInterval) ;
             end ;
 
-         // Report progress
+         // If destination file already exists, allow user to abort
+         if FileExists( ExportFileName ) then begin
+            if MessageDlg( ExportFileName + ' exists! Overwrite?!',
+               mtConfirmation, [mbYes, mbNo], 0) <> mrYes then continue ;
+             end ;
+
+         // Channels to be exported
+         UseChannel[0] :=  ckCh0.Checked ;
+         UseChannel[1] :=  ckCh1.Checked ;
+         UseChannel[2] :=  ckCh2.Checked ;
+         UseChannel[3] :=  ckCh3.Checked ;
+         UseChannel[4] :=  ckCh4.Checked ;
+         UseChannel[5] :=  ckCh5.Checked ;
+         UseChannel[6] :=  ckCh6.Checked ;
+         UseChannel[7] :=  ckCh7.Checked ;
+
+         // Export file type
+         if rbABF.Checked then ExportType := ftAxonABF
+         else if rbASCII.Checked then ExportType := ftASC
+         else if rbIBW.Checked then ExportType := ftIBW
+         else ExportType := ftEDR ;
+
+         // Check MAT-File export option
+         // Added by NS 18 February 2009
+         if rbMAT.Checked then
+             begin
+             NumScansToExport := EndAt - StartAt + 1 ;
+             GetMem( TMat, NumScansToExport*SizeOf(Double) ) ;
+             GetMem( YMat, MainFrm.IDRFile.ADCNumChannels*NumScansToExport*SizeOf(Double) ) ;
+             Writer := TMATFileWriter.Create();
+             Writer.OpenMATFile( ExportFileName ) ;
+             Writer.WriteFileHeader;
+             end
+         else
+            begin
+            // Create empty export data file
+            ExportFile.CreateDataFile( ExportFileName, ExportType ) ;
+            // Set file parameters
+            ExportFile.NumChannelsPerScan := MainFrm.IDRFile.ADCNumChannels ;
+            ExportFile.NumScansPerRecord := EndAt - StartAt + 1 ;
+            ExportFile.MaxADCValue := MainFrm.IDRFile.ADCMaxValue ;
+            ExportFile.MinADCValue := -MainFrm.IDRFile.ADCMaxValue - 1 ;
+            ExportFile.ScanInterval := MainFrm.IDRFile.ADCSCanInterval ;
+            ExportFile.IdentLine := MainFrm.IDRFile.Ident ;
+            ExportFile.RecordNum := 1 ;
+            ExportFile.ABFAcquisitionMode := ftGapFree ;
+
+            chOut := 0 ;
+            for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do if UseChannel[ch] then
+                begin
+                ExportFile.ChannelOffset[chOut] := chOut ;
+                ExportFile.ChannelADCVoltageRange[chOut] := MainFrm.IDRFile.ADCVoltageRange ;
+                ExportFile.ChannelName[ch] := MainFrm.IDRFile.ADCChannel[chOut].ADCName ;
+                ExportFile.ChannelUnits[ch] := MainFrm.IDRFile.ADCChannel[chOut].ADCUnits ;
+                ExportFile.ChannelScale[ch] := MainFrm.IDRFile.ADCChannel[chOut].ADCSCale ;
+                ExportFile.ChannelCalibrationFactor[chOut] := MainFrm.IDRFile.ADCChannel[ch].ADCCalibrationFactor ;
+                ExportFile.ChannelGain[chOut] := MainFrm.IDRFile.ADCChannel[ch].ADCAmplifierGain ;
+                Inc(chOut) ;
+                end ;
+            ExportFile.NumChannelsPerScan := chOut ;
+            end ;
+
+         { Copy records }
+         InScan := StartAt ;
+         NumScansToCopy := EndAt - StartAt + 1 ;
+         OutScan := 0 ;
+         nScansExported := 0 ;
+         Done := False ;
+         While (not Done) and (not bOK.Enabled) do
+            begin
+            // Read from buffer
+            NumScansToRead := Min( NumScansToCopy,NumScansPerBuf ) ;
+            NumScansRead := MainFrm.IDRFile.LoadADC( InScan, NumScansToRead, InBuf ) ;
+            if NumScansRead <= 0 then Done := True ;
+
+            // Copy required channels
+
+            // Write to export file
+            if rbMat.Checked then begin
+               // Export to MAT file
+               nChannelsExported :=  0 ;
+               for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do if UseChannel[ch] then
+                    begin
+                    ifrom := Round(MainFrm.IDRFile.ADCChannel[ch].ChannelOffset) ;
+                    iZero := Round(MainFrm.IDRFile.ADCChannel[ch].ADCZero) ;
+                    YScale := MainFrm.IDRFile.ADCChannel[ch].ADCScale ;
+                    iTo := NumScansToExport*nChannelsExported + nScansExported ;
+                    for i := 0 to NumScansRead-1 do
+                        begin
+                        YMat^[iTo] := (InBuf[iFrom] - iZero)*YScale ;
+                        inc(iTo) ;
+                        iFrom := iFrom + MainFrm.IDRFile.ADCNumChannels ;
+                        end ;
+                    Inc(nChannelsExported) ;
+                   end ;
+               nScansExported := nScansExported + NumScansRead ;
+               end
+            else
+               begin
+               // All other formats
+               j := 0 ;
+               for i := 0 to NumScansRead-1 do
+                   begin
+                   for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do if UseChannel[ch] then
+                       begin
+                       OutBuf[j] := InBuf[i*MainFrm.IDRFile.ADCNumChannels +
+                                    MainFrm.IDRFile.ADCChannel[ch].ChannelOffset] ;
+                       Inc(j) ;
+                       end ;
+                   end ;
+               ExportFile.SaveADCBuffer( OutScan, NumScansRead, OutBuf ) ;
+               OutScan := OutScan + NumScansRead ;
+               end ;
+
+            // Report progress
+            MainFrm.StatusBar.SimpleText := format(
+            ' EXPORT: Exporting scans %d/%d to %s ',
+            [InScan,EndAt,ExportFileName]) ;
+
+            InScan := InScan + NumScansRead ;
+            NumScansToCopy := NumScansToCopy - NumScansRead ;
+            if NumScansToCopy <= 0 then Done := True ;
+            end ;
+
+        if rbMat.Checked then
+           begin
+           // Write to MAT file and close
+           for i := 0 to nScansExported-1 do TMat^[i] := i*MainFrm.IDRFile.ADCSCanInterval ;
+           Writer.WriteDoubleMatrixHeader('T',nScansExported,1);
+           Writer.WriteDoubleMatrixValues( TMat^,nScansExported,1) ;
+           Writer.WriteDoubleMatrixHeader('Y',nScansExported,nChannelsExported);
+           Writer.WriteDoubleMatrixValues( YMat^, nScansExported,nChannelsExported) ;
+           Writer.CloseMATFile;
+           FreeMem(YMat) ;
+           FreeMem(TMat) ;
+           end
+         else
+           begin
+           // Close export data file
+           ExportFile.CloseDataFile ;
+           end ;
+
+         // Final Report
          MainFrm.StatusBar.SimpleText := format(
-         ' EXPORT: Exporting scans %d/%d to %s ',
-         [InScan,EndAt,ExportFileName]) ;
-
-         InScan := InScan + NumScansRead ;
-         NumScansToCopy := NumScansToCopy - NumScansRead ;
-         if NumScansToCopy <= 0 then Done := True ;
-
-         end ;
-
-     if rbMat.Checked then begin
-        // Write to MAT file and close
-        for i := 0 to nScansExported-1 do TMat^[i] := i*MainFrm.IDRFile.ADCSCanInterval ;
-        Writer.WriteDoubleMatrixHeader('T',nScansExported,1);
-        Writer.WriteDoubleMatrixValues( TMat^,nScansExported,1) ;
-        Writer.WriteDoubleMatrixHeader('Y',nScansExported,nChannelsExported);
-        Writer.WriteDoubleMatrixValues( YMat^, nScansExported,nChannelsExported) ;
-        Writer.CloseMATFile;
-        FreeMem(YMat) ;
-        FreeMem(TMat) ;
-        end
-     else begin
-        // Close export data file
-        ExportFile.CloseDataFile ;
-        end ;
-
-     // Final Report
-     MainFrm.StatusBar.SimpleText := format(
-     ' EXPORT: %d scans exported to %s ',
-     [EndAt-StartAt+1,ExportFileName]) ;
-     LogFrm.AddLine( MainFrm.StatusBar.SimpleText ) ;
+         ' EXPORT: %d scans exported to %s ',
+         [EndAt-StartAt+1,ExportFileName]) ;
+         LogFrm.AddLine( MainFrm.StatusBar.SimpleText ) ;
+         end;
 
      bOK.Enabled := True ;
 
+     // Re-open file which was on display
+     MainFrm.IDRFile.CloseFile ;
+     MainFrm.IDRFile.OpenFile( FileOnDisplay ) ;
+
      end;
 
 
-procedure TExportAnalogueFrm.bChangeNameClick(Sender: TObject);
-{ ------------------------------------------
-  Change name/location of export destination
-  ------------------------------------------ }
-begin
-     SaveDialog.DefaultExt := ExtractFileExt( ExportFileName ) ;
-     SaveDialog.options := [ofOverwritePrompt,ofHideReadOnly,ofPathMustExist] ;
-     SaveDialog.Filter := ' Files (*' + SaveDialog.DefaultExt + ')|*' +
-                            SaveDialog.DefaultExt + '|' ;
-
-     SaveDialog.FileName := ExportFileName ;
-     SaveDialog.Title := 'Export File ' ;
-     if MainFrm.DataDirectory <> '' then
-        SaveDialog.InitialDir := MainFrm.DataDirectory ;
-
-     if SaveDialog.Execute then ExportFileName := SaveDialog.FileName ;
-     edFileName.text := ExportFileName ;
-     end;
-
-
-procedure TExportAnalogueFrm.rbABFClick(Sender: TObject);
-// ---------------------------------
-// Axon Binary File option selected
-// ---------------------------------
-begin
-     UpdateSettings ;
-     //ChannelsGrp.Enabled := False ;
-     end;
-
-
-procedure TExportAnalogueFrm.UpdateSettings ;
+function TExportAnalogueFrm.CreateExportFileName : string ;
 // ---------------------------------------------------
 // Update control settings when export format changed
 // ---------------------------------------------------
@@ -345,6 +357,7 @@ var
     FileTag : String ;
     UseChannel : Array[0..ChannelLimit] of Boolean ;
     i, NumChannels : Integer ;
+    ExportFileName : string ;
 begin
 
      UseChannel[0] :=  ckCh0.Checked ;
@@ -396,7 +409,8 @@ begin
            end ;
         end ;
      if rbMAT.Checked then ExportFileName := ChangeFileExt( ExportFileName, '.mat' ) ;  // Added by NS 18 February 2009
-     edFileName.text := ExportFileName ;
+
+     Result := ExportFileName ;
      end ;
 
 
@@ -441,8 +455,6 @@ begin
         if ckCh7.Tag <> TCheckBox(Sender).Tag then ckCh7.Checked := False ;
         end ;
 
-     UpdateSettings ;
-
      end;
 
 procedure TExportAnalogueFrm.rbIBWClick(Sender: TObject);
@@ -469,8 +481,6 @@ begin
                                                else Inc(NumChannels) ;
 
         end ;
-
-     UpdateSettings ;
 
      end;
 

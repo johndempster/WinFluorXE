@@ -23,6 +23,7 @@ unit RecPlotUnit;
 // 02.09.15 Min/Max display compression now implemented in scADCDisplay component rather than this form.
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 11.05.16 .. JD Additional divide by zero checks added
+// 08.11.16 .. JD Fluouresence and ratio traces now floating point values
 
 interface
 
@@ -97,11 +98,11 @@ type
   private
     { Private declarations }
 
-    pFLDisplayBuf : PIntArray ;   // Pointer to fluorescence time course data buffer
-    pRDisplayBuf : PIntArray  ;   // Pointer to ratio display buffer
+    pFLDisplayBuf : PSingleArray ;   // Pointer to fluorescence time course data buffer
+    pRDisplayBuf : PSingleArray  ;   // Pointer to ratio display buffer
     FLDisplayBufMaxPoints : Integer ; // Max. no. of points allowed in buffer
 
-    FLLatestValues : Array[0..MaxFrameType] of Integer ;
+    FLLatestValues : Array[0..MaxFrameType] of single ;
 
     TimeLapseMode : Boolean ;   // Time lapse mode flag
     NumFrameTypes : Integer ;  // No. of excitation light frames types in use
@@ -385,14 +386,16 @@ begin
     // Update fluorescence display buffer
     if pFLDisplayBuf <> Nil then FreeMem(pFLDisplayBuf) ;
     FLDisplayBufMaxPoints := scFLDisplay.MaxPoints*NumFrameTypes ;
-    GetMem( pFLDisplayBuf,FLDisplayBufMaxPoints*4) ;
+    GetMem( pFLDisplayBuf,FLDisplayBufMaxPoints*SizeOf(Single)) ;
     scFLDisplay.SetDataBuf( pFLDisplayBuf ) ;
+    scFLDisplay.FloatingPointSamples := True ;
 
     scRDisplay.MaxPoints := scFLDisplay.MaxPoints ;
     if pRDisplayBuf <> Nil then FreeMem(pRDisplayBuf) ;
-    scRDisplay.NumBytesPerSample := 4 ;
-    GetMem( pRDisplayBuf,scRDisplay.MaxPoints*4) ;
+    scRDisplay.NumBytesPerSample := SizeOf(Single) ;
+    GetMem( pRDisplayBuf,scRDisplay.MaxPoints*SizeOf(Single)) ;
     scRDisplay.SetDataBuf( pRDisplayBuf ) ;
+    scFLDisplay.FloatingPointSamples := True ;
 
     scRDisplay.XMax := scFLDisplay.MaxPoints ;
     scRDisplay.TScale := scFLDisplay.TScale ;
@@ -440,6 +443,8 @@ begin
      if ADCDisplayBuf <> Nil then FreeMem(ADCDisplayBuf) ;
      GetMem( ADCDisplayBuf, (scADCDisplay.MaxPoints+1)*MainFrm.ADCNumChannels*2 ) ;
      scADCDisplay.SetDataBuf( ADCDisplayBuf ) ;
+     scADCDisplay.NumBytesPerSample := 2 ;
+     scADCDisplay.floatingpointsamples := false ;
 
      edTDisplay.Value := scADCDisplay.MaxPoints*DACUpdateInterval ;
 
@@ -648,7 +653,8 @@ begin
         end ;
 
     //scFLDisplay.SetDataBuf( pFLDisplayBuf ) ;
-    scFLDisplay.NumBytesPerSample := 4 ;
+    scFLDisplay.NumBytesPerSample := SizeOf(Single) ;
+    scFLDisplay.floatingPointSamples := True ;
 
     // Set up fluorescence ratio display window
 
@@ -779,7 +785,7 @@ begin
             yDen := pFLDisplayBuf^[j+iFTDen] ;
             if yDen >= RatioExclusionThreshold then R := (yNum/yDen)
                                                else R := 0.0 ;
-            pRDisplayBuf^[i] := Round( R*YScale ) ;
+            pRDisplayBuf^[i] := R*YScale ;
             end ;
         scRDisplay.DisplayNewPoints( scFLDisplay.NumPoints-1 );
 
@@ -795,14 +801,14 @@ begin
          j := FLDisplayPointer-i ;
          if j >= 0 then begin
             iFT := (FLDisplayPointer-i) mod NumFrameTypes ;
-            FLLatestValues[iFT] := pIntArray(pFLDisplayBuf)^[FLDisplayPointer-i]
+            FLLatestValues[iFT] := pFLDisplayBuf^[FLDisplayPointer-i]
                                    - scFLDisplay.ChanZero[iFT] ;
             end ;
          end ;
 
      s := '' ;
      for iFT := 0 to NumFrameTypes-1 do begin
-         s := s + format('%s=%d<br>',[FrameTypes[iFT],FLLatestValues[iFT]]) ;
+         s := s + format('%s=%.0f<br>',[FrameTypes[iFT],FLLatestValues[iFT]]) ;
          end ;
      lbFLDisplay.Caption := s ;
 
@@ -841,7 +847,6 @@ procedure TRecPlotFrm.SetFLYMin( i : Integer ; Value : single ) ;
 // ------------------------------------
 // Set lower limit of flourescence plot
 // ------------------------------------
-
 begin
     scFLDisplay.YMin[i] := Value ;
     scFLDisplay.Invalidate ;
@@ -852,7 +857,6 @@ function TRecPlotFrm.GetADCYMax( i : Integer ) : Single ;
 // ------------------------------------
 // Get upper limit of analogue channel plot
 // ------------------------------------
-
 begin
     Result := scADCDisplay.YMax[i] ;
     end ;

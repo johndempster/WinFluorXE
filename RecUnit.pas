@@ -6375,14 +6375,14 @@ begin
 
             // Real conductance
             if MainFrm.Cap.GRInvert then
-               ADCBuf^[iScan+MainFrm.Cap.GROffset] := -(ADCBuf^[iScan+MainFrm.Cap.GROffset] - MainFrm.Cap.GRZero)
-                                               + MainFrm.Cap.GRZero ;
+               ADCBuf^[iScan+MainFrm.Cap.GROffset] := -(ADCBuf^[iScan+MainFrm.Cap.GROffset] - Round(MainFrm.Cap.GRZero))
+                                               + Round(MainFrm.Cap.GRZero) ;
             GR := (ADCBuf^[iScan+MainFrm.Cap.GROffset] - MainFrm.Cap.GRZero)*MainFrm.Cap.GRScale ;
 
             // Imaginary conductance
             if MainFrm.Cap.GIInvert then
-               ADCBuf^[iScan+MainFrm.Cap.GIOffset] := -(ADCBuf^[iScan+MainFrm.Cap.GIOffset] - MainFrm.Cap.GIZero)
-                                               + MainFrm.Cap.GIZero ;
+               ADCBuf^[iScan+MainFrm.Cap.GIOffset] := -(ADCBuf^[iScan+MainFrm.Cap.GIOffset] - Round(MainFrm.Cap.GIZero))
+                                               + Round(MainFrm.Cap.GIZero) ;
             GI := (ADCBuf^[iScan+MainFrm.Cap.GIOffset] - MainFrm.Cap.GIZero)*MainFrm.Cap.GIScale ;
 
             if MainFrm.Cap.CompensationInUse then begin

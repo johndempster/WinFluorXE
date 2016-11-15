@@ -34,8 +34,8 @@ object MainFrm: TMainFrm
   object MainMenu1: TMainMenu
     Tag = 21
     Images = ImageList1
-    Left = 40
-    Top = 200
+    Left = 56
+    Top = 16
     object File1: TMenuItem
       Caption = '&File'
       Hint = 'File related commands'
@@ -304,14 +304,14 @@ object MainFrm: TMainFrm
   end
   object OpenDialog: TOpenDialog
     Filter = 'All files (*.*)|*.*'
-    Left = 8
-    Top = 200
+    Left = 16
+    Top = 16
   end
   object ImageList1: TImageList
-    Left = 104
-    Top = 200
+    Left = 96
+    Top = 16
     Bitmap = {
-      494C010112003401440110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010112003401500110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -980,11 +980,11 @@ object MainFrm: TMainFrm
   end
   object SaveDialog: TSaveDialog
     Left = 136
-    Top = 200
+    Top = 16
   end
   object PrinterSetupDialog: TPrinterSetupDialog
-    Left = 168
-    Top = 200
+    Left = 176
+    Top = 16
   end
   object IDRFile: TIDRFile
     NumFrames = 0
@@ -1029,13 +1029,13 @@ object MainFrm: TMainFrm
     EventF0UseConstant = False
     EventF0DisplayMax = 10.000000000000000000
     EventF0SubtractF0 = False
-    Left = 240
-    Top = 208
+    Left = 208
+    Top = 16
   end
   object ApplicationEvents: TApplicationEvents
     OnException = ApplicationEventsException
-    Left = 40
-    Top = 272
+    Left = 248
+    Top = 16
   end
   object Cam1: TSESCam
     SelectedCamera = 0
@@ -1059,7 +1059,7 @@ object MainFrm: TMainFrm
     NumPixelShiftFrames = 1
     DisableExposureIntervalLimit = False
     MonochromeImage = False
-    Left = 304
-    Top = 296
+    Left = 288
+    Top = 16
   end
 end

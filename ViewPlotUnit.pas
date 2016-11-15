@@ -31,6 +31,8 @@ unit ViewPlotUnit;
 //             ADCBuf,FLDisplayBuf & RDisplayBuf now allocated dynamically
 // 24.08.16 .. JD Time course plot data now stored in <filename>.TCB file to avoid
 //             recomputing plot every time window is opened.
+// 27.10.16 .. JD ROI time course now stored and display in Single floating point.
+// 31.10.16 .. JD Mean intensity now computes fractional grey level units
 
 interface
 
@@ -117,9 +119,9 @@ type
     //ADCDisplayScansPerPoint : Single ;
 
     ADCBuf : PBig16BitArray ;
-    FLDisplayBuf : PIntArray ;
-    RDisplayBuf : PIntArray ;
-    ROITimeCourseBuf : PIntArray ;
+    FLDisplayBuf : PSingleArray ;
+    RDisplayBuf : PSingleArray ;
+    ROITimeCourseBuf : PSingleArray ;
 
     ROITCSPacing : Integer ;
 
@@ -315,7 +317,7 @@ begin
 
     // Create time course buffer point -> -> frame # pointer list
     if ROITimeCourseBuf <> Nil then FreeMem( ROITimeCourseBuf ) ;
-    ROITCNumBytes := MainFrm.IDRFile.NumFrames*MainFrm.IDRFile.NumFrameTypes*Max(MainFrm.IDRFile.MaxROIInUse+1,1)*4 ;
+    ROITCNumBytes := MainFrm.IDRFile.NumFrames*MainFrm.IDRFile.NumFrameTypes*Max(MainFrm.IDRFile.MaxROIInUse+1,1)*SizeOf(Single) ;
     GetMem( ROITimeCourseBuf, ROITCNumBytes ) ;
     ROITCNumFrames := MainFrm.IDRFile.NumFrames ;
 
@@ -365,9 +367,10 @@ begin
          end ;
 
     if FLDisplayBuf <> Nil then FreeMem(FLDisplayBuf) ;
-    Getmem( FLDisplayBuf, scFLDisplay.MaxPoints*scFLDisplay.NumChannels*SizeOf(Integer));
+    Getmem( FLDisplayBuf, scFLDisplay.MaxPoints*scFLDisplay.NumChannels*SizeOf(Single));
     scFLDisplay.SetDataBuf( FLDisplayBuf ) ;
-    scFLDisplay.NumBytesPerSample := SizeOf(Integer) ;
+    scFLDisplay.NumBytesPerSample := SizeOf(Single) ;
+    scFLDisplay.FloatingPointSamples := True ;
 
     scFLDisplay.ClearVerticalCursors ;
     FLReadoutCursor := scFLDisplay.AddVerticalCursor(-1,clGreen,'?y') ;
@@ -404,8 +407,9 @@ begin
     scRDisplay.ChanVisible[0] := True ;
 
     if RDisplayBuf <> Nil then FreeMem(RDisplayBuf) ;
-    Getmem( RDisplayBuf, Max(scRDisplay.MaxPoints*scRDisplay.NumChannels,1)*SizeOf(Integer));
-    scRDisplay.NumBytesPerSample := SizeOf(Integer) ;
+    Getmem( RDisplayBuf, Max(scRDisplay.MaxPoints*scRDisplay.NumChannels,1)*SizeOf(Single));
+    scRDisplay.NumBytesPerSample := SizeOf(Single) ;
+    scRDisplay.FloatingPointSamples := True ;
     scRDisplay.SetDataBuf( RDisplayBuf ) ;
 
     scRDisplay.ClearVerticalCursors ;
@@ -922,8 +926,8 @@ function TViewPlotFrm.MeanROIIntensity(
 // --------------------------------------------------------
 var
      xPix,yPix,i,ix,iy,NumPixels : Integer ;
-     z : Integer ;
-     Sum : Single ;
+     //z : Integer ;
+     z,Sum : Single ;
      nSum : Integer ;
      r,Asq,BSq : Single ;
      XStart, XEnd : Single ; // X limits of line
@@ -973,9 +977,8 @@ begin
             for xPix := LeftEdge to RightEdge do
                 for yPix := TopEdge to BottomEdge do begin
                     i := yPix*MainFrm.IDRFile.FrameWidth + xPix ;
-                    z := FrameBuf[i] ;
                     //if z >= zExclusionThreshold then begin
-                    Sum := Sum + z ;
+                    Sum := Sum + FrameBuf[i] ; ;
                     Inc(NumPixels) ;
                     //   end ;
                     end ;
@@ -997,9 +1000,8 @@ begin
                          ((yPix-ROI.Centre.y)*(yPix-ROI.Centre.y)/bSq) ;
                     if  r <= 1.0 then begin
                         i := yPix*MainFrm.IDRFile.FrameWidth + xPix ;
-                        z := FrameBuf[i] ;
                        //if z >= zExclusionThreshold then begin
-                        Sum := Sum + z ;
+                        Sum := Sum + FrameBuf[i] ; ;
                         Inc(NumPixels) ;
                        //   end ;
                         end ;
@@ -1053,10 +1055,8 @@ begin
                Repeat
                   // Distance along line profile
                   D :=  Sqrt((X - XStart)*(X - XStart) + (Y - YStart)*(Y - YStart)) ;
-
-                  z := FrameBuf[Round(X) + Round(Y)*MainFrm.IDRFile.FrameWidth] ;
                   //if z >= zExclusionThreshold then begin
-                  Sum := Sum + z ;
+                  Sum := Sum + FrameBuf[Round(X) + Round(Y)*MainFrm.IDRFile.FrameWidth] ;
                   Inc(NumPixels) ;
                   //   end ;
 
@@ -1132,10 +1132,9 @@ begin
            nSum := 0 ;
            Sum := 0.0 ;
            for i := 0 to NumPixels-1 do begin
-               z := FrameBuf[PixelList[i].X +
-                             PixelList[i].Y*MainFrm.IDRFile.FrameWidth] ;
                //if z >= zExclusionThreshold then begin
-               Sum := Sum + z ;
+               Sum := Sum + FrameBuf[PixelList[i].X +
+                            PixelList[i].Y*MainFrm.IDRFile.FrameWidth] ; ;
                Inc(nSum) ;
               //    end ;
                end ;
@@ -1741,9 +1740,8 @@ procedure TViewPlotFrm.TimerTimer(Sender: TObject);
 
 var
     i,j,iROI,TDone,iFrameType,iFrame,NumFrames,NumFrameTypes  : Integer ;
-    y : Single ;
     Done,ROIsAvailable : Boolean ;
-    LatestValue : Array[0..MaxLightSourceCycleLength+1] of Integer ;
+    LatestValue : Array[0..MaxLightSourceCycleLength+1] of Single ;
     FileHandle : THandle ;
 begin
 
@@ -1795,13 +1793,12 @@ begin
         for iROI := 1 to MainFrm.IDRFile.MaxROIInUse do
             if MainFrm.IDRFile.ROI[iROI].InUse then begin
 
-            y := MeanROIIntensity( iROI, @ImageBuf ) ;
-
             // Save in buffer
             j := (ROITCSpacing*(iROI-1)) +
                  (ROITCNumFramesDone*NumFrameTypes) +
                  iFrameType ;
-            ROITimeCourseBuf^[j] := Round(y/MainFrm.IDRFile.IntensityScale) ;
+            ROITimeCourseBuf^[j] := MeanROIIntensity( iROI, @ImageBuf )/
+                                    MainFrm.IDRFile.IntensityScale ;
 
             end ;
 

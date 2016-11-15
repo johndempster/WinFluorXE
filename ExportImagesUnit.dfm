@@ -370,8 +370,8 @@ object ExportImagesFrm: TExportImagesFrm
     Caption = ' File to be Exported '
     TabOrder = 6
     object bSelectFilesToExport: TButton
-      Left = 10
-      Top = 78
+      Left = 9
+      Top = 76
       Width = 137
       Height = 17
       Caption = 'Select Files to Export'
@@ -395,6 +395,21 @@ object ExportImagesFrm: TExportImagesFrm
       ScrollBars = ssVertical
       TabOrder = 1
       WordWrap = False
+    end
+    object bClearList: TButton
+      Left = 152
+      Top = 78
+      Width = 81
+      Height = 17
+      Caption = 'Clear List'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 2
+      OnClick = bClearListClick
     end
   end
   object ImageFile: TImageFile

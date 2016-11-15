@@ -29,6 +29,7 @@ unit EventAnalysisUnit;
 // 07.10.15 JD Many minor event detection bugs fixed. Display screens can now be expanded to display whole record
 //             Display vertical ranges updated when detection or fluorescence channels changed.
 //             Rolling baseline now initialised to baseline cursor position
+// 04.11.16 JD Now uses single type fluorescence arrays
 
 interface
 
@@ -323,12 +324,11 @@ type
     // Detection display cursors
     DetDisplayInitialised : Boolean ;
     DetBaseLineCursor : Integer ;  // Baseline cursor index
-    DetBaselineCursorY : Integer ; // Baseline cursor position
+    DetBaselineCursorY : single ; // Baseline cursor position
     DetPosThresholdCursor : Integer ;  // Positive threshold cursor
-    DetPosThresholdCursorY : Integer ;
+    DetPosThresholdCursorY : single ;
     DetNegThresholdCursor : Integer ; // Negative threshold cursor
-    DetNegThresholdCursorY : Integer ;
-
+    DetNegThresholdCursorY : single ;
 
     ADCReadoutCursor : Integer ; // A/D readout cursor index on scADCDisplay
     ADCC0Cursor : Integer ;
@@ -365,7 +365,7 @@ type
     procedure DisplayFLIntensity(
               StartEvent : Integer ;
               EndEvent : Integer ;
-              var DisplayBuf : Array of SmallInt ;
+              var DisplayBuf : Array of single ;
               scDisplay : TScopeDisplay ;
               ResetYRange : Boolean
               ) ;
@@ -427,9 +427,9 @@ type
     ADCBuf : Array[0..MaxDisplayPoints-1] of SmallInt ;
     AvgADCBuf : Array[0..MaxDisplayPoints-1] of SmallInt ;
     NumFLDisplayScans : Integer ;
-    FLBuf : Array[0..MaxDisplayPoints-1] of SmallInt ;
-    DetBuf : Array[0..MaxDisplayPoints-1] of Integer ;
-    AvgFLBuf : Array[0..MaxDisplayPoints-1] of SmallInt ;
+    FLBuf : Array[0..MaxDisplayPoints-1] of single;
+    DetBuf : Array[0..MaxDisplayPoints-1] of Single ;
+    AvgFLBuf : Array[0..MaxDisplayPoints-1] of Single ;
 
     procedure UpdateSettings ;
     procedure DisplayEvent( EventNum : Integer ;
@@ -897,6 +897,8 @@ begin
      scFLDisplay.ChanVisible[0] := True ;
 
     scFLDisplay.SetDataBuf( @FLBuf ) ;
+    scFLDisplay.NumBytesPerSample := 4 ;
+    scFLDisplay.FloatingPointSamples := True ;
 
     scFLDisplay.ClearVerticalCursors ;
     FLC0Cursor := scFLDisplay.AddVerticalCursor(-1,clGray,'a') ;
@@ -951,6 +953,8 @@ begin
 
        // Allocate A/D buffer
        scADCDisplay.SetDataBuf( @ADCBuf ) ;
+       scADCDisplay.NumBytesPerSample := 2 ;
+       scADCDisplay.FloatingPointSamples := False ;
 
        scADCDisplay.ClearVerticalCursors ;
        ADCC0Cursor := scADCDisplay.AddVerticalCursor(-1,clGray,'a') ;
@@ -1100,6 +1104,7 @@ begin
     scDetDisplay.ChanVisible[0] := True ;
 
     scDetDisplay.SetDataBuf( @DetBuf ) ;
+    scDetDisplay.FloatingPointSamples := True ;
     scDetDisplay.NumBytesPerSample := 4 ;
 
     scDetDisplay.ClearVerticalCursors ;
@@ -1190,7 +1195,7 @@ begin
                Min(sbDetDisplay.Position + scDetDisplay.MaxPoints,MainFrm.IDRFile.NumFrames) do begin
                y := Intensity( iROI, iFrame, FrameType ) ;
                if SubtractBackground then y := y - Intensity( iBackg, iFrame, FrameType ) ;
-               DetBuf[j] := Round(y) ;
+               DetBuf[j] := y ;
                Inc(j) ;
                end ;
            scDetDisplay.NumPoints := j ;
@@ -1224,7 +1229,7 @@ begin
                if SubtractBackground then yBottom := yBottom - Intensity( iBackg, iFrame, FTBottom ) ;
 
                if (yBottom > ExclusionThreshold) and (yTop > ExclusionThreshold) then begin
-                  DetBuf[j] := Round( (YTop/YBottom)/scDetDisplay.ChanScale[0]) ;
+                  DetBuf[j] := (YTop/YBottom)/scDetDisplay.ChanScale[0] ;
                   end
                else DetBuf[j] := 0 ;
 
@@ -1474,6 +1479,8 @@ begin
 
      // Allocate display data buffer
      scDisplay.SetDataBuf( @DisplayBuf ) ;
+     scDisplay.NumBytesPerSample := 2 ;
+     scDisplay.FloatingPointSamples := False ;
 
      // Clear averaging buffer and counter
      for i := 0 to NumSamples-1 do ySum[i] := 0.0 ;
@@ -1533,7 +1540,7 @@ begin
 procedure TEventAnalysisFrm.DisplayFLIntensity(
           StartEvent : Integer ;
           EndEvent : Integer ;
-          var DisplayBuf : Array of SmallInt ;
+          var DisplayBuf : Array of single ;
           scDisplay : TScopeDisplay ;
           ResetYRange : boolean
           ) ;
@@ -1598,6 +1605,8 @@ begin
 
     // Allocate display data buffer
     scDisplay.SetDataBuf( @DisplayBuf ) ;
+    scDisplay.NumBytesPerSample := 4 ;
+    scDisplay.FloatingPointSamples := True ;
 
     // Find starting intensity point
     if MainFrm.IDRFile.LineScan then begin
@@ -1938,10 +1947,10 @@ var
     i : Integer ;
     iPolarity : Integer ;
     ExceedCount : Integer ;
-    yDiff : Integer ;
-    yThreshold : Integer ;
+    yDiff : single ;
+    yThreshold : single ;
     Done : Boolean ;
-    yBaseline : Integer ;
+    yBaseline : single ;
     iDetectedAt : Integer ;
     NumExceedCountsRequired : Integer ;
     RBAddFraction : Single ;
@@ -2855,7 +2864,7 @@ Function TEventAnalysisFrm.AnalyseEvent(
 var
      i,j : Integer ;        // Counters
      YScale : Single ;      // Signal scale factor
-     YZero : Integer ;      // Signal zero level
+     YZero : Single ;       // Signal zero level
      iChan : Integer ;      // Selected channel
      NumPoints : Integer ;  // No. of points in analysis buffer
      dt : Single ;          // Inter-point time interval (s)
@@ -2904,9 +2913,9 @@ begin
       YScale := scFLDisplay.ChanScale[0] ;
       YZero := scFLDisplay.ChanZero[0] ;
       NumPoints := scFLDisplay.NumPoints ;
-      ReadoutPoint := scFLDisplay.VerticalCursors[FLReadOutCursor] ;
-      StartPoint := scFLDisplay.VerticalCursors[FLC0Cursor] ;
-      EndPoint := scFLDisplay.VerticalCursors[FLC1Cursor] ;
+      ReadoutPoint := Round(scFLDisplay.VerticalCursors[FLReadOutCursor]) ;
+      StartPoint := Round(scFLDisplay.VerticalCursors[FLC0Cursor]) ;
+      EndPoint := Round(scFLDisplay.VerticalCursors[FLC1Cursor]) ;
       dt := scFLDisplay.TScale ;
       for i := 0 to NumPoints-1 do begin
           Buf[i] := (FLBuf[i] - YZero)*YScale;
@@ -2918,9 +2927,9 @@ begin
       YZero := scADCDisplay.ChanZero[iChan] ;
       dt := scADCDisplay.TScale ;
       NumPoints := scADCDisplay.NumPoints ;
-      ReadoutPoint := scADCDisplay.VerticalCursors[ADCReadOutCursor] ;
-      StartPoint := scADCDisplay.VerticalCursors[ADCC0Cursor] ;
-      EndPoint := scADCDisplay.VerticalCursors[ADCC1Cursor] ;
+      ReadoutPoint := Round(scADCDisplay.VerticalCursors[ADCReadOutCursor]);
+      StartPoint := Round(scADCDisplay.VerticalCursors[ADCC0Cursor]) ;
+      EndPoint := Round(scADCDisplay.VerticalCursors[ADCC1Cursor]) ;
       j := scADCDisplay.ChanOffsets[iChan] ;
       for i := 0 to scADCDisplay.NumPoints-1 do begin
           Buf[i] := (ADCBuf[j] - YZero)*YScale ;

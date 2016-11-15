@@ -4,8 +4,8 @@ object ExportAnalogueFrm: TExportAnalogueFrm
   Top = 387
   BorderStyle = bsDialog
   Caption = ' Export Analogue Signals'
-  ClientHeight = 187
-  ClientWidth = 481
+  ClientHeight = 252
+  ClientWidth = 545
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -18,7 +18,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
   TextHeight = 14
   object GroupBox8: TGroupBox
     Left = 8
-    Top = 68
+    Top = 124
     Width = 129
     Height = 90
     Caption = ' Range '
@@ -74,7 +74,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
   end
   object ChannelsGrp: TGroupBox
     Left = 144
-    Top = 68
+    Top = 124
     Width = 225
     Height = 101
     Caption = ' Channels '
@@ -159,59 +159,13 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       OnClick = ckCh0Click
     end
   end
-  object GroupBox3: TGroupBox
-    Left = 8
-    Top = 0
-    Width = 465
-    Height = 65
-    Caption = ' Output file '
-    Font.Charset = ANSI_CHARSET
-    Font.Color = clWindowText
-    Font.Height = -12
-    Font.Name = 'Arial'
-    Font.Style = []
-    ParentFont = False
-    TabOrder = 2
-    object edFileName: TEdit
-      Left = 8
-      Top = 16
-      Width = 449
-      Height = 21
-      AutoSize = False
-      Color = clMenuBar
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Arial'
-      Font.Style = []
-      ParentFont = False
-      ReadOnly = True
-      TabOrder = 0
-      Text = 'edFileName'
-    end
-    object bChangeName: TButton
-      Left = 8
-      Top = 40
-      Width = 121
-      Height = 17
-      Caption = 'Change Destination'
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Arial'
-      Font.Style = [fsBold]
-      ParentFont = False
-      TabOrder = 1
-      OnClick = bChangeNameClick
-    end
-  end
   object GroupBox2: TGroupBox
     Left = 376
-    Top = 68
+    Top = 124
     Width = 97
     Height = 101
     Caption = ' Format '
-    TabOrder = 3
+    TabOrder = 2
     object rbABF: TRadioButton
       Left = 8
       Top = 16
@@ -227,7 +181,6 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       ParentFont = False
       TabOrder = 0
       TabStop = True
-      OnClick = rbABFClick
     end
     object rbASCII: TRadioButton
       Left = 8
@@ -242,7 +195,6 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 1
-      OnClick = rbABFClick
     end
     object rbEDR: TRadioButton
       Left = 8
@@ -257,7 +209,6 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 2
-      OnClick = rbABFClick
     end
     object rbMAT: TRadioButton
       Left = 8
@@ -272,7 +223,6 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 3
-      OnClick = rbABFClick
     end
     object rbIBW: TRadioButton
       Left = 8
@@ -287,12 +237,11 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 4
-      OnClick = rbABFClick
     end
   end
   object bOK: TButton
     Left = 8
-    Top = 162
+    Top = 220
     Width = 50
     Height = 20
     Caption = 'OK'
@@ -303,12 +252,12 @@ object ExportAnalogueFrm: TExportAnalogueFrm
     Font.Style = [fsBold]
     ModalResult = 1
     ParentFont = False
-    TabOrder = 4
+    TabOrder = 3
     OnClick = bOKClick
   end
   object bCancel: TButton
     Left = 64
-    Top = 162
+    Top = 218
     Width = 50
     Height = 17
     Caption = 'Cancel'
@@ -319,12 +268,60 @@ object ExportAnalogueFrm: TExportAnalogueFrm
     Font.Style = [fsBold]
     ModalResult = 2
     ParentFont = False
-    TabOrder = 5
+    TabOrder = 4
     OnClick = bCancelClick
   end
+  object FilesToExportGrp: TGroupBox
+    Left = 8
+    Top = 8
+    Width = 529
+    Height = 110
+    Caption = ' File to be Exported '
+    TabOrder = 5
+    object bSelectFilesToExport: TButton
+      Left = 8
+      Top = 76
+      Width = 137
+      Height = 17
+      Caption = 'Select Files to Export'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 0
+    end
+    object meFiles: TMemo
+      Left = 8
+      Top = 18
+      Width = 511
+      Height = 54
+      Lines.Strings = (
+        'Memo1')
+      ReadOnly = True
+      ScrollBars = ssVertical
+      TabOrder = 1
+      WordWrap = False
+    end
+    object bClearList: TButton
+      Left = 152
+      Top = 76
+      Width = 81
+      Height = 17
+      Caption = 'Clear List'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 2
+    end
+  end
   object SaveDialog: TSaveDialog
-    Left = 168
-    Top = 152
+    Left = 192
+    Top = 208
   end
   object ExportFile: TADCDataFile
     NumChannelsPerScan = 1
@@ -349,6 +346,10 @@ object ExportAnalogueFrm: TExportAnalogueFrm
     ASCIITitleLines = 2
     ASCIIFixedRecordSize = False
     Left = 128
-    Top = 152
+    Top = 208
+  end
+  object OpenDialog: TOpenDialog
+    Left = 104
+    Top = 240
   end
 end

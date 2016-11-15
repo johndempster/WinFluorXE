@@ -25,6 +25,7 @@ unit ViewLineUnit;
 //          window width)
 // 13.11.12 ... .LOADADC() now uses 64 bit scan counter
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 04.11.16 .. JD scopedisplay.ADCZero and cursors position properties now single type rather than integer
 
 interface
 
@@ -206,7 +207,7 @@ type
               var pImageBuf : PIntArray
               ) ;
 
-    procedure UpdateImageCursors( CursorPos : Integer ) ;
+    procedure UpdateImageCursors( CursorPos : single ) ;
     procedure DisplayPixelIntensityTimeCourse ;
     procedure DisplayRatioTimeCourse ;
     procedure SetDisplayUnits ;
@@ -1125,7 +1126,7 @@ begin
 
 
 procedure TViewLineFrm.UpdateImageCursors(
-          CursorPos : Integer ) ;
+          CursorPos : single ) ;
 // ---------------------------------
 // Update cursors on line scan image
 // ---------------------------------
@@ -1165,7 +1166,7 @@ begin
      Image.Canvas.TextOut( 0, BackgroundPixel, 'Bg' ) ;
 
      // Draw time course readout cursor on image
-     TCCursorPos := CursorPos ;
+     TCCursorPos := Round(CursorPos) ;
      Image.Canvas.Pen.Width := 1 ;
      Image.Canvas.Pen.Color := clWhite ;
      Image.Canvas.Polyline( [Point(TCCursorPos,0),

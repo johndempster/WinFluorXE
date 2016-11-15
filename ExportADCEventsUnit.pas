@@ -361,7 +361,7 @@ begin
          j := 0 ;
          for i := 0 to ExportFile.NumScansPerRecord-1 do begin
              for ch := 0 to Display.NumChannels-1 do if UseChannel[ch] then begin
-                 OutBuf^[j] := EventAnalysisFrm.FLBuf[i*Display.NumChannels + ch] ;
+                 OutBuf^[j] := Round(EventAnalysisFrm.FLBuf[i*Display.NumChannels + ch]) ;
                  Inc(j) ;
                  end ;
              end ;

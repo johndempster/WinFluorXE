@@ -1,7 +1,7 @@
 unit Main;
-// ================================================                                                        average
+// ================================================                                 average
 // WinFluor - Fluorescence Image Capture Program
-// (c) J. Dempster, University of Strathclyde, 2001-8
+// (c) J. Dempster, University of Strathclyde, 2001-16
 // All Rights Reserved
 // ================================================
 //
@@ -215,6 +215,8 @@ unit Main;
 // 24.08.16 V3.8.6 JD Time course plot data now stored in <filename>.TCB file to avoid
 //                    recomputing plot every time window is opened.
 // 25.10.16           Tested with Point Grey Grasshopper 3 camera
+// 15.11.16           Files now opened and losed directly in Open Data File/Import Images/Recent files
+//                    rather than .click to fix intermittent failure to open
 
 interface
 
@@ -396,22 +398,22 @@ type
       CmScale : Single ;
       CmOffset : Integer ;
       ImChan : Integer ;
-      ImZero : Integer ;
+      ImZero : single ;
       ImOffset : Integer ;
       ImScale : Single ;
       ImSmoothed : Single ;
       VmChan : Integer ;
-      VmZero : Integer ;
+      VmZero : single ;
       VmOffset : Integer ;
       VmScale : Single ;
       VmSmoothed : Single ;
       GRChan : Integer ;
-      GRZero : Integer ;
+      GRZero : single ;
       GROffset : Integer ;
       GRScale : Single ;
       GRInvert : Boolean ;
       GIChan : Integer ;
-      GIZero : Integer ;
+      GIZero : single ;
       GIOffset : Integer ;
       GIScale : Single ;
       GIInvert : Boolean ;
@@ -565,6 +567,8 @@ type
     procedure SetRecentFileItem(
               MenuItem : TMenuItem ;
               FileName : string ) ;
+
+    procedure DisplayImages ;
 
     function GetSpecialFolder(const ASpecialFolderID: Integer): string;
 
@@ -806,7 +810,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.6 25-10-16 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.6 15-11-16 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
@@ -1204,7 +1208,7 @@ begin
        Caption := 'WinFluor : ' + IDRFile.FileName ;
        if IDRFile.NumFrames > 0 then begin
           UpdateRecentFilesList ;
-          mnViewImages.Click ;
+          DisplayImages ;
           end ;
        end ;
 
@@ -1227,7 +1231,9 @@ procedure TMainFrm.FileNew1Execute(Sender: TObject);
 begin
 
      // Close existing file
-     mnCloseFile.Click ;
+     CloseWindows ;
+     IDRFile.CloseFile ;
+     Caption := 'WinFluor : ' ;
 
      // Present user with standard Save File dialog box
      SaveDialog.options := [ofOverwritePrompt,ofHideReadOnly,ofPathMustExist] ;
@@ -1289,8 +1295,9 @@ procedure TMainFrm.FileOpen1Execute(Sender: TObject);
 // -------------------------------
 begin
 
-     // Close existing file
-     mnCloseFile.Click ;
+     // Close all windows (except record window) and data file (if open)
+     CloseWindows ;
+     if IDRFile.Open then IDRFile.CloseFile ;
 
      OpenDialog.options := [ofPathMustExist] ;
      OpenDialog.DefaultExt := DataFileExtension ;
@@ -1314,7 +1321,7 @@ begin
         Caption := 'WinFluor : ' + IDRFile.FileName ;
         if IDRFile.NumFrames > 0 then begin
            UpdateRecentFilesList ;
-           mnViewImages.Click ;
+           DisplayImages ;
            end ;
         end ;
 
@@ -1329,8 +1336,8 @@ var
      i : Integer ;
 begin
 
-
-     if RecentFiles[0] <> IDRFile.FileName then begin
+     if RecentFiles[0] <> IDRFile.FileName then
+        begin
 
         // Shift names up one
         for i := High(RecentFiles) DownTo 1 do RecentFiles[i] := RecentFiles[i-1] ;
@@ -1583,36 +1590,52 @@ procedure TMainFrm.mnViewImagesClick(Sender: TObject);
 // Open image viewing module
 // --------------------------
 begin
+     DisplayImages ;
+     end;
 
-      if (not IDRFile.Open) or (IDRFile.NumFrames < 0) then Exit ;
 
-      if IDRFile.LineScan then begin
+procedure TMainFrm.DisplayImages ;
+// --------------------------
+// Open image viewing module
+// --------------------------
+begin
+
+      if (not IDRFile.Open) or (IDRFile.NumFrames <= 0) then Exit ;
+
+      if IDRFile.LineScan then
+         begin
          // Line scan file
-         if FormExists('ViewLineFrm') then begin
+         if FormExists('ViewLineFrm') then
+            begin
             if ViewLineFrm.WindowState = wsMinimized then ViewLineFrm.WindowState := wsNormal ;
             ViewLineFrm.BringToFront ;
             ViewLineFrm.SetFocus ;
             end
-         else begin
+         else
+            begin
             ViewLineFrm := TViewLineFrm.Create(Self) ;
             ViewLineFrm.DisplayGrid := mnDisplayGrid.Checked ;
             SetFormPosition( ViewLineFrm,10,10,ViewLineFrm.Width,ViewLineFrm.Height);
             end ;
          end
-      else begin
+      else
+         begin
          // image file
-         if FormExists('ViewFrm') then begin
+         if FormExists('ViewFrm') then
+            begin
             if ViewFrm.WindowState = wsMinimized then ViewFrm.WindowState := wsNormal ;
             ViewFrm.BringToFront ;
             ViewFrm.SetFocus ;
             end
-         else begin
+         else
+            begin
             ViewFrm := TViewFrm.Create(Self) ;
             SetFormPosition( ViewFrm,10,10,
                              (3*ClientWidth) div 5,
                              ClientHeight - ViewFrm.Top - 40);
             // Update location of plotting form
-            if FormExists( 'ViewPlotFrm' ) then begin
+            if FormExists( 'ViewPlotFrm' ) then
+               begin
                ViewPlotFrm.DisplayGrid := mnDisplayGrid.Checked ;
                SetFormPosition( ViewPlotFrm,
                                 ViewFrm.Left + ViewFrm.Width + 10,
@@ -2044,15 +2067,17 @@ begin
        at design time to point to the appropriate RecentFiles array item }
      FileName := RecentFiles[TMenuItem(Sender).Tag] ;
      if (FileName <> '') and FileExists(FileName) then begin
-        if (FileGetAttr(FileName) AND faReadOnly) = 0 then begin
-           // Close any existing file
-           mnCloseFile.Click ;
+        if (FileGetAttr(FileName) AND faReadOnly) = 0 then
+           begin
+           // Close all windows (except record window) and data file (if open)
+           CloseWindows ;
+           if IDRFile.Open then IDRFile.CloseFile ;
            // Open selected file
            IDRFile.OpenFile( FileName ) ;
            LogFrm.AddLine( 'File opened: ' + FileName );
            // Display in program title bar
            Caption := 'WinFluor : ' + IDRFile.FileName ;
-           if IDRFile.NumFrames > 0 then mnViewImages.Click ;
+           if IDRFile.NumFrames > 0 then DisplayImages ;
            end
         else
            ShowMessage( FileName + ' is READ-ONLY. Unable to open!' ) ;
@@ -2079,8 +2104,9 @@ procedure TMainFrm.mnImportClick(Sender: TObject);
 // ------------------------------------------
 begin
 
-     // Close existing file
-     mnCloseFile.Click ;
+     // Close all windows (except record window) and data file (if open)
+     CloseWindows ;
+     if IDRFile.Open then IDRFile.CloseFile ;
 
      // Import file
      FileIO.ImportFile ;

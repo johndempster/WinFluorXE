@@ -21,6 +21,8 @@ unit ExportImagesUnit;
 //              (n) added to end of files when file name already exists
 // 24.09.14 ... Long file names can now be exported again (Word Wrap = False in meFiles memo box)
 // 22.01.16 ... Calibration data now exported
+// 15.11.16 ... File list can now be cleared.
+
 interface
 
 uses
@@ -61,11 +63,13 @@ type
     OpenDialog: TOpenDialog;
     meFiles: TMemo;
     ckMatchingFrameCount: TCheckBox;
+    bClearList: TButton;
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
     procedure bCancelClick(Sender: TObject);
     procedure edRangeKeyPress(Sender: TObject; var Key: Char);
     procedure bSelectFilesToExportClick(Sender: TObject);
+    procedure bClearListClick(Sender: TObject);
   private
     { Private declarations }
     FileOnDisplay : string ;
@@ -146,9 +150,9 @@ begin
 
 
 procedure TExportImagesFrm.ExportFile ;
-// --------------------------------------------
-// Export images to another image file format
-// --------------------------------------------
+// -------------------------
+// Export ROI time courses
+// -------------------------
 var
     FrameNum : Integer ; // Frame counter
     NearestFrame : Integer ;
@@ -410,6 +414,14 @@ begin
     end ;
 
 
+procedure TExportImagesFrm.bClearListClick(Sender: TObject);
+// ---------------
+// Clear file list
+// ---------------
+begin
+    meFiles.Clear ;
+    end;
+
 procedure TExportImagesFrm.bOKClick(Sender: TObject);
 // --------------------
 // Export image to file
@@ -423,6 +435,8 @@ procedure TExportImagesFrm.bSelectFilesToExportClick(Sender: TObject);
 // ----------------------------
 // Select files to be exported
 // ----------------------------
+var
+    i : integer ;
 begin
 
      OpenDialog.InitialDir := ExtractFilePath( FileOnDisplay ) ;
@@ -432,10 +446,8 @@ begin
      OpenDialog.Filter := ' WinFluor (*.idr)|*.idr' ;
 
      OpenDialog.FileName := '' ;
-     if OpenDialog.Execute then begin
-       // edFileName.Text := UpdateFileExtension(OpenDialog.FileName) ;
-        end ;
-     meFiles.Lines.Assign(OpenDialog.Files);
+     for i := 0 to OpenDialog.Files.Count-1 do
+         meFiles.Lines.Add(OpenDialog.Files[i]);
      end ;
 
 
@@ -446,7 +458,8 @@ begin
 
 procedure TExportImagesFrm.edRangeKeyPress(Sender: TObject; var Key: Char);
 begin
-    If Key = #13 then begin
+    If Key = #13 then
+        begin
         // Ensure frame range starts on frame type 0
         edRange.LoValue := (((Round(edRange.LoValue) -1) div MainFrm.IDRFile.FrameTypeCycleLength)*
                            MainFrm.IDRFile.FrameTypeCycleLength) + 1 ;

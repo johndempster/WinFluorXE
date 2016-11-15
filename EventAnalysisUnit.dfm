@@ -30,16 +30,12 @@ object EventAnalysisFrm: TEventAnalysisFrm
     Top = 2
     Width = 692
     Height = 643
-    ActivePage = DetectTab
+    ActivePage = PlotTab
     TabOrder = 0
     OnChange = PageChange
     object DetectTab: TTabSheet
       Caption = 'Detect events'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object DetectGrp: TGroupBox
         Left = 0
         Top = 0
@@ -307,10 +303,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
             object detFluorSettingsTab: TTabSheet
               Caption = 'detFluorSettingsTab'
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label2: TLabel
                 Left = 4
                 Top = 2
@@ -334,10 +326,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
               Caption = 'DetFluorRatioSettingsTab'
               ImageIndex = 1
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label14: TLabel
                 Left = 25
                 Top = 0
@@ -453,10 +441,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
               Caption = 'DetADCSettingsTab'
               ImageIndex = 2
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
             end
           end
           object DetROIGrp: TGroupBox
@@ -551,14 +535,14 @@ object EventAnalysisFrm: TEventAnalysisFrm
         Height = 553
         TabOrder = 1
         object scDetDisplay: TScopeDisplay
-          Left = 8
-          Top = 16
+          Left = 13
+          Top = 17
           Width = 457
           Height = 193
           OnCursorChange = scDetDisplayCursorChange
           CursorChangeInProgress = False
           NumChannels = 1
-          NumPoints = 0
+          NumPoints = 1
           MaxPoints = 1024
           XMin = 0
           XMax = 1023
@@ -659,10 +643,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
     end
     object ViewTab: TTabSheet
       Caption = 'View Events'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object ViewGrp: TGroupBox
         Left = 0
         Top = 0
@@ -813,10 +793,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
             object FTab: TTabSheet
               Caption = 'Fluor'
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label3: TLabel
                 Left = 5
                 Top = 2
@@ -840,10 +816,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
               Caption = 'F/F0'
               ImageIndex = 1
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label5: TLabel
                 Left = 5
                 Top = 2
@@ -1032,10 +1004,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
               ImageIndex = 2
               ParentFont = False
               TabVisible = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label4: TLabel
                 Left = 16
                 Top = 60
@@ -1287,7 +1255,7 @@ object EventAnalysisFrm: TEventAnalysisFrm
           OnCursorChange = scFLDisplayCursorChange
           CursorChangeInProgress = False
           NumChannels = 1
-          NumPoints = 0
+          NumPoints = 1
           MaxPoints = 1024
           XMin = 0
           XMax = 1023
@@ -1321,15 +1289,15 @@ object EventAnalysisFrm: TEventAnalysisFrm
           FontSize = 8
         end
         object scADCDisplay: TScopeDisplay
-          Left = 8
-          Top = 240
+          Left = 13
+          Top = 239
           Width = 465
           Height = 193
           OnMouseDown = scADCDisplayMouseDown
           OnCursorChange = scADCDisplayCursorChange
           CursorChangeInProgress = False
           NumChannels = 1
-          NumPoints = 0
+          NumPoints = 1
           MaxPoints = 1024
           XMin = 0
           XMax = 1023
@@ -1492,10 +1460,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
     object AverageTab: TTabSheet
       Caption = 'Average Events'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object AvgGrp: TGroupBox
         Left = 0
         Top = 0
@@ -1586,7 +1550,7 @@ object EventAnalysisFrm: TEventAnalysisFrm
         Height = 529
         TabOrder = 1
         object scAvgFlDisplay: TScopeDisplay
-          Left = 8
+          Left = 13
           Top = 16
           Width = 465
           Height = 193
@@ -1594,7 +1558,7 @@ object EventAnalysisFrm: TEventAnalysisFrm
           OnCursorChange = scAvgFlDisplayCursorChange
           CursorChangeInProgress = False
           NumChannels = 1
-          NumPoints = 0
+          NumPoints = 1
           MaxPoints = 1024
           XMin = 0
           XMax = 1023
@@ -1636,7 +1600,7 @@ object EventAnalysisFrm: TEventAnalysisFrm
           OnCursorChange = scAvgADCDisplayCursorChange
           CursorChangeInProgress = False
           NumChannels = 1
-          NumPoints = 0
+          NumPoints = 1
           MaxPoints = 1024
           XMin = 0
           XMax = 1023
@@ -1674,10 +1638,6 @@ object EventAnalysisFrm: TEventAnalysisFrm
     object PlotTab: TTabSheet
       Caption = 'Plot Graphs'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object PlotGrp: TGroupBox
         Left = -1
         Top = 0

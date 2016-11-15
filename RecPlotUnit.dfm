@@ -104,8 +104,8 @@ object RecPlotFrm: TRecPlotFrm
     FontSize = 8
   end
   object scADCDisplay: TScopeDisplay
-    Left = 144
-    Top = 130
+    Left = 143
+    Top = 127
     Width = 281
     Height = 73
     OnCursorChange = scADCDisplayCursorChange
