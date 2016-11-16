@@ -398,7 +398,7 @@ object ExportImagesFrm: TExportImagesFrm
     end
     object bClearList: TButton
       Left = 152
-      Top = 78
+      Top = 76
       Width = 81
       Height = 17
       Caption = 'Clear List'
