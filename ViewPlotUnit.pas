@@ -33,6 +33,9 @@ unit ViewPlotUnit;
 //             recomputing plot every time window is opened.
 // 27.10.16 .. JD ROI time course now stored and display in Single floating point.
 // 31.10.16 .. JD Mean intensity now computes fractional grey level units
+// 07.12.16 .. JD Whole of time course empty flag now filled with empty flag
+//             which has been chznged to a floating point -65536.0. Multi-waavelength
+//             time courses now calculated correctly again.
 
 interface
 
@@ -45,7 +48,7 @@ Const
     GreyLevelLimit = $FFFF ;
     MaxADCChannels = 8 ;
     MaxFrames = 100000 ;
-    ROITimeCourseBufEmptyFlag = -(High(Integer)-1) ;
+    ROITimeCourseBufEmptyFlag = -65536.0 ;
 type
 
   TROIPixelList = Array[0..4096*4096] of TPoint ;
@@ -1739,7 +1742,7 @@ procedure TViewPlotFrm.TimerTimer(Sender: TObject);
 // -------------------------
 
 var
-    i,j,iROI,TDone,iFrameType,iFrame,NumFrames,NumFrameTypes  : Integer ;
+    i,j,iROI,TDone,iFrameType,iFrame,NumFrames,NumFrameTypes,np  : Integer ;
     Done,ROIsAvailable : Boolean ;
     LatestValue : Array[0..MaxLightSourceCycleLength+1] of Single ;
     FileHandle : THandle ;
@@ -1769,10 +1772,9 @@ begin
     // Initialise empty buffer
     if ROITCNumFramesDone <= 0 then begin
        if ROITimeCourseBuf <> Nil then FreeMem( ROITimeCourseBuf ) ;
-       GetMem( ROITimeCourseBuf,
-               MainFrm.IDRFile.NumFrames*MainFrm.IDRFile.NumFrameTypes*Max(MainFrm.IDRFile.MaxROIInUse+1,1)*4) ;
-       for i := 0 to (ROITCSpacing*MainFrm.IDRFile.MaxROIInUse)-1 do
-           ROITimeCourseBuf^[i] := ROITimeCourseBufEmptyFlag ;
+       np := MainFrm.IDRFile.NumFrames*MainFrm.IDRFile.NumFrameTypes*Max(MainFrm.IDRFile.MaxROIInUse+1,1) ;
+       GetMem( ROITimeCourseBuf, np*sizeof(Single));
+       for i := 0 to np-1 do ROITimeCourseBuf^[i] := ROITimeCourseBufEmptyFlag ;
        end ;
 
     // Create time course for each frame type
@@ -1823,9 +1825,7 @@ begin
             // Update remaining empty entries with latest available frame
            for iFrameType := 0 to NumFrameTypes-1 do begin
                for iFrame := 0 to NumFrames-1 do begin
-                   j := (ROITCSpacing*(iROI-1)) +
-                        (iFrame*NumFrameTypes) +
-                        (iFrameType) ;
+                   j := (ROITCSpacing*(iROI-1)) + (iFrame*NumFrameTypes) + iFrameType ;
                    if ROITimeCourseBuf^[j] <> ROITimeCourseBufEmptyFlag then
                       LatestValue[iFrameType] := ROITimeCourseBuf^[j]
                    else ROITimeCourseBuf^[j] := LatestValue[iFrameType] ;
