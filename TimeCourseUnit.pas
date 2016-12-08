@@ -30,6 +30,8 @@ unit TimeCourseUnit;
 // 31.12.12 Fix issue with plotting different length fluorescence and ADC channels
 // 21.08.14 Unused PlotNum removed from PlotROIIntensity() and other plot functions
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 08.12.16 plPlot.MaxPointsPerLine increased by 2 in attempt to avoid occasional access violations
+//          for not yet identified reasons. ROI # being plotted now reported in status line
 
 interface
 
@@ -312,7 +314,7 @@ begin
      plPlot.Height := ClientHeight - plPlot.Top - 5 ;
 
      // Ensure there is enough space allocated for line
-     plPlot.MaxPointsPerLine := MaxPlotPoints*2 ;
+     plPlot.MaxPointsPerLine := (MaxPlotPoints+1)*2 ;
 
      // Select range of frames to be plotted
      if rbAllFrames.Checked then begin
@@ -650,7 +652,7 @@ begin
 
         // Report progress
         MainFrm.StatusBar.SimpleText :=
-              format(' Time Course: Frame %d/%d',[Frame,EndAtFrame]) ;
+              format(' Time Course: ROI %d Frame %d/%d',[iROI,Frame,EndAtFrame]) ;
         if ((Frame-StartAtFrame) mod ReportInterval) = 0 then Application.ProcessMessages ;
 
         if StopPlot then Break ;
@@ -1271,13 +1273,12 @@ begin
      // Only use for image files
      if MainFrm.IDRFile.LineScan then Exit ;
 
-
-
-      // Prevent plotting if time course is being calculated
-      for i := 0 to MainFrm.MDIChildCount-1 do
-          if MainFrm.MDIChildren[i].Name = 'ViewPlotFrm' then begin
-            if not ViewPlotFrm.FLTimeCourseAvailable then Exit ;
-            end ;
+     // Prevent plotting if time course is being calculated
+     for i := 0 to MainFrm.MDIChildCount-1 do
+         if MainFrm.MDIChildren[i].Name = 'ViewPlotFrm' then
+           begin
+           if not ViewPlotFrm.FLTimeCourseAvailable then Exit ;
+           end ;
 
      // Disable button while line is plotted
 
