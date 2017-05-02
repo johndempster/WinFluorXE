@@ -8,6 +8,10 @@ unit ExportROITImeCourseUnit;
 // 17-2-15 MAT export added
 // 09-11-16 Exported to ABF files as +/- 16 bit integers
 // 14-11-16 Export of multiple file list now supported
+// 02.05.17 ... ViewFrm.NewFile now updated (if form exists) to ensure
+//              that time buffers are updated when files changed to
+//              avoid access violations.
+
 
 interface
 
@@ -90,7 +94,7 @@ var
 
 implementation
 
-uses Main, LogUnit , ViewPlotUnit, strutils, idrfile ;
+uses Main, LogUnit , ViewPlotUnit, strutils, idrfile, ViewUnit ;
 
 {$R *.dfm}
 
@@ -193,6 +197,8 @@ begin
 
          // Open file to export
          MainFrm.IDRFile.OpenFile( meFiles.Lines[iFile]) ;
+         if MainFrm.FormExists( 'ViewFrm' ) then ViewFrm.NewFile ;
+
          FileName := ChangeFileExt(MainFrm.IDRFile.FileName,'.xxx') ;
 
          if rbAllRecords.Checked then
@@ -356,6 +362,7 @@ begin
      // Re-open file which was on display
      MainFrm.IDRFile.CloseFile ;
      MainFrm.IDRFile.OpenFile( FileOnDisplay ) ;
+     if MainFrm.FormExists( 'ViewFrm' ) then ViewFrm.NewFile ;
 
      end ;
 

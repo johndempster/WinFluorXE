@@ -6,12 +6,6 @@ If
 MessageBox
 Terminate Install
 End
-Set 64 Bit Mode
-Get System Settings
-If
-MessageBox
-Terminate Install
-End
 Code Folding Region
 Comment
 Code Folding Region
@@ -339,12 +333,6 @@ $
 {2C258FB8-307E-4B84-B6A6-DBE7FC8A79FE}
 {E34AFC4D-F128-4093-AD93-4EC3E87DC378}
 {5177FF3C-C42D-4163-ACD1-BAF4DBE0F1C2}
-{84A3A924-6595-4CC3-B020-E9791AB8C994}
-{98B9AEBC-2F6E-427D-A199-AE8A27E08AEA}
-{C9CFFE13-B175-46A7-BB46-E68BA48FE561}
-{D843128F-F6CF-4F55-9AA8-DADB429269BC}
-{C181BC17-C395-4179-90DF-6446F241C713}
-{D225D870-FCEE-444A-A5D7-38057DA884CC}
 {B5A1E7AD-AADB-4226-AC6F-7B385EE07456}
 {46EDB026-8DDE-4059-A787-93616404490F}
 {358A3353-7E8C-4EA4-A784-F6FCF947F5FE}
@@ -1111,11 +1099,6 @@ CHECKSYSTEM
 0
 TRUE
 TRUE
-{98B9AEBC-2F6E-427D-A199-AE8A27E08AEA}
-CHECKSYSTEM
-0
-TRUE
-TRUE
 {D51179F2-5760-4231-A01D-11527830ABF4}
 $TITLE$ Setup
 Your computer needs to be restarted before $TITLE$ Setup can continue.$NEWLINE$$NEWLINE$Please save your work in all running programs and click OK to restart your computer. Setup will resume once your computer restarts.$NEWLINE$$NEWLINE$If you click CANCEL, setup will exit. You will have to run setup again at a later time to install $TITLE$.
@@ -1143,12 +1126,6 @@ NATIVE_ERROR
 {358A3353-7E8C-4EA4-A784-F6FCF947F5FE}
 $TITLE$ Setup Error
 This product requires at least Administrator Privileges.$NEWLINE$$NEWLINE$Setup cannot continue.
-3
-1
-
-{C9CFFE13-B175-46A7-BB46-E68BA48FE561}
-$TITLE$ Setup Error
-This product requires at least a 64 bit operating system.$NEWLINE$$NEWLINE$Setup cannot continue.
 3
 1
 
@@ -1360,11 +1337,8 @@ ISNT
 {B5A1E7AD-AADB-4226-AC6F-7B385EE07456}
 CHECKSYSTEM
 0
-{84A3A924-6595-4CC3-B020-E9791AB8C994}
-CHECKSYSTEM
-65
 {59BD6CD6-36D7-488B-90A4-0D6E230EE762}
-E:\Delphi XE3 Projects\WinFluorXE\ccir.CNF
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\ccir.CNF
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1377,7 +1351,7 @@ FALSE
 FALSE
 FALSE
 {E2BD0CBD-0493-4611-BD34-9EE889F07959}
-E:\Delphi XE3 Projects\WinFluorXE\ccir.TXT
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\ccir.TXT
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1390,7 +1364,7 @@ FALSE
 FALSE
 FALSE
 {B4BD6CD7-E2E9-4DCE-B380-9227D9152DF8}
-E:\Delphi XE3 Projects\WinFluorXE\Hamc4880.CNF
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\Hamc4880.CNF
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1403,7 +1377,7 @@ FALSE
 FALSE
 FALSE
 {B82F4EBF-8627-44AD-84F7-70DEAE48A268}
-E:\Delphi XE3 Projects\WinFluorXE\Hamc4880.txt
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\Hamc4880.txt
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1416,7 +1390,7 @@ FALSE
 FALSE
 FALSE
 {01A344DC-7A51-46FD-BFEF-6FC710E9AFB4}
-E:\Delphi XE3 Projects\WinFluorXE\ixon.cof
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\ixon.cof
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1429,7 +1403,7 @@ FALSE
 FALSE
 FALSE
 {DA2915DF-41C6-4CEB-B616-E51016B9AA64}
-E:\Delphi XE3 Projects\WinFluorXE\itxco10.dll
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\itxco10.dll
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1442,7 +1416,7 @@ FALSE
 FALSE
 FALSE
 {C53CCBE7-6DC0-4EDA-A8C7-57458D8DB818}
-E:\Delphi XE3 Projects\WinFluorXE\osLibrary32.dll
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\osLibrary32.dll
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1455,7 +1429,7 @@ FALSE
 FALSE
 FALSE
 {A43D2B5F-97B9-42C2-8D90-989699A03ECC}
-E:\Delphi XE3 Projects\WinFluorXE\osLibrary64.dll
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\osLibrary64.dll
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1468,7 +1442,7 @@ FALSE
 FALSE
 FALSE
 {281C456F-7469-4166-A4DB-368F6EA1ADED}
-E:\Delphi XE3 Projects\WinFluorXE\WinFluor LineScan.txt
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\WinFluor LineScan.txt
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1481,7 +1455,7 @@ FALSE
 FALSE
 FALSE
 {8695E0AA-63BA-4462-B5F6-E656F3E6A44E}
-E:\Delphi XE3 Projects\WinFluorXE\WinFluor Test.vbs
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\WinFluor Test.vbs
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1494,7 +1468,7 @@ FALSE
 FALSE
 FALSE
 {6B3174C1-B42E-40A4-A88A-7A14C122E899}
-E:\Delphi XE3 Projects\WinFluorXE\WinFluor User Guide.pdf
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\WinFluor User Guide.pdf
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1507,7 +1481,7 @@ FALSE
 FALSE
 FALSE
 {2CC7BED3-9C8F-455F-8A0E-E518C6AA57BC}
-E:\Delphi XE3 Projects\WinFluorXE\WinFluor XY Series.txt
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\WinFluor XY Series.txt
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1520,7 +1494,7 @@ FALSE
 FALSE
 FALSE
 {F15C0716-30F8-43F9-987D-6D4B25EBD51F}
-E:\Delphi XE3 Projects\WinFluorXE\WinFluor.chm
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\WinFluor.chm
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1533,7 +1507,7 @@ FALSE
 FALSE
 FALSE
 {A6CDA506-E433-4274-9730-629185FD228D}
-E:\Delphi XE3 Projects\WinFluorXE\WinFluor.exe
+C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\WinFluor.exe
 FALSE|
 $TARGETDIR$
 FALSE
@@ -1734,17 +1708,7 @@ TRUE
 FALSE
 FALSE
 TRUE
-{D225D870-FCEE-444A-A5D7-38057DA884CC}
-FALSE
-FALSE
-TRUE
 $
-
-
-
-
-
-
 
 
 
@@ -2077,12 +2041,6 @@ C
 
 
 $
-
-
-
-
-
-
 
 
 

@@ -217,7 +217,11 @@ unit Main;
 // 25.10.16           Tested with Point Grey Grasshopper 3 camera
 // 15.11.16           Files now opened and losed directly in Open Data File/Import Images/Recent files
 //                    rather than .click to fix intermittent failure to open
+// 07.12.16 V3.8.7 JD Multi-wavelength ROI time courses now correctly calculated again
+// 02.05.17 V3.8.8 JD Export Images/ROI Time Course/Analaogue Signals
+//                    Select Files to Export button now works and ViewFrm.NewFile now updated//                    (if form exists) to ensure that time buffers are updated when files changed to avoid access violations.
 // 08.12.16 V3.8.7 JD Multi-wavelength ROI time courses now correctly calculated again
+
 
 interface
 
@@ -811,7 +815,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.7 8-12-16 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.8 2-5-17 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

@@ -22,6 +22,10 @@ unit ExportImagesUnit;
 // 24.09.14 ... Long file names can now be exported again (Word Wrap = False in meFiles memo box)
 // 22.01.16 ... Calibration data now exported
 // 15.11.16 ... File list can now be cleared.
+// 02.05.17 ... Select Files to Export button now works
+//              ViewFrm.NewFile now updated (if form exists) to ensure
+//              that time buffers are updated when files changed to
+//              avoid access violations.
 
 interface
 
@@ -86,7 +90,7 @@ var
 
 implementation
 
-uses Main, LogUnit;
+uses Main, LogUnit, ViewUnit ;
 
 {$R *.dfm}
 
@@ -184,6 +188,7 @@ begin
          // Open file to export
          MainFrm.IDRFile.OpenFile( meFiles.Lines[iFile]) ;
          ExportFileName := UpdateFileExtension(MainFrm.IDRFile.FileName) ;
+         if MainFrm.FormExists( 'ViewFrm' ) then ViewFrm.NewFile ;
 
          // Range of frames to be exported
          if rbAllFrames.Checked then begin
@@ -409,7 +414,7 @@ begin
     MainFrm.IDRFile.CloseFile ;
     // Open file to export
     MainFrm.IDRFile.OpenFile( FileOnDisplay ) ;
-
+    if MainFrm.FormExists( 'ViewFrm' ) then ViewFrm.NewFile ;
 
     end ;
 
@@ -444,6 +449,7 @@ begin
      OpenDialog.options := [ofHideReadOnly,ofPathMustExist,ofAllowMultiSelect] ;
      OpenDialog.DefaultExt := '.idr' ;
      OpenDialog.Filter := ' WinFluor (*.idr)|*.idr' ;
+     OpenDialog.Execute() ;
 
      OpenDialog.FileName := '' ;
      for i := 0 to OpenDialog.Files.Count-1 do

@@ -15,6 +15,10 @@ unit exportAnalogueUnit;
   13.11.12 ... .LOADADC() now uses 64 bit scan counter
   17.02.15 ... MAT file export now working correctly
   14.11.16 ... Multiple files can now be selected for export
+  02.05.17 ... Select Files to Export button now works
+              ViewFrm.NewFile now updated (if form exists) to ensure
+              that time buffers are updated when files changed to
+              avoid access violations.
   }
 interface
 
@@ -57,6 +61,7 @@ type
     procedure bCancelClick(Sender: TObject);
     procedure ckCh0Click(Sender: TObject);
     procedure rbIBWClick(Sender: TObject);
+    procedure bSelectFilesToExportClick(Sender: TObject);
   private
     { Private declarations }
     ExportFileName : string ;
@@ -73,7 +78,7 @@ var
 
 implementation
 
-uses Main , LogUnit, strutils ;
+uses Main , LogUnit, strutils, ViewUnit ;
 
 {$R *.DFM}
 
@@ -139,6 +144,26 @@ begin
     end;
 
 
+procedure TExportAnalogueFrm.bSelectFilesToExportClick(Sender: TObject);
+// ----------------------------
+// Select files to be exported
+// ----------------------------
+var
+    i : Integer ;
+begin
+     OpenDialog.InitialDir := ExtractFilePath( FileOnDisplay ) ;
+     OpenDialog.Title := ' Files to be Exported ' ;
+     OpenDialog.options := [ofHideReadOnly,ofPathMustExist,ofAllowMultiSelect] ;
+     OpenDialog.DefaultExt := '.idr' ;
+     OpenDialog.Filter := ' WinFluor (*.idr)|*.idr' ;
+
+     OpenDialog.FileName := '' ;
+     OpenDialog.Execute ;
+     for i := 0 to OpenDialog.Files.Count-1 do
+         meFiles.Lines.Add(OpenDialog.Files[i]);
+     end ;
+
+
 procedure TExportAnalogueFrm.ExportToFile ;
 // -------------------------------------------------
 // Copy selected section of data file to export file
@@ -177,6 +202,8 @@ begin
 
          // Open file to export
          MainFrm.IDRFile.OpenFile( meFiles.Lines[iFile]) ;
+         if MainFrm.FormExists( 'ViewFrm' ) then ViewFrm.NewFile ;
+
          ExportFileName := CreateExportFileName ;
 
          //Select range
@@ -345,6 +372,7 @@ begin
      // Re-open file which was on display
      MainFrm.IDRFile.CloseFile ;
      MainFrm.IDRFile.OpenFile( FileOnDisplay ) ;
+     if MainFrm.FormExists( 'ViewFrm' ) then ViewFrm.NewFile ;
 
      end;
 
