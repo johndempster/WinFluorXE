@@ -454,7 +454,6 @@ begin
      if MainFrm.FormExists('SealTestFrm') then SealTestFrm.Close ;
      if XYStageFrm.Visible then XYStageFrm.Close ;
 
-
      // Get camera library list
      MainFrm.Cam1.GetCameraLibList( cbCamera.Items ) ;
      cbCamera.ItemIndex := MainFrm.CameraType ;

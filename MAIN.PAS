@@ -220,8 +220,9 @@ unit Main;
 // 07.12.16 V3.8.7 JD Multi-wavelength ROI time courses now correctly calculated again
 // 02.05.17 V3.8.8 JD Export Images/ROI Time Course/Analaogue Signals
 //                    Select Files to Export button now works and ViewFrm.NewFile now updated//                    (if form exists) to ensure that time buffers are updated when files changed to avoid access violations.
-// 08.12.16 V3.8.7 JD Multi-wavelength ROI time courses now correctly calculated again
-
+// 03.05.17 V3.8.9 JD Thorlabs: Readout Speed now preserved when camera re-opened to avoid
+//                    being reset to minimum. Note this fix may be required for other cameras
+//                   IMAQDX Divide by zero avoided when no camera available
 
 interface
 
@@ -815,7 +816,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.8 2-5-17 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.9 3-5-17 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
