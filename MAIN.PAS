@@ -816,7 +816,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.9 3-5-17 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.9 11-5-17 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
