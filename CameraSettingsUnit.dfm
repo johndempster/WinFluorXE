@@ -3,8 +3,8 @@ object CameraSettingsFrm: TCameraSettingsFrm
   Left = 670
   Top = 448
   Caption = 'Camera Settings'
-  ClientHeight = 171
-  ClientWidth = 341
+  ClientHeight = 203
+  ClientWidth = 346
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,7 +23,7 @@ object CameraSettingsFrm: TCameraSettingsFrm
     Left = 8
     Top = 4
     Width = 161
-    Height = 125
+    Height = 165
     Caption = ' CCD Cooling  '
     TabOrder = 0
     object Label41: TLabel
@@ -92,7 +92,7 @@ object CameraSettingsFrm: TCameraSettingsFrm
   end
   object bOK: TButton
     Left = 8
-    Top = 136
+    Top = 175
     Width = 49
     Height = 20
     Caption = 'OK'
@@ -106,8 +106,8 @@ object CameraSettingsFrm: TCameraSettingsFrm
     OnClick = bOKClick
   end
   object bCancel: TButton
-    Left = 64
-    Top = 136
+    Left = 63
+    Top = 176
     Width = 49
     Height = 18
     Caption = 'Cancel'
@@ -121,10 +121,10 @@ object CameraSettingsFrm: TCameraSettingsFrm
     OnClick = bCancelClick
   end
   object SpecialGrp: TGroupBox
-    Left = 176
+    Left = 177
     Top = 4
     Width = 161
-    Height = 125
+    Height = 101
     Caption = ' CCD Readout '
     TabOrder = 3
     object Label2: TLabel
@@ -176,6 +176,30 @@ object CameraSettingsFrm: TCameraSettingsFrm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
+    end
+  end
+  object Flash4Grp: TGroupBox
+    Left = 175
+    Top = 111
+    Width = 161
+    Height = 58
+    Caption = ' Hamamatsu FLASH 4.0 '
+    TabOrder = 4
+    object ckSpotNoiseReduction: TCheckBox
+      Left = 16
+      Top = 16
+      Width = 129
+      Height = 33
+      Caption = 'Enable Spot Noise Reduction'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 0
+      WordWrap = True
+      OnClick = ckSpotNoiseReductionClick
     end
   end
 end

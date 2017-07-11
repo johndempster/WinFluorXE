@@ -43,6 +43,7 @@ unit SetupUnit;
 //             Analog Channels & Amplifiers page of this form. Capacity page added
 // 20.11.15 JD Software-upated digital outputs now available for use a light source outputs
 //             (but with timing precision limitations)
+// 12.06.17 JD PMTRatio calculation settings now added
 
 interface
 
@@ -373,6 +374,34 @@ type
     edCapGmDisplayMax: TValidatedEdit;
     edCapGsDisplayMax: TValidatedEdit;
     ckCapEnabled: TCheckBox;
+    RatioGrp: TGroupBox;
+    GroupBox26: TGroupBox;
+    Label97: TLabel;
+    Label98: TLabel;
+    Shape1: TShape;
+    edThreshold: TValidatedEdit;
+    cbNumerChan: TComboBox;
+    cbDenomChan: TComboBox;
+    ConcResultsGrp: TGroupBox;
+    Label99: TLabel;
+    edRatioMax: TValidatedEdit;
+    cbRatioChan: TComboBox;
+    GroupBox27: TGroupBox;
+    Label100: TLabel;
+    edConcMax: TValidatedEdit;
+    cbConcChan: TComboBox;
+    ckConcEnabled: TCheckBox;
+    Label104: TLabel;
+    edIonName: TEdit;
+    Label105: TLabel;
+    edConcUnits: TEdit;
+    Label101: TLabel;
+    edRMax: TValidatedEdit;
+    Label102: TLabel;
+    edRMin: TValidatedEdit;
+    Label103: TLabel;
+    edKeff: TValidatedEdit;
+    ckPMTRatioEnabled: TCheckBox;
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure bOKClick(Sender: TObject);
@@ -390,6 +419,9 @@ type
     procedure cbLSControl0Change(Sender: TObject);
     procedure cbADCInChange(Sender: TObject);
     procedure edNumChannelsKeyPress(Sender: TObject; var Key: Char);
+    procedure ckCapEnabledClick(Sender: TObject);
+    procedure ckPMTRatioEnabledClick(Sender: TObject);
+    procedure cbNumerChanChange(Sender: TObject);
   private
     { Private declarations }
     CameraOpenRequired : Boolean ;
@@ -435,6 +467,9 @@ procedure TSetupFrm.FormShow(Sender: TObject);
 // ---------------------------------------------
 // Initial control settings when form is opened
 // ---------------------------------------------
+var
+    ch : Integer ;
+    s : string ;
 begin
 
      // Set NI API type
@@ -622,6 +657,38 @@ begin
      edCapGmDisplayMax.Value :=  MainFrm.Cap.GmDisplayMax ;
      edCapGsDisplayMax.Value :=  MainFrm.Cap.GsDisplayMax ;
      edCapCmDisplayMax.Value :=  MainFrm.Cap.CmDisplayMax ;
+
+     // PMT Ratio page
+     ckPMTRatioEnabled.Checked := MainFrm.PMTRatio.Enabled ;
+     cbNumerChan.Items.Clear ;
+     cbDenomChan.Items.Clear ;
+     cbRatioChan.Items.Clear ;
+     cbConcChan.Items.Clear ;
+
+     for ch := 0 to Max(MainFrm.ADCNumChannels-1,0) do
+         begin
+         s := format('Ch.%d ',[ch]) + MainFrm.ADCChannel[ch].ADCName ;
+         cbNumerChan.Items.Add(s);
+         cbDenomChan.Items.Add(s);
+         cbRatioChan.Items.Add(s);
+         cbConcChan.Items.Add(s);
+         end;
+     cbNumerChan.ItemIndex :=  Min(Max(MainFrm.PMTRatio.NumerChan,0),cbNumerChan.Items.Count-1) ;
+     cbDenomChan.ItemIndex :=  Min(Max(MainFrm.PMTRatio.DenomChan,0),cbDenomChan.Items.Count-1) ;
+     cbRatioChan.ItemIndex :=  Min(Max(MainFrm.PMTRatio.RatioChan,0),cbRatioChan.Items.Count-1) ;
+     cbConcChan.ItemIndex :=  Min(Max(MainFrm.PMTRatio.ConcChan,0),cbConcChan.Items.Count-1) ;
+     edThreshold.Value := MainFrm.PMTRatio.Threshold ;
+     edThreshold.Units := MainFrm.ADCChannel[MainFrm.PMTRatio.NumerChan].ADCUnits ;
+     edRatioMax.Value := MainFrm.PMTRatio.RatioMax ;
+     ckConcEnabled.Checked := MainFrm.PMTRatio.ConcEnabled ;
+     edConcMax.Value := MainFrm.PMTRatio.ConcMax ;
+     edConcMax.Units := MainFrm.PMTRatio.ConcUnits ;
+     edIonName.Text := MainFrm.PMTRatio.IonName ;
+     edConcUnits.Text := MainFrm.PMTRatio.ConcUnits ;
+     edRMax.Value := MainFrm.PMTRatio.RMax ;
+     edRMin.Value := MainFrm.PMTRatio.RMin ;
+     edKeff.Value := MainFrm.PMTRatio.Keff ;
+     edKeff.Units := edConcUnits.Text ;
 
      ClientWidth := TabPage.Left + TabPage.Width + 5 ;
      ClientHeight := bOk.Top + bOk.Height + 5 ;
@@ -1175,13 +1242,15 @@ begin
     LABIO.ADCInputMode := cbADCInputMode.ItemIndex ;
 
     if (MainFrm.IOConfig.ADCIn >= 0) and
-        (MainFrm.IOConfig.ADCIn <= MaxResources) then begin
-        ADCDevice := LabIO.Resource[MainFrm.IOConfig.ADCIn].Device ;
-        MainFrm.ADCVoltageRange := LabIO.ADCVoltageRanges[ ADCDevice,cbADCVoltageRange.ItemIndex] ;
+       (MainFrm.IOConfig.ADCIn <= MaxResources) then begin
+       ADCDevice := LabIO.Resource[MainFrm.IOConfig.ADCIn].Device ;
+       MainFrm.ADCVoltageRange := LabIO.ADCVoltageRanges[ ADCDevice,cbADCVoltageRange.ItemIndex] ;
        MainFrm.ADCVoltageRange := LabIO.ADCVoltageRanges[ ADCDevice,cbADCVoltageRange.ItemIndex] ;
        end
-     else MainFrm.ADCVoltageRange := 10.0 ;
-
+     else begin
+       MainFrm.ADCVoltageRange := 10.0 ;
+       ADCDevice := 1 ;
+       end;
 
     MainFrm.IOConfig.CameraStart :=
     Integer(cbCameraStart.Items.Objects[cbCameraStart.ItemIndex]) ;
@@ -1369,7 +1438,6 @@ begin
     // Channel scanning interval
     MainFrm.ADCScanInterval := edADCInterval.Value ;
 
-
     // Setup Amplifier telegraph options
     Amplifier.AmplifierType[1] := Integer(cbAmplifier1.Items.Objects[cbAmplifier1.ItemIndex]) ;
     Amplifier.GainTelegraphChannel[1] := Round(edGainTelegraphChannel1.Value) ;
@@ -1392,9 +1460,73 @@ begin
     MainFrm.Cap.CompensationInUse := ckCapacityCompensationInUse.Checked ;
     MainFrm.Cap.RSeriesComp := edCapRSeriesComp.Value ;
     MainFrm.Cap.CellCapacityComp := edCapCellCapacityComp.Value ;
+
     MainFrm.Cap.GmDisplayMax := edCapGmDisplayMax.Value ;
+    MainFrm.ADCChannel[MainFrm.Cap.GmChan].ADCCalibrationFactor :=
+        MainFrm.ADCVoltageRange / MainFrm.Cap.GmDisplayMax ;
+
     MainFrm.Cap.GsDisplayMax := edCapGsDisplayMax.Value ;
+    MainFrm.ADCChannel[MainFrm.Cap.GsChan].ADCCalibrationFactor :=
+        MainFrm.ADCVoltageRange / MainFrm.Cap.GsDisplayMax ;
+
     MainFrm.Cap.CmDisplayMax := edCapCmDisplayMax.Value ;
+    MainFrm.ADCChannel[MainFrm.Cap.CMChan].ADCCalibrationFactor :=
+        MainFrm.ADCVoltageRange / MainFrm.Cap.CmDisplayMax ;
+
+    MainFrm.ADCChannel[MainFrm.Cap.CMChan].ADCName := 'Cm' ;
+    MainFrm.ADCChannel[MainFrm.Cap.CMChan].ADCUnits := 'pF' ;
+    MainFrm.ADCChannel[MainFrm.Cap.GmChan].ADCName := 'Gm' ;
+    MainFrm.ADCChannel[MainFrm.Cap.GmChan].ADCUnits := 'nS' ;
+    MainFrm.ADCChannel[MainFrm.Cap.GsChan].ADCName := 'Gs' ;
+    MainFrm.ADCChannel[MainFrm.Cap.GsChan].ADCUnits := 'nS' ;
+    MainFrm.ADCChannel[MainFrm.Cap.GRChan].ADCName := 'GR' ;
+    MainFrm.ADCChannel[MainFrm.Cap.GRChan].ADCUnits := 'nS' ;
+    MainFrm.ADCChannel[MainFrm.Cap.GIChan].ADCName := 'GI' ;
+    MainFrm.ADCChannel[MainFrm.Cap.GIChan].ADCUnits := 'nS' ;
+
+    // PMT ratio on-line analogue calculation
+
+    MainFrm.PMTRatio.Enabled := ckPMTRatioEnabled.Checked ;
+    MainFrm.PMTRatio.NumerChan := cbNumerChan.ItemIndex ;
+    MainFrm.PMTRatio.DenomChan := cbDenomChan.ItemIndex ;
+    MainFrm.PMTRatio.RatioChan := cbRatioChan.ItemIndex ;
+    MainFrm.PMTRatio.ConcChan := cbConcChan.ItemIndex ;
+
+    if MainFrm.PMTRatio.Enabled then
+       begin
+       MainFrm.ADCChannel[MainFrm.PMTRatio.RatioChan].ADCCalibrationFactor := MainFrm.ADCVoltageRange /
+                                                                              MainFrm.PMTRatio.RatioMax ;
+
+       MainFrm.ADCChannel[MainFrm.PMTRatio.RatioChan].ADCName :=
+                        MainFrm.ADCChannel[MainFrm.PMTRatio.NumerChan].ADCName + '/' +
+                        MainFrm.ADCChannel[MainFrm.PMTRatio.DenomChan].ADCName ;
+       MainFrm.ADCChannel[MainFrm.PMTRatio.RatioChan].ADCUnits := ' ';
+       end ;
+
+    MainFrm.PMTRatio.Threshold := edThreshold.Value ;
+    MainFrm.PMTRatio.RatioMax :=  edRatioMax.Value ;
+    MainFrm.PMTRatio.ConcMax := edConcMax.Value ;
+    MainFrm.PMTRatio.IonName := edIonName.Text ;
+    MainFrm.PMTRatio.ConcUnits := edConcUnits.Text ;
+    MainFrm.PMTRatio.RMax := edRMax.Value ;
+    MainFrm.PMTRatio.RMin := edRMin.Value ;
+    MainFrm.PMTRatio.Keff := edKeff.Value ;
+    edConcUnits.Text := edKeff.Units ;
+
+    MainFrm.PMTRatio.ConcEnabled := ckConcEnabled.Checked ;
+    if MainFrm.PMTRatio.ConcEnabled then
+       begin
+       MainFrm.ADCChannel[MainFrm.PMTRatio.ConcChan].ADCCalibrationFactor := MainFrm.ADCVoltageRange /
+                                                                             MainFrm.PMTRatio.ConcMax ;
+       MainFrm.ADCChannel[MainFrm.PMTRatio.ConcChan].ADCName := MainFrm.PMTRatio.IonName ;
+       MainFrm.ADCChannel[MainFrm.PMTRatio.ConcChan].ADCUnits := MainFrm.PMTRatio.ConcUnits ;
+       end ;
+
+    // Update scaling factors
+    MainFrm.IDRFile.UpdateChannelScalingFactors( MainFrm.ADCChannel,
+                                                 MainFrm.ADCNumChannels,
+                                                 MainFrm.ADCVoltageRange,
+                                                 LabIO.ADCMaxValue[ADCDevice] ) ;
 
     Close ;
 
@@ -1690,6 +1822,11 @@ begin
      end;
 
 
+procedure TSetupFrm.cbNumerChanChange(Sender: TObject);
+begin
+    edThreshold.Units := MainFrm.ADCChannel[cbNumerChan.ItemIndex].ADCUnits ;
+    end;
+
 procedure TSetupFrm.CheckSettings ;
 // -----------------------------------------------------
 // Check I/O settings for conflicts and missing settings
@@ -1761,6 +1898,16 @@ begin
 
 
       end ;
+
+procedure TSetupFrm.ckCapEnabledClick(Sender: TObject);
+begin
+    if ckCapEnabled.Checked then ckPMTRatioEnabled.Checked := False ;
+    end;
+
+procedure TSetupFrm.ckPMTRatioEnabledClick(Sender: TObject);
+begin
+     if ckPMTRATioEnabled.Checked then ckCapEnabled.Checked := False ;
+     end;
 
 procedure TSetupFrm.UpdateChannelEditTable ;
 // ----------------------------

@@ -175,6 +175,7 @@ unit RecUnit;
 //                from Timer() event if laboratory interface does not support hardware timed updates.
 // 25.11.15 .. JD FP divide by zero fixed when no interface units available fixed.
 // 11.05.16 .. JD Additional divide by zero checks added
+// 12.06.17 .. JD CalculatePMTRatio added
 
 {$DEFINE USECONT}
 
@@ -652,6 +653,8 @@ type
             ) ;
 
   procedure CalculateCapacity ;
+  procedure CalculatePMTRatio ;
+
   function GetTimeLapseFrameInterval : Integer ;
   function GetNumFramesRequired : Integer ;
   procedure UpdateRecordingModePanels ;
@@ -3134,12 +3137,13 @@ begin
 
      // Capacity calculation
      if MainFrm.Cap.Enabled then CalculateCapacity ;
+     if MainFrm.PMTRatio.Enabled then CalculatePMTRatio ;
 
      // Determine A/D write buffer being currently filled
 
      if ADCActiveBuffer < 0 then ADCActiveBuffer := ADCNumSamplesInBuffer - 1 ;
      ADCActiveBuffer := ADCActiveBuffer div ADCNumSamplesInWriteBuffer ;
-//      if RecordingMode <= rmStopADCRecording then
+
      RecPlotFrm.ADCUpdateDisplay( ADCBuf, ADCNumSamplesInBuffer, ADCOldestScan, ADCLatestScan ) ;
 
      // Write buffer changed
@@ -6300,6 +6304,7 @@ var
    OK : Boolean ;
    Gdc : single ;
    Omega,Denom : Single ;
+   Done : Boolean ;
 begin
 
      if MainFrm.Cap.NewCalculation then begin
@@ -6359,13 +6364,11 @@ begin
         MainFrm.Cap.GIScale := MainFrm.ADCChannel[MainFrm.Cap.GIChan].ADCScale*nSToSiemen ;
         //if MainFrm.Cap.InvertGI then MainFrm.Cap.GIScale := -MainFrm.Cap.GIScale ;
 
-
-
         end ;
 
      iScan := ADCOldestScan ;
-
-     while iScan <> ADCLatestScan do begin
+     Done := False ;
+     while not Done do begin
 
             {- Convert the input signals from binary to SI units - }
             Im := (ADCBuf^[iScan+MainFrm.Cap.ImOffset] - MainFrm.Cap.ImZero)*MainFrm.Cap.ImScale ;
@@ -6406,7 +6409,6 @@ begin
 
                end ;
 
-
             Vm := (ADCBuf^[iScan+MainFrm.Cap.VmOffset] - MainFrm.Cap.VmZero)*MainFrm.Cap.VmScale ;
             MainFrm.Cap.VmSmoothed := 0.02*Vm + (1.0 - 0.02)*MainFrm.Cap.VmSmoothed ;
             if MainFrm.Cap.NewCalculation then MainFrm.Cap.VmSmoothed := Vm ;
@@ -6442,6 +6444,7 @@ begin
                ADCBuf^[iScan+MainFrm.Cap.CmOffset] := Round(Min(Max(Cm/MainFrm.Cap.CmScale,
                                            -ADCMaxValue),ADCMaxValue-1)) ;
             { Next block of channels }
+           if iScan = ADCLatestScan then Done := True ;
             iScan := iScan + MainFrm.ADCNumChannels ;
            if iScan >= ADCNumSamplesInBuffer then iScan := iScan - ADCNumSamplesInBuffer ;
 
@@ -6454,6 +6457,72 @@ begin
      end ;
 
 
+procedure TRecordFrm.CalculatePMTRatio ;
+// --------------------------------
+// Calculate PMT fluorescence ratio
+// --------------------------------
+var
+   iScan : integer ;
+   Ratio,Numerator,Denominator : single ;
+   NumerOffset,DenomOffset : Integer ;
+   Conc,NumerScale,DenomScale,NumerZero,DenomZero : single ;
+   RatioScale,ConcScale : single ;
+   RatioOffset,ConcOffset : Integer ;
+   Done : Boolean ;
+begin
+
+   // Channel data offsets
+   NumerOffset := MainFrm.ADCChannel[MainFrm.PMTRatio.NumerChan].ChannelOffset ;
+   DenomOffset := MainFrm.ADCChannel[MainFrm.PMTRatio.DenomChan].ChannelOffset ;
+
+   NumerScale := MainFrm.ADCChannel[MainFrm.PMTRatio.NumerChan].ADCScale ;
+   DenomScale := MainFrm.ADCChannel[MainFrm.PMTRatio.DenomChan].ADCScale ;
+
+   RatioOffset := MainFrm.ADCChannel[MainFrm.PMTRatio.RatioChan].ChannelOffset ;
+   ConcOffset := MainFrm.ADCChannel[MainFrm.PMTRatio.ConcChan].ChannelOffset ;
+
+   // Channel scales
+   RatioScale := 1.0 / MainFrm.ADCChannel[MainFrm.PMTRatio.RatioChan].ADCScale ;
+   ConcScale :=  1.0 / MainFrm.ADCChannel[MainFrm.PMTRatio.ConcChan].ADCScale ;
+
+   // Channel zero levels
+   NumerZero := MainFrm.ADCChannel[MainFrm.PMTRatio.NumerChan].ADCZero ;
+   DenomZero := MainFrm.ADCChannel[MainFrm.PMTRatio.DenomChan].ADCZero ;
+
+   // Ensure computed channel zero are kept at zero
+   MainFrm.ADCChannel[MainFrm.PMTRatio.RatioChan].ADCZero := 0 ;
+   if MainFrm.PMTRatio.ConcEnabled then MainFrm.ADCChannel[MainFrm.PMTRatio.ConcChan].ADCZero := 0 ;
+
+   iScan := ADCOldestScan ;
+   Done := False ;
+   while not Done do
+        begin
+
+         { Calculate ratio of fluorescence channels }
+         Numerator := (ADCBuf^[iScan+NumerOffset] - NumerZero)*NumerScale ;
+         Denominator := (ADCBuf^[iScan+DenomOffset] - DenomZero)*DenomScale ;
+         if (Numerator > MainFrm.PMTRatio.Threshold) and
+            (Denominator > MainFrm.PMTRatio.Threshold) then Ratio := Numerator/Denominator
+                                                       else Ratio := 0.0 ;
+         ADCBuf^[iScan+RatioOffset] := Max(Min(Round(Ratio*RatioScale),ADCMaxValue),ADCMinValue) ;
+
+         { Calculate ion concentration using binding eqn. }
+         if MainFrm.PMTRatio.ConcEnabled then
+            begin
+            Ratio := Min(Max(Ratio,MainFrm.PMTRatio.RMin),MainFrm.PMTRatio.RMax-1E-3);
+            Conc := (MainFrm.PMTRatio.Keff*(Ratio - MainFrm.PMTRatio.RMin))/
+                    (MainFrm.PMTRatio.RMax - Ratio) ;
+            ADCBuf^[iScan+ConcOffset] := Max(Min(Round(ConcScale*Conc),ADCMaxValue),0); ;
+            end
+         else ADCBuf^[iScan+ConcOffset] := 0 ;
+
+         { Next block of channels }
+         if iScan = ADCLatestScan then Done := True ;
+         iScan := iScan + MainFrm.ADCNumChannels ;
+         if iScan >= ADCNumSamplesInBuffer then iScan := iScan - ADCNumSamplesInBuffer ;
+         end ;
+
+   end;
 
 
 procedure TRecordFrm.bStartPhotoStimulusClick(Sender: TObject);

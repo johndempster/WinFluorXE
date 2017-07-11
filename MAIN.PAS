@@ -223,6 +223,9 @@ unit Main;
 // 03.05.17 V3.8.9 JD Thorlabs: Readout Speed now preserved when camera re-opened to avoid
 //                    being reset to minimum. Note this fix may be required for other cameras
 //                   IMAQDX Divide by zero avoided when no camera available
+// 11.07.17 V3.0.0 JD Hamamatsu camera fan can now be turned off and Spot Noise Reduction
+//                    enabled for FLASH 4.0. Analogue PMT Fluorescence ratio computation
+//                    added to computed analogue channels.
 
 interface
 
@@ -430,6 +433,23 @@ type
       GChannelsUseGainTelegraph : Boolean ;
       end ;
 
+  TPMTRatio = record          // PMT ratio computation settings
+      Enabled : Boolean ;
+      NewCalculation : Boolean ;
+      NumerChan : Integer ;
+      DenomChan : Integer ;
+      RatioChan : Integer ;
+      ConcChan : Integer ;
+      Threshold : single ;
+      RatioMax : Single ;
+      ConcEnabled : Boolean ;
+      ConcMax : Single ;
+      IonName : string ;
+      ConcUnits : string ;
+      RMax : Single ;
+      RMin : Single ;
+      Keff : Single ;
+      end ;
 
   TMainFrm = class(TForm)
     MainMenu1: TMainMenu;
@@ -714,6 +734,7 @@ type
     Playback : TPlayback ; // Playback protocol parameters
 
     Cap : TCapacity ;
+    PMTRatio : TPMTRatio ;
 
     //EventAnalysis : TEventAnalysisSettings ;   // Event analysis parameter
 
@@ -816,7 +837,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.8.9 11-5-17 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.0 11-7-17 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
@@ -1100,6 +1121,21 @@ begin
       Cap.NewCalculation := True ;
       Cap.GChannelsUseGainTelegraph := False ;
 
+      // Analogue PMT Ratio calculation
+      PMTRAtio.Enabled := False ;
+      PMTRAtio.NumerChan := 0 ;
+      PMTRAtio.DenomChan := 1 ;
+      PMTRAtio.RatioChan := 2 ;
+      PMTRAtio.ConcChan := 3 ;
+      PMTRAtio.Threshold := 0 ;
+      PMTRAtio.RatioMax := 10.0 ;
+      PMTRAtio.ConcMax := 10.0 ;
+      PMTRAtio.ConcEnabled := False ;
+      PMTRAtio.RMax := 10.0 ;
+      PMTRAtio.RMin := 0.1 ;
+      PMTRAtio.Keff := 1.0 ;
+      PMTRAtio.IonName := 'Ca' ;
+      PMTRAtio.ConcUnits := 'uM' ;
 
      // Clipboard image settings
      ClipboardBitMapWidth := 600 ;

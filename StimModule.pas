@@ -1003,7 +1003,7 @@ function TStimulator.ProtocolDuration : Single ;
 const
   DigSumStart = 2 ;
 var
-   i,j,NumExtra : Integer ;
+   i,NumExtra : Integer ;
    TSum : Array[0..MaxProtocolShapes-1] of Single ;
    TMax : Single ;
    VSum : Array[0..MaxProtocolShapes-1] of Integer ;
@@ -1132,5 +1132,6 @@ begin
      end ;
 
 end.
+
 
 

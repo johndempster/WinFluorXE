@@ -5,7 +5,7 @@ object SetupFrm: TSetupFrm
   BorderStyle = bsDialog
   Caption = 'Camera/System Setup'
   ClientHeight = 600
-  ClientWidth = 534
+  ClientWidth = 582
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -55,7 +55,7 @@ object SetupFrm: TSetupFrm
   object CardGrp: TGroupBox
     Left = 8
     Top = 464
-    Width = 518
+    Width = 558
     Height = 97
     Caption = ' Interface Cards '
     Font.Charset = ANSI_CHARSET
@@ -100,7 +100,7 @@ object SetupFrm: TSetupFrm
     object meDeviceList: TMemo
       Left = 136
       Top = 13
-      Width = 344
+      Width = 409
       Height = 76
       Lines.Strings = (
         'meDeviceList')
@@ -128,9 +128,9 @@ object SetupFrm: TSetupFrm
   object TabPage: TPageControl
     Left = 8
     Top = 8
-    Width = 521
+    Width = 561
     Height = 450
-    ActivePage = CameraTab
+    ActivePage = CapacityTab
     TabOrder = 3
     object CameraTab: TTabSheet
       Caption = 'Camera'
@@ -713,10 +713,6 @@ object SetupFrm: TSetupFrm
     object LightSourceTab: TTabSheet
       Caption = 'Light Source'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LSShutterGrp: TGroupBox
         Left = 280
         Top = 0
@@ -1601,10 +1597,6 @@ object SetupFrm: TSetupFrm
               Font.Name = 'Arial'
               Font.Style = [fsBold]
               ParentFont = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label7: TLabel
                 Left = 9
                 Top = 4
@@ -1736,10 +1728,6 @@ object SetupFrm: TSetupFrm
               Font.Style = [fsBold]
               ImageIndex = 1
               ParentFont = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label9: TLabel
                 Left = 9
                 Top = 4
@@ -1871,10 +1859,6 @@ object SetupFrm: TSetupFrm
               Font.Style = [fsBold]
               ImageIndex = 2
               ParentFont = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label30: TLabel
                 Left = 9
                 Top = 4
@@ -2004,10 +1988,6 @@ object SetupFrm: TSetupFrm
     object TabSheet1: TTabSheet
       Caption = 'Stimulus Outputs'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox11: TGroupBox
         Left = 8
         Top = 0
@@ -2189,10 +2169,6 @@ object SetupFrm: TSetupFrm
             Font.Name = 'Arial'
             Font.Style = [fsBold]
             ParentFont = False
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label55: TLabel
               Left = 26
               Top = 30
@@ -2247,10 +2223,6 @@ object SetupFrm: TSetupFrm
             Font.Style = [fsBold]
             ImageIndex = 1
             ParentFont = False
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label51: TLabel
               Left = 11
               Top = 6
@@ -2306,10 +2278,6 @@ object SetupFrm: TSetupFrm
             Font.Style = [fsBold]
             ImageIndex = 2
             ParentFont = False
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label52: TLabel
               Left = 20
               Top = 6
@@ -2394,10 +2362,6 @@ object SetupFrm: TSetupFrm
           object MeterTab: TTabSheet
             Caption = 'Meter'
             ImageIndex = 3
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label44: TLabel
               Left = 44
               Top = 6
@@ -2427,10 +2391,6 @@ object SetupFrm: TSetupFrm
     object AnalogInputTab: TTabSheet
       Caption = 'Analog Inputs && Amplifiers'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object ADCGrp: TGroupBox
         Left = 8
         Top = 0
@@ -2850,7 +2810,7 @@ object SetupFrm: TSetupFrm
       object ChannelsGrp: TGroupBox
         Left = 240
         Top = 0
-        Width = 236
+        Width = 257
         Height = 418
         Caption = ' Channel calibration table '
         Font.Charset = ANSI_CHARSET
@@ -2861,13 +2821,13 @@ object SetupFrm: TSetupFrm
         ParentFont = False
         TabOrder = 4
         object ChannelTable: TStringGrid
-          Left = 8
+          Left = 13
           Top = 16
-          Width = 218
+          Width = 241
           Height = 390
           Hint = 'Input channel scaling factors and calibration units'
           ColCount = 4
-          DefaultColWidth = 50
+          DefaultColWidth = 58
           DefaultRowHeight = 18
           RowCount = 9
           Font.Charset = DEFAULT_CHARSET
@@ -2894,10 +2854,6 @@ object SetupFrm: TSetupFrm
     object ZStageTab: TTabSheet
       Caption = 'XY / Z Stage'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox13: TGroupBox
         Left = 3
         Top = 0
@@ -3400,22 +3356,18 @@ object SetupFrm: TSetupFrm
       end
     end
     object CapacityTab: TTabSheet
-      Caption = 'Cell Capacity'
+      Caption = 'Computed Channels'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object CapGrp: TGroupBox
-        Left = 4
+        Left = 3
         Top = 0
         Width = 185
-        Height = 305
+        Height = 401
         Caption = ' Cell Capacity '
         TabOrder = 0
         object GroupBox22: TGroupBox
           Left = 8
-          Top = 104
+          Top = 112
           Width = 169
           Height = 89
           Caption = ' Capacity Compensation '
@@ -3491,7 +3443,7 @@ object SetupFrm: TSetupFrm
         end
         object GroupBox23: TGroupBox
           Left = 8
-          Top = 32
+          Top = 40
           Width = 169
           Height = 65
           TabOrder = 1
@@ -3551,7 +3503,7 @@ object SetupFrm: TSetupFrm
         end
         object GroupBox24: TGroupBox
           Left = 8
-          Top = 200
+          Top = 208
           Width = 169
           Height = 97
           Caption = ' Display ranges '
@@ -3652,6 +3604,400 @@ object SetupFrm: TSetupFrm
         end
         object ckCapEnabled: TCheckBox
           Left = 8
+          Top = 17
+          Width = 169
+          Height = 17
+          Hint = 'Enable analogue capacity calculation'
+          Caption = 'Enable'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
+          TabOrder = 3
+          OnClick = ckCapEnabledClick
+        end
+      end
+      object RatioGrp: TGroupBox
+        Left = 205
+        Top = 0
+        Width = 228
+        Height = 401
+        Caption = ' PMT Fluorescence Ratio '
+        TabOrder = 1
+        object GroupBox26: TGroupBox
+          Left = 8
+          Top = 34
+          Width = 214
+          Height = 79
+          Caption = ' Input channels '
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Arial'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 0
+          object Label97: TLabel
+            Left = 151
+            Top = 18
+            Width = 48
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'Threshold'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object Label98: TLabel
+            Left = 8
+            Top = 36
+            Width = 25
+            Height = 19
+            Caption = 'R ='
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -16
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+          end
+          object Shape1: TShape
+            Left = 40
+            Top = 44
+            Width = 105
+            Height = 1
+          end
+          object edThreshold: TValidatedEdit
+            Left = 151
+            Top = 34
+            Width = 57
+            Height = 20
+            Hint = 'Minimum signal threhold'
+            AutoSize = False
+            ShowHint = True
+            Text = ' 10 '
+            Value = 10.000000000000000000
+            Scale = 1.000000000000000000
+            NumberFormat = '%.3g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+          object cbNumerChan: TComboBox
+            Left = 40
+            Top = 18
+            Width = 105
+            Height = 23
+            Hint = 'Input channel used as numerator of ratio R'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+            Text = 'cbNumerChan'
+            OnChange = cbNumerChanChange
+          end
+          object cbDenomChan: TComboBox
+            Left = 39
+            Top = 47
+            Width = 105
+            Height = 23
+            Hint = 'Input channel used as denominator of ratio R'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 2
+            Text = 'cbNumerator'
+          end
+        end
+        object ConcResultsGrp: TGroupBox
+          Left = 8
+          Top = 125
+          Width = 214
+          Height = 66
+          Caption = ' Ratio Result Channel'
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Arial'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 1
+          object Label99: TLabel
+            Left = 133
+            Top = 20
+            Width = 69
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'Display Range'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object edRatioMax: TValidatedEdit
+            Left = 133
+            Top = 36
+            Width = 73
+            Height = 20
+            Hint = 'Ratio channel display range (+/-)'
+            AutoSize = False
+            ShowHint = True
+            Text = ' 10 '
+            Value = 10.000000000000000000
+            Scale = 1.000000000000000000
+            NumberFormat = '%.3g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+          object cbRatioChan: TComboBox
+            Left = 7
+            Top = 20
+            Width = 120
+            Height = 23
+            Hint = 'Data channel to contain ratio R.'
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+            Text = 'cbNumerator'
+          end
+        end
+        object GroupBox27: TGroupBox
+          Left = 8
+          Top = 197
+          Width = 214
+          Height = 185
+          Caption = ' Ion Concentration Result Channel '
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -12
+          Font.Name = 'Arial'
+          Font.Style = []
+          ParentFont = False
+          TabOrder = 2
+          object Label100: TLabel
+            Left = 127
+            Top = 20
+            Width = 69
+            Height = 14
+            Alignment = taRightJustify
+            Caption = 'Display Range'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -11
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object Label104: TLabel
+            Left = 17
+            Top = 76
+            Width = 17
+            Height = 15
+            Alignment = taRightJustify
+            Caption = 'Ion'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object Label105: TLabel
+            Left = 103
+            Top = 76
+            Width = 29
+            Height = 15
+            Alignment = taRightJustify
+            Caption = 'Units'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object Label101: TLabel
+            Left = 89
+            Top = 105
+            Width = 33
+            Height = 15
+            Alignment = taRightJustify
+            Caption = 'R.Max'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object Label102: TLabel
+            Left = 91
+            Top = 130
+            Width = 31
+            Height = 15
+            Alignment = taRightJustify
+            Caption = 'R.Min'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object Label103: TLabel
+            Left = 91
+            Top = 155
+            Width = 25
+            Height = 15
+            Alignment = taRightJustify
+            Caption = 'K.Eff'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            WordWrap = True
+          end
+          object edConcMax: TValidatedEdit
+            Left = 127
+            Top = 36
+            Width = 73
+            Height = 20
+            Hint = 'Computed ion concentration channel display range (+/-)'
+            AutoSize = False
+            ShowHint = True
+            Text = ' 10 '
+            Value = 10.000000000000000000
+            Scale = 1.000000000000000000
+            NumberFormat = '%.3g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+          object cbConcChan: TComboBox
+            Left = 8
+            Top = 20
+            Width = 113
+            Height = 23
+            Hint = 'Data channel to contain computed ion concentration '
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 1
+            Text = 'cbNumerator'
+          end
+          object ckConcEnabled: TCheckBox
+            Left = 8
+            Top = 45
+            Width = 102
+            Height = 21
+            Hint = 'Enable calculation of ion concentration channel'
+            Caption = 'Enable'
+            Checked = True
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = [fsBold]
+            ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
+            State = cbChecked
+            TabOrder = 2
+          end
+          object edIonName: TEdit
+            Left = 40
+            Top = 76
+            Width = 49
+            Height = 23
+            Hint = 'Name of ion being monitored'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 3
+            Text = 'Ca'
+          end
+          object edConcUnits: TEdit
+            Left = 138
+            Top = 76
+            Width = 33
+            Height = 23
+            Hint = 'Concentration units (uM,uM,M)'
+            Font.Charset = ANSI_CHARSET
+            Font.Color = clWindowText
+            Font.Height = -12
+            Font.Name = 'Arial'
+            Font.Style = []
+            ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
+            TabOrder = 4
+            Text = 'uM'
+          end
+          object edRMax: TValidatedEdit
+            Left = 128
+            Top = 104
+            Width = 73
+            Height = 20
+            Hint = 'maximum ratio at saturating concentration of ion '
+            AutoSize = False
+            ShowHint = True
+            Text = ' 1 '
+            Value = 1.000000000000000000
+            Scale = 1.000000000000000000
+            NumberFormat = '%.3g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+          object edRMin: TValidatedEdit
+            Left = 128
+            Top = 130
+            Width = 73
+            Height = 20
+            Hint = 'Minimum ratio at zero concentration of ion.'
+            AutoSize = False
+            ShowHint = True
+            Text = ' 0 '
+            Scale = 1.000000000000000000
+            NumberFormat = '%.3g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+          object edKeff: TValidatedEdit
+            Left = 128
+            Top = 155
+            Width = 73
+            Height = 20
+            Hint = 'K.Eff Ion concentration at which 50% are bound to fluorphore '
+            AutoSize = False
+            ShowHint = True
+            Text = ' 1 '
+            Value = 1.000000000000000000
+            Scale = 1.000000000000000000
+            NumberFormat = '%.3g'
+            LoLimit = -1.000000015047466E30
+            HiLimit = 1.000000015047466E30
+          end
+        end
+        object ckPMTRatioEnabled: TCheckBox
+          Left = 8
           Top = 16
           Width = 169
           Height = 17
@@ -3663,6 +4009,7 @@ object SetupFrm: TSetupFrm
           Font.Style = [fsBold]
           ParentFont = False
           TabOrder = 3
+          OnClick = ckPMTRatioEnabledClick
         end
       end
     end

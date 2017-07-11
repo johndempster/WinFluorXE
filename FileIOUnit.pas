@@ -68,6 +68,9 @@ unit FileIOUnit;
 // 14.5.15 .......... CAMDEIL= MainFrm.Cam1.DisableExposureIntervalLimit added
 // 24.9.15 .......... FPLEFTi= MainFrm.FormPos[i].left etc added
 // 18.01.16 ......... ImageFile.CreateFile() now uses .NumFrames rather than single frames flag
+// 06.06.17 ......... PMTRatio calculation settings now added
+// 04.07.17 ......... 'CAMSPNR=', MainFrm.Cam1.SpotNoiseReduction added
+
 interface
 
 uses
@@ -204,6 +207,8 @@ begin
      AppendInt( Header, 'CAMADC=', MainFrm.Cam1.CameraADC ) ;
      AppendLogical( Header, 'CAMCCDCLR=', MainFrm.Cam1.CCDClearPreExposure ) ;
      AppendLogical( Header, 'CAMCCDPERO=', MainFrm.Cam1.CCDPostExposureReadout ) ;
+     AppendLogical( Header, 'CAMSPNR=', MainFrm.Cam1.SpotNoiseReduction ) ;
+
      AppendInt( Header, 'NFREQ=', MainFrm.NumFramesRequired ) ;
      AppendFloat( Header, 'NRECPER=', MainFrm.RecordingPeriod ) ;
      AppendFloat( Header, 'ADCRECTIME=', MainFrm.ADCRecordingTime ) ;
@@ -411,10 +416,6 @@ begin
      AppendInt( Header, 'IOVCOM2=', MainFrm.IOConfig.VCommand[2] ) ;
      AppendInt( Header, 'IOLSSU=', MainFrm.IOConfig.LSShutter ) ;
      AppendLogical( Header, 'IOLSSUAH=', MainFrm.IOConfig.LSShutterActiveHigh ) ;
-//     AppendInt( Header, 'IOLSWS=', MainFrm.IOConfig.LSWavelengthStart ) ;
-//     AppendInt( Header, 'IOLSWE=', MainFrm.IOConfig.LSWavelengthEnd ) ;
-//     AppendInt( Header, 'IOLSLS=', MainFrm.IOConfig.LSLaserStart ) ;
-//     AppendInt( Header, 'IOLSLE=', MainFrm.IOConfig.LSLaserEnd ) ;
 
      // Light source control outputs
      for i := 0 to MaxLSControlLine do begin
@@ -552,6 +553,22 @@ begin
      // Save XY Stage control settings
      XYStageFrm.SaveSettings( Header ) ;
 
+     // Save PMT Ratio calculation settings
+     AppendLogical( Header, 'PMTRATIOEN=',MainFrm.PMTRatio.Enabled ) ;
+     AppendInt( Header, 'PMTRATIONUM=',MainFrm.PMTRatio.NumerChan ) ;
+     AppendInt( Header, 'PMTRATIODEN=',MainFrm.PMTRatio.DenomChan ) ;
+     AppendInt( Header, 'PMTRATIORAT=',MainFrm.PMTRatio.RatioChan ) ;
+     AppendInt( Header, 'PMTRATIOCON=',MainFrm.PMTRatio.ConcChan ) ;
+     AppendFloat( Header, 'PMTRATIOTHR=',MainFrm.PMTRatio.Threshold ) ;
+     AppendFloat( Header, 'PMTRATIORATMAX=',MainFrm.PMTRatio.RatioMax ) ;
+     AppendLogical( Header, 'PMTRATIOCEN=',MainFrm.PMTRatio.ConcEnabled ) ;
+     AppendFloat( Header, 'PMTRATIOCONCMAX=',MainFrm.PMTRatio.ConcMax ) ;
+     AppendString( Header, 'PMTRATIOINM=',MainFrm.PMTRatio.IonName ) ;
+     AppendString( Header, 'PMTRATIOUNI=',MainFrm.PMTRatio.ConcUnits ) ;
+     AppendFloat( Header, 'PMTRATIORMAX=',MainFrm.PMTRatio.RMax ) ;
+     AppendFloat( Header, 'PMTRATIORMIN=',MainFrm.PMTRatio.RMin ) ;
+     AppendFloat( Header, 'PMTRATIOKEFF=',MainFrm.PMTRatio.Keff ) ;
+
      // Save form positions
      for I := 0 to High(MainFrm.FormPos) do begin
          AppendInt( Header, format('FPTOP%d=',[i]), MainFrm.FormPos[i].Top ) ;
@@ -638,6 +655,10 @@ begin
      ReadLogical( Header, 'CAMCCDPERO=', bValue ) ;
      MainFrm.Cam1.CCDPostExposureReadout := bValue ;
 
+     bValue := False ;
+     ReadLogical( Header, 'CAMSPNR=', bValue ) ;
+     MainFrm.Cam1.SpotNoiseReduction := bValue ;
+
      iValue := MainFrm.Cam1.ComPort ;
      ReadInt( Header, 'CAMCOM=', iValue ) ;
      MainFrm.Cam1.ComPort := iValue ;
@@ -700,6 +721,8 @@ begin
      fValue := 0.0 ;
      ReadFloat( Header, 'LENSMAG=', fValue ) ;
      if fValue <> 0.0 then MainFrm.Cam1.LensMagnification := fValue ;
+
+
 
      ReadFloat( Header, 'CALBARSZ=', MainFrm.CalibrationBarSize ) ;
      ReadFloat( Header, 'CALBARTH=', MainFrm.CalibrationBarThickness ) ;
@@ -1092,6 +1115,22 @@ begin
 
      // Read XY Stage control settings
      XYStageFrm.ReadSettings( Header ) ;
+
+     // Read PMT Ratio calculation settings
+     ReadLogical( Header, 'PMTRATIOEN=',MainFrm.PMTRatio.Enabled ) ;
+     ReadInt( Header, 'PMTRATIONUM=',MainFrm.PMTRatio.NumerChan ) ;
+     ReadInt( Header, 'PMTRATIODEN=',MainFrm.PMTRatio.DenomChan ) ;
+     ReadInt( Header, 'PMTRATIORAT=',MainFrm.PMTRatio.RatioChan ) ;
+     ReadInt( Header, 'PMTRATIOCON=',MainFrm.PMTRatio.ConcChan ) ;
+     ReadFloat( Header, 'PMTRATIOTHR=',MainFrm.PMTRatio.Threshold ) ;
+     ReadFloat( Header, 'PMTRATIORATMAX=',MainFrm.PMTRatio.RatioMax ) ;
+     ReadLogical( Header, 'PMTRATIOCEN=',MainFrm.PMTRatio.ConcEnabled ) ;
+     ReadFloat( Header, 'PMTRATIOCONCMAX=',MainFrm.PMTRatio.ConcMax ) ;
+     ReadString( Header, 'PMTRATIOINM=',MainFrm.PMTRatio.IonName ) ;
+     ReadString( Header, 'PMTRATIOUNI=',MainFrm.PMTRatio.ConcUnits ) ;
+     ReadFloat( Header, 'PMTRATIORMAX=',MainFrm.PMTRatio.RMax ) ;
+     ReadFloat( Header, 'PMTRATIORMIN=',MainFrm.PMTRatio.RMin ) ;
+     ReadFloat( Header, 'PMTRATIOKEFF=',MainFrm.PMTRatio.Keff ) ;
 
      for I := 0 to High(MainFrm.FormPos) do begin
          iValue := MainFrm.FormPos[i].Top ;
