@@ -41,6 +41,8 @@ unit LightSourceUnit;
 // 17.02.15 JD Eight light source control lines can now be set individually to DAC or DIG outputs
 // 22.09.15 JD LEDFilterNumToVoltage() Now sets LED voltage correctly when LED off voltage is greater than on voltage
 //             as used with TTL gated LED light sources
+// 14.07.17 JD LEDFilterNumToVoltage() TTL LED outputs now set correctly when On=0V Off=5V,
+//             ignoring light intensity setting
 
 interface
 
@@ -909,20 +911,29 @@ procedure TLightSource.LEDFilterNumToVoltage(
 // ---------------------------------------
 // Get LED filter # selection voltages
 // ---------------------------------------
-const
-    MaxLEDs = 8 ;
 var
     i,iResource : Integer ;
 begin
 
-     for i := 0 to NumControlLines-1 do begin
+     for i := 0 to NumControlLines-1 do
+         begin
          iResource := MainFrm.IOConfig.LSControlLine[i] ;
-         if MainFRm.IOResourceAvailable(iResource) then begin
+         if MainFRm.IOResourceAvailable(iResource) then
+            begin
             LabIO.Resource[iResource].V := LEDOffVoltage ;
             LabIO.Resource[iResource].Delay := 0.0 ;
-            if i = FilterNum then begin
-               LabIO.Resource[iResource].V := ((LEDMaxVoltage - LEDOffVoltage)*LaserIntensity[FilterNum]*0.01)
-                                              + LEDOffVoltage;
+            if i = FilterNum then
+               begin
+               if LabIO.Resource[iResource].ResourceType = DACOut then
+                  begin
+                  // Set DAC output voltage for selected intensity
+                  LabIO.Resource[iResource].V := ((LEDMaxVoltage - LEDOffVoltage)*
+                                                 LaserIntensity[FilterNum]*0.01) + LEDOffVoltage;
+                  end
+               else begin
+                  // Set TTL output to on state
+                  LabIO.Resource[iResource].V := LEDMaxVoltage ;
+                  end;
                end;
             end;
          end ;

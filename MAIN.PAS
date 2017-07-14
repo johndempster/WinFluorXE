@@ -223,9 +223,11 @@ unit Main;
 // 03.05.17 V3.8.9 JD Thorlabs: Readout Speed now preserved when camera re-opened to avoid
 //                    being reset to minimum. Note this fix may be required for other cameras
 //                   IMAQDX Divide by zero avoided when no camera available
-// 11.07.17 V3.0.0 JD Hamamatsu camera fan can now be turned off and Spot Noise Reduction
-//                    enabled for FLASH 4.0. Analogue PMT Fluorescence ratio computation
-//                    added to computed analogue channels.
+// 11.07.17 V3.9.0 JD Analogue PMT Fluorescence ratio computation
+//                    added to computed analogue channels (not working yet).
+// 14.07.17 JD        LED outputs now set correctly when On=0V Off=5V, ignoring light intensity setting
+//                    Hamamatsu camera fan can now be turned off and Spot Noise Reduction
+//                    enabled for FLASH 4.0 (not working yet).
 
 interface
 
@@ -837,7 +839,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.0 11-7-17 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.0 14-7-17 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
