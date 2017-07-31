@@ -5,6 +5,7 @@ unit CameraSettingsUnit;
 // 20-5-9
 // 16.08
 // 04.07.17 Spot noise reduction option added
+// 31.07.17 Spot noise reduction removed
 
 interface
 
@@ -27,13 +28,10 @@ type
     Label2: TLabel;
     Label3: TLabel;
     cbCCDVerticalShiftSpeed: TComboBox;
-    Flash4Grp: TGroupBox;
-    ckSpotNoiseReduction: TCheckBox;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
     procedure bCancelClick(Sender: TObject);
-    procedure ckSpotNoiseReductionClick(Sender: TObject);
   private
     { Private declarations }
   public
@@ -83,9 +81,6 @@ begin
     cbCCDVerticalShiftSpeed.ItemIndex := Min(Max(MainFrm.Cam1.CCDVerticalShiftSpeed,0),
                                          cbCCDVerticalShiftSpeed.Items.Count-1) ;
 
-    // Spot noise reduction (only supported by FLASH 4.0)
-    ckSpotNoiseReduction.Checked := MainFrm.Cam1.SpotNoiseReduction ;
-
     ClientWidth := SpecialGrp.Left + SpecialGrp.Width + 5 ;
     ClientHeight := bOK.Top + bOK.Height + 5 ;
 
@@ -104,8 +99,6 @@ begin
     MainFrm.Cam1.ADCGain := cbADCGain.ItemIndex ;
     MainFrm.Cam1.CCDVerticalShiftSpeed := cbCCDVerticalShiftSpeed.ItemIndex ;
 
-    MainFrm.Cam1.SpotNoiseReduction := ckSpotNoiseReduction.Checked ;
-
     // Request a timing cycle change
     if MainFrm.FormExists( 'RecordFrm') then begin
        if RecordFrm.CameraRunning then RecordFrm.RestartCamera ;
@@ -117,16 +110,6 @@ begin
     close ;
 
     end;
-
-procedure TCameraSettingsFrm.ckSpotNoiseReductionClick(Sender: TObject);
-// ------------------------------------
-// Spot noise reduction setting changed
-// ------------------------------------
-begin
-    MainFrm.Cam1.SpotNoiseReduction := ckSpotNoiseReduction.Checked ;
-    ckSpotNoiseReduction.Checked := MainFrm.Cam1.SpotNoiseReduction ;
-    end;
-
 
 procedure TCameraSettingsFrm.bCancelClick(Sender: TObject);
 begin

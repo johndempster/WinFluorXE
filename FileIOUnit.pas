@@ -70,12 +70,13 @@ unit FileIOUnit;
 // 18.01.16 ......... ImageFile.CreateFile() now uses .NumFrames rather than single frames flag
 // 06.06.17 ......... PMTRatio calculation settings now added
 // 04.07.17 ......... 'CAMSPNR=', MainFrm.Cam1.SpotNoiseReduction added
+// 31.07.17 ......... 'CAMSPNR=', MainFrm.Cam1.SpotNoiseReduction added
 
 interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  ImageFile, IDRFile, StrUtils ;
+  ImageFile, IDRFile, StrUtils, system.UITypes ;
 
 type
 
@@ -173,7 +174,7 @@ procedure TFileIO.SaveInitialisationFile(
 // ------------------------
 var
    Header : array[1..cNumIDRHeaderBytes] of ANSIchar ;
-   i,iStart,iEnd,iSeq,iWav,ch : Integer ;
+   i,iSeq,iWav,ch : Integer ;
    INIFileHandle : THandle ;
    Dev : Integer ;
 begin
@@ -207,7 +208,6 @@ begin
      AppendInt( Header, 'CAMADC=', MainFrm.Cam1.CameraADC ) ;
      AppendLogical( Header, 'CAMCCDCLR=', MainFrm.Cam1.CCDClearPreExposure ) ;
      AppendLogical( Header, 'CAMCCDPERO=', MainFrm.Cam1.CCDPostExposureReadout ) ;
-     AppendLogical( Header, 'CAMSPNR=', MainFrm.Cam1.SpotNoiseReduction ) ;
 
      AppendInt( Header, 'NFREQ=', MainFrm.NumFramesRequired ) ;
      AppendFloat( Header, 'NRECPER=', MainFrm.RecordingPeriod ) ;
@@ -654,10 +654,6 @@ begin
      bValue := False ;
      ReadLogical( Header, 'CAMCCDPERO=', bValue ) ;
      MainFrm.Cam1.CCDPostExposureReadout := bValue ;
-
-     bValue := False ;
-     ReadLogical( Header, 'CAMSPNR=', bValue ) ;
-     MainFrm.Cam1.SpotNoiseReduction := bValue ;
 
      iValue := MainFrm.Cam1.ComPort ;
      ReadInt( Header, 'CAMCOM=', iValue ) ;
@@ -1400,6 +1396,7 @@ begin
      if not SaveDialog.Execute then Exit ;
 
      PInFrameBuf := Nil ;
+     OK := False ;
      if MainFrm.ActiveMDIChild.Name = 'IntegrateFrm' then begin
         // Save current image from integrated image module
         //if IntegrateFrm.ImageAvailable then

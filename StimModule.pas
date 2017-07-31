@@ -22,7 +22,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  stdctrls, maths, winprocs, LabIOUnit, math ;
+  stdctrls, maths, winprocs, LabIOUnit, math, system.UITypes ;
 
 const
      DigShapes = 10 ; { First digital waveform shape }

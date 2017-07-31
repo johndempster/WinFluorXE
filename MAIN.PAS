@@ -228,6 +228,8 @@ unit Main;
 // 14.07.17 JD        LED outputs now set correctly when On=0V Off=5V, ignoring light intensity setting
 //                    Hamamatsu camera fan can now be turned off and Spot Noise Reduction
 //                    enabled for FLASH 4.0 (not working yet).
+// 31.07.17 V3.9.1 JD File Export:STK files now exported correctly again. BIGTIFF files> 4GB now exported correctly
+//                    Spot Noise Reduction camera option removed (not working, not required)
 
 interface
 
@@ -839,7 +841,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.0 14-7-17 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.1 31-7-17 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

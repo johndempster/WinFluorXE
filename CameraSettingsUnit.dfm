@@ -178,28 +178,4 @@ object CameraSettingsFrm: TCameraSettingsFrm
       TabOrder = 1
     end
   end
-  object Flash4Grp: TGroupBox
-    Left = 175
-    Top = 111
-    Width = 161
-    Height = 58
-    Caption = ' Hamamatsu FLASH 4.0 '
-    TabOrder = 4
-    object ckSpotNoiseReduction: TCheckBox
-      Left = 16
-      Top = 16
-      Width = 129
-      Height = 33
-      Caption = 'Enable Spot Noise Reduction'
-      Font.Charset = ANSI_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'Arial'
-      Font.Style = [fsBold]
-      ParentFont = False
-      TabOrder = 0
-      WordWrap = True
-      OnClick = ckSpotNoiseReductionClick
-    end
-  end
 end

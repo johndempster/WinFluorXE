@@ -12,7 +12,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, IDRFile, StdCtrls, ValidatedEdit, RangeEdit, ExtCtrls, StrUtils, Math ;
+  Dialogs, IDRFile, StdCtrls, ValidatedEdit, RangeEdit, ExtCtrls, StrUtils, Math, system.UITypes ;
 
 type
   TSaveAsFileFrm = class(TForm)
@@ -263,7 +263,6 @@ var
     PFrameBuf : Pointer ; // Image frame buffer pointer
     i,j : Integer ;
     Done : Boolean ;
-    OK : Boolean ;
     iStartFrame : Integer ;   // First frame to save
     iEndFrame : Integer ;     // Last frame to save
     StartADCScan : Integer ;  // First A/D scan to save
@@ -279,7 +278,6 @@ var
     FrameType : Integer ;
     MaxFramesOfType : Integer ;
     NumFramesOfType : Array[0..MaxFrameType] of Integer ;
-    s : String ;
    InBuf : Array[0..NumScansPerBuf*(ChannelLimit+1)-1] of SmallInt ;
    OutBuf : Array[0..NumScansPerBuf*(ChannelLimit+1)-1] of SmallInt ;
 begin

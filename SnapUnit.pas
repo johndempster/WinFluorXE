@@ -2200,12 +2200,9 @@ procedure TSnapFrm.UpdateLightSource ;
 // -------------------------------------
 var
      Dev,Chan,iResource,i : Integer ;
-     iV : Integer ;
      FilterNums : Array[0..lsMaxVControl-1] of Integer ;
      Wavelengths : Array[0..lsMaxVControl-1] of Single ;
      Bandwidths : Array[0..lsMaxVControl-1] of Single ;
-     VControl : Array[0..lsMaxVControl] of TLSVControl ;
-     NumVControl : Integer ;
      V : single ;
      Bit : Word ;
      BitWord  : Word ;

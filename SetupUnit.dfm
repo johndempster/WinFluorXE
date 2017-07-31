@@ -130,7 +130,7 @@ object SetupFrm: TSetupFrm
     Top = 8
     Width = 561
     Height = 450
-    ActivePage = CapacityTab
+    ActivePage = CameraTab
     TabOrder = 3
     object CameraTab: TTabSheet
       Caption = 'Camera'
@@ -1597,6 +1597,10 @@ object SetupFrm: TSetupFrm
               Font.Name = 'Arial'
               Font.Style = [fsBold]
               ParentFont = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label7: TLabel
                 Left = 9
                 Top = 4
@@ -1728,6 +1732,10 @@ object SetupFrm: TSetupFrm
               Font.Style = [fsBold]
               ImageIndex = 1
               ParentFont = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label9: TLabel
                 Left = 9
                 Top = 4
@@ -1859,6 +1867,10 @@ object SetupFrm: TSetupFrm
               Font.Style = [fsBold]
               ImageIndex = 2
               ParentFont = False
+              ExplicitLeft = 0
+              ExplicitTop = 0
+              ExplicitWidth = 0
+              ExplicitHeight = 0
               object Label30: TLabel
                 Left = 9
                 Top = 4
