@@ -24,6 +24,7 @@ unit RecPlotUnit;
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 11.05.16 .. JD Additional divide by zero checks added
 // 08.11.16 .. JD Fluouresence and ratio traces now floating point values
+// 13.09.17 .. JD Ratio trace now works correctly again (scRDisplay.FloatingPointSamples=TRUE)
 
 interface
 
@@ -395,7 +396,7 @@ begin
     scRDisplay.NumBytesPerSample := SizeOf(Single) ;
     GetMem( pRDisplayBuf,scRDisplay.MaxPoints*SizeOf(Single)) ;
     scRDisplay.SetDataBuf( pRDisplayBuf ) ;
-    scFLDisplay.FloatingPointSamples := True ;
+    scRDisplay.FloatingPointSamples := True ;
 
     scRDisplay.XMax := scFLDisplay.MaxPoints ;
     scRDisplay.TScale := scFLDisplay.TScale ;

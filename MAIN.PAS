@@ -230,6 +230,7 @@ unit Main;
 //                    enabled for FLASH 4.0 (not working yet).
 // 31.07.17 V3.9.1 JD File Export:STK files now exported correctly again. BIGTIFF files> 4GB now exported correctly
 //                    Spot Noise Reduction camera option removed (not working, not required)
+// 13.09.17 V3.9.2 JD Ratio trace now works correctly again (scRDisplay.FloatingPointSamples=TRUE)
 
 interface
 
@@ -841,7 +842,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.1 31-7-17 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.2 13-9-17 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
