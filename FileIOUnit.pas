@@ -174,15 +174,16 @@ procedure TFileIO.SaveInitialisationFile(
 // ------------------------
 var
    Header : array[1..cNumIDRHeaderBytes] of ANSIchar ;
-   i,iSeq,iWav,ch : Integer ;
+   i,iSeq,iWav,ch,nWritten : Integer ;
    INIFileHandle : THandle ;
    Dev : Integer ;
 begin
 
      INIFileHandle := FileCreate( FileName ) ;
 
-     if INIFileHandle < 0 then begin
+     if Integer(INIFileHandle) < 0 then begin
         MainFrm.StatusBar.SimpleText := 'Unable to create : ' + FileName ;
+        ShowMessage(MainFrm.StatusBar.SimpleText);
         Exit ;
         end ;
 
@@ -577,7 +578,8 @@ begin
          AppendInt( Header, format('FPHEIGHT%d=',[i]), MainFrm.FormPos[i].Height) ;
          end;
 
-     if FileWrite( INIFileHandle, Header, Sizeof(Header) ) <> Sizeof(Header) then
+     nWritten := FileWrite( INIFileHandle, Header, Sizeof(Header) )  ;
+     if nWritten <> Sizeof(Header) then
         ShowMessage( ' Initialisation file write failed ' ) ;
 
      if INIFileHandle >= 0 then FileClose( INIFileHandle ) ;

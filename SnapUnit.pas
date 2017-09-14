@@ -44,6 +44,7 @@ unit SnapUnit;
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 16.11.15 .. JD Cam1.MonochromeImages=TRUE. Flag to select monochrome images from colour cameras added
 // 18.01.16 ......... ImageFile.CreateFile() now uses .NumFrames rather than single frames flag
+// 14.09.17 JD Scrollbar positions kept within limits
 
 interface
 
@@ -405,11 +406,11 @@ begin
 
      // Set brightness & contrast slider range and position
      sbContrast.Min := 0 ;
-     sbContrast.Max := MainFrm.Cam1.GreyLevelMax ;
+     sbContrast.Max := Max(MainFrm.Cam1.GreyLevelMax,255) ;
      sbContrast.SmallChange := 1 ;
      sbContrast.LargeChange := Max(sbContrast.Max div 50,1) ;
      sbBrightness.Min := 0 ;
-     sbBrightness.Max := MainFrm.Cam1.GreyLevelMax ;
+     sbBrightness.Max := Max(MainFrm.Cam1.GreyLevelMax,255) ;
      sbBrightness.LargeChange := Max(sbBrightness.Max div 50,1) ;
 
      // Set intensity range and sliders
@@ -927,8 +928,8 @@ begin
 
      edDisplayIntensityRange.LoValue := LoValue  ;
      edDisplayIntensityRange.HiValue := HiValue  ;
-     sbBrightness.Position := (LoValue + HiValue) div 2 ;
-     sbContrast.Position := HiValue - LoValue ;
+     sbBrightness.Position := Max(Min( (LoValue + HiValue) div 2, sbBrightness.Max),0) ;
+     sbContrast.Position := Max(Min(HiValue - LoValue,sbContrast.Max),0) ;
 
      end ;
 
