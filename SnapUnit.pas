@@ -2235,7 +2235,7 @@ begin
             Dev := LabIO.Resource[iResource].Device ;
             Chan := LabIO.Resource[iResource].StartChannel ;
             V := LabIO.Resource[iResource].V ;
-            LabIO.DACOutState[Dev][Chan] := V ;
+           LabIO.DACOutState[Dev][Chan] := V ;
             // Output to DAC channel (if it is not in use)
             if not LabIO.DACActive[Dev] then LabIO.WriteDAC( Dev, V, Chan) ;
             end;

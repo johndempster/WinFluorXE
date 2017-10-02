@@ -43,6 +43,8 @@ unit LightSourceUnit;
 //             as used with TTL gated LED light sources
 // 14.07.17 JD LEDFilterNumToVoltage() TTL LED outputs now set correctly when On=0V Off=5V,
 //             ignoring light intensity setting
+// 02.10.17 JD No. of control lines for Optoscan now correctly returned as 3 (rather than 7)
+//             fixing closed shutter problem with Record>Image.
 
 interface
 
@@ -387,7 +389,7 @@ begin
     case FDeviceType of
         lsOptoScan1200,
         lsOptoScan1800,
-        lsOptoScan2000,
+        lsOptoScan2000 : Result := 3 ;
         lsOptoscanWithLasers : Result := 7 ;
         lsTill : Result := 1 ;
         lsTillWithLasers : Result := 2 ;
@@ -398,7 +400,6 @@ begin
         else Result := 0 ;
         end ;
     end ;
-
 
 
 function TLightSource.WavelengthMin : Single ;
