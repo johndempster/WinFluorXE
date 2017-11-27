@@ -219,7 +219,8 @@ unit Main;
 //                    rather than .click to fix intermittent failure to open
 // 07.12.16 V3.8.7 JD Multi-wavelength ROI time courses now correctly calculated again
 // 02.05.17 V3.8.8 JD Export Images/ROI Time Course/Analaogue Signals
-//                    Select Files to Export button now works and ViewFrm.NewFile now updated//                    (if form exists) to ensure that time buffers are updated when files changed to avoid access violations.
+//                    Select Files to Export button now works and ViewFrm.NewFile now updated//
+//                    (if form exists) to ensure that time buffers are updated when files changed to avoid access violations.
 // 03.05.17 V3.8.9 JD Thorlabs: Readout Speed now preserved when camera re-opened to avoid
 //                    being reset to minimum. Note this fix may be required for other cameras
 //                   IMAQDX Divide by zero avoided when no camera available
@@ -234,6 +235,9 @@ unit Main;
 //                    Optoscan monochromator control now works again in Record>Image (fix in LightSourceUnit)
 //                    PVCAM: Shutter (if present) now opened before start of capture sequence (pvcam)
 //                    scroll bar out of range errors blocked in Record>Image (snapunit)
+// 07.11.17 V3.9.3 JD ExportROITimeCourseUnit: Divide by zero error when exporting zero ratio or Ca channel now prevented
+// 21.11.17 V3.9.4 JD USB-600X devices D/A update interval limited to 2ms or longer to avoid intermittent 5s delays when .ADCStop called.
+// 27.11.17 V3.9.5 JD First file exported in PIC format no longer empty of images.
 
 interface
 
@@ -845,7 +849,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.2 02-10-17 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.5 27-11-17 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

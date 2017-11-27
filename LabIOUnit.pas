@@ -50,6 +50,8 @@ unit LabIOUnit;
 // 11.03.16 JD .... Single Ended (RSE) analogue input mode now correctly selected
 // 31.03.16 JD .... PCIe-632X boards now recognised as DigitalWaveformCapable
 // 10.05.16 JD .... Digital outputs not supported by USB 621X boards
+// 21.11.17 JD ... USB-600X devices D/A update interval limited to 2ms or longer to avoid
+//                 intermittent 5s delays when .ADCStop called.
 
 interface
 
@@ -1658,6 +1660,8 @@ function TLabIO.NIDAQMX_StopADC(
 { -------------------------------
   Reset A/D conversion sub-system
   -------------------------------}
+var
+    t0 : Integer ;
 begin
      Result := False ;
      if (Device < 1) or (Device > NumDevices) then Exit ;
@@ -1667,7 +1671,11 @@ begin
      DisableFPUExceptions ;
 
      // Stop running A/D task
+     T0 := timegettime ;
      CheckError( DAQmxClearTask(ADCTask[Device])) ;
+     if (timegettime - t0) > 1000 then
+        outputdebugstring(pchar(format('NIMX_StopADC: %d ms Delay in DAQmxClearTask call. ',[timegettime - t0])));
+
 
      EnableFPUExceptions ;
 

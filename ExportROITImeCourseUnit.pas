@@ -11,7 +11,7 @@ unit ExportROITImeCourseUnit;
 // 02.05.17 ... ViewFrm.NewFile now updated (if form exists) to ensure
 //              that time buffers are updated when files changed to
 //              avoid access violations.
-
+// 07.11.17 Computed range of ratio and Ca time courses now prevented from being zero.
 
 interface
 
@@ -459,6 +459,8 @@ begin
         for i := 0 to nPoints-1 do if YMax < Abs(YBuf^[i]) then YMax := Abs(YBuf^[i]) ;
         YMax := YMax*1.5 ;
         end ;
+   // Ensure YMax is non-zero
+   if Ymax <= 0.0 then YMax := 1.0 ;
 
    // Set export channel name, scaling and units
    for i := 0 to NumROIs-1 do
