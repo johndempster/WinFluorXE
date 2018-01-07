@@ -36,6 +36,7 @@ unit ViewPlotUnit;
 // 07.12.16 .. JD Whole of time course empty flag now filled with empty flag
 //             which has been chznged to a floating point -65536.0. Multi-waavelength
 //             time courses now calculated correctly again.
+// 04.01.18 .. JD Heap memory now allocated with AllocMem instead to GetMem to initialise to zero
 
 interface
 
@@ -321,7 +322,7 @@ begin
     // Create time course buffer point -> -> frame # pointer list
     if ROITimeCourseBuf <> Nil then FreeMem( ROITimeCourseBuf ) ;
     ROITCNumBytes := MainFrm.IDRFile.NumFrames*MainFrm.IDRFile.NumFrameTypes*Max(MainFrm.IDRFile.MaxROIInUse+1,1)*SizeOf(Single) ;
-    GetMem( ROITimeCourseBuf, ROITCNumBytes ) ;
+    ROITimeCourseBuf := AllocMem( ROITCNumBytes ) ;
     ROITCNumFrames := MainFrm.IDRFile.NumFrames ;
 
     sbDisplay.Max := MainFrm.IDRFile.NumFrames - 1 ;
@@ -370,7 +371,7 @@ begin
          end ;
 
     if FLDisplayBuf <> Nil then FreeMem(FLDisplayBuf) ;
-    Getmem( FLDisplayBuf, scFLDisplay.MaxPoints*scFLDisplay.NumChannels*SizeOf(Single));
+    FLDisplayBuf := AllocMem( scFLDisplay.MaxPoints*scFLDisplay.NumChannels*SizeOf(Single));
     scFLDisplay.SetDataBuf( FLDisplayBuf ) ;
     scFLDisplay.NumBytesPerSample := SizeOf(Single) ;
     scFLDisplay.FloatingPointSamples := True ;
@@ -410,7 +411,7 @@ begin
     scRDisplay.ChanVisible[0] := True ;
 
     if RDisplayBuf <> Nil then FreeMem(RDisplayBuf) ;
-    Getmem( RDisplayBuf, Max(scRDisplay.MaxPoints*scRDisplay.NumChannels,1)*SizeOf(Single));
+    RDisplayBuf := AllocMem( Max(scRDisplay.MaxPoints*scRDisplay.NumChannels,1)*SizeOf(Single));
     scRDisplay.NumBytesPerSample := SizeOf(Single) ;
     scRDisplay.FloatingPointSamples := True ;
     scRDisplay.SetDataBuf( RDisplayBuf ) ;
@@ -456,7 +457,7 @@ begin
 
        // Allocate A/D buffer
        if ADCBuf <> Nil then FreeMem( ADCBuf ) ;
-       GetMem( ADCBuf, scADCDisplay.MaxPoints*MainFrm.IDRFile.ADCNumChannels*2 ) ;
+       ADCBuf := AllocMem( scADCDisplay.MaxPoints*MainFrm.IDRFile.ADCNumChannels*2 ) ;
        scADCDisplay.SetDataBuf( ADCBuf ) ;
 
        scADCDisplay.ClearVerticalCursors ;
@@ -521,7 +522,7 @@ begin
 
      // Read data from file
      if ADCBuf <> Nil then FreeMem( ADCBuf ) ;
-     GetMem( ADCBuf, scADCDisplay.MaxPoints*MainFrm.IDRFile.ADCNumChannels*2 ) ;
+     ADCBuf := AllocMem( scADCDisplay.MaxPoints*MainFrm.IDRFile.ADCNumChannels*2 ) ;
      scADCDisplay.SetDataBuf( ADCBuf ) ;
      scADCDisplay.NumPoints := MainFrm.IDRFile.LoadADC( StartScan,
                                                         Min(NumScans,MainFrm.IDRFile.ADCNumScansInFile-StartScan),
@@ -753,7 +754,7 @@ begin
 
     // Allocate buffer
     if FLDisplayBuf <> Nil then FreeMem(FLDisplayBuf) ;
-    Getmem( FLDisplayBuf, scFLDisplay.MaxPoints*scFLDisplay.NumChannels*SizeOf(Integer));
+    FLDisplayBuf := AllocMem( scFLDisplay.MaxPoints*scFLDisplay.NumChannels*SizeOf(Integer));
     scFLDisplay.SetDataBuf( FLDisplayBuf ) ;
     scFLDisplay.NumBytesPerSample := SizeOf(Integer) ;
 
@@ -844,7 +845,7 @@ begin
     scRDisplay.VerticalCursors[RReadoutCursor] := CursorGroup - StartGroup ;
 
     if RDisplayBuf <> Nil then FreeMem(RDisplayBuf) ;
-    Getmem( RDisplayBuf, Max(scRDisplay.MaxPoints*scRDisplay.NumChannels,1)*SizeOf(Integer));
+    RDisplayBuf := AllocMem( Max(scRDisplay.MaxPoints*scRDisplay.NumChannels,1)*SizeOf(Integer));
     scRDisplay.NumBytesPerSample := SizeOf(Integer) ;
     scRDisplay.SetDataBuf( RDisplayBuf ) ;
 
@@ -1115,7 +1116,7 @@ begin
 
               // Create list of pixels enclosed by ROI
               NumPixels := 0 ;
-              GetMem( PixelList, 2*SizeOf(TPoint)*(ROIBitMap.Width*ROIBitMap.Height)) ;
+              PixelList := AllocMem( 2*SizeOf(TPoint)*(ROIBitMap.Width*ROIBitMap.Height)) ;
 
               for iY := 0 to ROI.Height-1 do begin
                   P := ROIBitMap.ScanLine[iY] ;
@@ -1773,7 +1774,7 @@ begin
     if ROITCNumFramesDone <= 0 then begin
        if ROITimeCourseBuf <> Nil then FreeMem( ROITimeCourseBuf ) ;
        np := MainFrm.IDRFile.NumFrames*MainFrm.IDRFile.NumFrameTypes*Max(MainFrm.IDRFile.MaxROIInUse+1,1) ;
-       GetMem( ROITimeCourseBuf, np*sizeof(Single));
+       ROITimeCourseBuf := AllocMem( np*sizeof(Single));
        for i := 0 to np-1 do ROITimeCourseBuf^[i] := ROITimeCourseBufEmptyFlag ;
        end ;
 

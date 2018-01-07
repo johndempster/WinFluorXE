@@ -1234,7 +1234,7 @@ begin
       end;
 
    // Set exposure interval (ensure it is a multiple of A/D & D/A timing interval)
-   MainFrm.Cam1.FrameInterval := Round(edFrameInterval.Value/MainFrm.ADCScanInterval)*MainFrm.ADCScanInterval ;
+   MainFrm.Cam1.FrameInterval := RoundToNearestMultiple(edFrameInterval.Value,MainFrm.ADCScanInterval) ;
    edFrameInterval.Value := MainFrm.Cam1.FrameInterval ;
 
    // Set image/display panels
@@ -4269,9 +4269,9 @@ procedure TRecordFrm.CalculateMaxContrast(
 // Calculate and set display for maximum grey scale contrast
 // ---------------------------------------------------------
 const
-    PixelSampleSize = 2000 ;
+    PixelSampleSize = 10000 ;
 var
-     i,NumPixels,NAvg,Istep : Integer ;
+     i,NumPixels,NAvg,Istep,iReadout : Integer ;
      z,zMean,zSD,zSum : Single ;
      iz,ZMin,ZMax,ZLo,ZHi,ZThreshold : Integer ;
 begin
@@ -4322,6 +4322,13 @@ begin
           if iz > ZMax then ZMax := iz ;
           i := i + iStep ;
           end ;
+
+       // Include readout pixel
+       iReadout := ROIs[RecPlotFrm.SelectedROI].X + ROIs[RecPlotFrm.SelectedROI].Y*FrameWidth ;
+       iz := PDisplayBufs[FrameType]^[iReadout] ;
+       if iz < ZMin then ZMin := iz ;
+       if iz > ZMax then ZMax := iz ;
+
        ZLo := ZMin ;
        ZHi := ZMax ;
        end ;

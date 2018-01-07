@@ -238,6 +238,9 @@ unit Main;
 // 07.11.17 V3.9.3 JD ExportROITimeCourseUnit: Divide by zero error when exporting zero ratio or Ca channel now prevented
 // 21.11.17 V3.9.4 JD USB-600X devices D/A update interval limited to 2ms or longer to avoid intermittent 5s delays when .ADCStop called.
 // 27.11.17 V3.9.5 JD First file exported in PIC format no longer empty of images.
+// 07.01.18 V3.9.6 JD Now works correctly with Photometrics Prime camera
+//                    floating point errors at start of real time plotting fixed.
+//                    readout time now correctly calculated for Photometrics cameeras which support it.
 
 interface
 
@@ -849,7 +852,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.5 27-11-17 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.6 05-01-18 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

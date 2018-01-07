@@ -52,6 +52,8 @@ unit LabIOUnit;
 // 10.05.16 JD .... Digital outputs not supported by USB 621X boards
 // 21.11.17 JD ... USB-600X devices D/A update interval limited to 2ms or longer to avoid
 //                 intermittent 5s delays when .ADCStop called.
+// 04.01.18 JD ... NADAQMXMemoryToDAC now writes D/A values as DOUBLE voltages to avoid calibration errors
+//                 with USB-6002/3
 
 interface
 
@@ -136,6 +138,7 @@ type
     BoardInitialised : Boolean ;
 
     InBuf : PSmallIntArray ; // A/D input buffer pointer
+    DBuf : PBigDoubleArray ; // Double precision working array
 
     // NIDAQ-MX task objects
     DACTask : Array[1..MaxDevices] of Integer ;
@@ -593,6 +596,7 @@ begin
 
      // Create input buffer
      GetMem(InBuf,MaxADCSamples*2) ;
+     GetMem(DBuf,MaxADCSamples*Sizeof(Double)) ;
 
      Result := BoardsInitialised ;
 
@@ -1829,7 +1833,8 @@ var
     NumSamplesWritten : Integer ;
     UpdateRate : Double ;
     NumPointsInBuffer : Integer ;
-    IOBuf : PBig16bitArray ;
+    VBuf : PBigDoubleArray ;
+    VScale : Double ;
     TaskHandle : Integer ;
     Err : Integer ;
 begin
@@ -1921,9 +1926,10 @@ begin
                            else EndOffset := nChannels ;
      iTo := 0 ;
      iFrom := 0 ;
-     GetMem(IOBuf,nCopy*Sizeof(SmallInt)) ;
+     GetMem(VBuf,nCopy*Sizeof(Double)) ;
+     VScale := 1.0/DACScale[Device] ;
      for i := 0 to nCopy-1 do begin
-         IOBuf[iTo] := DACBuf[iFrom] ;
+         VBuf[iTo] := DACBuf[iFrom]*VScale ;
          Inc(iFrom) ;
          Inc(iTo) ;
          if iFrom >= nSource then iFrom := iFrom - EndOffset
@@ -1935,17 +1941,17 @@ begin
      DAC[Device].Buf := @DACBuf ;
      DAC[Device].CircularBuffer := CircularBufferMode ;
      DAC[Device].Pointer := iFrom div nChannels ;
-     CheckError( DAQmxWriteBinaryI16 ( DACTask[Device],
-                     NumPointsInBuffer,
-                     False,
-                     DefaultTimeOut,
-                     DAQmx_Val_GroupByScanNumber,
-                     @IOBuf^,
-                     NumSamplesWritten,
-                     Nil
-                     )) ;
+     CheckError( DAQmxWriteAnalogF64( DACTask[Device],
+                                      NumPointsInBuffer,
+                                      False,
+                                      DefaultTimeOut,
+                                      DAQmx_Val_GroupByScanNumber,
+                                      @VBuf^,
+                                      NumSamplesWritten,
+                                      Nil
+                                      )) ;
 
-     FreeMem(IOBuf) ;
+      FreeMem(VBuf) ;
 
      // Start D/A task
      CheckError( DAQmxStartTask(DACTask[Device])) ;
@@ -1991,17 +1997,15 @@ var
     NumPointsToWrite : Cardinal ;
     CircularBuffer : Boolean ;
     pBuf : PBig16bitArray ;
-    //tt,t1 : Integer ;
+    VScale : Double ;
 begin
+
+
     for iDev := 1 to NumDevices do if DACActive[iDev] then begin ;
 
         // Update D/A output buffer with XY scan waveform
         DAQmxGetWriteSpaceAvail( DACTask[iDev], NumPointsToWrite ) ;
         if NumPointsToWrite = 0 then continue ;
-
-        //t1 := Timegettime ;
-        //tt := t1-t0 ;
-        //t0 := t1 ;
 
         // Copy DAC data into output buffer
         iPointer := DAC[iDev].Pointer ;
@@ -2013,9 +2017,10 @@ begin
         iFrom := DAC[iDev].Pointer*nChannels ;
         pBuf := DAC[iDev].Buf ;
         iTo := 0 ;
+        VScale := 1.0/DACScale[iDev] ;
         for i := 0 to NumPointsToWrite-1 do begin
             for ch := 0 to nChannels-1 do begin
-               InBuf[iTo] := pBuf^[iFrom] ;
+               DBuf[iTo] := pBuf^[iFrom]*VScale ;
                Inc(iFrom) ;
                Inc(iTo) ;
                end ;
@@ -2028,12 +2033,12 @@ begin
             end ;
         DAC[iDev].Pointer := iPointer ;
 
-        CheckError( DAQmxWriteBinaryI16( DACTask[iDev],
+        CheckError( DAQmxWriteAnalogF64( DACTask[iDev],
                            NumPointsToWrite,
                            False,
                            DefaultTimeOut,
                            DAQmx_Val_GroupByScanNumber,
-                           InBuf,
+                           DBuf,
                            NumSamplesWritten,
                            Nil
                            )) ;
@@ -2501,6 +2506,7 @@ begin
      BoardsInitialised := False ;
 
      FreeMem(InBuf) ;
+     FreeMem(DBuf) ;
 
      if LibraryLoaded then FreeLibrary( LibraryHnd ) ;
      LibraryLoaded := False ;

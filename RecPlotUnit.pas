@@ -25,6 +25,8 @@ unit RecPlotUnit;
 // 11.05.16 .. JD Additional divide by zero checks added
 // 08.11.16 .. JD Fluouresence and ratio traces now floating point values
 // 13.09.17 .. JD Ratio trace now works correctly again (scRDisplay.FloatingPointSamples=TRUE)
+// 04.01.18 .. JD Heap memory now allocated with AllocMem instead to GetMem to initialise to zero
+//             Fixes occasional FP errors in real time plots on some systems
 
 interface
 
@@ -387,14 +389,14 @@ begin
     // Update fluorescence display buffer
     if pFLDisplayBuf <> Nil then FreeMem(pFLDisplayBuf) ;
     FLDisplayBufMaxPoints := scFLDisplay.MaxPoints*NumFrameTypes ;
-    GetMem( pFLDisplayBuf,FLDisplayBufMaxPoints*SizeOf(Single)) ;
+    pFLDisplayBuf := AllocMem( FLDisplayBufMaxPoints*SizeOf(Single)) ;
     scFLDisplay.SetDataBuf( pFLDisplayBuf ) ;
     scFLDisplay.FloatingPointSamples := True ;
 
     scRDisplay.MaxPoints := scFLDisplay.MaxPoints ;
     if pRDisplayBuf <> Nil then FreeMem(pRDisplayBuf) ;
     scRDisplay.NumBytesPerSample := SizeOf(Single) ;
-    GetMem( pRDisplayBuf,scRDisplay.MaxPoints*SizeOf(Single)) ;
+    pRDisplayBuf := AllocMem( scRDisplay.MaxPoints*SizeOf(Single)) ;
     scRDisplay.SetDataBuf( pRDisplayBuf ) ;
     scRDisplay.FloatingPointSamples := True ;
 
@@ -442,7 +444,7 @@ begin
      // No. of multi-channel scans to be displayed
      scADCDisplay.MaxPoints := Max( Round(edTDisplay.Value/DACUpdateInterval),2 ) ;
      if ADCDisplayBuf <> Nil then FreeMem(ADCDisplayBuf) ;
-     GetMem( ADCDisplayBuf, (scADCDisplay.MaxPoints+1)*MainFrm.ADCNumChannels*2 ) ;
+     ADCDisplayBuf := AllocMem( (scADCDisplay.MaxPoints+1)*MainFrm.ADCNumChannels*2 ) ;
      scADCDisplay.SetDataBuf( ADCDisplayBuf ) ;
      scADCDisplay.NumBytesPerSample := 2 ;
      scADCDisplay.floatingpointsamples := false ;
@@ -697,11 +699,6 @@ begin
 
     // Set display time scaling
     SetDisplayUnits ;
-
-{    if pRDisplayBuf <> Nil then FreeMem(pRDisplayBuf) ;
-    scRDisplay.NumBytesPerSample := 4 ;
-    GetMem( pRDisplayBuf,scRDisplay.MaxPoints*scRDisplay.NumBytesPerSample) ;
-    scRDisplay.SetDataBuf( pRDisplayBuf ) ;}
 
     // Update public ROI selection variables
     SelectedROI := cbROI.ItemIndex ;
