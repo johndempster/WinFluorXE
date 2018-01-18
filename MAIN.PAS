@@ -241,6 +241,8 @@ unit Main;
 // 07.01.18 V3.9.6 JD Now works correctly with Photometrics Prime camera
 //                    floating point errors at start of real time plotting fixed.
 //                    readout time now correctly calculated for Photometrics cameeras which support it.
+// 15.01.18 V3.9.7 JD Now works with Data Translation DT3120 frame grabber. Frame rate limited to 5 FPS with triggered exposures
+// 18.01.18 V3.9.8 JD Lightspeed mode of Evolve Delta camera now supported (not tested)
 
 interface
 
@@ -852,7 +854,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.6 05-01-18 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.8 18-01-18 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

@@ -71,6 +71,7 @@ unit FileIOUnit;
 // 06.06.17 ......... PMTRatio calculation settings now added
 // 04.07.17 ......... 'CAMSPNR=', MainFrm.Cam1.SpotNoiseReduction added
 // 31.07.17 ......... 'CAMSPNR=', MainFrm.Cam1.SpotNoiseReduction added
+// 18.01.18 ......... CAMLIGHTSPEEDMODE= MainFr.Cam1.LIGHTSPEEDMODE added
 
 interface
 
@@ -209,6 +210,7 @@ begin
      AppendInt( Header, 'CAMADC=', MainFrm.Cam1.CameraADC ) ;
      AppendLogical( Header, 'CAMCCDCLR=', MainFrm.Cam1.CCDClearPreExposure ) ;
      AppendLogical( Header, 'CAMCCDPERO=', MainFrm.Cam1.CCDPostExposureReadout ) ;
+     AppendLogical( Header, 'CAMLIGHTSPEEDMODE=', MainFrm.Cam1.LightSpeedMode ) ;
 
      AppendInt( Header, 'NFREQ=', MainFrm.NumFramesRequired ) ;
      AppendFloat( Header, 'NRECPER=', MainFrm.RecordingPeriod ) ;
@@ -656,6 +658,10 @@ begin
      bValue := False ;
      ReadLogical( Header, 'CAMCCDPERO=', bValue ) ;
      MainFrm.Cam1.CCDPostExposureReadout := bValue ;
+
+     bValue := False ;
+     ReadLogical( Header, 'CAMLIGHTSPEEDMODE=', bValue ) ;
+     MainFrm.Cam1.LightSpeedMode := bValue ;
 
      iValue := MainFrm.Cam1.ComPort ;
      ReadInt( Header, 'CAMCOM=', iValue ) ;

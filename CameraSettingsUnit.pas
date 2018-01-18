@@ -6,6 +6,7 @@ unit CameraSettingsUnit;
 // 16.08
 // 04.07.17 Spot noise reduction option added
 // 31.07.17 Spot noise reduction removed
+// 18.01.18 LightSpeed mode check box added (for Evolve 512 Delta)
 
 interface
 
@@ -28,6 +29,7 @@ type
     Label2: TLabel;
     Label3: TLabel;
     cbCCDVerticalShiftSpeed: TComboBox;
+    ckLightSpeedMode: TCheckBox;
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
@@ -81,6 +83,8 @@ begin
     cbCCDVerticalShiftSpeed.ItemIndex := Min(Max(MainFrm.Cam1.CCDVerticalShiftSpeed,0),
                                          cbCCDVerticalShiftSpeed.Items.Count-1) ;
 
+    ckLightSpeedMode.Checked := MainFrm.Cam1.LightSpeedMode ;
+
     ClientWidth := SpecialGrp.Left + SpecialGrp.Width + 5 ;
     ClientHeight := bOK.Top + bOK.Height + 5 ;
 
@@ -98,6 +102,7 @@ begin
     MainFrm.Cam1.CameraFanMode := cbFanMode.ItemIndex ;
     MainFrm.Cam1.ADCGain := cbADCGain.ItemIndex ;
     MainFrm.Cam1.CCDVerticalShiftSpeed := cbCCDVerticalShiftSpeed.ItemIndex ;
+    MainFrm.Cam1.LightSpeedMode := ckLightSpeedMode.Checked ;
 
     // Request a timing cycle change
     if MainFrm.FormExists( 'RecordFrm') then begin

@@ -124,7 +124,7 @@ object CameraSettingsFrm: TCameraSettingsFrm
     Left = 177
     Top = 4
     Width = 161
-    Height = 101
+    Height = 165
     Caption = ' CCD Readout '
     TabOrder = 3
     object Label2: TLabel
@@ -176,6 +176,25 @@ object CameraSettingsFrm: TCameraSettingsFrm
       ParentShowHint = False
       ShowHint = True
       TabOrder = 1
+    end
+    object ckLightSpeedMode: TCheckBox
+      Left = 8
+      Top = 100
+      Width = 145
+      Height = 17
+      Hint = 
+        'Enable Lightspeed CCD readout mode (Photometrics Evolve 512 Delt' +
+        'a Only)'
+      Caption = 'LightSpeed Mode'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 2
     end
   end
 end
