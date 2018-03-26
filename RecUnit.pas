@@ -176,6 +176,7 @@ unit RecUnit;
 // 25.11.15 .. JD FP divide by zero fixed when no interface units available fixed.
 // 11.05.16 .. JD Additional divide by zero checks added
 // 12.06.17 .. JD CalculatePMTRatio added
+// 26.03.18 .. JD CalculatePMTRatio() Ca Concentration channel no longer set to zero when Ca Concentration display disaabled
 
 {$DEFINE USECONT}
 
@@ -6520,8 +6521,7 @@ begin
             Conc := (MainFrm.PMTRatio.Keff*(Ratio - MainFrm.PMTRatio.RMin))/
                     (MainFrm.PMTRatio.RMax - Ratio) ;
             ADCBuf^[iScan+ConcOffset] := Max(Min(Round(ConcScale*Conc),ADCMaxValue),0); ;
-            end
-         else ADCBuf^[iScan+ConcOffset] := 0 ;
+            end ;
 
          { Next block of channels }
          if iScan = ADCLatestScan then Done := True ;

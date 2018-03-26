@@ -243,6 +243,7 @@ unit Main;
 //                    readout time now correctly calculated for Photometrics cameeras which support it.
 // 15.01.18 V3.9.7 JD Now works with Data Translation DT3120 frame grabber. Frame rate limited to 5 FPS with triggered exposures
 // 18.01.18 V3.9.8 JD Lightspeed mode of Evolve Delta camera now supported (not tested)
+// 26.03.18 V3.9.9 JD RecUnit.pas CalculatePMTRatio() Ca Concentration channel no longer set to zero when Ca Concentration display disaabled
 
 interface
 
@@ -854,7 +855,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.8 18-01-18 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V3.9.9 26-03-18 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
