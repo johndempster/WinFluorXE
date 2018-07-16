@@ -12,6 +12,7 @@ unit ExportROITImeCourseUnit;
 //              that time buffers are updated when files changed to
 //              avoid access violations.
 // 07.11.17 Computed range of ratio and Ca time courses now prevented from being zero.
+// 09.07.18 ROIs now exported in episodic file format for ABF,WCP and CFS. EDR no longer supported
 
 interface
 
@@ -29,7 +30,7 @@ type
     GroupBox2: TGroupBox;
     rbABF: TRadioButton;
     rbASCII: TRadioButton;
-    rbEDR: TRadioButton;
+    rbWCP: TRadioButton;
     rbMAT: TRadioButton;
     bOK: TButton;
     bCancel: TButton;
@@ -80,9 +81,10 @@ type
           FileName : string ;                     // Export file name
           ExportType : TADCDataFileType ;         // Export type
           yBuf : PBigSingleArray;                // Data array
-          nPoints : Integer ;                     // No. points in yBuf
-          NumROIs : Integer ;                     // No. ROIs in yBuf
-          iROIStart : Integer                     // Starting ROI
+          NumFramesExported : Integer ;            // No. frames in yBuf
+          NumROIsExported : Integer ;             // No. ROIs in yBuf
+          ROIList : Array of Integer ;            // List of ROI numbers
+          NumRecords : Integer                   // No. of records in file
           ) ;
 
   public
@@ -170,22 +172,21 @@ procedure TExportROITimeCourseFrm.ExportFiles ;
 // Copy selected ROI time courses of data files in list to export file
 // --------------------------------------------------------------------
 var
-   StartAt,EndAt,ch,i,j,iTo,iFrom : Integer ;
+   StartAt,EndAt,i : Integer ;
    iROI,SubROI,SelFrameType,NumFrameType,DenFrameType : Integer ;
-   NP,nPoints : Integer ;
+   nPoints : Integer ;
    iFrame : Integer ;
-   iList,iList0,iList1 : Integer ;
+   iList : Integer ;
    yBuf : PBigSingleArray ;        // Y data array
-   Done : Boolean ;
    ExportType : TADCDataFileType ;
    NumROIsExported : Integer ;
    ROIExportList : Array[0..cMaxROIs] of Integer ;
-   NumROIs,MaxROIsPerFile : Integer ;
    y,yThreshold,yDenominator,yNumerator : Single ;
    ROIRange : String ;
-   FileName : String ;
+   FileName,BaseFileName : String ;
    iFile : Integer ;
    AllowWrite : Boolean ;
+   NumFramesExported,NumRecords,NumROIsPerRecord : Integer ;
 begin
 
      bOK.Enabled := False ;
@@ -199,7 +200,7 @@ begin
          MainFrm.IDRFile.OpenFile( meFiles.Lines[iFile]) ;
          if MainFrm.FormExists( 'ViewFrm' ) then ViewFrm.NewFile ;
 
-         FileName := ChangeFileExt(MainFrm.IDRFile.FileName,'.xxx') ;
+         BaseFileName := ChangeFileExt(MainFrm.IDRFile.FileName,'.xxx') ;
 
          if rbAllRecords.Checked then
             begin
@@ -211,6 +212,7 @@ begin
             StartAt := Round(edRange.LoValue) ;
             EndAt := Round(edRange.HiValue) ;
             end ;
+         NumFramesExported := EndAt - StartAt + 1 ;
 
          // Frame range & subtraction ROI
          SubROI := Integer(cbSubROI.Items.Objects[cbSubROI.ItemIndex]) ;
@@ -225,7 +227,7 @@ begin
             // Export all ROIs
             NumROIsExported := 0 ;
             for i := 1 to MainFrm.IDRFile.MaxROI do
-                if (MainFrm.IDRFile.ROI[i].InUse) and (i <> SubROI)then
+                if (MainFrm.IDRFile.ROI[i].InUse) and (i <> SubROI) then
                 begin
                 ROIExportList[NumROIsExported] := i ;
                 Inc(NumROIsExported) ;
@@ -241,84 +243,71 @@ begin
          if rbABF.Checked then
             begin
             ExportType := ftAxonABF ;
-            MaxROIsPerFile := 16 ;
+            NumRecords := NumROIsExported ;
+            NumROIsPerRecord := 1 ;
             end
          else if rbASCII.Checked then
             begin
             ExportType := ftASC ;
-            MaxROIsPerFile := NumROIsExported ;
+            NumRecords := 1 ;
+            NumROIsPerRecord := NumROIsExported ;
             end
          else if rbIBW.Checked then
             begin
             ExportType := ftIBW ;
-            MaxROIsPerFile := 1 ;
+            NumRecords := NumROIsExported ;
+            NumROIsPerRecord := 1 ;
             end
          else if rbCFS.Checked then
             begin
             ExportType := ftCFS ;
-            MaxROIsPerFile := 16 ;
+            NumRecords := NumROIsExported ;
+            NumROIsPerRecord := 1 ;
             end
          else
             begin
-            ExportType := ftEDR ;
-            MaxROIsPerFile := 16 ;
+            ExportType := ftWCP ;
+            NumRecords := NumROIsExported ;
+            NumROIsPerRecord := 1 ;
             end ;
 
-         iList0 := 0 ;
-         while iList0 < NumROIsExported do
+         // Create ROI range file name tag
+         if NumROIsExported> 1 then ROIRange := format('ROI%d-%d',[ROIExportList[0],ROIExportList[NumROIsExported-1]])
+                               else ROIRange := format('ROI%d',[ROIExportList[0]]) ;
+
+         if subROI < MainFrm.IDRFile.MaxROI then
             begin
-            // Range of ROI's to be exported in this file
-            iList1 := Min(iList0 + MaxROIsPerFile-1,NumROIsExported-1) ;
-            NumROIs := iList1 - iList0 + 1 ;
+            ROIRange := ROIRange + format('-ROI%d',[subROI]) ;
+            end ;
 
-            // Create ROI range file name tag
-            if NumROIs > 1 then
-               begin
-               ROIRange := format('ROI%d-%d',[ROIExportList[iList0],ROIExportList[iList1]]) ;
-               end
-            else
-               begin
-               ROIRange := format('ROI%d',[ROIExportList[iList0]]) ;
-               end ;
+         FileName := AddFileNameTag( BaseFileName, ROIRange ) ;
 
-            if subROI < MainFrm.IDRFile.MaxROI then
-               begin
-               ROIRange := ROIRange + format('-ROI%d',[subROI]) ;
-               end ;
+         // Allocate buffers
+         GetMem( yBuf, MainFrm.IDRFile.NumFrames*NumROIsExported*SizeOf(Double)) ;
 
-            FileName := AddFileNameTag( FileName, ROIRange ) ;
-
-
-            // Allocate buffers
-            GetMem( yBuf, MainFrm.IDRFile.NumFrames*NumROIs*SizeOf(Double)) ;
-
-            // Read ROIs into export buffer
-            nPoints := 0 ;
-            for iFrame := StartAt to EndAt do
-                for iList := iList0 to iList1 do
-                begin
-                iROI := ROIExportList[iList] ;
-                if rbExportROI.Checked then
-                   begin
-                   // Export fluorescence signal
-                   y := ViewPlotFrm.ROIIntensity( iROI, iFrame, SelFrameType ) ;
-                   if SubROI <= MainFrm.IDRFile.MaxROI then
-                      y := y - ViewPlotFrm.ROIIntensity( SubROI, iFrame, SelFrameType ) ;
-                   end
-                else
-                   begin
-                   // Export ratio
-                   yNumerator := ViewPlotFrm.ROIIntensity( iROI, iFrame, NumFrameType ) ;
-                   if SubROI <= MainFrm.IDRFile.MaxROI then
-                      yNumerator := yNumerator - ViewPlotFrm.ROIIntensity( SubROI,
-                                                                           iFrame,
-                                                                           NumFrameType ) ;
+         // Read ROIs into export buffer
+         nPoints := 0 ;
+         for iFrame := StartAt to EndAt do
+             for iList := 0 to NumROIsExported-1 do
+                 begin
+                 iROI := ROIExportList[iList] ;
+                 if rbExportROI.Checked then
+                    begin
+                    // Export fluorescence signal
+                    y := ViewPlotFrm.ROIIntensity( iROI, iFrame, SelFrameType ) ;
+                    if SubROI <= MainFrm.IDRFile.MaxROI then
+                       y := y - ViewPlotFrm.ROIIntensity( SubROI, iFrame, SelFrameType ) ;
+                    end
+                 else
+                    begin
+                    // Export ratio
+                    yNumerator := ViewPlotFrm.ROIIntensity( iROI, iFrame, NumFrameType ) ;
+                    if SubROI <= MainFrm.IDRFile.MaxROI then
+                       yNumerator := yNumerator - ViewPlotFrm.ROIIntensity( SubROI,iFrame,NumFrameType ) ;
 
                     yDenominator := ViewPlotFrm.ROIIntensity( iROI, iFrame, DenFrameType ) ;
                     if SubROI <= MainFrm.IDRFile.MaxROI then
-                       yDenominator := yDenominator - ViewPlotFrm.ROIIntensity( SubROI,
-                                                                                iFrame,
-                                                                                DenFrameType ) ;
+                       yDenominator := yDenominator - ViewPlotFrm.ROIIntensity( SubROI,iFrame,DenFrameType ) ;
                     // Numerator and denominator must exceed exclusion threshold
                     if (yNumerator >= yThreshold) and (yDenominator > yThreshold) then
                        begin
@@ -327,34 +316,30 @@ begin
                     else y := 0.0 ;
                     end ;
 
-                yBuf^[nPoints] := y ;
-                Inc(nPoints) ;
-                end ;
+                 yBuf^[nPoints] := y ;
+                 Inc(nPoints) ;
+                 end ;
 
-            // If destination file already exists, allow user to abort
-            AllowWrite := True ;
-            if FileExists( FileName ) then
-               begin
-               if MessageDlg( FileName + ' exists! Overwrite?!',
-                  mtConfirmation, [mbYes, mbNo], 0) <> mrYes then AllowWrite := False ;
-               end ;
-            if AllowWrite then
-               begin
-               if rbMat.Checked then WriteToMatFile( FileName,yBuf, nPoints,NumROIs )
-               else WriteToFile( FileName, ExportType, yBuf, nPoints,NumROIs, ROIExportList[iList0]) ;
-               // Report progress
-               MainFrm.StatusBar.SimpleText := format(
-                                            ' EXPORT: %d points exported to %s ',
-                                            [EndAt-StartAt+1,FileName]) ;
-               LogFrm.AddLine( MainFrm.StatusBar.SimpleText ) ;
-               end;
+         // If destination file already exists, allow user to abort
+         AllowWrite := True ;
+         if FileExists( FileName ) then
+            begin
+           if MessageDlg( FileName + ' exists! Overwrite?!',
+              mtConfirmation, [mbYes, mbNo], 0) <> mrYes then AllowWrite := False ;
+           end ;
+         if AllowWrite then
+            begin
+            if rbMat.Checked then WriteToMatFile( FileName,yBuf, nPoints,NumROIsExported )
+            else WriteToFile( FileName, ExportType, yBuf, NumFramesExported,NumROIsExported, ROIExportList,NumRecords) ;
+            // Report progress
+            MainFrm.StatusBar.SimpleText := format(
+                                           ' EXPORT: %d points exported to %s ',
+                                          [EndAt-StartAt+1,FileName]) ;
+            LogFrm.AddLine( MainFrm.StatusBar.SimpleText ) ;
+            end;
 
-            FreeMem(yBuf) ;
+         FreeMem(yBuf) ;
 
-            // Increment to next set of ROIs
-            iList0 := iList0 + MaxROIsPerFile ;
-
-            end ;
          end ;
 
      bOK.Enabled := True ;
@@ -422,69 +407,84 @@ procedure TExportROITimeCourseFrm.WriteToFile(
           FileName : string ;                     // Export file name
           ExportType : TADCDataFileType ;         // Export type
           yBuf : PBigSingleArray ;                // Data array
-          nPoints : Integer ;                     // No. points in yBuf
-          NumROIs : Integer ;                     // No. ROIs in yBuf
-          iROIStart : Integer                    // Starting ROI
+          NumFramesExported : Integer ;           // No. frames in yBuf
+          NumROIsExported : Integer ;             // No. ROIs in yBuf
+          ROIList : Array of Integer ;            // Starting ROI
+          NumRecords : Integer                   // No. of records in file
           ) ;
 // ------------------------------
 // Write ROI time course to file
 // ------------------------------
 var
    OutBuf : pSmallIntArray ;       // Integer data array
-   i,ch : Integer ;
-   YMax : single ;
+   i,ch,iRec,npExported,iFrom,iFrame : Integer ;
+   YMax,YScale : single ;
 begin
 
     // Create empty export data file
     ExportFile.CreateDataFile( FileName, ExportType ) ;
     // Set file parameters
-    ExportFile.NumChannelsPerScan := NumROIs ;
-    ExportFile.NumScansPerRecord := nPoints ;
+    if NumRecords = 1 then
+       begin
+       // Single record / multichannel file
+       ExportFile.NumChannelsPerScan := NumROIsExported ;
+       end
+     else
+       // single channel / multirecord file
+       begin
+       ExportFile.NumChannelsPerScan := 1 ;
+       end ;
+
     ExportFile.ScanInterval := MainFrm.IDRFile.FrameInterval ;
     ExportFile.IdentLine := MainFrm.IDRFile.Ident ;
+    ExportFile.NumScansPerRecord := NumFramesExported ;
     ExportFile.RecordNum := 1 ;
-    ExportFile.ABFAcquisitionMode := ftGapFree ;
+    ExportFile.ABFAcquisitionMode := ftEpisodic ;
     ExportFile.MaxADCValue := 32767 ;
     ExportFile.MinADCValue := -ExportFile.MaxADCValue ;
 
     // Allocate buffer
-    GetMem( OutBuf, MainFrm.IDRFile.NumFrames*NumROIs*SizeOf(SmallInt)) ;
+    GetMem( OutBuf, NumFramesExported*NumROIsExported*SizeOf(SmallInt)) ;
 
-    // Set upper limit of y data range
-    if rbExportROI.Checked then YMax := MainFrm.IDRFile.GreyMax
-    else
-        begin
-        // Determine upper limit of y range for ratio and Ca time courses
-        YMax := 0.0 ;
-        for i := 0 to nPoints-1 do if YMax < Abs(YBuf^[i]) then YMax := Abs(YBuf^[i]) ;
-        YMax := YMax*1.5 ;
-        end ;
-   // Ensure YMax is non-zero
-   if Ymax <= 0.0 then YMax := 1.0 ;
+    // Determine upper limit of y range for ratio and Ca time courses
+    YMax := 0.0 ;
+    for i := 0 to NumFramesExported*NumROIsExported-1 do if YMax < Abs(YBuf^[i]) then YMax := Abs(YBuf^[i]) ;
+    YMax := YMax*1.5 ;
+    // Ensure YMax is non-zero
+    if Ymax <= 0.0 then YMax := 1.0 ;
 
-   // Set export channel name, scaling and units
-   for i := 0 to NumROIs-1 do
+    // Set export channel name, scaling and units
+    YScale := YMax/ExportFile.MaxADCValue ;
+    for i := 0 to ExportFile.NumChannelsPerScan-1 do
        begin
        ExportFile.ChannelOffset[i] := i ;
        ExportFile.ChannelADCVoltageRange[i] := 1.0 ;
-       ExportFile.ChannelName[i] := format('ROI%d',[iROIStart+i]) ; ;
-       ExportFile.ChannelUnits[i] := 'gsu' ;
+       ExportFile.ChannelName[i] := format('ROI%d',[ROIList[i]]) ;
+       ExportFile.ChannelUnits[i] := '' ;
        ExportFile.ChannelGain[i] := 1.0 ;
-       ExportFile.ChannelScale[i] := YMax/ExportFile.MaxADCValue ;
+       ExportFile.ChannelScale[i] := YScale ;
        ExportFile.ChannelCalibrationFactor[i] := 1.0/(ExportFile.MaxADCValue*ExportFile.ChannelScale[i]) ;
        end ;
 
-   // Scale to integer and copy to output buffer
-   ch := 0 ;
-   for i := 0 to nPoints-1 do
+    for iRec := 1 to NumRecords do
        begin
-       OutBuf^[i] := Round(yBuf^[i]/ExportFile.ChannelScale[ch]) ;
-       Inc(ch) ;
-       if ch >= NumROIs then ch := 0 ;
-       end ;
+       // Scale to integer and copy to output buffer
+       npExported := 0 ;
+       for iFrame := 0 to ExportFile.NumScansPerRecord-1 do
+           begin
+           iFrom := Min(iFrame,NumFramesExported-1)*NumROIsExported + (iRec-1);
+           for ch := 0 to ExportFile.NumChannelsPerScan-1 do
+               begin
+               OutBuf^[npExported] := Round(yBuf^[iFrom]/YScale) ;
+               Inc(iFrom) ;
+               Inc(npExported);
+               end ;
+           end;
+       // Write to export file
+       ExportFile.RecordNum := iRec ;
+       ExportFile.SaveADCBuffer( 0, ExportFile.NumScansPerRecord, OutBuf^ ) ;
+       end;
 
-    // Write to export file
-    ExportFile.SaveADCBuffer( 0, nPoints div NumROIs, OutBuf^ ) ;
     // Close export data file
     ExportFile.CloseDataFile ;
 
@@ -563,17 +563,9 @@ begin
     if rbASCII.Checked then FileName := ChangeFileExt( FileName, '.txt' ) ;
     if rbIBW.Checked then FileName := ChangeFileExt( FileName, '.ibw' ) ;
     if rbCFS.Checked then FileName := ChangeFileExt( FileName, '.cfs' ) ;
-    if rbEDR.Checked then begin
-        FileName := ChangeFileExt( FileName, '.edr' ) ;
-        if LowerCase(FileName) = LowerCase(MainFrm.IDRFile.FileName) then begin
-           FileName := StringReplace( FileName,
-                                            '.edr',
-                                            '[export].edr',
-                                            [rfIgnoreCase] ) ;
-           end ;
-        end ;
-     if rbMAT.Checked then FileName := ChangeFileExt( FileName, '.mat' ) ;  // Added by NS 18 February 2009
-     Result := FileName ;
-     end ;
+    if rbWCP.Checked then FileName := ChangeFileExt( FileName, '.wcp' ) ;
+    if rbMAT.Checked then FileName := ChangeFileExt( FileName, '.mat' ) ;  // Added by NS 18 February 2009
+    Result := FileName ;
+    end ;
 
 end.

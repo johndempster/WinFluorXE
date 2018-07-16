@@ -117,13 +117,13 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       ShowHint = True
       TabOrder = 1
     end
-    object rbEDR: TRadioButton
+    object rbWCP: TRadioButton
       Left = 8
       Top = 46
       Width = 57
       Height = 17
       Hint = 'Export to Strathclyde Electrophysiology Software EDR data file'
-      Caption = 'EDR'
+      Caption = 'WCP'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -11

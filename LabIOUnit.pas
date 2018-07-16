@@ -54,6 +54,8 @@ unit LabIOUnit;
 //                 intermittent 5s delays when .ADCStop called.
 // 04.01.18 JD ... NADAQMXMemoryToDAC now writes D/A values as DOUBLE voltages to avoid calibration errors
 //                 with USB-6002/3
+// 23.04.18 JD ... digital waveform output now supported on 628x devices
+//                 NIDAQmx getadcsamples() A/D samples now read as double precision and converted to 16 bit integer
 
 interface
 
@@ -137,7 +139,7 @@ type
     LibraryLoaded : Boolean ;
     BoardInitialised : Boolean ;
 
-    InBuf : PSmallIntArray ; // A/D input buffer pointer
+//    InBuf : PSmallIntArray ; // A/D input buffer pointer
     DBuf : PBigDoubleArray ; // Double precision working array
 
     // NIDAQ-MX task objects
@@ -148,12 +150,14 @@ type
     ADCVScale : Array[1..MaxDevices] of Single ;
     ADCVOffset : Array[1..MaxDevices] of Single ;
     ADCVoltageRangeAtX1Gain : Array[1..MaxDevices] of Single ;
+
     FADCCircularBuffer : Boolean ;
 
     FADCPointer : Integer ;
     FADCNumChannels : Integer ;
     FADCNumSamples : Integer ;
     FADCNumSamplesAcquired : Integer ;
+    FADCVoltageRange : Array[1..MaxDevices] of Single ;                   // A/D voltage range in use
 
     FPUExceptionMask : Set of TFPUException ;
     FPUExceptionMaskSet : Boolean ;
@@ -594,8 +598,8 @@ begin
 
      BoardsInitialised := InitialiseNIBoards ;
 
-     // Create input buffer
-     GetMem(InBuf,MaxADCSamples*2) ;
+     // Create input/output buffer
+//     GetMem(InBuf,MaxADCSamples*2) ;
      GetMem(DBuf,MaxADCSamples*Sizeof(Double)) ;
 
      Result := BoardsInitialised ;
@@ -944,6 +948,7 @@ function TLabIO.ReadADC(
 // Read A/D inputs
 // ---------------
 begin
+    FADCVoltageRange[Device] := ADCVoltageRange ;
     Result := 0 ;
     case FNIDAQAPI of
         NIDAQMX : Result := NIDAQMX_ReadADC( Device,
@@ -1086,6 +1091,7 @@ begin
        DeviceBoardName[i] := PCharArrayToString(CBuf) ;
        if AnsiContainsText(DeviceBoardName[i],'622') or
           AnsiContainsText(DeviceBoardName[i],'625') or
+          AnsiContainsText(DeviceBoardName[i],'628') or
           AnsiContainsText(DeviceBoardName[i],'632') or
           AnsiContainsText(DeviceBoardName[i],'634') or
           AnsiContainsText(DeviceBoardName[i],'635') or
@@ -1572,6 +1578,7 @@ begin
      // Select A/D input channels
      ChannelList := format( DeviceName[Device] + '/AI0:%d', [nChannels-1] ) ;
 
+     FADCVoltageRange[Device] := ADCVoltageRange ;
      CheckError( DAQmxCreateAIVoltageChan( ADCTask[Device],
                                            PANSIChar(ChannelList),
                                            nil ,
@@ -1697,15 +1704,12 @@ procedure TLabIO.NIDAQMX_GetADCSamples(
 // Get latest A/D samples acquired and transfer to memory buffer
 // -------------------------------------------------------------
 var
-    i : Integer ;
+    i,j,ch : Integer ;
     ADCBufNumSamples : Integer ;
     ADCBufEnd : Integer ;
     NumSamplesRead : Integer ;
-    VScale,VOffset,VUnscale : Single ;
-    ADCMaxVal : Single ;
-    ADCMinVal : Single ;
-    ScaledValue : Single ;
-    //t0 : Integer ;
+    VScale : Single ;
+    ScaledValue,ADCMaxVal,ADCMinVal : SmallInt ;
 
 begin
 
@@ -1716,29 +1720,33 @@ begin
 
     if (not FADCCircularBuffer) and (FADCNumSamplesAcquired >= ADCBufNumSamples) then Exit ;
 
-    //t0 := TimeGetTime ;
-
     // Read data from A/D converter
-    DAQmxReadBinaryI16( ADCTask[Device],
+    DAQmxReadAnalogF64( ADCTask[Device],
                                   -1,
                                   DefaultTimeOut,
                                   DAQmx_Val_GroupByScanNumber,
-                                  InBuf,
+                                  DBuf,
                                   ADCBufNumSamples,
                                   NumSamplesRead,
                                   Nil) ;
 
     // Apply calibration factors and copy to output buffer
 
-    VUnScale := ADCMaxValue[Device]/10.0 ;
-    VScale := ADCVScale[Device] ;
-    VOffset := ADCVOffset[Device] ;
     ADCMaxVal := ADCMaxValue[Device] - 1 ;
     ADCMinVal := ADCMinValue[Device] + 1 ;
-    for i := 0 to NumSamplesRead*FADCNumChannels-1 do begin
-        ScaledValue := (InBuf[i]*VScale + VOffset)*VUnScale ;
-        ADCBuf[FADCPointer] := Round( Max( Min( ScaledValue, ADCMaxVal ), ADCMinVal )) ;
-        Inc(FADCPointer) ;
+    VScale := ADCMaxValue[Device]/FADCVoltageRange[Device] ;
+    j := 0 ;
+    for i := 0 to NumSamplesRead-1 do
+        begin
+        for ch := 0 to FADCNumChannels-1 do
+            begin
+            ScaledValue := Round(DBuf[j]*VScale) ;
+            if ScaledValue < ADCMinVal then ScaledValue := ADCMinVal ;
+            if ScaledValue > ADCMaxVal then ScaledValue := ADCMaxVal ;
+            ADCBuf[FADCPointer] := ScaledValue ;
+            Inc(FADCPointer) ;
+            Inc(j) ;
+            end ;
         FADCNumSamplesAcquired := FADCPointer ;
         if (FADCPointer > ADCBufEnd) and FADCCircularBuffer then FADCPointer := 0 ;
         end ;
@@ -2457,6 +2465,7 @@ begin
      ChannelList := format( DeviceName[Device] + '/AI%d', [Channel] ) ;
 
 
+     FADCVoltageRange[Device] := ADCVoltageRange ;
      CheckError( DAQmxCreateAIVoltageChan( ADCTask[Device],
                                            PANSIChar(ChannelList),
                                            nil ,
@@ -2505,7 +2514,7 @@ begin
 
      BoardsInitialised := False ;
 
-     FreeMem(InBuf) ;
+//     FreeMem(InBuf) ;
      FreeMem(DBuf) ;
 
      if LibraryLoaded then FreeLibrary( LibraryHnd ) ;
@@ -3227,6 +3236,7 @@ begin
                        else CheckError(DAQ_DB_Config(Device, 0)) ;
 
      { Set internal gain for A/D converter's programmable amplifier }
+     FADCVoltageRange[Device] := ADCVoltageRange ;
      Gain := Trunc( (ADCVoltageRangeAtX1Gain[Device] + 0.001) / Max(ADCVoltageRange,1E-6) ) ;
      if Gain < 1 then Gain := -1 ;
 
@@ -3599,6 +3609,7 @@ begin
 
      { Set internal gain for A/D converter's programmable amplifier }
 
+     FADCVoltageRange[Device] := ADCVoltageRange ;
      Gain := Trunc( (ADCVoltageRangeAtX1Gain[Device]/ADCVoltageRange) + 0.001 ) ;
      if Gain < 1 then Gain := -1 ;
 

@@ -248,6 +248,10 @@ unit Main;
 //                    that readout is overlap mode to allow maximum frame rate.
 // 03.04.18 V4.0.1 JD PVCAM: Frame intervals can now be in steps of 0.1 ms (rather than 1ms) and frame transfer time
 //                    now 10% of frame interval for intervals less than 10 ms.
+// 23.04.18 V4.0.2 JD DIgital waveform output now recognised for 628x devices
+// 15.07.18 V4.0.3 JD Export > ROI Time Course: ROIs now exported as multipe records in episodic file format for ABF,WCP and CFS.
+//                    instead of as multiple channels. EDR export no longer supported. Fixes problems exporting more than 16 ROIs
+//                    IBW export now works for 64 bit application with records concatenated in file.
 
 interface
 
@@ -859,7 +863,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.0.1 03-04-18 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.0.3 15-07-18 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
