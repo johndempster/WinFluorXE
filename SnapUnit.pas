@@ -792,6 +792,9 @@ begin
                                       (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
            end ;
 
+        PCOAPI : begin
+           NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
+           end ;
 
 
         else begin

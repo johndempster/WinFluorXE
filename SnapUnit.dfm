@@ -299,10 +299,6 @@ object SnapFrm: TSnapFrm
         object SlidersTab: TTabSheet
           Caption = 'Sliders'
           ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object Label5: TLabel
             Left = 14
             Top = 0

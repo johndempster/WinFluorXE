@@ -1569,6 +1569,17 @@ begin
            FrameBufferMultiple := 2 ;
            end ;
 
+        PCOAPI : begin
+//           NumFramesInBuffer := MainFrm.Cam1.MaxFramesInBuffer ;
+//           FrameBufferMultiple := 2 ;
+
+           NumFramesInBuffer := Round(5.0/edFrameInterval.Value) ;
+           NumFramesInBuffer := Min( NumFramesInBuffer,
+                                     MaxBufferSize div Int64(MainFrm.Cam1.NumBytesPerFrame));
+           NumFramesInBuffer := Max(NumFramesInBuffer,8) ;
+           FrameBufferMultiple := 2 ;
+
+           end ;
 
         else begin
            NumFramesInBuffer := 32 ;
