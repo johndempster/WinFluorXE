@@ -30,10 +30,6 @@ object LineProfileFrm: TLineProfileFrm
     TabOrder = 0
     object LineProfileTab: TTabSheet
       Caption = 'Line Profile'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object plPlot: TXYPlotDisplay
         Left = 152
         Top = 7
@@ -66,10 +62,10 @@ object LineProfileFrm: TLineProfileFrm
         PrinterFontName = 'Arial'
         PrinterLineWidth = 1
         PrinterMarkerSize = 5
-        PrinterLeftMargin = 9
-        PrinterRightMargin = 9
-        PrinterTopMargin = 9
-        PrinterBottomMargin = 9
+        PrinterLeftMargin = 8
+        PrinterRightMargin = 8
+        PrinterTopMargin = 8
+        PrinterBottomMargin = 8
         PrinterDisableColor = False
         MetafileWidth = 500
         MetafileHeight = 400
@@ -232,10 +228,6 @@ object LineProfileFrm: TLineProfileFrm
     object EdgeTrackTab: TTabSheet
       Caption = 'Edge Track'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object plEdgePlot: TXYPlotDisplay
         Left = 146
         Top = 7
@@ -268,10 +260,10 @@ object LineProfileFrm: TLineProfileFrm
         PrinterFontName = 'Arial'
         PrinterLineWidth = 1
         PrinterMarkerSize = 5
-        PrinterLeftMargin = 8
-        PrinterRightMargin = 8
-        PrinterTopMargin = 8
-        PrinterBottomMargin = 8
+        PrinterLeftMargin = 7
+        PrinterRightMargin = 7
+        PrinterTopMargin = 7
+        PrinterBottomMargin = 7
         PrinterDisableColor = False
         MetafileWidth = 500
         MetafileHeight = 400
@@ -303,7 +295,7 @@ object LineProfileFrm: TLineProfileFrm
         end
         object Button1: TButton
           Left = 8
-          Top = 212
+          Top = 236
           Width = 121
           Height = 17
           Caption = 'Set Axes'
@@ -343,8 +335,8 @@ object LineProfileFrm: TLineProfileFrm
           OnClick = bDoEdgePlotClick
         end
         object RangeGrp: TGroupBox
-          Left = 6
-          Top = 70
+          Left = 8
+          Top = 94
           Width = 121
           Height = 83
           Caption = ' Plot Range '
@@ -398,7 +390,7 @@ object LineProfileFrm: TLineProfileFrm
         end
         object GroupBox2: TGroupBox
           Left = 8
-          Top = 152
+          Top = 173
           Width = 121
           Height = 57
           Caption = ' X Axis '
@@ -433,6 +425,21 @@ object LineProfileFrm: TLineProfileFrm
             TabOrder = 1
             TabStop = True
           end
+        end
+        object bCancelTimeCourse: TButton
+          Left = 8
+          Top = 71
+          Width = 122
+          Height = 17
+          Caption = 'Cancel'
+          Font.Charset = DEFAULT_CHARSET
+          Font.Color = clBlack
+          Font.Height = -12
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
+          TabOrder = 5
+          OnClick = bCancelTimeCourseClick
         end
       end
     end

@@ -12,6 +12,7 @@ unit LineProfileUnit;
 // 10.09.09 JD Edge tracking facility added
 //             Pixel intensity now scaled by .IDRFile.IntensityScale & .IDRFile.IntensityOffset
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 26.08.18 .. JD Edge Plotting can now be cancelled.
 
 interface
 
@@ -52,6 +53,7 @@ type
     GroupBox3: TGroupBox;
     edLineWidth: TValidatedEdit;
     Label3: TLabel;
+    bCancelTimeCourse: TButton;
     procedure FormShow(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure cbFrameTypeChange(Sender: TObject);
@@ -63,6 +65,7 @@ type
     procedure edLineWidthKeyPress(Sender: TObject; var Key: Char);
     procedure FormCloseQuery(Sender: TObject; var CanClose: Boolean);
     procedure Button1Click(Sender: TObject);
+    procedure bCancelTimeCourseClick(Sender: TObject);
   private
     { Private declarations }
     PImageSource : PIntArray ;
@@ -726,6 +729,15 @@ begin
      end;
 
 
+procedure TLineProfileFrm.bCancelTimeCourseClick(Sender: TObject);
+// --------------------------------
+// Cancel link time course plotting
+// --------------------------------
+begin
+    bCancelTimeCourse.Enabled := False ;
+    bDoEdgePlot.Enabled := True ;
+    end;
+
 procedure TLineProfileFrm.bDoEdgePlotClick(Sender: TObject);
 // ---------------
 // Start edge plot
@@ -745,6 +757,7 @@ begin
      Viewfrm.FrameNumber := NextFrame ;
 
      bDoEdgePlot.Enabled := False ;
+     bCancelTimeCourse.Enabled := True ;
 
      end;
 
