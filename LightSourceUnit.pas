@@ -45,6 +45,8 @@ unit LightSourceUnit;
 //             ignoring light intensity setting
 // 02.10.17 JD No. of control lines for Optoscan now correctly returned as 3 (rather than 7)
 //             fixing closed shutter problem with Record>Image.
+// 29.08.18 JD Sutter DG4 Incorrect bit patterns now fixed. 4th control line added
+//             50% and 33% intensity now supported.
 
 interface
 
@@ -344,6 +346,7 @@ begin
         Names[0] := 'Line 0' ;
         Names[1] := 'Line 1' ;
         Names[2] := 'Line 2' ;
+        Names[3] := 'Line 3' ;
        end ;
      lsLED : begin
         for i := 0 to High(Names) do Names[i] := format('LED%d',[i]);
@@ -395,7 +398,7 @@ begin
         lsTillWithLasers : Result := 2 ;
         lsLambda10 : Result := 3 ;
         lsLED : Result := 8 ;
-        lsSutterDG4 : Result := 3 ;
+        lsSutterDG4 : Result := 4 ;
         lsCairnTIRF : Result := 2 ;
         else Result := 0 ;
         end ;
@@ -1083,15 +1086,17 @@ procedure TLightSource.SutterDG4FilterNumToVoltage(
 // ---------------------------------------
 // Get Sutter DG4 filter # selection voltages
 // ---------------------------------------
-// -1 = closed
-// 0-3 = Filters 0-3
+// Filter -1 = 0
+// Filter 0-4 -> bit pattern 1-5 -> Filter 1 - Filter 5 (100%)
+// Filter 5-8 -> bit pattern 6-10 -> Filter 1 - Filter 5 (50%)
+// Filter 9-15 -> bit pattern 11-15 -> Filter 1 - Filter 5 (33%)
 var
     iResource,iBit,i : Integer ;
     BitPattern : Word ;
     V : Single ;
 begin
-
-     if FilterNum >= 0 then BitPattern := (FilterNum mod 4) or 4
+     // Create bit pattern
+     if FilterNum >= 0 then BitPattern := (FilterNum + 1) and 7
                        else BitPattern := 0 ;
 
      // Set value

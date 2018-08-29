@@ -253,6 +253,8 @@ unit Main;
 //                    instead of as multiple channels. EDR export no longer supported. Fixes problems exporting more than 16 ROIs
 //                    IBW export now works for 64 bit application with records concatenated in file.
 // 28.08.18 V4.0.4 JD Support for PCO cameras added. Tested and working with PCO Edge 5.5 USB
+// 29.08.18 V4.0.5 JD Bug causing incorrect filters to be selected in Sutter DG4 light source fixed.
+//                    4th control line added and support for 50% and 33$ filter attenuation added
 
 interface
 
@@ -864,7 +866,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.0.4 28-08-18 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.0.5 29-08-18 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
