@@ -6,6 +6,12 @@ If
 MessageBox
 Terminate Install
 End
+Set 64 Bit Mode
+Get System Settings
+If
+MessageBox
+Terminate Install
+End
 Code Folding Region
 Comment
 Code Folding Region
@@ -333,6 +339,12 @@ $
 {2C258FB8-307E-4B84-B6A6-DBE7FC8A79FE}
 {E34AFC4D-F128-4093-AD93-4EC3E87DC378}
 {5177FF3C-C42D-4163-ACD1-BAF4DBE0F1C2}
+{57ED33C9-0E65-4E0C-B606-E9D137AD4ADD}
+{88A99806-E9BB-44D5-B905-86FB47989966}
+{E50C51CD-B615-4CCB-A0FA-0C12BB92620F}
+{EB227746-552A-4FED-95DB-DF20AA02A02E}
+{671A28ED-DE26-4038-84B8-90811B378C07}
+{D37B6326-F48A-4DC1-80DA-E0006EAD59FF}
 {B5A1E7AD-AADB-4226-AC6F-7B385EE07456}
 {46EDB026-8DDE-4059-A787-93616404490F}
 {358A3353-7E8C-4EA4-A784-F6FCF947F5FE}
@@ -1099,6 +1111,11 @@ CHECKSYSTEM
 0
 TRUE
 TRUE
+{88A99806-E9BB-44D5-B905-86FB47989966}
+CHECKSYSTEM
+0
+TRUE
+TRUE
 {D51179F2-5760-4231-A01D-11527830ABF4}
 $TITLE$ Setup
 Your computer needs to be restarted before $TITLE$ Setup can continue.$NEWLINE$$NEWLINE$Please save your work in all running programs and click OK to restart your computer. Setup will resume once your computer restarts.$NEWLINE$$NEWLINE$If you click CANCEL, setup will exit. You will have to run setup again at a later time to install $TITLE$.
@@ -1126,6 +1143,12 @@ NATIVE_ERROR
 {358A3353-7E8C-4EA4-A784-F6FCF947F5FE}
 $TITLE$ Setup Error
 This product requires at least Administrator Privileges.$NEWLINE$$NEWLINE$Setup cannot continue.
+3
+1
+
+{E50C51CD-B615-4CCB-A0FA-0C12BB92620F}
+$TITLE$ Setup Error
+This product requires at least a 64 bit operating system.$NEWLINE$$NEWLINE$Setup cannot continue.
 3
 1
 
@@ -1337,6 +1360,9 @@ ISNT
 {B5A1E7AD-AADB-4226-AC6F-7B385EE07456}
 CHECKSYSTEM
 0
+{57ED33C9-0E65-4E0C-B606-E9D137AD4ADD}
+CHECKSYSTEM
+65
 {59BD6CD6-36D7-488B-90A4-0D6E230EE762}
 C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\ccir.CNF
 FALSE|
@@ -1708,6 +1734,10 @@ TRUE
 FALSE
 FALSE
 TRUE
+{D37B6326-F48A-4DC1-80DA-E0006EAD59FF}
+FALSE
+FALSE
+TRUE
 $
 
 
@@ -1742,6 +1772,12 @@ $
 
 
 
+
+
+
+
+
+
 C
 
 
@@ -2041,6 +2077,12 @@ C
 
 
 $
+
+
+
+
+
+
 
 
 

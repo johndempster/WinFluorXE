@@ -177,6 +177,8 @@ unit RecUnit;
 // 11.05.16 .. JD Additional divide by zero checks added
 // 12.06.17 .. JD CalculatePMTRatio added
 // 26.03.18 .. JD CalculatePMTRatio() Ca Concentration channel no longer set to zero when Ca Concentration display disaabled
+// 08.10.18 .. JD DigBufSize now correctly initialised to NumDACPointsPerFrame*NumFramesPerCycle in UpdateLightSource
+//                Error spotted by Maxim Astashev,
 
 {$DEFINE USECONT}
 
@@ -2468,7 +2470,7 @@ begin
 
                 DeviceDACsInUse[Dev] := True ;
                 NumDACChannels := LabIO.NumDACs[Dev] ;
-                DACBufSize := NumDACPointsPerFrame*NumDACChannels*NumFramesPerCycle ;
+                DACBufSize := NumDACPointsPerCycle*NumDACChannels ;
 
                 j := (iStart + Round(Delay/DACUpdateInterval))*NumDACChannels + iChan ;
 
@@ -2508,6 +2510,7 @@ begin
 
                 PDigBuf := DigBufs[Dev] ;      // Digital O/P buffer
                 DeviceDIGsInUse[Dev] := True ;
+                DigBufSize := NumDACPointsPerCycle ;
 
                 // Create pre-blanking data
                 Bit := LabIO.BitMask(iChan) ;

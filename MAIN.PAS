@@ -255,6 +255,8 @@ unit Main;
 // 28.08.18 V4.0.4 JD Support for PCO cameras added. Tested and working with PCO Edge 5.5 USB
 // 29.08.18 V4.0.5 JD Bug causing incorrect filters to be selected in Sutter DG4 light source fixed.
 //                    4th control line added and support for 50% and 33$ filter attenuation added
+// 08.10.18 V4.0.6 JD RecUnit: DigBufSize now correctly initialised to NumDACPointsPerFrame*NumFramesPerCycle in UpdateLightSource
+//                    Error spotted by Maxim Astashev,
 
 interface
 
@@ -866,7 +868,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.0.5 29-08-18 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.0.6 8-10-18 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
