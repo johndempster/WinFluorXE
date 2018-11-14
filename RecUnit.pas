@@ -1571,6 +1571,12 @@ begin
            FrameBufferMultiple := 2 ;
            end ;
 
+        IDsuEye : begin
+           NumFramesInBuffer := Min( (Round(5.0/edFrameInterval.Value) div 2)*2,
+                                      (MaxBufferSize div (NumPixelsPerFrame*MainFrm.Cam1.NumBytesPerPixel))-1) ;
+           FrameBufferMultiple := 2 ;
+           end ;
+
         PCOAPI : begin
            NumFramesInBuffer := Round(5.0/edFrameInterval.Value) ;
            NumFramesInBuffer := Min( NumFramesInBuffer,

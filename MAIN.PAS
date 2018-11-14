@@ -257,6 +257,7 @@ unit Main;
 //                    4th control line added and support for 50% and 33$ filter attenuation added
 // 08.10.18 V4.0.6 JD RecUnit: DigBufSize now correctly initialised to NumDACPointsPerFrame*NumFramesPerCycle in UpdateLightSource
 //                    Error spotted by Maxim Astashev,
+// 14.11.18 V4.0.7 JD Support for IDS uEYE camera library added
 
 interface
 
@@ -868,7 +869,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.0.6 8-10-18 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.0.7 14-11-18 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
