@@ -47,11 +47,14 @@ unit LightSourceUnit;
 //             fixing closed shutter problem with Record>Image.
 // 29.08.18 JD Sutter DG4 Incorrect bit patterns now fixed. 4th control line added
 //             50% and 33% intensity now supported.
+// 10.06.19 JD Sutter Lambda-421 support added
+//             Sends command to set the Lambda-421 into parallel port control mode
+//             Lambda-10 now has 4 control outputs
 
 interface
 
 uses
-  Windows,SysUtils, Classes, math, dialogs, strutils ;
+  Windows,SysUtils, Classes, math, dialogs, strutils, mmsystem, Forms ;
 
 {$IFDEF WIN64}
 
@@ -157,6 +160,7 @@ const
     lsSutterDG4 = 8 ;
     lsCairnTIRF = 9 ;
     lsTillWithLasers = 10 ;
+    lsSutter421 = 11 ;
     lsMaxVControl = 199 ;
 
     lsMaxLightSources = 8 ;
@@ -181,6 +185,7 @@ type
 //    NumVControlInUse : Integer ;
     VControlInUse : Array[0..lsMaxVControl] of TLSVcontrol ;
     LastOptoscanBandwidth : Single ;
+    Sutter421Initialised : Boolean ;   // TRUE if device initialised
 
     procedure OptoScanWavelengthToVoltage( Wavelength : Single ;
                                            BandWidth : Single
@@ -208,10 +213,20 @@ type
               FilterNum : Integer
               ) ;
 
+    procedure Sutter421FilterNumToVoltage(
+              FilterNum : Integer
+              ) ;
+
     procedure CairnTIRFPositionToVoltage(
               GalvoPosition : Single ) ;
 
     procedure SetDeviceType( Value : Integer ) ;
+
+    procedure Wait( Delay : Single ) ;
+
+    procedure UpdateLightSource ;
+
+    procedure InitialiseSutter421 ;
 
 
   public
@@ -301,6 +316,7 @@ begin
      List.AddObject('Sutter DG4',TObject(lsSutterDG4)) ;
      List.AddObject('Cairn TIRF',TObject(lsCairnTIRF)) ;
      List.AddObject('PTI/Till monochromator + LED/Laser',TObject(lsTillWithLasers)) ;
+     List.AddObject('Sutter Lambda-421',TObject(lsSutter421)) ;
 
      end ;
 
@@ -340,7 +356,10 @@ begin
         Names[1] := 'LED/Laser1' ;
         end ;
      lsLambda10 : begin
-       for i := 0 to High(Names) do Names[i] := format('Line%d:',[i]);
+        Names[0] := 'Filter 0' ;
+        Names[1] := 'Filter 1' ;
+        Names[2] := 'Filter 2' ;
+        Names[3] := 'Filter 3' ;
        end ;
      lsSutterDG4 : begin
         Names[0] := 'Line 0' ;
@@ -354,6 +373,14 @@ begin
      lsCairnTIRF : begin
         Names[0] := 'Galvo 1' ;
         Names[1] := 'Galvo 2' ;
+       end ;
+     lsSutter421 : begin
+        Names[0] := 'Line 0' ;
+        Names[1] := 'Line 1' ;
+        Names[2] := 'Line 2' ;
+        Names[3] := 'Line 3' ;
+        Names[4] := 'Line 4' ;
+        Names[5] := 'Lines 5-7' ;
        end ;
     end;
    if (Num >=0) and (Num <= High(Names)) then Result := Names[Num]
@@ -377,6 +404,7 @@ begin
         lsLED : Result := 0.0 ;
         lsSutterDG4 : Result := 0.001 ;
         lsCairnTIRF : Result := 0.001 ;
+        lsSutter421 : Result := 0.001 ;
         else begin
              Result := 0 ;
              end ;
@@ -396,10 +424,11 @@ begin
         lsOptoscanWithLasers : Result := 7 ;
         lsTill : Result := 1 ;
         lsTillWithLasers : Result := 2 ;
-        lsLambda10 : Result := 3 ;
+        lsLambda10 : Result := 4 ;
         lsLED : Result := 8 ;
         lsSutterDG4 : Result := 4 ;
         lsCairnTIRF : Result := 2 ;
+        lsSutter421 : Result := 6 ;
         else Result := 0 ;
         end ;
     end ;
@@ -436,6 +465,7 @@ begin
         lsLED : Result := 0.0 ;
         lsSutterDG4 : Result := 0.0 ;
         lsCairnTIRF : Result := 0.0 ;
+        lsSutter421 : Result := 0.0 ;
         else begin
              Result := 0 ;
              end ;
@@ -480,6 +510,7 @@ begin
         lsLED : Result := 0.0 ;
         lsSutterDG4 : Result := 0.0 ;
         lsCairnTIRF : Result := 0.0 ;
+        lsSutter421 : Result := 0.0 ;
         else begin
              Result := 0 ;
              end ;
@@ -537,6 +568,7 @@ begin
         lsLambda10 : Result := True ;
         lsLED : Result := false ;
         lsSutterDG4 : Result := False ;
+        lsSutter421 : Result := False ;
         else Result := False ;
         end ;
     end ;
@@ -574,6 +606,7 @@ begin
         lsLED : Result := False ;
         lsSutterDG4 : Result := False ;
         lsCairnTIRF : Result := True ;
+        lsSutter421 : Result := False ;
         else Result := False ;
         end ;
     end ;
@@ -593,6 +626,7 @@ begin
         lsLED : Result := 0.0 ;
         lsSutterDG4 : Result := 0.0 ;
         lsCairnTIRF : Result := 0.0 ;
+        lsSutter421 : Result := 0.0 ;
         else begin
              Result := 0.0 ;
              end ;
@@ -642,6 +676,11 @@ begin
             CairnTIRFPositionToVoltage(  Wavelength ) ;
             end ;
 
+        lsSutter421 : Begin
+            if not Sutter421Initialised then InitialiseSutter421 ;
+            Sutter421FilterNumToVoltage( FilterNum ) ;
+            end ;
+
         end ;
 
     end ;
@@ -681,6 +720,11 @@ begin
 
         lsSutterDG4 : Begin
             SutterDG4FilterNumToVoltage( -1 ) ;{-1 forces off setting}
+            end ;
+
+        lsSutter421 : Begin
+            if not Sutter421Initialised then InitialiseSutter421 ;
+            Sutter421FilterNumToVoltage( -1 ) ;
             end ;
 
         lsCairnTIRF : Begin
@@ -1114,6 +1158,48 @@ begin
      end;
 
 
+procedure TLightSource.Sutter421FilterNumToVoltage(
+          FilterNum : Integer
+          ) ;
+// -------------------------------------------------
+// Get Sutter Lambda 421 filter # selection voltages
+// -------------------------------------------------
+// Filter -1 = 0
+// Filter 0-4 -> bit pattern 1-5 -> Filter 1 - Filter 5 (100%)
+// Filter 5-8 -> bit pattern 6-10 -> Filter 1 - Filter 5 (50%)
+// Filter 9-15 -> bit pattern 11-15 -> Filter 1 - Filter 5 (33%)
+var
+    iResource,iBit,i,Dev : Integer ;
+    BitPattern : Word ;
+    V : Single ;
+begin
+
+
+     // Initialise light source (if required)
+     if not Sutter421Initialised then BitPattern := FilterNum
+     else
+        begin
+       // Create bit pattern
+       if FilterNum >= 0 then BitPattern := (FilterNum + 1) and 7
+                         else BitPattern := 0 ;
+        end;
+
+      // Set value
+      iBit := 1 ;
+      for i := 0 to NumControlLines-1 do begin
+         iResource := MainFrm.IOConfig.LSControlLine[i] ;
+         if MainFRm.IOResourceAvailable(iResource) then begin
+            if (BitPattern and iBit) <> 0 then V := 4.9 else V := 0.0 ;
+            LabIO.Resource[iResource].V := V ;
+            LabIO.Resource[iResource].Delay := 0.0 ;
+            end;
+         iBit := iBit*2 ;
+         end ;
+
+     end;
+
+
+
 procedure TLightSource.CairnTIRFPositionToVoltage(
            GalvoPosition : Single  ) ;            // No. control channels
 // ---------------------------------------------------
@@ -1201,9 +1287,100 @@ begin
           FileName := MainFrm.ProgramDirectory + 'oslibrary.ini' ;
           os_Load_Interface_Defaults( PANSIChar(FileName));
           end;
+        lsSutter421 : Sutter421Initialised := False ;
         end ;
 
    end;
+
+
+procedure TLightSource.Wait( Delay : Single ) ;
+// ----------------------------
+// Wait for specified delay (s)
+// ----------------------------
+var
+  T : Integer ;
+  TExit : Integer ;
+begin
+    T := TimeGetTime ;
+    TExit := T + Round(Delay*1E3) ;
+    while T < TExit do begin
+       T := TimeGetTime ;
+       Application.ProcessMessages ;
+       end ;
+    end ;
+
+
+procedure TLightSource.InitialiseSutter421 ;
+// -----------------------------------------
+// Send initialisatio  command to Sutter 421
+// -----------------------------------------
+begin
+
+    Sutter421FilterNumToVoltage( $2E ) ; // Send command
+    UpdateLightSource ;
+    Wait(0.001) ;
+    Sutter421FilterNumToVoltage( 0 ) ;   // Light off
+    Sutter421Initialised := True ;
+    end;
+
+
+procedure TLightSource.UpdateLightSource ;
+// -------------------------------------
+// Update light source control waveforms
+// -------------------------------------
+var
+     Dev,Chan,iResource,i : Integer ;
+     FilterNums : Array[0..lsMaxVControl-1] of Integer ;
+     Wavelengths : Array[0..lsMaxVControl-1] of Single ;
+     Bandwidths : Array[0..lsMaxVControl-1] of Single ;
+     V : single ;
+     Bit : Word ;
+     BitWord  : Word ;
+     BitMask  : Word ;
+begin
+
+     // Exit if no light source or D/A channels configured
+     if LightSource.DeviceType = lsNone then Exit ;
+
+     // Update DAC channels in use
+     // --------------------------
+     for i := 0 to LightSource.NumControlLines-1 do begin
+         iResource := MainFrm.IOConfig.LSControlLine[i] ;
+         if MainFRm.IOResourceAvailable(iResource) then begin
+            Dev := LabIO.Resource[iResource].Device ;
+            Chan := LabIO.Resource[iResource].StartChannel ;
+            V := LabIO.Resource[iResource].V ;
+           LabIO.DACOutState[Dev][Chan] := V ;
+            // Output to DAC channel (if it is not in use)
+            if not LabIO.DACActive[Dev] then LabIO.WriteDAC( Dev, V, Chan) ;
+            end;
+         end ;
+
+     // Update digital outputs in use
+     // -----------------------------
+     BitWord := 0 ;
+     BitMask := 0 ;
+     Dev := 0 ;
+     for i := 0 to LightSource.NumControlLines-1 do begin
+         iResource := MainFrm.IOConfig.LSControlLine[i] ;
+         if MainFRm.IOResourceAvailable(iResource) then begin
+            Dev := LabIO.Resource[iResource].Device ;
+            Chan := LabIO.Resource[iResource].StartChannel ;
+            Bit := LabIO.BitMask(Chan) ;
+            BitMask := BitMask or Bit ;
+            if LabIO.Resource[iResource].V <> 0.0 then BitWord := BitWord or Bit ;
+            end;
+         end ;
+     BitMask := not BitMask ;
+
+     // Update digital output port state
+     // (If in use, leave update to existing process)
+     if Dev > 0 then begin
+        LabIO.DigOutState[Dev] := (LabIO.DigOutState[Dev] and BitMask) or BitWord ;
+        if not LabIO.DIGActive[Dev] then LabIO.WriteToDigitalOutPutPort( Dev, LabIO.DigOutState[Dev] ) ;
+        end ;
+
+     end ;
 
 
 procedure TLightSource.DataModuleCreate(Sender: TObject);
@@ -1248,6 +1425,8 @@ begin
      LEDMaxVoltage := 5.0 ;
 
      EMFilterChangeTime := 0.1 ;
+
+     Sutter421Initialised := False ;
 
      end;
 

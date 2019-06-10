@@ -259,6 +259,7 @@ unit Main;
 //                    Error spotted by Maxim Astashev,
 // 14.11.18 V4.0.7 JD Support for IDS uEYE camera library added
 // 18.02.19 V4.0.8 JD Now works with Cameralink version of PCO Edge 5.5
+// 10.06.16 V4.0.9 JD Support for Sutter Lambda-421 light source added
 
 interface
 
@@ -870,7 +871,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.0.8 18-02-19 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.0.9 10-06-19 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
