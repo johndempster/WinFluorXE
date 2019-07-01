@@ -44,6 +44,8 @@ unit SetupUnit;
 // 20.11.15 JD Software-upated digital outputs now available for use a light source outputs
 //             (but with timing precision limitations)
 // 12.06.17 JD PMTRatio calculation settings now added
+// 01.07.19 JD Channels names/units only set to capacity calculation values when capacity mode actually selected
+//             to allow users to change channel names etc. in ChannelTable
 
 interface
 
@@ -1454,6 +1456,7 @@ begin
     Amplifier.GetCommandVoltageDivideFactor(2,MainFrm.VCommand[1].DivideFactor) ;
 
     // Capacity calculation
+
     MainFrm.Cap.Enabled := ckCapEnabled.Checked ;
     MainFrm.Cap.Frequency := edCapFrequency.Value ;
     MainFrm.Cap.VRev := edCapVRev.Value ;
@@ -1473,16 +1476,19 @@ begin
     MainFrm.ADCChannel[MainFrm.Cap.CMChan].ADCCalibrationFactor :=
         MainFrm.ADCVoltageRange / MainFrm.Cap.CmDisplayMax ;
 
-    MainFrm.ADCChannel[MainFrm.Cap.CMChan].ADCName := 'Cm' ;
-    MainFrm.ADCChannel[MainFrm.Cap.CMChan].ADCUnits := 'pF' ;
-    MainFrm.ADCChannel[MainFrm.Cap.GmChan].ADCName := 'Gm' ;
-    MainFrm.ADCChannel[MainFrm.Cap.GmChan].ADCUnits := 'nS' ;
-    MainFrm.ADCChannel[MainFrm.Cap.GsChan].ADCName := 'Gs' ;
-    MainFrm.ADCChannel[MainFrm.Cap.GsChan].ADCUnits := 'nS' ;
-    MainFrm.ADCChannel[MainFrm.Cap.GRChan].ADCName := 'GR' ;
-    MainFrm.ADCChannel[MainFrm.Cap.GRChan].ADCUnits := 'nS' ;
-    MainFrm.ADCChannel[MainFrm.Cap.GIChan].ADCName := 'GI' ;
-    MainFrm.ADCChannel[MainFrm.Cap.GIChan].ADCUnits := 'nS' ;
+    if MainFrm.Cap.Enabled then
+       begin
+       MainFrm.ADCChannel[MainFrm.Cap.CMChan].ADCName := 'Cm' ;
+       MainFrm.ADCChannel[MainFrm.Cap.CMChan].ADCUnits := 'pF' ;
+       MainFrm.ADCChannel[MainFrm.Cap.GmChan].ADCName := 'Gm' ;
+       MainFrm.ADCChannel[MainFrm.Cap.GmChan].ADCUnits := 'nS' ;
+       MainFrm.ADCChannel[MainFrm.Cap.GsChan].ADCName := 'Gs' ;
+       MainFrm.ADCChannel[MainFrm.Cap.GsChan].ADCUnits := 'nS' ;
+       MainFrm.ADCChannel[MainFrm.Cap.GRChan].ADCName := 'GR' ;
+       MainFrm.ADCChannel[MainFrm.Cap.GRChan].ADCUnits := 'nS' ;
+       MainFrm.ADCChannel[MainFrm.Cap.GIChan].ADCName := 'GI' ;
+       MainFrm.ADCChannel[MainFrm.Cap.GIChan].ADCUnits := 'nS' ;
+       end;
 
     // PMT ratio on-line analogue calculation
 
