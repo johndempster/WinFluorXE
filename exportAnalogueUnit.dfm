@@ -257,7 +257,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
   end
   object bCancel: TButton
     Left = 64
-    Top = 218
+    Top = 220
     Width = 50
     Height = 17
     Caption = 'Cancel'
@@ -279,8 +279,8 @@ object ExportAnalogueFrm: TExportAnalogueFrm
     Caption = ' File to be Exported '
     TabOrder = 5
     object bSelectFilesToExport: TButton
-      Left = 8
-      Top = 76
+      Left = 9
+      Top = 78
       Width = 137
       Height = 17
       Caption = 'Select Files to Export'
@@ -291,6 +291,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 0
+      OnClick = bSelectFilesToExportClick
     end
     object meFiles: TMemo
       Left = 8
@@ -306,7 +307,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
     end
     object bClearList: TButton
       Left = 152
-      Top = 76
+      Top = 78
       Width = 81
       Height = 17
       Caption = 'Clear List'
@@ -345,6 +346,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
     ASCIITimeUnits = 's'
     ASCIITitleLines = 2
     ASCIIFixedRecordSize = False
+    ASCIISaveRecordsinColumns = False
     Left = 128
     Top = 208
   end

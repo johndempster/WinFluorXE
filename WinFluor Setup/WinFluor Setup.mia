@@ -6,12 +6,6 @@ If
 MessageBox
 Terminate Install
 End
-Set 64 Bit Mode
-Get System Settings
-If
-MessageBox
-Terminate Install
-End
 Code Folding Region
 Comment
 Code Folding Region
@@ -339,12 +333,6 @@ $
 {2C258FB8-307E-4B84-B6A6-DBE7FC8A79FE}
 {E34AFC4D-F128-4093-AD93-4EC3E87DC378}
 {5177FF3C-C42D-4163-ACD1-BAF4DBE0F1C2}
-{8680FE9C-B8F3-461C-9D76-1D879F9D0C2A}
-{877A5CE8-A36C-4FE6-A6AC-DCD36DB8CD0F}
-{91F065C5-0601-4BC1-BBB7-B8D064C5ACBC}
-{9FF7003A-4E1B-4352-BA46-8FC9E21E82F2}
-{89882C35-DE4F-435D-B1B1-F014D823DC0C}
-{D7A17333-C018-487C-B065-9F762982AD31}
 {B5A1E7AD-AADB-4226-AC6F-7B385EE07456}
 {46EDB026-8DDE-4059-A787-93616404490F}
 {358A3353-7E8C-4EA4-A784-F6FCF947F5FE}
@@ -1111,11 +1099,6 @@ CHECKSYSTEM
 0
 TRUE
 TRUE
-{877A5CE8-A36C-4FE6-A6AC-DCD36DB8CD0F}
-CHECKSYSTEM
-0
-TRUE
-TRUE
 {D51179F2-5760-4231-A01D-11527830ABF4}
 $TITLE$ Setup
 Your computer needs to be restarted before $TITLE$ Setup can continue.$NEWLINE$$NEWLINE$Please save your work in all running programs and click OK to restart your computer. Setup will resume once your computer restarts.$NEWLINE$$NEWLINE$If you click CANCEL, setup will exit. You will have to run setup again at a later time to install $TITLE$.
@@ -1143,12 +1126,6 @@ NATIVE_ERROR
 {358A3353-7E8C-4EA4-A784-F6FCF947F5FE}
 $TITLE$ Setup Error
 This product requires at least Administrator Privileges.$NEWLINE$$NEWLINE$Setup cannot continue.
-3
-1
-
-{91F065C5-0601-4BC1-BBB7-B8D064C5ACBC}
-$TITLE$ Setup Error
-This product requires at least a 64 bit operating system.$NEWLINE$$NEWLINE$Setup cannot continue.
 3
 1
 
@@ -1360,9 +1337,6 @@ ISNT
 {B5A1E7AD-AADB-4226-AC6F-7B385EE07456}
 CHECKSYSTEM
 0
-{8680FE9C-B8F3-461C-9D76-1D879F9D0C2A}
-CHECKSYSTEM
-65
 {59BD6CD6-36D7-488B-90A4-0D6E230EE762}
 C:\Users\John\Documents\Embarcadero\Studio\Projects\WinFluorXE\ccir.CNF
 FALSE|
@@ -1734,17 +1708,7 @@ TRUE
 FALSE
 FALSE
 TRUE
-{D7A17333-C018-487C-B065-9F762982AD31}
-FALSE
-FALSE
-TRUE
 $
-
-
-
-
-
-
 
 
 
@@ -2077,12 +2041,6 @@ C
 
 
 $
-
-
-
-
-
-
 
 
 

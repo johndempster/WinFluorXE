@@ -262,6 +262,7 @@ unit Main;
 // 10.06.16 V4.0.9 JD Support for Sutter Lambda-421 light source added
 // 01.07.19 V4.1.0 JD Users can now change channel name/units/scales in Camera/System Setup Channel Table
 //                    for channels not selected for use with Amplifier #1 or #2 (change to setupUnit.pas)
+// 12.11.19 V4.1.1 JD ExportAnalogueUnit.pas SelectFilesToExport and ClearFiles buttons now work.
 
 interface
 
@@ -873,7 +874,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.0 01-07-19 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.1 12-11-19 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
