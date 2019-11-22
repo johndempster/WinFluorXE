@@ -1,10 +1,10 @@
 object ExportImagesFrm: TExportImagesFrm
   Tag = 13
   Left = 271
-  Top = 177
+  Top = 260
   BorderStyle = bsDialog
   Caption = 'Export Images'
-  ClientHeight = 305
+  ClientHeight = 331
   ClientWidth = 547
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -13,12 +13,13 @@ object ExportImagesFrm: TExportImagesFrm
   Font.Name = 'Arial'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesigned
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 14
   object GroupBox2: TGroupBox
     Left = 8
-    Top = 120
+    Top = 130
     Width = 117
     Height = 121
     Caption = ' Frames '
@@ -117,7 +118,7 @@ object ExportImagesFrm: TExportImagesFrm
   end
   object FrameTypeGrp: TGroupBox
     Left = 246
-    Top = 120
+    Top = 130
     Width = 164
     Height = 180
     Caption = ' Wavelengths  '
@@ -225,7 +226,7 @@ object ExportImagesFrm: TExportImagesFrm
   end
   object GroupBox3: TGroupBox
     Left = 416
-    Top = 120
+    Top = 130
     Width = 121
     Height = 180
     Caption = ' Format '
@@ -262,7 +263,7 @@ object ExportImagesFrm: TExportImagesFrm
   end
   object bOK: TButton
     Left = 8
-    Top = 246
+    Top = 260
     Width = 49
     Height = 25
     Caption = 'OK'
@@ -278,7 +279,7 @@ object ExportImagesFrm: TExportImagesFrm
   end
   object bCancel: TButton
     Left = 66
-    Top = 246
+    Top = 260
     Width = 49
     Height = 17
     Caption = 'Cancel'
@@ -294,7 +295,7 @@ object ExportImagesFrm: TExportImagesFrm
   end
   object GroupBox4: TGroupBox
     Left = 130
-    Top = 120
+    Top = 130
     Width = 113
     Height = 180
     Caption = ' Image '
@@ -366,14 +367,22 @@ object ExportImagesFrm: TExportImagesFrm
     Left = 8
     Top = 4
     Width = 529
-    Height = 110
+    Height = 120
     Caption = ' File to be Exported '
     TabOrder = 6
+    object lbExportDirectory: TLabel
+      Left = 229
+      Top = 98
+      Width = 276
+      Height = 14
+      Caption = 'xxxxx'
+    end
     object bSelectFilesToExport: TButton
-      Left = 9
-      Top = 76
+      Left = 10
+      Top = 78
       Width = 137
       Height = 17
+      Hint = 'Add files to export list'
       Caption = 'Select Files to Export'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
@@ -381,6 +390,8 @@ object ExportImagesFrm: TExportImagesFrm
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 0
       OnClick = bSelectFilesToExportClick
     end
@@ -397,10 +408,11 @@ object ExportImagesFrm: TExportImagesFrm
       WordWrap = False
     end
     object bClearList: TButton
-      Left = 152
-      Top = 76
-      Width = 81
+      Left = 153
+      Top = 78
+      Width = 70
       Height = 17
+      Hint = 'Clear files from export list'
       Caption = 'Clear List'
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
@@ -408,8 +420,28 @@ object ExportImagesFrm: TExportImagesFrm
       Font.Name = 'Arial'
       Font.Style = [fsBold]
       ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 2
       OnClick = bClearListClick
+    end
+    object bSelectDestination: TButton
+      Left = 229
+      Top = 78
+      Width = 125
+      Height = 17
+      Hint = 'Select folder to hold exported files'
+      Caption = 'Select Export Folder'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      OnClick = bSelectDestinationClick
     end
   end
   object ImageFile: TImageFile
@@ -421,6 +453,7 @@ object ExportImagesFrm: TExportImagesFrm
     Top = 270
   end
   object SaveDialog: TSaveDialog
+    Options = [ofHideReadOnly, ofCreatePrompt, ofEnableSizing]
     Left = 202
     Top = 270
   end

@@ -18,7 +18,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
   TextHeight = 14
   object GroupBox8: TGroupBox
     Left = 8
-    Top = 124
+    Top = 130
     Width = 129
     Height = 90
     Caption = ' Range '
@@ -74,7 +74,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
   end
   object ChannelsGrp: TGroupBox
     Left = 144
-    Top = 124
+    Top = 130
     Width = 225
     Height = 101
     Caption = ' Channels '
@@ -161,7 +161,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
   end
   object GroupBox2: TGroupBox
     Left = 376
-    Top = 124
+    Top = 130
     Width = 97
     Height = 101
     Caption = ' Format '
@@ -241,7 +241,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
   end
   object bOK: TButton
     Left = 8
-    Top = 220
+    Top = 224
     Width = 50
     Height = 20
     Caption = 'OK'
@@ -257,7 +257,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
   end
   object bCancel: TButton
     Left = 64
-    Top = 220
+    Top = 224
     Width = 50
     Height = 17
     Caption = 'Cancel'
@@ -275,9 +275,16 @@ object ExportAnalogueFrm: TExportAnalogueFrm
     Left = 8
     Top = 8
     Width = 529
-    Height = 110
+    Height = 120
     Caption = ' File to be Exported '
     TabOrder = 5
+    object lbExportDirectory: TLabel
+      Left = 229
+      Top = 98
+      Width = 30
+      Height = 14
+      Caption = 'xxxxx'
+    end
     object bSelectFilesToExport: TButton
       Left = 9
       Top = 78
@@ -308,7 +315,7 @@ object ExportAnalogueFrm: TExportAnalogueFrm
     object bClearList: TButton
       Left = 152
       Top = 78
-      Width = 81
+      Width = 70
       Height = 17
       Caption = 'Clear List'
       Font.Charset = ANSI_CHARSET
@@ -318,6 +325,24 @@ object ExportAnalogueFrm: TExportAnalogueFrm
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 2
+    end
+    object bSelectDestination: TButton
+      Left = 229
+      Top = 78
+      Width = 125
+      Height = 17
+      Hint = 'Select folder to hold exported files'
+      Caption = 'Select Export Folder'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      OnClick = bSelectDestinationClick
     end
   end
   object SaveDialog: TSaveDialog

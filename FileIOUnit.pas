@@ -72,6 +72,7 @@ unit FileIOUnit;
 // 04.07.17 ......... 'CAMSPNR=', MainFrm.Cam1.SpotNoiseReduction added
 // 31.07.17 ......... 'CAMSPNR=', MainFrm.Cam1.SpotNoiseReduction added
 // 18.01.18 ......... CAMLIGHTSPEEDMODE= MainFr.Cam1.LIGHTSPEEDMODE added
+// 20.11.19 ......... 'EXPDIR=', MainFrm.ExportDirectory added
 
 interface
 
@@ -395,6 +396,8 @@ begin
      AppendString( Header, 'DDIR=', MainFrm.DataDirectory ) ;
 
      AppendString( Header, 'VPDIR=', MainFrm.VProtDirectory ) ;
+
+     AppendString( Header, 'EXPDIR=', MainFrm.ExportDirectory ) ;
 
      // Printer page settings
      AppendInt( Header, 'PRTM=', MainFrm.PrinterTopMargin )  ;
@@ -945,6 +948,8 @@ begin
      if not DirectoryExists(MainFrm.VProtDirectory) then begin
         MainFrm.VProtDirectory := MainFrm.DefVProtDirectory ;
         end ;
+
+     ReadString( Header, 'EXPDIR=', MainFrm.ExportDirectory ) ;
 
      for i := 0 to High(MainFrm.RecentFiles) do
          ReadString(Header,format('FILE%d=',[i]),MainFrm.RecentFiles[i]) ;

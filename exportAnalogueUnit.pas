@@ -19,6 +19,7 @@ unit exportAnalogueUnit;
               ViewFrm.NewFile now updated (if form exists) to ensure
               that time buffers are updated when files changed to
               avoid access violations.
+  20.11.19 ... Export folder can now be selected by user
   }
 interface
 
@@ -56,12 +57,15 @@ type
     meFiles: TMemo;
     bClearList: TButton;
     OpenDialog: TOpenDialog;
+    bSelectDestination: TButton;
+    lbExportDirectory: TLabel;
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
     procedure bCancelClick(Sender: TObject);
     procedure ckCh0Click(Sender: TObject);
     procedure rbIBWClick(Sender: TObject);
     procedure bSelectFilesToExportClick(Sender: TObject);
+    procedure bSelectDestinationClick(Sender: TObject);
   private
     { Private declarations }
     ExportFileName : string ;
@@ -78,7 +82,7 @@ var
 
 implementation
 
-uses Main , LogUnit, strutils, ViewUnit ;
+uses Main , LogUnit, strutils, ViewUnit, FileCtrl ;
 
 {$R *.DFM}
 
@@ -115,6 +119,8 @@ begin
      meFiles.Clear ;
      meFiles.Lines.Add(MainFrm.IDRFile.FileName) ;
 
+     lbExportDirectory.Caption := MainFrm.ExportDirectory ;
+
      end;
 
 
@@ -142,6 +148,25 @@ procedure TExportAnalogueFrm.bOKClick(Sender: TObject);
 begin
     ExportToFile ;
     end;
+
+
+procedure TExportAnalogueFrm.bSelectDestinationClick(Sender: TObject);
+// ---------------------
+// Select export folder
+// ---------------------
+var
+    ChosenDir : string ;
+    Options : TSelectDirOpts ;
+begin
+
+     ChosenDir := MainFrm.ExportDirectory ;
+     if FileCtrl.SelectDirectory( ChosenDir, Options, 0 ) then
+        begin
+        MainFrm.ExportDirectory := ChosenDir ;
+        lbExportDirectory.Caption := MainFrm.ExportDirectory ;
+        end;
+
+     end;
 
 
 procedure TExportAnalogueFrm.bSelectFilesToExportClick(Sender: TObject);
@@ -438,7 +463,11 @@ begin
         end ;
      if rbMAT.Checked then ExportFileName := ChangeFileExt( ExportFileName, '.mat' ) ;  // Added by NS 18 February 2009
 
+     // Substitute export folder
+     ExportFileName := MainFrm.ExportDirectory + '\' + ExtractFileName(ExportFileName) ;
+
      Result := ExportFileName ;
+
      end ;
 
 

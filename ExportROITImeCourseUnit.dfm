@@ -1,7 +1,7 @@
 object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   Tag = 14
   Left = 681
-  Top = 158
+  Top = 229
   BorderStyle = bsDialog
   Caption = 'Export ROI Time Course'
   ClientHeight = 297
@@ -13,12 +13,13 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
+  Position = poDesigned
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
   object GroupBox8: TGroupBox
     Left = 8
-    Top = 124
+    Top = 130
     Width = 129
     Height = 90
     Caption = ' Frames '
@@ -76,7 +77,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   end
   object GroupBox2: TGroupBox
     Left = 392
-    Top = 124
+    Top = 130
     Width = 97
     Height = 149
     Caption = '  Format '
@@ -182,7 +183,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   end
   object bOK: TButton
     Left = 8
-    Top = 220
+    Top = 229
     Width = 50
     Height = 20
     Caption = 'OK'
@@ -198,7 +199,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   end
   object bCancel: TButton
     Left = 64
-    Top = 218
+    Top = 229
     Width = 50
     Height = 17
     Caption = 'Cancel'
@@ -213,7 +214,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   end
   object FluorGrp: TGroupBox
     Left = 144
-    Top = 124
+    Top = 130
     Width = 113
     Height = 149
     Caption = ' ROI '
@@ -301,7 +302,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   end
   object RatioGrp: TGroupBox
     Left = 264
-    Top = 123
+    Top = 130
     Width = 121
     Height = 150
     Caption = ' Wavelength'
@@ -412,9 +413,16 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     Left = 8
     Top = 7
     Width = 529
-    Height = 110
+    Height = 120
     Caption = ' File to be Exported '
     TabOrder = 6
+    object lbExportDirectory: TLabel
+      Left = 229
+      Top = 98
+      Width = 25
+      Height = 13
+      Caption = 'xxxxx'
+    end
     object bSelectFilesToExport: TButton
       Left = 8
       Top = 76
@@ -445,7 +453,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     object bClearList: TButton
       Left = 152
       Top = 76
-      Width = 81
+      Width = 70
       Height = 17
       Caption = 'Clear List'
       Font.Charset = ANSI_CHARSET
@@ -456,6 +464,24 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       ParentFont = False
       TabOrder = 2
       OnClick = bClearListClick
+    end
+    object bSelectDestination: TButton
+      Left = 229
+      Top = 76
+      Width = 125
+      Height = 17
+      Hint = 'Select folder to hold exported files'
+      Caption = 'Select Export Folder'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      OnClick = bSelectDestinationClick
     end
   end
   object ExportFile: TADCDataFile
@@ -480,6 +506,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     ASCIITimeUnits = 's'
     ASCIITitleLines = 2
     ASCIIFixedRecordSize = False
+    ASCIISaveRecordsinColumns = False
     Left = 16
     Top = 240
   end

@@ -263,6 +263,7 @@ unit Main;
 // 01.07.19 V4.1.0 JD Users can now change channel name/units/scales in Camera/System Setup Channel Table
 //                    for channels not selected for use with Amplifier #1 or #2 (change to setupUnit.pas)
 // 12.11.19 V4.1.1 JD ExportAnalogueUnit.pas SelectFilesToExport and ClearFiles buttons now work.
+// 22.11.19 V4.1.2 JD File export folder can now be changed by user.
 
 interface
 
@@ -687,6 +688,7 @@ type
     DataDirectory : string ;         // Current data directory
     DefaultDataDirectory : string ;  // Default data directory
     SettingsDirectory : string ;     // Settings directory
+    ExportDirectory : string ;       // Destination directory for export files
     SettingsFileName : string ;      // Full path to winfluor.ini settings file
 
     // Current A/D channel settings
@@ -874,7 +876,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.1 12-11-19 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.2 22-11-19 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
@@ -2047,6 +2049,8 @@ begin
          if not SysUtils.ForceDirectories(PProtDirectory) then
             ShowMessage( 'Unable to create protocols folder' + PProtDirectory) ;
          end ;
+
+     ExportDirectory := DataDirectory ;
 
      // Initialise form positions
      for i := 0 to High(FormPos) do begin

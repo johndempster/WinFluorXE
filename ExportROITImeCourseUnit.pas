@@ -13,6 +13,7 @@ unit ExportROITImeCourseUnit;
 //              avoid access violations.
 // 07.11.17 Computed range of ratio and Ca time courses now prevented from being zero.
 // 09.07.18 ROIs now exported in episodic file format for ABF,WCP and CFS. EDR no longer supported
+// 20.11.19 ... Export folder can now be selected by user
 
 interface
 
@@ -59,10 +60,13 @@ type
     meFiles: TMemo;
     OpenDialog: TOpenDialog;
     bClearList: TButton;
+    bSelectDestination: TButton;
+    lbExportDirectory: TLabel;
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
     procedure bSelectFilesToExportClick(Sender: TObject);
     procedure bClearListClick(Sender: TObject);
+    procedure bSelectDestinationClick(Sender: TObject);
 
   private
     { Private declarations }
@@ -96,7 +100,7 @@ var
 
 implementation
 
-uses Main, LogUnit , ViewPlotUnit, strutils, idrfile, ViewUnit ;
+uses Main, LogUnit , ViewPlotUnit, strutils, idrfile, ViewUnit, FileCtrl ;
 
 {$R *.dfm}
 
@@ -145,6 +149,8 @@ begin
      // Add currently open file to export list
      meFiles.Clear ;
      meFiles.Lines.Add(MainFrm.IDRFile.FileName) ;
+
+     lbExportDirectory.Caption := MainFrm.ExportDirectory ;
 
      end;
 
@@ -281,6 +287,8 @@ begin
             end ;
 
          FileName := AddFileNameTag( BaseFileName, ROIRange ) ;
+         // Substitute export folder
+         FileName := MainFrm.ExportDirectory + '\' + ExtractFileName(FileName) ;
 
          // Allocate buffers
          GetMem( yBuf, MainFrm.IDRFile.NumFrames*NumROIsExported*SizeOf(Double)) ;
@@ -492,6 +500,24 @@ begin
 
     end;
 
+
+procedure TExportROITimeCourseFrm.bSelectDestinationClick(Sender: TObject);
+// ---------------------
+// Select export folder
+// ---------------------
+var
+    ChosenDir : string ;
+    Options : TSelectDirOpts ;
+begin
+
+     ChosenDir := MainFrm.ExportDirectory ;
+     if FileCtrl.SelectDirectory( ChosenDir, Options, 0 ) then
+        begin
+        MainFrm.ExportDirectory := ChosenDir ;
+        lbExportDirectory.Caption := MainFrm.ExportDirectory ;
+        end;
+
+     end;
 
 procedure TExportROITimeCourseFrm.bSelectFilesToExportClick(Sender: TObject);
 // ----------------------------

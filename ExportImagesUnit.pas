@@ -26,6 +26,7 @@ unit ExportImagesUnit;
 //              ViewFrm.NewFile now updated (if form exists) to ensure
 //              that time buffers are updated when files changed to
 //              avoid access violations.
+// 20.11.19 ... Export folder can now be selected by user
 
 interface
 
@@ -68,12 +69,15 @@ type
     meFiles: TMemo;
     ckMatchingFrameCount: TCheckBox;
     bClearList: TButton;
+    bSelectDestination: TButton;
+    lbExportDirectory: TLabel;
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
     procedure bCancelClick(Sender: TObject);
     procedure edRangeKeyPress(Sender: TObject; var Key: Char);
     procedure bSelectFilesToExportClick(Sender: TObject);
     procedure bClearListClick(Sender: TObject);
+    procedure bSelectDestinationClick(Sender: TObject);
   private
     { Private declarations }
     FileOnDisplay : string ;
@@ -90,7 +94,7 @@ var
 
 implementation
 
-uses Main, LogUnit, ViewUnit ;
+uses Main, LogUnit, ViewUnit, FileCtrl ;
 
 {$R *.dfm}
 
@@ -132,6 +136,8 @@ begin
      // Add currently open file to export list
      meFiles.Clear ;
      meFiles.Lines.Add(MainFrm.IDRFile.FileName) ;
+
+     lbExportDirectory.Caption := MainFrm.ExportDirectory ;
 
      end;
 
@@ -313,6 +319,9 @@ begin
                        Inc(iRep) ;
                        end;
 
+                  // Substitute export folder
+                  FileName := MainFrm.ExportDirectory + '\' + ExtractFileName(FileName) ;
+
                   // Create file
                   if not ImageFile.CreateFile( FileName,
                                                FrameWidth,
@@ -433,6 +442,25 @@ procedure TExportImagesFrm.bOKClick(Sender: TObject);
 // --------------------
 begin
      ExportFile ;
+     end;
+
+
+procedure TExportImagesFrm.bSelectDestinationClick(Sender: TObject);
+// ---------------------
+// Select export folder
+// ---------------------
+var
+    ChosenDir : string ;
+    Options : TSelectDirOpts ;
+begin
+
+     ChosenDir := MainFrm.ExportDirectory ;
+     if FileCtrl.SelectDirectory( ChosenDir, Options, 0 ) then
+        begin
+        MainFrm.ExportDirectory := ChosenDir ;
+        lbExportDirectory.Caption := MainFrm.ExportDirectory ;
+        end;
+
      end;
 
 
