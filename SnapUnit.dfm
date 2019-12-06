@@ -80,6 +80,7 @@ object SnapFrm: TSnapFrm
         Hint = 'Time interval between frames'
         OnKeyPress = edFrameIntervalKeyPress
         AutoSize = False
+        ShowHint = True
         Text = ' 0 ms'
         Scale = 1000.000000000000000000
         Units = 'ms'
@@ -92,8 +93,10 @@ object SnapFrm: TSnapFrm
         Top = 140
         Width = 89
         Height = 22
-        Hint = 'Selected single excitation wavelength'
+        Hint = 'Select camera gain'
         Style = csDropDownList
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 1
         OnChange = cbCameraGainChange
       end
@@ -126,6 +129,8 @@ object SnapFrm: TSnapFrm
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
           OnClick = bFullFrameClick
         end
@@ -142,6 +147,8 @@ object SnapFrm: TSnapFrm
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 1
           OnClick = bSelectedRegionClick
         end
@@ -173,6 +180,8 @@ object SnapFrm: TSnapFrm
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 3
           OnClick = bEnterCCDAreaClick
         end
@@ -197,8 +206,6 @@ object SnapFrm: TSnapFrm
         Height = 22
         Hint = 'Display colour palette'
         Style = csDropDownList
-        ParentShowHint = False
-        ShowHint = True
         TabOrder = 0
         OnChange = cbPaletteChange
       end
@@ -225,6 +232,8 @@ object SnapFrm: TSnapFrm
             Font.Name = 'Arial'
             Font.Style = [fsBold]
             ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 0
             OnClick = bFullScaleClick
           end
@@ -241,6 +250,8 @@ object SnapFrm: TSnapFrm
             Font.Name = 'Arial'
             Font.Style = [fsBold]
             ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 1
             OnClick = bMaxContrastClick
           end
@@ -285,6 +296,7 @@ object SnapFrm: TSnapFrm
             Top = 46
             Width = 119
             Height = 17
+            Hint = 'Automatically adjust display contrast'
             Caption = 'Auto adjust'
             Font.Charset = ANSI_CHARSET
             Font.Color = clWindowText
@@ -292,6 +304,8 @@ object SnapFrm: TSnapFrm
             Font.Name = 'Arial'
             Font.Style = [fsBold]
             ParentFont = False
+            ParentShowHint = False
+            ShowHint = True
             TabOrder = 4
             OnClick = ckAutoOptimiseClick
           end
@@ -299,10 +313,6 @@ object SnapFrm: TSnapFrm
         object SlidersTab: TTabSheet
           Caption = 'Sliders'
           ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object Label5: TLabel
             Left = 14
             Top = 0
@@ -443,6 +453,8 @@ object SnapFrm: TSnapFrm
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
           OnClick = rbEXCShutterOpenClick
         end
@@ -460,6 +472,8 @@ object SnapFrm: TSnapFrm
           Font.Name = 'Arial'
           Font.Style = [fsBold]
           ParentFont = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 1
           TabStop = True
           OnClick = rbEXCShutterClosedClick
@@ -471,6 +485,8 @@ object SnapFrm: TSnapFrm
         Width = 145
         Height = 22
         Hint = 'Selected single excitation wavelength'
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 1
         Text = 'cbWavelength'
         OnChange = cbWavelengthChange
@@ -505,13 +521,8 @@ object SnapFrm: TSnapFrm
         Top = 16
         Width = 145
         Height = 17
+        Hint = 'Save image to file'
         Caption = 'Save Image'
-        Font.Charset = ANSI_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -12
-        Font.Name = 'Arial'
-        Font.Style = [fsBold]
-        ParentFont = False
         TabOrder = 0
         OnClick = bSnapImageClick
       end
@@ -627,7 +638,9 @@ object SnapFrm: TSnapFrm
           Top = 0
           Width = 38
           Height = 20
+          Hint = 'Shading correction averaging block size (nxn pixels)'
           AutoSize = False
+          ShowHint = True
           Text = ' 10 '
           Value = 10.000000000000000000
           Scale = 1.000000000000000000
@@ -640,7 +653,9 @@ object SnapFrm: TSnapFrm
           Top = 24
           Width = 38
           Height = 20
+          Hint = 'No. of images averaged for shading correction'
           AutoSize = False
+          ShowHint = True
           Text = ' 1 '
           Value = 1.000000000000000000
           Scale = 1.000000000000000000
@@ -653,6 +668,7 @@ object SnapFrm: TSnapFrm
           Top = 48
           Width = 55
           Height = 22
+          Hint = 'Shading correction normalisation method'
           TabOrder = 2
           Text = 'cbShadeCorNormalisation'
         end
@@ -684,8 +700,11 @@ object SnapFrm: TSnapFrm
         Top = 16
         Width = 81
         Height = 14
+        Hint = 'Adjust Z axis position'
         LargeChange = 10
         PageSize = 0
+        ParentShowHint = False
+        ShowHint = True
         TabOrder = 1
         OnChange = sbZPositionChange
       end
@@ -783,6 +802,8 @@ object SnapFrm: TSnapFrm
       Height = 22
       Hint = 'Display magnification'
       Style = csDropDownList
+      ParentShowHint = False
+      ShowHint = True
       TabOrder = 3
       OnChange = cbDisplayZoomChange
     end

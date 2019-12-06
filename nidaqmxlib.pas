@@ -3,6 +3,8 @@ unit nidaqmxlib;
 // National Instruments NIDAQ-MX library calls
 // -------------------------------------------
 // 28.05.05
+// 21.10.19 DAQmxGetSampClkMaxRate and DAQmxGetDevAISimultaneousSamplingSupported added
+// 29.11.19 TaskHandle now defined as NativeInt rather than Integer to fix Task not available error when run with NIDAQ 19.X
 
 interface
 
@@ -931,18 +933,18 @@ type
 
 TDAQmxLoadTask = function(
                  const TaskName : PANSIChar ;
-                 var TaskHandle : Integer) : Integer ; stdcall  ;
+                 var TaskHandle : NativeInt) : Integer ; stdcall  ;
 
 TDAQmxCreateTask          = function(
                             const TaskName : PANSIChar ;
-                            var TaskHandle : Integer) : Integer ; stdcall  ;
+                            var TaskHandle : NativeInt) : Integer ; stdcall  ;
 
 TDAQmxSelfCal = function(
                 const DeviceName : PANSIChar
                 ) : Integer ; stdcall  ;
 
 TDAQmxGetAIDevScalingCoeff = function(
-                             TaskHandle : Integer ;
+                             TaskHandle : NativeInt ;
                              const ChannelName : PANSIChar ;
                              ScaleFactors : Pointer ;
 //                             var ScaleFactors : Array of Double ;
@@ -951,35 +953,35 @@ TDAQmxGetAIDevScalingCoeff = function(
 
 // Channel Names must be valid channels already available in MAX. They are not created.
 TDAQmxAddGlobalChansToTask= function(
-                            TaskHandle : Integer ;
+                            TaskHandle : NativeInt ;
                             const channelNames : PANSIChar ) : Integer ; stdcall  ;
 
-TDAQmxStartTask           = function(TaskHandle : Integer ) : Integer ; stdcall  ;
+TDAQmxStartTask           = function(TaskHandle : NativeInt ) : Integer ; stdcall  ;
 
-TDAQmxStopTask            = function(TaskHandle : Integer ) : Integer ; stdcall  ;
+TDAQmxStopTask            = function(TaskHandle : NativeInt ) : Integer ; stdcall  ;
 
-TDAQmxClearTask           = function(TaskHandle : Integer ) : Integer ; stdcall  ;
+TDAQmxClearTask           = function(TaskHandle : NativeInt ) : Integer ; stdcall  ;
 
 TDAQmxWaitUntilTaskDone   = function(
-                            TaskHandle : Integer ;
+                            TaskHandle : NativeInt ;
                             TimeToWait : Double) : Integer ; stdcall  ;
 
 TDAQmxIsTaskDone          = function(
-                            TaskHandle : Integer;
+                            TaskHandle : NativeInt;
                             var IsTaskDone : LongBool ) : Integer ; stdcall  ;
 
 TDAQmxTaskControl         = function(
-                            TaskHandle : Integer ;
+                            TaskHandle : NativeInt ;
                             Action : Integer) : Integer ; stdcall  ;
 
 TDAQmxGetNthTaskChannel   = function(
-                            TaskHandle : Integer ;
+                            TaskHandle : NativeInt ;
                             Index : Cardinal;
                             Buffer : PANSIChar;
                             BufferSize : Integer) : Integer ; stdcall  ;
 
 TDAQmxCreateAIVoltageChan          = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      PhysicalChannel : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      TerminalConfig : Integer;
@@ -989,7 +991,7 @@ TDAQmxCreateAIVoltageChan          = function(
                                      const CustomScaleName : PANSIChar ) : Integer ; stdcall  ;
 
 TDAQmxCreateAOVoltageChan          = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      PhysicalChannel : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      MinVal : Double ;
@@ -998,19 +1000,19 @@ TDAQmxCreateAOVoltageChan          = function(
                                      const CustomScaleName : PANSIChar) : Integer ; stdcall  ;
 
 TDAQmxCreateDIChan                 = function(
-                                     TaskHandle : Integer;
+                                     TaskHandle : NativeInt;
                                      const Lines : PANSIChar;
                                      const NameToAssignToLines : PANSIChar;
                                      LineGrouping : Integer) : Integer ; stdcall  ;
 
 TDAQmxCreateDOChan                 = function(
-                                     TaskHandle : Integer;
+                                     TaskHandle : NativeInt;
                                      const Lines : PANSIChar;
                                      const NameToAssignToLines : PANSIChar;
                                      LineGrouping : Integer) : Integer ; stdcall  ;
 
 TDAQmxCreateCIFreqChan             = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      const Counter : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      MinVal : Double ;
@@ -1022,7 +1024,7 @@ TDAQmxCreateCIFreqChan             = function(
                                      const CustomScaleName : PANSIChar) : Integer ; stdcall  ;
 
 TDAQmxCreateCIPeriodChan           = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      const Counter : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      MinVal : Double ;
@@ -1034,14 +1036,14 @@ TDAQmxCreateCIPeriodChan           = function(
                                      const CustomScaleName : PANSIChar) : Integer ; stdcall  ;
 
 TDAQmxCreateCICountEdgesChan       = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      const Counter : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      Edge : Integer; initialCount : Cardinal;
                                      countDirection : Integer) : Integer ; stdcall  ;
 
 TDAQmxCreateCIPulseWidthChan       = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      const Counter : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      MinVal : Double ;
@@ -1050,7 +1052,7 @@ TDAQmxCreateCIPulseWidthChan       = function(
                                      const CustomScaleName : PANSIChar) : Integer ; stdcall  ;
 
 TDAQmxCreateCISemiPeriodChan       = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      const Counter : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      MinVal : Double ;
@@ -1058,7 +1060,7 @@ TDAQmxCreateCISemiPeriodChan       = function(
                                      const CustomScaleName : PANSIChar) : Integer ; stdcall  ;
 
 TDAQmxCreateCITwoEdgeSepChan       = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      const Counter : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      MinVal : Double ;
@@ -1068,7 +1070,7 @@ TDAQmxCreateCITwoEdgeSepChan       = function(
                                      const CustomScaleName : PANSIChar) : Integer ; stdcall  ;
 
 TDAQmxCreateCOPulseChanFreq        = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      const Counter : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      MinVal : Double ;
@@ -1078,7 +1080,7 @@ TDAQmxCreateCOPulseChanFreq        = function(
                                      dutyCycle : Double ) : Integer ; stdcall  ;
 
 TDAQmxCreateCOPulseChanTime        = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      const Counter : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      MinVal : Double ;
@@ -1088,7 +1090,7 @@ TDAQmxCreateCOPulseChanTime        = function(
                                      highTime : Double) : Integer ; stdcall  ;
 
 TDAQmxCreateCOPulseChanTicks       = function(
-                                     TaskHandle : Integer ;
+                                     TaskHandle : NativeInt ;
                                      const Counter : PANSIChar;
                                      NameToAssignToChannel : PANSIChar;
                                      const sourceTerminal : PANSIChar;
@@ -1097,7 +1099,7 @@ TDAQmxCreateCOPulseChanTicks       = function(
                                      highTicks : Integer) : Integer ; stdcall  ;
 
 TDAQmxCfgSampClkTiming          = function(
-                                  TaskHandle : Integer ;
+                                  TaskHandle : NativeInt ;
                                   const source : PANSIChar;
                                   rate : Double;
                                   activeEdge : integer;
@@ -1105,69 +1107,69 @@ TDAQmxCfgSampClkTiming          = function(
                                   sampsPerChan : Int64) : Integer ; stdcall  ;
 
 TDAQmxSetSampClkSrc             = function(
-                                  TaskHandle : Integer ;
+                                  TaskHandle : NativeInt ;
                                   const source : PANSIChar ) : Integer ; stdcall  ;
 
 TDAQmxCfgHandshakingTiming      = function(
-                                  TaskHandle : Integer ;
+                                  TaskHandle : NativeInt ;
                                   sampleMode : Integer;
                                   sampsPerChan : Int64) : Integer ; stdcall  ;
 
 TDAQmxCfgChangeDetectionTiming  = function(
-                                  TaskHandle : Integer ;
+                                  TaskHandle : NativeInt ;
                                   const risingEdgeChan : PANSIChar;
                                   const fallingEdgeChan : PANSIChar;
                                   sampleMode : Integer;
                                   sampsPerChan : Int64) : Integer ; stdcall  ;
 
 TDAQmxCfgImplicitTiming         = function(
-                                  TaskHandle : Integer ;
+                                  TaskHandle : NativeInt ;
                                   sampleMode : Integer;
                                   sampsPerChan : Int64) : Integer ; stdcall  ;
 
 TDAQmxResetTimingAttribute      = function(
-                                  TaskHandle : Integer ;
+                                  TaskHandle : NativeInt ;
                                   attribute : Integer) : Integer ; stdcall  ;
 
 TDAQmxDisableStartTrig      = function(
-                              TaskHandle : Integer ) : Integer ; stdcall  ;
+                              TaskHandle : NativeInt ) : Integer ; stdcall  ;
 
 TDAQmxCfgDigEdgeStartTrig   = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               triggerSource : PANSIChar ;
                               triggerEdge : Integer) : Integer ; stdcall  ;
 
 TDAQmxCfgAnlgEdgeStartTrig  = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               const triggerSource : PANSIChar;
                               triggerSlope : Integer;
                               triggerLevel : Double) : Integer ; stdcall  ;
 
 TDAQmxCfgAnlgWindowStartTrig= function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               const triggerSource : PANSIChar;
                               triggerWhen : Integer;
                               windowTop : Double;
                               windowBottom : Double) : Integer ; stdcall  ;
 
 TDAQmxDisableRefTrig        = function(
-                              TaskHandle : Integer ) : Integer ; stdcall  ;
+                              TaskHandle : NativeInt ) : Integer ; stdcall  ;
 
 TDAQmxCfgDigEdgeRefTrig     = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               const triggerSource : PANSIChar;
                               triggerEdge : Integer;
                               pretriggerSamples : Cardinal) : Integer ; stdcall  ;
 
 TDAQmxCfgAnlgEdgeRefTrig    = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               const triggerSource : PANSIChar;
                               triggerSlope : Integer;
                               triggerLevel : Double;
                               pretriggerSamples : Cardinal) : Integer ; stdcall  ;
 
 TDAQmxCfgAnlgWindowRefTrig  = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               const triggerSource : PANSIChar;
                               triggerWhen : Integer;
                               windowTop : Double;
@@ -1175,19 +1177,19 @@ TDAQmxCfgAnlgWindowRefTrig  = function(
                               pretriggerSamples : Cardinal) : Integer ; stdcall  ;
 
 TDAQmxDisableAdvTrig        = function(
-                              TaskHandle : Integer ) : Integer ; stdcall  ;
+                              TaskHandle : NativeInt ) : Integer ; stdcall  ;
 
 TDAQmxCfgDigEdgeAdvTrig     = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               const triggerSource : PANSIChar;
                               triggerEdge : Integer) : Integer ; stdcall  ;
 
 TDAQmxSendSoftwareTrigger   = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               triggerID : Integer) : Integer ; stdcall  ;
 
 TDAQmxReadAnalogF64         = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               numSampsPerChan : Integer;
                               timeout : Double;
                               fillMode : Integer ;
@@ -1197,13 +1199,13 @@ TDAQmxReadAnalogF64         = function(
                               reserved : Pointer ) : Integer ; stdcall  ;
 
 TDAQmxReadAnalogScalarF64   = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               timeout : Double;
                               var value : Double;
                               reserved : Pointer ) : Integer ; stdcall  ;
 
 TDAQmxReadBinaryI16         = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               numSampsPerChan : Integer;
                               timeout : Double;
                               fillMode : Integer ;
@@ -1213,7 +1215,7 @@ TDAQmxReadBinaryI16         = function(
                               Reserved : Pointer ) : Integer ; stdcall  ;
 
 TDAQmxReadBinaryU16         = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               numSampsPerChan : Integer;
                               timeout : Double;
                               fillMode : LongBool;
@@ -1223,7 +1225,7 @@ TDAQmxReadBinaryU16         = function(
                               var reserved : LongBool) : Integer ; stdcall  ;
 
 TDAQmxReadDigitalU8         = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               numSampsPerChan : Integer;
                               timeout : Double;
                               fillMode : Integer ;
@@ -1233,7 +1235,7 @@ TDAQmxReadDigitalU8         = function(
                               reserved : Pointer ) : Integer ; stdcall  ;
 
 TDAQmxReadDigitalU32        = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               numSampsPerChan : Integer;
                               timeout : Double;
                               fillMode : Integer ;
@@ -1243,14 +1245,14 @@ TDAQmxReadDigitalU32        = function(
                               var reserved : LongBool) : Integer ; stdcall  ;
 
 TDAQmxReadDigitalScalarU32  = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               timeout : Double;
                               var value : Integer ;
                               Reserved : Pointer
                               ) : Integer ; stdcall  ;
 
 TDAQmxReadDigitalLines      = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               numSampsPerChan : Integer;
                               timeout : Double;
                               fillMode : LongBool;
@@ -1261,7 +1263,7 @@ TDAQmxReadDigitalLines      = function(
                               var reserved : LongBool) : Integer ; stdcall  ;
 
 TDAQmxReadCounterF64        = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               numSampsPerChan : Integer;
                               timeout : Double;
                               var readArray : Array of Double;
@@ -1270,7 +1272,7 @@ TDAQmxReadCounterF64        = function(
                               var reserved : LongBool) : Integer ; stdcall  ;
 
 TDAQmxReadCounterU32        = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               numSampsPerChan : Integer;
                               timeout : Double;
                               var readArray : Array of Cardinal;
@@ -1279,19 +1281,19 @@ TDAQmxReadCounterU32        = function(
                               var reserved : LongBool) : Integer ; stdcall  ;
 
 TDAQmxReadCounterScalarF64  = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               timeout : Double;
                               var value : Double;
                               var reserved : LongBool) : Integer ; stdcall  ;
 
 TDAQmxReadCounterScalarU32  = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               timeout : Double;
                               var value : Cardinal;
                               var reserved : LongBool) : Integer ; stdcall  ;
 
 TDAQmxReadRaw               = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               numSampsPerChan : Integer;
                               timeout : Double;
                               ReadArray : Pointer;
@@ -1301,13 +1303,13 @@ TDAQmxReadRaw               = function(
                               Reserved : Pointer ) : Integer ; stdcall  ;
 
 TDAQmxGetNthTaskReadChannel = function(
-                              TaskHandle : Integer ;
+                              TaskHandle : NativeInt ;
                               Index : Cardinal;
                               Buffer : PANSIChar;
                               BufferSize : Integer) : Integer ; stdcall  ;
 
 TDAQmxWriteAnalogF64          = function(
-                                TaskHandle : Integer ;
+                                TaskHandle : NativeInt ;
                                 numSampsPerChan : Integer;
                                 autoStart : LongBool;
                                 timeout : Double;
@@ -1318,14 +1320,14 @@ TDAQmxWriteAnalogF64          = function(
                                 ) : Integer ; stdcall  ;
 
 TDAQmxWriteAnalogScalarF64    = function(
-                                TaskHandle : Integer ;
+                                TaskHandle : NativeInt ;
                                 autoStart : LongBool;
                                 timeout : Double;
                                 value : Double;
                                 var reserved : LongBool) : Integer ; stdcall  ;
 
 TDAQmxWriteBinaryI16          = function(
-                                TaskHandle : Integer ;
+                                TaskHandle : NativeInt ;
                                 numSampsPerChan : Integer;
                                 autoStart : LongBool;
                                 timeout : Double;
@@ -1335,7 +1337,7 @@ TDAQmxWriteBinaryI16          = function(
                                 reserved : Pointer ) : Integer ; stdcall  ;
 
 TDAQmxWriteBinaryU16          = function(
-                                TaskHandle : Integer ;
+                                TaskHandle : NativeInt ;
                                 numSampsPerChan : Integer;
                                 autoStart : LongBool;
                                 timeout : Double;
@@ -1345,7 +1347,7 @@ TDAQmxWriteBinaryU16          = function(
                                 Reserved : Pointer) : Integer ; stdcall  ;
 
 TDAQmxWriteDigitalU8          = function(
-                                TaskHandle : Integer ;
+                                TaskHandle : NativeInt ;
                                 numSampsPerChan : Integer;
                                 autoStart : LongBool;
                                 timeout : Double;
@@ -1355,7 +1357,7 @@ TDAQmxWriteDigitalU8          = function(
                                 Reserved : Pointer ) : Integer ; stdcall  ;
 
 TDAQmxWriteDigitalU32         = function(
-                                TaskHandle : Integer ;
+                                TaskHandle : NativeInt ;
                                 numSampsPerChan : Integer;
                                 autoStart : LongBool;
                                 timeout : Double;
@@ -1365,14 +1367,14 @@ TDAQmxWriteDigitalU32         = function(
                                 Reserved : Pointer) : Integer ; stdcall  ;
 
 TDAQmxWriteDigitalScalarU32   = function(
-                                TaskHandle : Integer ;
+                                TaskHandle : NativeInt ;
                                 autoStart : LongBool;
                                 timeout : Double;
                                 value : Integer ;
                                 Reserved : Pointer) : Integer ; stdcall  ;
 
 TDAQmxWriteDigitalScalarU8   = function(
-                                TaskHandle : Integer ;
+                                TaskHandle : NativeInt ;
                                 autoStart : LongBool;
                                 timeout : Double;
                                 value : Integer ;
@@ -1381,7 +1383,7 @@ TDAQmxWriteDigitalScalarU8   = function(
 
 
 TDAQmxWriteDigitalLines       = function(
-                                TaskHandle : Integer ;
+                                TaskHandle : NativeInt ;
                                 numSampsPerChan : Integer;
                                 autoStart : LongBool;
                                 timeout : Double;
@@ -1391,7 +1393,7 @@ TDAQmxWriteDigitalLines       = function(
                                 Reserved : Pointer) : Integer ; stdcall  ;
 
 TDAQmxWriteRaw                = function(
-                                TaskHandle : Integer ;
+                                TaskHandle : NativeInt ;
                                 numSamps : Integer ;
                                 autoStart : LongBool;
                                 timeout : Double;
@@ -1401,16 +1403,16 @@ TDAQmxWriteRaw                = function(
                                 ) : Integer ; stdcall  ;
 
 TDAQmxExportSignal                = function(
-                                    TaskHandle : Integer ;
+                                    TaskHandle : NativeInt ;
                                     signalID : Integer ;
                                     const outputTerminal : PANSIChar ) : Integer ; stdcall  ;
 
 TDAQmxCfgInputBuffer   = function(
-                         TaskHandle : Integer ;
+                         TaskHandle : NativeInt ;
                          numSampsPerChan : Integer ) : Integer ; stdcall  ;
 
 TDAQmxCfgOutputBuffer  = function(
-                         TaskHandle : Integer ;
+                         TaskHandle : NativeInt ;
                          numSampsPerChan : Cardinal ) : Integer ; stdcall  ;
 
 TDAQmxConnectTerms         = function(
@@ -1439,146 +1441,146 @@ TDAQmxGetExtendedErrorInfo = function(
 
 
 TDAQmxGetAIResolutionUnits= function(
-                            TaskHandle : Integer ;
+                            TaskHandle : NativeInt ;
                             const channel : PANSIChar ;
                             var Result : Integer
                             ) : Integer ; stdcall ;
 
 TDAQmxGetAIResolution= function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        const channel : PANSIChar ;
                        var Result : Double
                        ) : Integer ; stdcall  ;
 
 TDAQmxGetAOResolutionUnits= function(
-                            TaskHandle : Integer ;
+                            TaskHandle : NativeInt ;
                             const channel : PANSIChar ;
                             var Result : Integer
                             ) : Integer ; stdcall ;
 
 TDAQmxGetAOResolution= function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        const channel : PANSIChar ;
                        var Result : Double
                        ) : Integer ; stdcall  ;
 
 TDAQmxGetAIRngHigh= function(
-                    TaskHandle : Integer ;
+                    TaskHandle : NativeInt ;
                     const channel : PANSIChar ;
                      var Result : Double
                      ) : Integer ; stdcall  ;
 
 TDAQmxSetAIRngHigh= function(
-                    TaskHandle : Integer ;
+                    TaskHandle : NativeInt ;
                     const channel : PANSIChar ;
                     Value : Double
                     ) : Integer ; stdcall  ;
 
 TDAQmxResetAIRngHigh= function(
-                      TaskHandle : Integer ;
+                      TaskHandle : NativeInt ;
                       const channel : PANSIChar
                       ) : Integer ; stdcall  ;
 
 TDAQmxGetAIRngLow= function(
-                   TaskHandle : Integer ;
+                   TaskHandle : NativeInt ;
                    const channel : PANSIChar ;
                    var Result : Double
                    ) : Integer ; stdcall  ;
 
 TDAQmxSetAIRngLow= function(
-                   TaskHandle : Integer ;
+                   TaskHandle : NativeInt ;
                    const channel : PANSIChar ;
                    Value : Double
                    ) : Integer ; stdcall  ;
 
 TDAQmxResetAIRngLow= function(
-                     TaskHandle : Integer ;
+                     TaskHandle : NativeInt ;
                      const channel : PANSIChar
                      ) : Integer ; stdcall  ;
 
 TDAQmxGetAIMax= function(
-                    TaskHandle : Integer ;
+                    TaskHandle : NativeInt ;
                     const channel : PANSIChar ;
                      var Result : Double
                      ) : Integer ; stdcall  ;
 
 TDAQmxSetAIMax= function(
-                    TaskHandle : Integer ;
+                    TaskHandle : NativeInt ;
                     const channel : PANSIChar ;
                     Value : Double
                     ) : Integer ; stdcall  ;
 
 TDAQmxResetAIMax= function(
-                      TaskHandle : Integer ;
+                      TaskHandle : NativeInt ;
                       const channel : PANSIChar
                       ) : Integer ; stdcall  ;
 
 TDAQmxGetAIMin= function(
-                   TaskHandle : Integer ;
+                   TaskHandle : NativeInt ;
                    const channel : PANSIChar ;
                    var Result : Double
                    ) : Integer ; stdcall  ;
 
 TDAQmxSetAIMin= function(
-                   TaskHandle : Integer ;
+                   TaskHandle : NativeInt ;
                    const channel : PANSIChar ;
                    Value : Double
                    ) : Integer ; stdcall  ;
 
 TDAQmxResetAIMin= function(
-                     TaskHandle : Integer ;
+                     TaskHandle : NativeInt ;
                      const channel : PANSIChar
                      ) : Integer ; stdcall  ;
 
 
 TDAQmxGetAIGain= function(
-                 TaskHandle : Integer ;
+                 TaskHandle : NativeInt ;
                  const channel : PANSIChar ;
                  var Result : Double
                  ) : Integer ; stdcall  ;
 
 TDAQmxSetAIGain= function(
-                 TaskHandle : Integer ;
+                 TaskHandle : NativeInt ;
                  const channel : PANSIChar ;
                  Value : Double
                  ) : Integer ; stdcall  ;
 
 TDAQmxResetAIGain= function(
-                   TaskHandle : Integer ;
+                   TaskHandle : NativeInt ;
                    const channel : PANSIChar
                    ) : Integer ; stdcall  ;
 
 TDAQmxGetAOMax= function(
-                TaskHandle : Integer ;
+                TaskHandle : NativeInt ;
                 const channel : PANSIChar ;
                 var Result : Double
                 ) : Integer ; stdcall  ;
 
 TDAQmxSetAOMax= function(
-                TaskHandle : Integer ;
+                TaskHandle : NativeInt ;
                 const channel : PANSIChar ;
                 Value : Double
                 ) : Integer ; stdcall  ;
 
 TDAQmxResetAOMax= function(
-                  TaskHandle : Integer ;
+                  TaskHandle : NativeInt ;
                   const channel : PANSIChar
                   ) : Integer ; stdcall  ;
 
 TDAQmxGetAOMin= function(
-                TaskHandle : Integer ;
+                TaskHandle : NativeInt ;
                 const channel : PANSIChar ;
                 var Result : Double
                 ) : Integer ; stdcall  ;
 
 TDAQmxSetAOMin= function(
-                TaskHandle : Integer ;
+                TaskHandle : NativeInt ;
                 const channel : PANSIChar ;
                 Value : Double
                 ) : Integer ; stdcall  ;
 
 TDAQmxResetAOMin= function(
-                  TaskHandle : Integer ;
+                  TaskHandle : NativeInt ;
                   const channel : PANSIChar
                   ) : Integer ; stdcall  ;
 
@@ -1588,52 +1590,62 @@ TDAQmxGetDevProductType= function(
                          bufferSize : Cardinal ) : Integer ; stdcall  ;
 
 TDAQmxGetAODACRngHigh= function(
-                TaskHandle : Integer ;
+                TaskHandle : NativeInt ;
                 const channel : PANSIChar ;
                 var Result : Double
                 ) : Integer ; stdcall  ;
 
 TDAQmxSetAODACRngHigh= function(
-                TaskHandle : Integer ;
+                TaskHandle : NativeInt ;
                 const channel : PANSIChar ;
                 Value : Double
                 ) : Integer ; stdcall  ;
 
 TDAQmxResetAODACRngHigh= function(
-                  TaskHandle : Integer ;
+                  TaskHandle : NativeInt ;
                   const channel : PANSIChar
                   ) : Integer ; stdcall  ;
 
 TDAQmxGetAODACRngLow= function(
-                TaskHandle : Integer ;
+                TaskHandle : NativeInt ;
                 const channel : PANSIChar ;
                 var Result : Double
                 ) : Integer ; stdcall  ;
 
 TDAQmxSetAODACRngLow= function(
-                TaskHandle : Integer ;
+                TaskHandle : NativeInt ;
                 const channel : PANSIChar ;
                 Value : Double
                 ) : Integer ; stdcall  ;
 
 TDAQmxResetAODACRngLow= function(
-                  TaskHandle : Integer ;
+                  TaskHandle : NativeInt ;
                   const channel : PANSIChar
                   ) : Integer ; stdcall  ;
 
 TDAQmxGetReadReadAllAvailSamp= function(
-                 TaskHandle : Integer ;
+                 TaskHandle : NativeInt ;
                  var Value : Boolean
                   ) : Integer ; stdcall  ;
 
 TDAQmxSetReadReadAllAvailSamp= function(
-                 TaskHandle : Integer ;
+                 TaskHandle : NativeInt ;
                  Value : Boolean
                   ) : Integer ; stdcall  ;
 
 TDAQmxGetSampClkRate = function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        var Value : Double
+                       ) : Integer ; stdcall  ;
+
+TDAQmxGetSampClkMaxRate = function(
+                       TaskHandle : NativeInt ;
+                       var Value : Double
+                       ) : Integer ; stdcall  ;
+
+TDAQmxGetDevAISimultaneousSamplingSupported = function(
+                       const Device : PANSIChar  ;
+                       var Enabled : LongBool
                        ) : Integer ; stdcall  ;
 
 TDAQmxGetSysDevNames = function(
@@ -1642,51 +1654,73 @@ TDAQmxGetSysDevNames = function(
                        ) : Integer ; stdcall  ;
 
 TDAQmxGetWriteOffset = function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        var Value : Integer
                        ) : Integer ; stdcall  ;
 
 TDAQmxSetWriteOffset = function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        Value : Integer
                        ) : Integer ; stdcall  ;
 
 TDAQmxGetWriteRelativeTo = function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        var Value : Integer
                        ) : Integer ; stdcall  ;
 
 TDAQmxSetWriteRelativeTo = function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        Value : Integer
                        ) : Integer ; stdcall  ;
 
 TDAQmxGetWriteRegenMode = function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        var Value : Integer
                        ) : Integer ; stdcall  ;
 
 TDAQmxSetWriteRegenMode = function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        Value : Integer
                        ) : Integer ; stdcall  ;
 
 TDAQmxGetWriteSpaceAvail = function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        var Value : Cardinal
                        ) : Integer ; stdcall  ;
 
 TDAQmxGetWriteTotalSampPerChanGenerated = function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        var Value : Int64
                        ) : Integer ; stdcall  ;
 
 TDAQmxGetWriteCurrWritePos = function(
-                       TaskHandle : Integer ;
+                       TaskHandle : NativeInt ;
                        var Value : Int64
                        ) : Integer ; stdcall  ;
 
+TDAQmxGetDevAIPhysicalChans = function(
+                       const Device : PANSIChar ;
+                       ChannelList : PANSIChar ;
+                       BufSize : Integer
+                       ) : Integer ; stdcall  ;
 
+TDAQmxGetDevAOPhysicalChans = function(
+                       const Device : PANSIChar ;
+                       ChannelList : PANSIChar ;
+                       BufSize : Integer
+                       ) : Integer ; stdcall  ;
+
+TDAQmxGetDevAIVoltageRngs = function(
+                       const Device : PANSIChar ;
+                       VRanges : Array of Double ;
+                       NumElements : Integer
+                       ) : Integer ; stdcall  ;
+
+TDAQmxGetDevAOVoltageRngs = function(
+                       const Device : PANSIChar ;
+                       VRanges : Array of Double ;
+                       NumElements : Integer
+                       ) : Integer ; stdcall  ;
 
 
 
@@ -1806,6 +1840,8 @@ var
 
     DAQmxGetDevProductType : TDAQmxGetDevProductType ;
     DAQmxGetSampClkRate : TDAQmxGetSampClkRate ;
+    DAQmxGetSampClkMaxRate : TDAQmxGetSampClkMaxRate ;
+    DAQmxGetDevAISimultaneousSamplingSupported : TDAQmxGetDevAISimultaneousSamplingSupported ;
 
     DAQmxGetSysDevNames : TDAQmxGetSysDevNames ;
     DAQmxGetWriteOffset : TDAQmxGetWriteOffset ;
@@ -1817,6 +1853,12 @@ var
     DAQmxGetWriteSpaceAvail : TDAQmxGetWriteSpaceAvail ;
     DAQmxGetWriteTotalSampPerChanGenerated : TDAQmxGetWriteTotalSampPerChanGenerated ;
     DAQmxGetWriteCurrWritePos : TDAQmxGetWriteCurrWritePos ;
+
+    DAQmxGetDevAIPhysicalChans : TDAQmxGetDevAIPhysicalChans ;
+    DAQmxGetDevAOPhysicalChans : TDAQmxGetDevAOPhysicalChans ;
+    DAQmxGetDevAIVoltageRngs : TDAQmxGetDevAIVoltageRngs ;
+    DAQmxGetDevAOVoltageRngs : TDAQmxGetDevAOVoltageRngs ;
+
 
 function NIDAQMX_LoadLibrary(
          var LibraryHnd : THandle  // Library handle
@@ -1962,6 +2004,8 @@ begin
 
         @DAQmxGetDevProductType := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetDevProductType' ) ;
         @DAQmxGetSampClkRate := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetSampClkRate' ) ;
+        @DAQmxGetSampClkMaxRate := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetSampClkMaxRate' ) ;
+        @DAQmxGetDevAISimultaneousSamplingSupported := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetDevAISimultaneousSamplingSupported' ) ;
         @DAQmxGetSysDevNames := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetSysDevNames' ) ;
         @DAQmxGetDevProductType := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetDevProductType' ) ;
         @DAQmxGetWriteOffset := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetWriteOffset' ) ;
@@ -1973,6 +2017,13 @@ begin
         @DAQmxGetWriteSpaceAvail := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetWriteSpaceAvail' ) ;
         @DAQmxGetWriteTotalSampPerChanGenerated := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetWriteTotalSampPerChanGenerated' ) ;
         @DAQmxGetWriteCurrWritePos := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetWriteCurrWritePos' ) ;
+
+        @DAQmxGetDevAIPhysicalChans := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetDevAIPhysicalChans' ) ;
+        @DAQmxGetDevAOPhysicalChans := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetDevAOPhysicalChans' ) ;
+        @DAQmxGetDevAIVoltageRngs := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetDevAIVoltageRngs' ) ;
+        @DAQmxGetDevAOVoltageRngs := NIDAQMX_LoadProcedure( LibraryHnd, 'DAQmxGetDevAOVoltageRngs' ) ;
+
+
         Result := True ;
         end
      else begin

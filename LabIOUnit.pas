@@ -56,6 +56,10 @@ unit LabIOUnit;
 //                 with USB-6002/3
 // 23.04.18 JD ... digital waveform output now supported on 628x devices
 //                 NIDAQmx getadcsamples() A/D samples now read as double precision and converted to 16 bit integer
+// 02.12.19 JD ... TaskHandle now defined as NativeInt rather than Integer to fix problem with NIDAQmx 19.X and later in 64 bit compiles.
+// 09.12.19 JD ... NIDAQ_GetDeviceDACChannelProperties() NIDAQ_GetDeviceDACChannelProperties() now use property functions calls to determine
+//                 nos. of available channels rather than incrementing through channels until errors occur.
+
 
 interface
 
@@ -143,9 +147,9 @@ type
     DBuf : PBigDoubleArray ; // Double precision working array
 
     // NIDAQ-MX task objects
-    DACTask : Array[1..MaxDevices] of Integer ;
-    ADCTask : Array[1..MaxDevices] of Integer ;
-    DIGTask : Array[1..MaxDevices] of Integer ;
+    DACTask : Array[1..MaxDevices] of NativeInt ;
+    ADCTask : Array[1..MaxDevices] of NativeInt ;
+    DIGTask : Array[1..MaxDevices] of NativeInt ;
 
     ADCVScale : Array[1..MaxDevices] of Single ;
     ADCVOffset : Array[1..MaxDevices] of Single ;
@@ -326,6 +330,7 @@ type
     DACMinValue : Array[1..MaxDevices] of Integer ;
     DACResolution : Array[1..MaxDevices] of Integer ;
     DACMaxVolts  : Array[1..MaxDevices] of Single ;
+    DACMinVolts  : Array[1..MaxDevices] of Single ;
     DACScale : Array[1..MaxDevices] of Single ;
 
     // DAC output voltage states
@@ -1292,110 +1297,75 @@ procedure TLabIO.NIDAQMX_GetDeviceADCChannelProperties(
 // ------------------------------------------------
 const
     NumVRanges = 9 ;
-    VRanges : Array[0..8] of Double = (10.0,5.0,2.5,1.25,1.0,0.5,0.25,0.2,0.1) ;
 var
     DValue : Double ;
     ADCScaleFactors : Array[0..20] of Double ;
     i : Integer ;
     Err : Integer ;
-    ChannelName : ANSIstring ;
+    ChannelName : ANSIString ;
     NumChannels : Integer ;
+    ChannelList : Array[0..255] of ANSICHar ;
+    VRanges : Array[0..31] of Double ;
+    SimultaneousSampling : LongBool ;
 begin
 
     DisableFPUExceptions ;
 
+    // Determine number of available AI channels
+    CheckError( DAQmxGetDevAIPhysicalChans( PANSIChar(DeviceName[DeviceNum]), ChannelList, High(ChannelList)) ) ;
     NumChannels := 0 ;
-    Err := 0 ;
-    While Err = 0 do begin
+    while ContainsText(String(ChannelList),format('ai%d',[NumChannels])) do Inc(NumChannels) ;
+    CheckError( DAQmxGetDevAISimultaneousSamplingSupported( PANSIChar(DeviceName[DeviceNum]),SimultaneousSampling));
+    if not SimultaneousSampling then NumChannels := NumChannels div 2 ;
+    NumADCs[DeviceNum] := NumChannels ;
 
-        // Create A/D task for selected channel
-        CheckError( DAQmxCreateTask( '', ADCTask[DeviceNum] ) ) ;
-        ChannelName := format('%s/ai%d',[DeviceName[DeviceNum],NumChannels]) ;
-        Err := DAQmxCreateAIVoltageChan( ADCTask[DeviceNum],
+    // Determine channel input voltage ranges
+    for i := 0 to High(VRanges) do VRanges[i] := 0.0 ;
+    CheckError( DAQmxGetDevAIVoltageRngs( PANSIChar(DeviceName[DeviceNum]), VRanges, High(VRanges) ) );
+    NumChannels := 0 ;
+    for i := High(VRanges) downto 0 do if VRanges[i] > 0.0 then
+        begin
+        ADCVoltageRanges[DeviceNum,NumChannels] := VRanges[i] ;
+        Inc(NumChannels) ;
+        end;
+    NumADCVoltageRanges[DeviceNum]  := NumChannels ;
+
+    // Create A/D task for selected channel
+    CheckError( DAQmxCreateTask( '', ADCTask[DeviceNum] ) ) ;
+
+    ChannelName := format('%s/ai0',[DeviceName[DeviceNum]]) ;
+    CheckError( DAQmxCreateAIVoltageChan( ADCTask[DeviceNum],
                                       PANSIChar(ChannelName),
                                       nil ,
-                                      DAQmx_Val_Diff,
-                                      -10,
-                                      10,
-                                      DAQmx_Val_Volts,
-                                      nil);
+                                      Integer(DAQmx_Val_Diff),
+                                      -10.0,
+                                      10.0,
+                                      Integer(DAQmx_Val_Volts),
+                                      nil));
 
-        if Err <> 0 then begin
-           // Check for 61XX series devices which only
-           // support pseudo-differential inputs 01/07/10
-           CheckError( DAQmxClearTask( ADCTask[DeviceNum] ) ) ;
-           CheckError( DAQmxCreateTask( '', ADCTask[DeviceNum] ) ) ;
-           Err := DAQmxCreateAIVoltageChan( ADCTask[DeviceNum],
-                                            PANSIChar(ChannelName),
-                                            nil ,
-                                            DAQmx_Val_PseudoDiff,
-                                            -10,
-                                            10,
-                                            DAQmx_Val_Volts,
-                                            nil);
-           end ;
+    // Get A/D converter resolution
+    CheckError( DAQmxGetAIResolution( ADCTask[DeviceNum],
+                                      PANSIChar(ChannelName),
+                                      DValue)) ;
 
+    // Channel scaling factors
+    CheckError( DAQmxGetAIDevScalingCoeff( ADCTask[DeviceNum],
+                                           PANSIChar(ChannelName),
+                                           @ADCScaleFactors,
+                                           4 )) ;
 
-        // If channel is valid, get its properties
+    ADCVScale[DeviceNum] := ADCScaleFactors[1] ;
+    ADCVOffset[DeviceNum] := ADCScaleFactors[0] ;
+    ADCResolution[DeviceNum] := Round(DValue) ;
+    ADCMaxValue[DeviceNum] := Round(Power(2.0,DValue-1.0)) - 1 ;
+    ADCMinValue[DeviceNum] := -ADCMaxValue[DeviceNum] - 1 ;
 
-        if (Err = 0) and (NumChannels=0) then begin
+    CheckError( DAQmxClearTask( ADCTask[DeviceNum] ) ) ;
 
-           // Get A/D converter resolution
-           CheckError( DAQmxGetAIResolution( ADCTask[DeviceNum],
-                                             PANSIChar(ChannelName),
-                                             DValue)) ;
-
-           // Channel scaling factors
-           CheckError( DAQmxGetAIDevScalingCoeff( ADCTask[DeviceNum],
-                                                  PANSIChar(ChannelName),
-                                                  @ADCScaleFactors,
-                                                  4 )) ;
-           ADCVScale[DeviceNum] := ADCScaleFactors[1] ;
-           ADCVOffset[DeviceNum] := ADCScaleFactors[0] ;
-           ADCResolution[DeviceNum] := Round(DValue) ;
-           ADCMaxValue[DeviceNum] := Round(Power(2.0,DValue-1.0)) - 1 ;
-           ADCMinValue[DeviceNum] := -ADCMaxValue[DeviceNum] - 1 ;
-           end ;
-
-        Inc(NumChannels) ;
-        CheckError( DAQmxClearTask( ADCTask[DeviceNum] ) ) ;
-        end ;
-
-    NumADCs[DeviceNum] := NumChannels - 1 ;
-    if NumChannels <= 0 then Exit ;
-
-    // Get available A/D voltage ranges
-
-    NumADCVoltageRanges[DeviceNum] := 0 ;
-    for i := 0 to NumVRanges-1 do begin
-
-        CheckError( DAQmxCreateTask( '', ADCTask[DeviceNum] ) ) ;
-        ChannelName := DeviceName[DeviceNum] + '/AI0' ;
-        Err := DAQmxCreateAIVoltageChan( ADCTask[DeviceNum],
-                                              PANSIChar(ChannelName),
-                                              nil ,
-                                              ADCInputModeCode(DeviceNum,imDifferential),
-                                              -0.9*VRanges[i],
-                                              0.9*VRanges[i],
-                                              DAQmx_Val_Volts,
-                                              nil);
-
-        if Err = 0 then begin
-           CheckError( DAQmxGetAIMax( ADCTask[DeviceNum], PANSIChar(ChannelName), DValue ));
-           if Abs((DValue - VRanges[i])/VRanges[i]) < 0.1 then begin
-              ADCVoltageRanges[DeviceNum,NumADCVoltageRanges[DeviceNum]] := DValue ;
-              if NumADCVoltageRanges[DeviceNum] <= High(NumADCVoltageRanges) then
-                 NumADCVoltageRanges[DeviceNum] := NumADCVoltageRanges[DeviceNum] + 1 ;
-              end ;
-           end ;
-
-        CheckError( DAQmxClearTask( ADCTask[DeviceNum] ) ) ;
-        end ;
 
     EnableFPUExceptions ;
 
     end ;
-
 
 procedure TLabIO.NIDAQMX_GetDeviceDACChannelProperties(
           DeviceNum : Integer
@@ -1404,52 +1374,67 @@ procedure TLabIO.NIDAQMX_GetDeviceDACChannelProperties(
 // Get number of device D/A channels and properties
 // ------------------------------------------------
 var
-    DValue : Double ;
-    Err : Integer ;
-    ChannelName : ANSIstring ;
+    DValue,VMin,VMax : Double ;
+    i,Err : Integer ;
+    ChannelName : ANSIString ;
     NumChannels : Integer ;
+    ChannelList : Array[0..255] of ANSICHar ;
+    VRanges : Array[0..15] of Double ;
 begin
 
     DisableFPUExceptions ;
 
-    // Create D/A task
+    // Determine number of available AO channels
+    CheckError( DAQmxGetDevAOPhysicalChans( PANSIChar(DeviceName[DeviceNum]), ChannelList, High(ChannelList)) ) ;
     NumChannels := 0 ;
-    Err := 0 ;
-    While Err = 0 do begin
+    while ContainsText(String(ChannelList),format('ao%d',[NumChannels])) do Inc(NumChannels) ;
+    NumDACs[DeviceNum] := NumChannels ;
 
-        CheckError( DAQmxCreateTask( '', DACTask[DeviceNum] ) ) ;
-        ChannelName := format('%s/ao%d',[DeviceName[DeviceNum],NumChannels]) ;
+    // Determine output voltage ranges
+    for i := 0 to High(VRanges) do VRanges[i] := 0.0 ;
+    CheckError( DAQmxGetDevAOVoltageRngs( PANSIChar(DeviceName[DeviceNum]), VRanges, High(VRanges) ) );
+    DACMaxVolts[DeviceNum] := VRanges[1] ;
+    DACMinVolts[DeviceNum] := VRanges[0] ;
 
-        Err := DAQmxCreateAOVoltageChan( DACTask[DeviceNum],
-                                      PANSIChar(ChannelName),
-                                      nil ,
-                                      -10,
-                                      10,
-                                      DAQmx_Val_Volts,
-                                      nil);
-        if (Err = 0) then begin
+    // Create D/A task
+    CheckError( DAQmxCreateTask( '', DACTask[DeviceNum] ) ) ;
+    ChannelName := format('%s/ao0',[DeviceName[DeviceNum]]) ;
 
-           // D/A output range
-           CheckError(DAQmxGetAODACRngHigh( DACTask[DeviceNum],
-                                            PANSIChar(ChannelName),
-                                            DValue ));
-           DACMaxVolts[DeviceNum] := DValue ;
+{    if AnsiContainsText(DeviceBoardName[DeviceNum],'600') then
+       begin
+       VMin := 0.0 ;
+       VMax := 5.0 ;
+       end
+    else
+       begin
+       VMin := -10.0 ;
+       VMax := 10.0 ;
+       end;}
 
-           // Get D/A converter resolution
-           CheckError( DAQmxGetAOResolution( DACTask[DeviceNum],
-                                                  PANSIChar(ChannelName),
-                                                  DValue)) ;
-           DACResolution[DeviceNum] := Round(DValue) ;
-           DACMaxValue[DeviceNum] := Round(Power(2.0,DValue-1.0)) - 1 ;
-           DACMinValue[DeviceNum] := -DACMaxValue[DeviceNum] - 1 ;
+    CheckError( DAQmxCreateAOVoltageChan( DACTask[DeviceNum],
+                                          PANSIChar(ChannelName),
+                                          nil,
+                                          DACMinVolts[DeviceNum],
+                                          DACMaxVolts[DeviceNum],
+                                          DAQmx_Val_Volts,
+                                          nil) );
 
-           end ;
+     // Get D/A converter resolution
+     CheckError( DAQmxGetAOResolution(DACTask[DeviceNum],PANSIChar(ChannelName),DValue)) ;
+     DACResolution[DeviceNum] := Round(DValue) ;
 
-        Inc(NumChannels) ;
-        CheckError( DAQmxClearTask( DACTask[DeviceNum] ) ) ;
+     if DACMinVolts[DeviceNum] = 0.0 then
+        begin
+        // Unipolar DACs
+        DACMaxValue[DeviceNum] := Round(Power(2.0,DValue)) - 1 ;
+        DACMinValue[DeviceNum] := 0 ;
+        end
+     else
+        begin
+        // Bipolar DACs
+        DACMaxValue[DeviceNum] := Round(Power(2.0,DValue-1.0)) - 1 ;
+        DACMinValue[DeviceNum] := -DACMaxValue[DeviceNum] - 1 ;
         end ;
-
-    NumDACs[DeviceNum] := NumChannels - 1 ;
 
     EnableFPUExceptions ;
 
@@ -1755,7 +1740,6 @@ begin
 
 
 
-
 procedure TLabIO.NIDAQMX_CheckSamplingInterval(
                DeviceNum : Integer ;
                var SamplingInterval : double ;
@@ -1843,7 +1827,7 @@ var
     NumPointsInBuffer : Integer ;
     VBuf : PBigDoubleArray ;
     VScale : Double ;
-    TaskHandle : Integer ;
+    TaskHandle : NativeInt ;
     Err : Integer ;
 begin
      Result := False ;

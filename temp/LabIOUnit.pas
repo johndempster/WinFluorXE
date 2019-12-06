@@ -48,6 +48,15 @@ unit LabIOUnit;
 //                    DAQmx_Val_Falling changed to DAQmx_Val_Rising in DAQmxCfgSampClkTiming()
 //                    A/D and D/A timed by own on-board clocks and synchronised by pulse P.1.0 -> PFI0+PFI1
 // 11.03.16 JD .... Single Ended (RSE) analogue input mode now correctly selected
+// 31.03.16 JD .... PCIe-632X boards now recognised as DigitalWaveformCapable
+// 10.05.16 JD .... Digital outputs not supported by USB 621X boards
+// 21.11.17 JD ... USB-600X devices D/A update interval limited to 2ms or longer to avoid
+//                 intermittent 5s delays when .ADCStop called.
+// 04.01.18 JD ... NADAQMXMemoryToDAC now writes D/A values as DOUBLE voltages to avoid calibration errors
+//                 with USB-6002/3
+// 23.04.18 JD ... digital waveform output now supported on 628x devices
+//                 NIDAQmx getadcsamples() A/D samples now read as double precision and converted to 16 bit integer
+// 02.12.19 JD ... TaskHandle now defined as NativeInt rather than Integer to fix problem with NIDAQmx 19.X and later in 64 bit compiles.
 
 interface
 
@@ -131,22 +140,25 @@ type
     LibraryLoaded : Boolean ;
     BoardInitialised : Boolean ;
 
-    InBuf : PSmallIntArray ; // A/D input buffer pointer
+//    InBuf : PSmallIntArray ; // A/D input buffer pointer
+    DBuf : PBigDoubleArray ; // Double precision working array
 
     // NIDAQ-MX task objects
-    DACTask : Array[1..MaxDevices] of Integer ;
-    ADCTask : Array[1..MaxDevices] of Integer ;
-    DIGTask : Array[1..MaxDevices] of Integer ;
+    DACTask : Array[1..MaxDevices] of NativeInt ;
+    ADCTask : Array[1..MaxDevices] of NativeInt ;
+    DIGTask : Array[1..MaxDevices] of NativeInt ;
 
     ADCVScale : Array[1..MaxDevices] of Single ;
     ADCVOffset : Array[1..MaxDevices] of Single ;
     ADCVoltageRangeAtX1Gain : Array[1..MaxDevices] of Single ;
+
     FADCCircularBuffer : Boolean ;
 
     FADCPointer : Integer ;
     FADCNumChannels : Integer ;
     FADCNumSamples : Integer ;
     FADCNumSamplesAcquired : Integer ;
+    FADCVoltageRange : Array[1..MaxDevices] of Single ;                   // A/D voltage range in use
 
     FPUExceptionMask : Set of TFPUException ;
     FPUExceptionMaskSet : Boolean ;
@@ -333,6 +345,7 @@ type
 
     DigitalWaveformCapable : Array[1..MaxDevices] of Boolean ;
     DACClockTriggerSupported : Array[1..MaxDevices] of Boolean ;
+    DigitalOutputsSupported : Array[1..MaxDevices] of Boolean ;
 
     DigOutState : Array[1..MaxDevices] of Integer ;
     // Digital output buffer state
@@ -495,9 +508,6 @@ const
    Timebase_10ms = 5 ;
    TimeBasePeriod : Array[-3..5] of Single = (5E-8,0.0,2E-7,0.0,1E-6,1E-5,1E-4,1E-3,1E-2) ;
 
-
-
-
 type
 
    { NIDAQ.DLL procedure  variables }
@@ -535,6 +545,7 @@ var
 begin
     for i := 1 to MaxDevices do DeviceBoardName[i] := '' ;
     for i := 1 to MaxDevices do DigitalWaveformCapable[i] := False ;
+    for i := 1 to MaxDevices do DigitalOutputsSupported[i] := False ;
     for i := 1 to MaxDevices do DeviceName[i] := '' ;
     for i := 1 to MaxDevices do NumDACs[i] := 0 ;
     for i := 1 to MaxDevices do NumADCs[i] := 0 ;
@@ -588,8 +599,9 @@ begin
 
      BoardsInitialised := InitialiseNIBoards ;
 
-     // Create input buffer
-     GetMem(InBuf,MaxADCSamples*2) ;
+     // Create input/output buffer
+//     GetMem(InBuf,MaxADCSamples*2) ;
+     GetMem(DBuf,MaxADCSamples*Sizeof(Double)) ;
 
      Result := BoardsInitialised ;
 
@@ -937,6 +949,7 @@ function TLabIO.ReadADC(
 // Read A/D inputs
 // ---------------
 begin
+    FADCVoltageRange[Device] := ADCVoltageRange ;
     Result := 0 ;
     case FNIDAQAPI of
         NIDAQMX : Result := NIDAQMX_ReadADC( Device,
@@ -960,6 +973,8 @@ begin
 
     // Save default digital output state
     DigOutState[Device] := Pattern ;
+
+    if not DigitalOutputsSupported[Device] then Exit ;
 
     case FNIDAQAPI of
         NIDAQMX : NIDAQMX_WriteToDigitalOutPutPort( Device,Pattern ) ;
@@ -1077,6 +1092,7 @@ begin
        DeviceBoardName[i] := PCharArrayToString(CBuf) ;
        if AnsiContainsText(DeviceBoardName[i],'622') or
           AnsiContainsText(DeviceBoardName[i],'625') or
+          AnsiContainsText(DeviceBoardName[i],'628') or
           AnsiContainsText(DeviceBoardName[i],'632') or
           AnsiContainsText(DeviceBoardName[i],'634') or
           AnsiContainsText(DeviceBoardName[i],'635') or
@@ -1085,6 +1101,10 @@ begin
        // 6002-6005 devices do not support A/D triggering from DAC/DIG clock.
        if AnsiContainsText(DeviceBoardName[i],'600') then DACClockTriggerSupported[i] := False
                                                      else DACClockTriggerSupported[i] := True ;
+
+       // Digital outputs supported (all except USB-621X devices)
+       if AnsiContainsText(DeviceBoardName[i],'621') then DigitalOutputsSupported[i] := False
+                                                     else DigitalOutputsSupported[i] := True ;
 
        end ;
 
@@ -1125,14 +1145,18 @@ begin
            end
         else DACScale[DeviceNum] := 1.0 ;
 
-        // Digital O/P ports
-        for i := 0 to 7 do begin
-            Resource[NumResources].Device := DeviceNum ;
-            Resource[NumResources].ResourceType := DIGOut ;
-            Resource[NumResources].StartChannel := i ;
-            Resource[NumResources].EndChannel := i ;
-            Inc(NumResources) ;
-            end ;
+        // Digital O/P ports (Except 621X series USB devices)
+        if DigitalOutputsSupported[DeviceNum] then
+           begin
+           for i := 0 to 7 do
+               begin
+               Resource[NumResources].Device := DeviceNum ;
+               Resource[NumResources].ResourceType := DIGOut ;
+               Resource[NumResources].StartChannel := i ;
+               Resource[NumResources].EndChannel := i ;
+               Inc(NumResources) ;
+               end ;
+           end;
         end ;
 
    // Set minimum DAC update interval
@@ -1555,6 +1579,7 @@ begin
      // Select A/D input channels
      ChannelList := format( DeviceName[Device] + '/AI0:%d', [nChannels-1] ) ;
 
+     FADCVoltageRange[Device] := ADCVoltageRange ;
      CheckError( DAQmxCreateAIVoltageChan( ADCTask[Device],
                                            PANSIChar(ChannelList),
                                            nil ,
@@ -1647,6 +1672,8 @@ function TLabIO.NIDAQMX_StopADC(
 { -------------------------------
   Reset A/D conversion sub-system
   -------------------------------}
+var
+    t0 : Integer ;
 begin
      Result := False ;
      if (Device < 1) or (Device > NumDevices) then Exit ;
@@ -1656,7 +1683,11 @@ begin
      DisableFPUExceptions ;
 
      // Stop running A/D task
+     T0 := timegettime ;
      CheckError( DAQmxClearTask(ADCTask[Device])) ;
+     if (timegettime - t0) > 1000 then
+        outputdebugstring(pchar(format('NIMX_StopADC: %d ms Delay in DAQmxClearTask call. ',[timegettime - t0])));
+
 
      EnableFPUExceptions ;
 
@@ -1674,15 +1705,12 @@ procedure TLabIO.NIDAQMX_GetADCSamples(
 // Get latest A/D samples acquired and transfer to memory buffer
 // -------------------------------------------------------------
 var
-    i : Integer ;
+    i,j,ch : Integer ;
     ADCBufNumSamples : Integer ;
     ADCBufEnd : Integer ;
     NumSamplesRead : Integer ;
-    VScale,VOffset,VUnscale : Single ;
-    ADCMaxVal : Single ;
-    ADCMinVal : Single ;
-    ScaledValue : Single ;
-    //t0 : Integer ;
+    VScale : Single ;
+    ScaledValue,ADCMaxVal,ADCMinVal : SmallInt ;
 
 begin
 
@@ -1693,29 +1721,33 @@ begin
 
     if (not FADCCircularBuffer) and (FADCNumSamplesAcquired >= ADCBufNumSamples) then Exit ;
 
-    //t0 := TimeGetTime ;
-
     // Read data from A/D converter
-    DAQmxReadBinaryI16( ADCTask[Device],
+    DAQmxReadAnalogF64( ADCTask[Device],
                                   -1,
                                   DefaultTimeOut,
                                   DAQmx_Val_GroupByScanNumber,
-                                  InBuf,
+                                  DBuf,
                                   ADCBufNumSamples,
                                   NumSamplesRead,
                                   Nil) ;
 
     // Apply calibration factors and copy to output buffer
 
-    VUnScale := ADCMaxValue[Device]/10.0 ;
-    VScale := ADCVScale[Device] ;
-    VOffset := ADCVOffset[Device] ;
     ADCMaxVal := ADCMaxValue[Device] - 1 ;
     ADCMinVal := ADCMinValue[Device] + 1 ;
-    for i := 0 to NumSamplesRead*FADCNumChannels-1 do begin
-        ScaledValue := (InBuf[i]*VScale + VOffset)*VUnScale ;
-        ADCBuf[FADCPointer] := Round( Max( Min( ScaledValue, ADCMaxVal ), ADCMinVal )) ;
-        Inc(FADCPointer) ;
+    VScale := ADCMaxValue[Device]/FADCVoltageRange[Device] ;
+    j := 0 ;
+    for i := 0 to NumSamplesRead-1 do
+        begin
+        for ch := 0 to FADCNumChannels-1 do
+            begin
+            ScaledValue := Round(DBuf[j]*VScale) ;
+            if ScaledValue < ADCMinVal then ScaledValue := ADCMinVal ;
+            if ScaledValue > ADCMaxVal then ScaledValue := ADCMaxVal ;
+            ADCBuf[FADCPointer] := ScaledValue ;
+            Inc(FADCPointer) ;
+            Inc(j) ;
+            end ;
         FADCNumSamplesAcquired := FADCPointer ;
         if (FADCPointer > ADCBufEnd) and FADCCircularBuffer then FADCPointer := 0 ;
         end ;
@@ -1763,7 +1795,7 @@ begin
 
      // Set sampling rate (ensuring that it can be supported by board)
 
-     SamplingRate := 1.0 / SamplingInterval ;
+     SamplingRate := 1.0 / Max(SamplingInterval,1E-7) ;
      Repeat
         Err := DAQmxCfgSampClkTiming( ADCTask[DeviceNum],
                                       nil,
@@ -1778,7 +1810,7 @@ begin
         Until Err = 0 ;
 
      // Return actual sampling interval
-     SamplingInterval := 1.0 / ActualSamplingRate ;
+     SamplingInterval := 1.0 / Max(ActualSamplingRate,1E-7) ;
 
      // Clear task
      CheckError( DAQmxClearTask(ADCTask[DeviceNum])) ;
@@ -1810,8 +1842,9 @@ var
     NumSamplesWritten : Integer ;
     UpdateRate : Double ;
     NumPointsInBuffer : Integer ;
-    IOBuf : PBig16bitArray ;
-    TaskHandle : Integer ;
+    VBuf : PBigDoubleArray ;
+    VScale : Double ;
+    TaskHandle : NativeInt ;
     Err : Integer ;
 begin
      Result := False ;
@@ -1861,7 +1894,7 @@ begin
                                   else ClockSource := 'onboardclock' ;
 
         // Set timing
-        UpdateRate := 1.0 / UpdateInterval ;
+        UpdateRate := 1.0 / Max(UpdateInterval,1E-8) ;
         CheckError( DAQmxCfgSampClkTiming( DACTask[Device],
                                            PANSIChar(ClockSource),
                                            UpdateRate,
@@ -1902,9 +1935,10 @@ begin
                            else EndOffset := nChannels ;
      iTo := 0 ;
      iFrom := 0 ;
-     GetMem(IOBuf,nCopy*Sizeof(SmallInt)) ;
+     GetMem(VBuf,nCopy*Sizeof(Double)) ;
+     VScale := 1.0/DACScale[Device] ;
      for i := 0 to nCopy-1 do begin
-         IOBuf[iTo] := DACBuf[iFrom] ;
+         VBuf[iTo] := DACBuf[iFrom]*VScale ;
          Inc(iFrom) ;
          Inc(iTo) ;
          if iFrom >= nSource then iFrom := iFrom - EndOffset
@@ -1916,17 +1950,17 @@ begin
      DAC[Device].Buf := @DACBuf ;
      DAC[Device].CircularBuffer := CircularBufferMode ;
      DAC[Device].Pointer := iFrom div nChannels ;
-     CheckError( DAQmxWriteBinaryI16 ( DACTask[Device],
-                     NumPointsInBuffer,
-                     False,
-                     DefaultTimeOut,
-                     DAQmx_Val_GroupByScanNumber,
-                     @IOBuf^,
-                     NumSamplesWritten,
-                     Nil
-                     )) ;
+     CheckError( DAQmxWriteAnalogF64( DACTask[Device],
+                                      NumPointsInBuffer,
+                                      False,
+                                      DefaultTimeOut,
+                                      DAQmx_Val_GroupByScanNumber,
+                                      @VBuf^,
+                                      NumSamplesWritten,
+                                      Nil
+                                      )) ;
 
-     FreeMem(IOBuf) ;
+      FreeMem(VBuf) ;
 
      // Start D/A task
      CheckError( DAQmxStartTask(DACTask[Device])) ;
@@ -1972,17 +2006,15 @@ var
     NumPointsToWrite : Cardinal ;
     CircularBuffer : Boolean ;
     pBuf : PBig16bitArray ;
-    //tt,t1 : Integer ;
+    VScale : Double ;
 begin
+
+
     for iDev := 1 to NumDevices do if DACActive[iDev] then begin ;
 
         // Update D/A output buffer with XY scan waveform
         DAQmxGetWriteSpaceAvail( DACTask[iDev], NumPointsToWrite ) ;
         if NumPointsToWrite = 0 then continue ;
-
-        //t1 := Timegettime ;
-        //tt := t1-t0 ;
-        //t0 := t1 ;
 
         // Copy DAC data into output buffer
         iPointer := DAC[iDev].Pointer ;
@@ -1994,9 +2026,10 @@ begin
         iFrom := DAC[iDev].Pointer*nChannels ;
         pBuf := DAC[iDev].Buf ;
         iTo := 0 ;
+        VScale := 1.0/DACScale[iDev] ;
         for i := 0 to NumPointsToWrite-1 do begin
             for ch := 0 to nChannels-1 do begin
-               InBuf[iTo] := pBuf^[iFrom] ;
+               DBuf[iTo] := pBuf^[iFrom]*VScale ;
                Inc(iFrom) ;
                Inc(iTo) ;
                end ;
@@ -2009,12 +2042,12 @@ begin
             end ;
         DAC[iDev].Pointer := iPointer ;
 
-        CheckError( DAQmxWriteBinaryI16( DACTask[iDev],
+        CheckError( DAQmxWriteAnalogF64( DACTask[iDev],
                            NumPointsToWrite,
                            False,
                            DefaultTimeOut,
                            DAQmx_Val_GroupByScanNumber,
-                           InBuf,
+                           DBuf,
                            NumSamplesWritten,
                            Nil
                            )) ;
@@ -2433,6 +2466,7 @@ begin
      ChannelList := format( DeviceName[Device] + '/AI%d', [Channel] ) ;
 
 
+     FADCVoltageRange[Device] := ADCVoltageRange ;
      CheckError( DAQmxCreateAIVoltageChan( ADCTask[Device],
                                            PANSIChar(ChannelList),
                                            nil ,
@@ -2481,7 +2515,8 @@ begin
 
      BoardsInitialised := False ;
 
-     FreeMem(InBuf) ;
+//     FreeMem(InBuf) ;
+     FreeMem(DBuf) ;
 
      if LibraryLoaded then FreeLibrary( LibraryHnd ) ;
      LibraryLoaded := False ;
@@ -3084,7 +3119,7 @@ begin
      CheckError( AO_VScale( DeviceNum, 0, 4.9, iValue16 ) ) ;
      if iValue16 > (DACMaxValue[DeviceNum] div 2) then DACMaxVolts[DeviceNum] := 5.0
                                                   else DACMaxVolts[DeviceNum] := 10.0 ;
-     DACScale[DeviceNum] := DACMaxValue[DeviceNum] / DACMaxVolts[DeviceNum] ;
+     DACScale[DeviceNum] := DACMaxValue[DeviceNum] / Max(DACMaxVolts[DeviceNum],1E-6) ;
 
      end ;
 
@@ -3202,7 +3237,8 @@ begin
                        else CheckError(DAQ_DB_Config(Device, 0)) ;
 
      { Set internal gain for A/D converter's programmable amplifier }
-     Gain := Trunc( (ADCVoltageRangeAtX1Gain[Device] + 0.001) / ADCVoltageRange ) ;
+     FADCVoltageRange[Device] := ADCVoltageRange ;
+     Gain := Trunc( (ADCVoltageRangeAtX1Gain[Device] + 0.001) / Max(ADCVoltageRange,1E-6) ) ;
      if Gain < 1 then Gain := -1 ;
 
      // Define A/D channel offset sequence within A/D sample buffer
@@ -3574,6 +3610,7 @@ begin
 
      { Set internal gain for A/D converter's programmable amplifier }
 
+     FADCVoltageRange[Device] := ADCVoltageRange ;
      Gain := Trunc( (ADCVoltageRangeAtX1Gain[Device]/ADCVoltageRange) + 0.001 ) ;
      if Gain < 1 then Gain := -1 ;
 

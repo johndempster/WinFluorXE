@@ -63,7 +63,8 @@ uses
   DirectControlUnit in 'DirectControlUnit.pas' {DirectControlFrm},
   ZStageUnit in 'ZStageUnit.pas' {ZStage: TDataModule},
   Maths in '..\SESComponentsXE\Maths.pas',
-  XYStageUnit in 'XYStageUnit.pas' {XYStageFrm};
+  XYStageUnit in 'XYStageUnit.pas' {XYStageFrm},
+  nidaqmxlib in 'nidaqmxlib.pas';
 
 {$R *.TLB}
 

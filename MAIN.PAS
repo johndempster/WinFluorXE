@@ -264,6 +264,8 @@ unit Main;
 //                    for channels not selected for use with Amplifier #1 or #2 (change to setupUnit.pas)
 // 12.11.19 V4.1.1 JD ExportAnalogueUnit.pas SelectFilesToExport and ClearFiles buttons now work.
 // 22.11.19 V4.1.2 JD File export folder can now be changed by user.
+// 05.12.19 V4.1.3 JD Camera image capture interval now updates correctly with 65 bit version of IMAQdx
+//                    No. of analogue input and output channels now correctly determined with 64 bit verssion of NIDAQmx 19.5
 
 interface
 
@@ -272,7 +274,7 @@ uses Windows, SysUtils, Classes, Graphics, Forms, Controls, Menus,
   ActnList, ToolWin, ImgList, SESCam, shared, ValEdit, SetupUnit, SealTest,
   StimSetupUnit, ImageFile, IDRFile, Sockets, UltimaUnit, ViewPlotUnit,
   EventAnalysisUnit, ExcSetupUnit, math, shlobj, UITypes, VCL.HTMLHelpViewer,
-  Vcl.AppEvnts ;
+  Vcl.AppEvnts, System.ImageList ;
 
 const
     InitialisationFileName = 'WinFluor.ini' ;
@@ -876,7 +878,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.2 22-11-19 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.3 05-12-19 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

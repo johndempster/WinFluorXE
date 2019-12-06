@@ -676,15 +676,13 @@ procedure TTimeCourseFrm.PlotLineScanIntensity(
 var
      i,j,L : Integer ;
      NumRatios : Integer ;
-     iChan : Integer ;
-     z, t, dt, y : Single ;
+     t, y : Single ;
      tStep : Single ;
      yNumerator: Single ;
      yDenominator: Single ;
      Ratio : Single ;     // Frame ratio
 
      ReportInterval : Integer ;
-     Concentration : Single ;             // Computed ion concentration
      RMin : Single ;                      // Minimum ratio
      RMax : Single ;                      // Maximum ratio
      KEff : Single ;                      // Binding coefficient
@@ -700,12 +698,7 @@ var
     yThreshold : Single ;
 
     NumPoints : Integer ;            // No. of points in plot
-    AddPointToPlot : Boolean ;
 
-     OK : Boolean ;
-     FrameOffset : Integer ;
-     Col : TColor ;
-     NewHeight : Integer ;
      RatioMode : Boolean ;
      FrameTypeNum,FrameTypeDen : Integer ;
      nAvg : Integer ;

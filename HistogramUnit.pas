@@ -222,7 +222,7 @@ procedure THistogramFrm.UpdateHistogram ;
 // Update image intensity histogram
 // ---------------------------------
 var
-    i,iStart,j,z,MaxCount,OldNumPixelsPerFrame : Integer ;
+    i,iStart,j,z,MaxCount : Integer ;
     xPix,yPix,ix : Integer ;
     Sum : Single ;
     ImageSource : Pointer ;

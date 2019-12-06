@@ -53,10 +53,10 @@ object HistogramFrm: THistogramFrm
     PrinterFontName = 'Arial'
     PrinterLineWidth = 1
     PrinterMarkerSize = 5
-    PrinterLeftMargin = 15
-    PrinterRightMargin = 15
-    PrinterTopMargin = 15
-    PrinterBottomMargin = 15
+    PrinterLeftMargin = 14
+    PrinterRightMargin = 14
+    PrinterTopMargin = 14
+    PrinterBottomMargin = 14
     PrinterDisableColor = False
     MetafileWidth = 500
     MetafileHeight = 400

@@ -160,6 +160,8 @@ object SetupFrm: TSetupFrm
           Top = 16
           Width = 209
           Height = 22
+          Hint = 'Camera type in use'
+          ParentCustomHint = False
           TabOrder = 0
           Text = 'cbCamera'
           OnChange = cbCameraChange
@@ -209,6 +211,8 @@ object SetupFrm: TSetupFrm
             Top = 3
             Width = 97
             Height = 22
+            Hint = 'Camera control port'
+            ParentCustomHint = False
             TabOrder = 0
             Text = 'cbCameraGain'
             OnChange = cbCameraPortChange
@@ -239,6 +243,7 @@ object SetupFrm: TSetupFrm
             Top = 3
             Width = 97
             Height = 22
+            Hint = 'Camera readout speed'
             Style = csDropDownList
             TabOrder = 0
           end
@@ -248,7 +253,9 @@ object SetupFrm: TSetupFrm
           Top = 360
           Width = 81
           Height = 20
+          Hint = 'Camera cooler temperature set point'
           AutoSize = False
+          ShowHint = True
           Text = ' 0 DEGC'
           Scale = 1.000000000000000000
           Units = 'DEGC'
@@ -276,6 +283,7 @@ object SetupFrm: TSetupFrm
             Top = 3
             Width = 121
             Height = 22
+            Hint = 'Camera readout channel'
             Style = csDropDownList
             TabOrder = 0
             OnChange = cbCameraADCChange
@@ -420,8 +428,10 @@ object SetupFrm: TSetupFrm
           Top = 18
           Width = 65
           Height = 20
+          Hint = 'Microscope objective lens magnification'
           OnKeyPress = edLensMagnificationKeyPress
           AutoSize = False
+          ShowHint = True
           Text = ' 0 X'
           Scale = 1.000000000000000000
           Units = 'X'
@@ -434,7 +444,9 @@ object SetupFrm: TSetupFrm
           Top = 42
           Width = 65
           Height = 20
+          Hint = 'Camera pixel size'
           AutoSize = False
+          ShowHint = True
           Text = ' 0 um'
           Scale = 1.000000000000000000
           Units = 'um'
@@ -447,7 +459,9 @@ object SetupFrm: TSetupFrm
           Top = 66
           Width = 65
           Height = 20
+          Hint = 'Calibration bar size (um)'
           AutoSize = False
+          ShowHint = True
           Text = ' 0 um'
           Scale = 1.000000000000000000
           Units = 'um'
@@ -460,7 +474,9 @@ object SetupFrm: TSetupFrm
           Top = 90
           Width = 65
           Height = 20
+          Hint = 'Calibration bar width (pixels)'
           AutoSize = False
+          ShowHint = True
           Text = ' 0 pixels'
           Scale = 1.000000000000000000
           Units = 'pixels'
@@ -505,7 +521,10 @@ object SetupFrm: TSetupFrm
           Top = 18
           Width = 193
           Height = 22
+          Hint = 'Camera exposure trigger output channel'
           Style = csDropDownList
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
         end
         object rbCameraStartActiveHigh: TRadioButton
@@ -713,10 +732,6 @@ object SetupFrm: TSetupFrm
     object LightSourceTab: TTabSheet
       Caption = 'Light Source'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object LSShutterGrp: TGroupBox
         Left = 280
         Top = 0
@@ -1601,10 +1616,6 @@ object SetupFrm: TSetupFrm
               Font.Name = 'Arial'
               Font.Style = [fsBold]
               ParentFont = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label7: TLabel
                 Left = 9
                 Top = 4
@@ -1736,10 +1747,6 @@ object SetupFrm: TSetupFrm
               Font.Style = [fsBold]
               ImageIndex = 1
               ParentFont = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label9: TLabel
                 Left = 9
                 Top = 4
@@ -1871,10 +1878,6 @@ object SetupFrm: TSetupFrm
               Font.Style = [fsBold]
               ImageIndex = 2
               ParentFont = False
-              ExplicitLeft = 0
-              ExplicitTop = 0
-              ExplicitWidth = 0
-              ExplicitHeight = 0
               object Label30: TLabel
                 Left = 9
                 Top = 4
@@ -2004,10 +2007,6 @@ object SetupFrm: TSetupFrm
     object TabSheet1: TTabSheet
       Caption = 'Stimulus Outputs'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox11: TGroupBox
         Left = 8
         Top = 0
@@ -2189,10 +2188,6 @@ object SetupFrm: TSetupFrm
             Font.Name = 'Arial'
             Font.Style = [fsBold]
             ParentFont = False
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label55: TLabel
               Left = 26
               Top = 30
@@ -2247,10 +2242,6 @@ object SetupFrm: TSetupFrm
             Font.Style = [fsBold]
             ImageIndex = 1
             ParentFont = False
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label51: TLabel
               Left = 11
               Top = 6
@@ -2306,10 +2297,6 @@ object SetupFrm: TSetupFrm
             Font.Style = [fsBold]
             ImageIndex = 2
             ParentFont = False
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label52: TLabel
               Left = 20
               Top = 6
@@ -2394,10 +2381,6 @@ object SetupFrm: TSetupFrm
           object MeterTab: TTabSheet
             Caption = 'Meter'
             ImageIndex = 3
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label44: TLabel
               Left = 44
               Top = 6
@@ -2503,7 +2486,10 @@ object SetupFrm: TSetupFrm
           Top = 16
           Width = 120
           Height = 22
+          Hint = 'Analogue input channel range'
           Style = csDropDownList
+          Ctl3D = True
+          ParentCtl3D = False
           TabOrder = 0
           OnChange = cbADCInChange
         end
@@ -2512,6 +2498,7 @@ object SetupFrm: TSetupFrm
           Top = 42
           Width = 120
           Height = 22
+          Hint = 'Analogue input mode (differential, single-ended, etc.)'
           TabOrder = 1
           Text = 'cbADCInputMode'
         end
@@ -2520,20 +2507,29 @@ object SetupFrm: TSetupFrm
           Top = 96
           Width = 56
           Height = 22
+          Hint = 'No. of analogue input channels in use'
           OnKeyPress = edNumChannelsKeyPress
           AutoSize = False
+          ShowHint = True
           Text = ' 0 '
           Scale = 1.000000000000000000
           NumberFormat = '%.0f'
           LoLimit = -1.000000015047466E29
-          HiLimit = 16.000000000000000000
+          HiLimit = 8.000000000000000000
         end
         object cbADCVoltageRange: TComboBox
           Left = 97
           Top = 68
           Width = 120
           Height = 22
+          Hint = 'Analogue input voltage range (+/-)'
           Style = csDropDownList
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = [fsBold]
+          ParentFont = False
           ParentShowHint = False
           ShowHint = False
           TabOrder = 3
@@ -2585,6 +2581,8 @@ object SetupFrm: TSetupFrm
           Top = 18
           Width = 56
           Height = 22
+          Hint = 'Analogue output and input update and sampling interval (ms)'
+          ShowHint = True
           Text = ' 0 ms'
           Scale = 1000.000000000000000000
           Units = 'ms'
@@ -2597,7 +2595,10 @@ object SetupFrm: TSetupFrm
           Top = 44
           Width = 120
           Height = 22
+          Hint = 'Timing link between multiple interface boards'
           Style = csDropDownList
+          DoubleBuffered = False
+          ParentDoubleBuffered = False
           TabOrder = 1
         end
       end
@@ -2634,6 +2635,7 @@ object SetupFrm: TSetupFrm
           Top = 16
           Width = 210
           Height = 22
+          Hint = '#1 Patch clamp amplifier in use'
           TabOrder = 0
           Text = 'cbAmplifier1'
         end
@@ -2642,7 +2644,9 @@ object SetupFrm: TSetupFrm
           Top = 72
           Width = 41
           Height = 20
+          Hint = 'Patch clamp command voltage divide factor'
           AutoSize = False
+          ShowHint = True
           Text = ' 0 X'
           Scale = 1.000000000000000000
           Units = 'X'
@@ -2651,7 +2655,7 @@ object SetupFrm: TSetupFrm
           HiLimit = 1.000000015047466E29
         end
         object GainTelPanel1: TPanel
-          Left = 26
+          Left = 17
           Top = 44
           Width = 93
           Height = 25
@@ -2678,6 +2682,7 @@ object SetupFrm: TSetupFrm
             Top = 2
             Width = 22
             Height = 20
+            Hint = 'Amplifier gain telegraph analogue input channel'
             AutoSize = False
             Text = ' 0 '
             Scale = 1.000000000000000000
@@ -2713,7 +2718,11 @@ object SetupFrm: TSetupFrm
             Top = 2
             Width = 22
             Height = 20
+            Hint = 
+              'Amplifier voltage/current-clamp mode telegraph analogue input ch' +
+              'annel'
             AutoSize = False
+            ShowHint = True
             Text = ' 0 '
             Scale = 1.000000000000000000
             NumberFormat = '%.0f'
@@ -2755,6 +2764,11 @@ object SetupFrm: TSetupFrm
           Top = 16
           Width = 210
           Height = 22
+          Hint = '#2 Patch clamp amplifier in use'
+          Ctl3D = True
+          ParentCtl3D = False
+          ParentShowHint = False
+          ShowHint = True
           TabOrder = 0
           Text = 'cbAmplifiers'
         end
@@ -2763,7 +2777,9 @@ object SetupFrm: TSetupFrm
           Top = 72
           Width = 41
           Height = 20
+          Hint = 'Patch clamp command voltage divide factor'
           AutoSize = False
+          ShowHint = True
           Text = ' 0 X'
           Scale = 1.000000000000000000
           Units = 'X'
@@ -2799,7 +2815,9 @@ object SetupFrm: TSetupFrm
             Top = 2
             Width = 22
             Height = 20
+            Hint = 'Amplifier gain telegraph analogue input channel'
             AutoSize = False
+            ShowHint = True
             Text = ' 0 '
             Scale = 1.000000000000000000
             NumberFormat = '%.0f'
@@ -2834,7 +2852,11 @@ object SetupFrm: TSetupFrm
             Top = 2
             Width = 22
             Height = 20
+            Hint = 
+              'Amplifier voltage/current-clamp mode telegraph analogue input ch' +
+              'annel'
             AutoSize = False
+            ShowHint = True
             Text = ' 0 '
             Scale = 1.000000000000000000
             NumberFormat = '%.0f'
@@ -2874,6 +2896,11 @@ object SetupFrm: TSetupFrm
           ParentFont = False
           ScrollBars = ssNone
           TabOrder = 0
+          ColWidths = (
+            58
+            58
+            58
+            58)
           RowHeights = (
             18
             18
@@ -2890,10 +2917,6 @@ object SetupFrm: TSetupFrm
     object ZStageTab: TTabSheet
       Caption = 'XY / Z Stage'
       ImageIndex = 4
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox13: TGroupBox
         Left = 3
         Top = 0
@@ -3398,10 +3421,6 @@ object SetupFrm: TSetupFrm
     object CapacityTab: TTabSheet
       Caption = 'Computed Channels'
       ImageIndex = 5
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object CapGrp: TGroupBox
         Left = 3
         Top = 0
