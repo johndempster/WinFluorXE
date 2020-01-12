@@ -266,6 +266,10 @@ unit Main;
 // 22.11.19 V4.1.2 JD File export folder can now be changed by user.
 // 05.12.19 V4.1.3 JD Camera image capture interval now updates correctly with 65 bit version of IMAQdx
 //                    No. of analogue input and output channels now correctly determined with 64 bit verssion of NIDAQmx 19.5
+// 08.01.20 V4.1.4 JD Andor SDK V3: atcore.dll now loaded directly from \Program Files\Andor SDK3\ or \Program Files\Andor SDK3\win32
+//                    If not present user requested to copy DLLs to \Program Files\WinFluor
+//                    Andor SDK V2:  atmcd32.dll or atmcd64.dll now loaded directly from c:\program files\andor sdk
+//                    If not found then user requested to copy DLL to c:\program files\winfluor
 
 interface
 
@@ -878,7 +882,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.3 05-12-19 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.4 08-01-20 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
