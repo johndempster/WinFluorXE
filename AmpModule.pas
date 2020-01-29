@@ -66,6 +66,10 @@ unit AmpModule;
 // 04.03.16 Multiclamp 700A: Now Com port # now correctly isolated from message code
 //          allowing Amplifier #1/#2 to be correctly selected instead of #3/#4
 //          AppHookFunc() copied from WinWCP
+// 28.01.20 A-M Systems 2400: Now supports latest version of patch clamp with 0.3V gain telegraph steps instead of original 0.5V steps
+//          GetAMS2400GainCC() removed since new GetAMS2400Gain function works for both current and voltage-clamp mode
+//          now default current-clamp X1 voltage gain = 0.00001 ;
+
 
 interface
 
@@ -2426,59 +2430,62 @@ begin
     end ;
 
 
-
-
 function TAmplifier.GetAMS2400Gain(
          AmpNumber : Integer ) : single ;
 // ---------------------------------------------------
 // Decode A-M Systems 2400 current gain from telegraph output
+// Voltage-clamp mode
 // ---------------------------------------------------
 const
-     NumGains = 16 ;
+     NumGains = 18 ;
      VGainSpacing = 0.5 ;
-     VStart = 0.3 ;
 var
    Gains : Array[0..NumGains-1] of single ;
-   V : single ;
+   V,VOffset : single ;
    iGain : Integer ;
 begin
 
      // Note. Don't interrupt A/D sampling if it in progress.
      // Use most recent gain setting instead
 
-     if not ADCInUse then begin
+    if (FGainTelegraphChannel[AmpNumber] >= 0) and
+        (FGainTelegraphChannel[AmpNumber] < MaxADCChannels) and
+        (not ADCInUse) then begin
 
         // Gain settings
-        Gains[0] := 1.0 ;
-        Gains[1] := 2.0 ;
-        Gains[2] := 5.0 ;
-        Gains[3] := 10.0 ;
-        Gains[4] := 20.0 ;
-        Gains[5] := 50.0 ;
-        Gains[6] := 100.0 ;
-        Gains[7] := 200.0 ;
-        Gains[8] := 500.0 ;
-        Gains[9] := 1000.0 ;
-        Gains[10] := 2000.0 ;
-        Gains[11] := 5000.0 ;
-        Gains[12] := 10000.0 ;
-        Gains[13] := 20000.0 ;
-        Gains[14] := 50000.0 ;
-        Gains[15] := 100000.0 ;
+        Gains[0] := 1.0 ;         // 0V
+        Gains[1] := 2.0 ;         // 0.3, 0.5V
+        Gains[2] := 5.0 ;         // 0.8, 1.0V
+        Gains[3] := 10.0 ;        // 1.3, 1.5V
+        Gains[4] := 20.0 ;        // 1.8, 2.0V
+        Gains[5] := 50.0 ;        // 2.3, 2.5V
+        Gains[6] := 100.0 ;       // 2.8, 3.0V
+        Gains[7] := 200.0 ;       // 3.3, 3.5V
+        Gains[8] := 500.0 ;       // 3.8, 4.0V
+        Gains[9] := 1000.0 ;      // 4.3, 4.5V
+        Gains[10] := 2000.0 ;     // 4.8, 5.0V
+        Gains[11] := 5000.0 ;     // 5.3, 5.5V
+        Gains[12] := 10000.0 ;    // 5.8, 6.0V
+        Gains[13] := 20000.0 ;    // 6.3, 6.5V
+        Gains[14] := 50000.0 ;    // 6.8, 7.0V
+        Gains[15] := 100000.0 ;   // 7.3, 7.5V
+        Gains[16] := 200000.0 ;   // 7.8, 8.0V
+        Gains[17] := 500000.0 ;   // 8.3, 8.5V
 
         // Get voltage from telegraph channel
         V := GetTelegraphVoltage( FGainTelegraphChannel[AmpNumber] ) ;
 
+        // Determine gain step size (0.3V or 0.5V)
+        if Frac( (V+0.1)/VGainSpacing ) > 0.1 then V := V + 0.2 ;
         // Extract gain associated with telegraph voltage
-        if V < (VStart-0.1) then iGain := 0
-        else begin
-           iGain := Trunc( (V - VStart + 0.1)/VGainSpacing ) + 1 ;
-           end ;
+        iGain := Trunc( (V + 0.1)/VGainSpacing ) ;
+        iGain := Min(Max(iGain,0),NumGains-1) ;
         LastGain[AmpNumber] := Gains[iGain] ;
 
         end ;
 
      Result := LastGain[AmpNumber] ;
+
      end ;
 
 

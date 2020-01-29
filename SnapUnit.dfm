@@ -796,8 +796,8 @@ object SnapFrm: TSnapFrm
       end
     end
     object cbDisplayZoom: TComboBox
-      Left = 48
-      Top = 16
+      Left = 46
+      Top = 20
       Width = 65
       Height = 22
       Hint = 'Display magnification'

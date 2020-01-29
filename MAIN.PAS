@@ -270,6 +270,9 @@ unit Main;
 //                    If not present user requested to copy DLLs to \Program Files\WinFluor
 //                    Andor SDK V2:  atmcd32.dll or atmcd64.dll now loaded directly from c:\program files\andor sdk
 //                    If not found then user requested to copy DLL to c:\program files\winfluor
+// 29.01.20        JD Andor SDK V3: Main thread now waits for completion of termination of WaitBufferthread() and termination
+//                    completed before AT_Flush() when capture stopped. Modifications to avoid
+//                 A-M Systems 2400 patch clamp. Now reads gain telegraph voltages correctly.
 
 interface
 
