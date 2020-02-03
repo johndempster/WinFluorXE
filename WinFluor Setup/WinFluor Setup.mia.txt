@@ -1,6 +1,12 @@
 Comment: Native Code Setup Engine 32 bit-64 bit Installer Project
  
 [DEFINE REGION: Check Application Requirements]
+Get System Setting Windows in 64 bit Mode into CHECKSYSTEM
+if Variable CHECKSYSTEM not Equals TRUE
+  MessageBox: $TITLE$ Setup Error, This product requires at least a 64 bit operating system.$NEWLINE$$NEWLINE$Setup cannot continue.
+  Terminate Installation
+end
+Set x64 - Native 64 bit Windows, AMD64 and EM64T Architectures - installation mode
 Get System Setting Administrator Rights into CHECKSYSTEM
 if Variable CHECKSYSTEM not Equals TRUE
   MessageBox: $TITLE$ Setup Error, This product requires at least Administrator Privileges.$NEWLINE$$NEWLINE$Setup cannot continue.

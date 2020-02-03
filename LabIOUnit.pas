@@ -52,13 +52,14 @@ unit LabIOUnit;
 // 10.05.16 JD .... Digital outputs not supported by USB 621X boards
 // 21.11.17 JD ... USB-600X devices D/A update interval limited to 2ms or longer to avoid
 //                 intermittent 5s delays when .ADCStop called.
-// 04.01.18 JD ... NADAQMXMemoryToDAC now writes D/A values as DOUBLE voltages to avoid calibration errors
+// 04.01.18 JD ... NIDAQMXMemoryToDAC now writes D/A values as DOUBLE voltages to avoid calibration errors
 //                 with USB-6002/3
 // 23.04.18 JD ... digital waveform output now supported on 628x devices
 //                 NIDAQmx getadcsamples() A/D samples now read as double precision and converted to 16 bit integer
 // 02.12.19 JD ... TaskHandle now defined as NativeInt rather than Integer to fix problem with NIDAQmx 19.X and later in 64 bit compiles.
 // 09.12.19 JD ... NIDAQ_GetDeviceDACChannelProperties() NIDAQ_GetDeviceDACChannelProperties() now use property functions calls to determine
 //                 nos. of available channels rather than incrementing through channels until errors occur.
+// 03.02.20 JD ... ChannelList size increased to 10000 characters because array too small error occurs on some systems
 
 
 interface
@@ -1117,12 +1118,14 @@ begin
    // List available device resources
 
    NumResources := 0 ;
-   for DeviceNum := 1 to NumDevices do begin
+   for DeviceNum := 1 to NumDevices do
+       begin
 
        // Determine number of A/D channels per board
        GetDeviceADCChannelProperties( DeviceNum ) ;
        // Add to resource list
-       if NumADCs[DeviceNum] > 0 then begin
+       if NumADCs[DeviceNum] > 0 then
+          begin
           Resource[NumResources].Device := DeviceNum ;
           Resource[NumResources].ResourceType := ADCIn ;
           Resource[NumResources].StartChannel := 0 ;
@@ -1133,9 +1136,11 @@ begin
        // Determine number of D/A channels per board
        GetDeviceDACChannelProperties( DeviceNum ) ;
        // Set analogue output DMA transfer mode
-       if NumDACs[DeviceNum] > 0 then begin
+       if NumDACs[DeviceNum] > 0 then
+          begin
           // Add to resource list
-          for i := 0 to NumDACs[DeviceNum]-1 do begin
+          for i := 0 to NumDACs[DeviceNum]-1 do
+              begin
               Resource[NumResources].Device := DeviceNum ;
               Resource[NumResources].ResourceType := DACOut ;
               Resource[NumResources].StartChannel := i ;
@@ -1144,7 +1149,8 @@ begin
               end ;
           end ;
 
-        if DACMaxVolts[DeviceNum] > 0.0 then begin
+        if DACMaxVolts[DeviceNum] > 0.0 then
+           begin
            DACScale[DeviceNum] := DACMaxValue[DeviceNum] / DACMaxVolts[DeviceNum] ;
            end
         else DACScale[DeviceNum] := 1.0 ;
@@ -1165,7 +1171,8 @@ begin
 
    // Set minimum DAC update interval
    DACMinUpdateInterval := 5E-5 ;
-   for i := 1 to NumDevices do begin
+   for i := 1 to NumDevices do
+       begin
        if AnsiContainsText(DeviceBoardName[i],'600') then DACMinUpdateInterval := 2E-4 ;
        end;
    Result := True ;
@@ -1209,11 +1216,13 @@ begin
    i := 0 ;
    Done := False ;
    repeat
-        if (CBuf[i] <> ',') and (CBuf[i] <> #0) then begin
+        if (CBuf[i] <> ',') and (CBuf[i] <> #0) then
+           begin
            if CBuf[i] <> ' ' then
               DeviceName[NumDevices+1] := DeviceName[NumDevices+1] + CBuf[i] ;
            end
-        else begin
+        else
+           begin
            Inc(NumDevices) ;
            if CBuf[i] = #0 then Done := True ;
            end ;
@@ -1225,7 +1234,8 @@ begin
    if NumDevices <= 0 then Exit ;
 
    // Get device board name
-   for i := 1 to NumDevices do begin
+   for i := 1 to NumDevices do
+       begin
        CheckError(DAQmxGetDevProductType(PANSIChar(DeviceName[i]),CBuf,High(CBuf)+1)) ;
        DeviceBoardName[i] := PCharArrayToString(CBuf) ;
        if AnsiContainsText(DeviceBoardName[i],'622') or
@@ -1241,12 +1251,14 @@ begin
    // List available device resources
 
    NumResources := 0 ;
-   for DeviceNum := 1 to NumDevices do begin
+   for DeviceNum := 1 to NumDevices do
+       begin
 
        // Determine number of A/D channels per board
        GetDeviceADCChannelProperties( DeviceNum ) ;
        // Add to resource list
-       if NumADCs[DeviceNum] > 0 then begin
+       if NumADCs[DeviceNum] > 0 then
+          begin
           Resource[NumResources].Device := DeviceNum ;
           Resource[NumResources].ResourceType := ADCIn ;
           Resource[NumResources].StartChannel := 0 ;
@@ -1257,9 +1269,11 @@ begin
        // Determine number of D/A channels per board
        GetDeviceDACChannelProperties( DeviceNum ) ;
        // Set analogue output DMA transfer mode
-       if NumDACs[DeviceNum] > 0 then begin
+       if NumDACs[DeviceNum] > 0 then
+          begin
           // Add to resource list
-          for i := 0 to NumDACs[DeviceNum]-1 do begin
+          for i := 0 to NumDACs[DeviceNum]-1 do
+              begin
               Resource[NumResources].Device := DeviceNum ;
               Resource[NumResources].ResourceType := DACOut ;
               Resource[NumResources].StartChannel := i ;
@@ -1268,20 +1282,22 @@ begin
               end ;
           end ;
 
-        if DACMaxVolts[DeviceNum] > 0.0 then begin
+       if DACMaxVolts[DeviceNum] > 0.0 then
+           begin
            DACScale[DeviceNum] := DACMaxValue[DeviceNum] / DACMaxVolts[DeviceNum] ;
            end
-        else DACScale[DeviceNum] := 1.0 ;
+       else DACScale[DeviceNum] := 1.0 ;
 
         // Digital O/P ports
-        for i := 0 to 7 do begin
+       for i := 0 to 7 do
+            begin
             Resource[NumResources].Device := DeviceNum ;
             Resource[NumResources].ResourceType := DIGOut ;
             Resource[NumResources].StartChannel := i ;
             Resource[NumResources].EndChannel := i ;
             Inc(NumResources) ;
             end ;
-        end ;
+       end ;
 
 
    Result := True ;
@@ -1304,7 +1320,7 @@ var
     Err : Integer ;
     ChannelName : ANSIString ;
     NumChannels : Integer ;
-    ChannelList : Array[0..255] of ANSICHar ;
+    ChannelList : Array[0..9999] of ANSICHar ;
     VRanges : Array[0..31] of Double ;
     SimultaneousSampling : LongBool ;
 begin
@@ -1378,7 +1394,7 @@ var
     i,Err : Integer ;
     ChannelName : ANSIString ;
     NumChannels : Integer ;
-    ChannelList : Array[0..255] of ANSICHar ;
+    ChannelList : Array[0..9999] of ANSICHar ;
     VRanges : Array[0..15] of Double ;
 begin
 

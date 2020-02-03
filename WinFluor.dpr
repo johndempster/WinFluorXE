@@ -72,7 +72,7 @@ uses
 
 begin
   Application.Initialize;
-  Application.Title := 'WinFluor V4.0.6';
+  Application.Title := 'WinFluor V4.1.5';
   Application.HelpFile := 'C:\Program Files\Borland\Delphi7\WinFluor\WINFLUOR.chm';
   Application.CreateForm(TMainFrm, MainFrm);
   Application.CreateForm(TAboutBox, AboutBox);

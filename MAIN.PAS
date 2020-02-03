@@ -273,6 +273,10 @@ unit Main;
 // 29.01.20        JD Andor SDK V3: Main thread now waits for completion of termination of WaitBufferthread() and termination
 //                    completed before AT_Flush() when capture stopped. Modifications to avoid
 //                 A-M Systems 2400 patch clamp. Now reads gain telegraph voltages correctly.
+// 03.02.20 V4.1.5 JD Andor SDK3.WaitBufferThread code simplified to avoid possible infinite loop condition
+//                 Delay added at end of StopCapture() to ensure delay between stopping and starting camera
+//                 to test if this is cause of intermittent hang ups with Zylas.
+//                 LabIOUnit ChannelList size increased to 10000 characters because array too small error occurs on some systems
 
 interface
 
@@ -885,7 +889,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.4 08-01-20 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.5 02-02-20 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
