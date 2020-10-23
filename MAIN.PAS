@@ -277,6 +277,10 @@ unit Main;
 //                 Delay added at end of StopCapture() to ensure delay between stopping and starting camera
 //                 to test if this is cause of intermittent hang ups with Zylas.
 //                 LabIOUnit ChannelList size increased to 10000 characters because array too small error occurs on some systems
+// 23.10.20 V4.1.6 JD sCMOS cameras now detected from model numbers containing '440' so that it
+//                 now includes OCRCA-FUSION and FRASH 4.0 V3. Min. frame interval for sCMOS
+//                 cameras set to twice readout rate
+
 
 interface
 
@@ -889,7 +893,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.5 02-02-20 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.6 32-20-20 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
