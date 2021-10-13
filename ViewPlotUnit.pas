@@ -37,19 +37,22 @@ unit ViewPlotUnit;
 //             which has been chznged to a floating point -65536.0. Multi-waavelength
 //             time courses now calculated correctly again.
 // 04.01.18 .. JD Heap memory now allocated with AllocMem instead to GetMem to initialise to zero
+// 20.03.21 .. JD A/D display start and readout cursor now made same as fluorescence display when displayed frame changed
+// 22.03.21 .. JD Time course computations now carried out by thread rather than Timer component
+//                CSV data table containing ROI time courses automatically created
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ValidatedEdit, ExtCtrls, ScopeDisplay, HTMLLabel,IDRFile,
-  math, strutils, mmsystem, excsetupunit, labiounit ;
+  math, strutils, mmsystem, excsetupunit, labiounit, ViewPlotThread ;
 
 Const
     GreyLevelLimit = $FFFF ;
     MaxADCChannels = 8 ;
     MaxFrames = 100000 ;
-    ROITimeCourseBufEmptyFlag = -65536.0 ;
+
 type
 
   TROIPixelList = Array[0..4096*4096] of TPoint ;
@@ -120,37 +123,22 @@ type
     procedure FormCreate(Sender: TObject);
   private
     { Private declarations }
-    //ADCDisplayScansPerPoint : Single ;
-
     ADCBuf : PBig16BitArray ;
     FLDisplayBuf : PSingleArray ;
     RDisplayBuf : PSingleArray ;
     ROITimeCourseBuf : PSingleArray ;
 
-    ROITCSPacing : Integer ;
-
-    ROITCNumFrames : Integer ;     // No. of points in time course buffer
-    ROITCNumFramesDone : Integer ; // No. of points comluted in TC buffer
-    ROITCNumBytes : Integer ;      // No. of bytes in TC buffer
-    //ROITCNumGroups : Integer ;     // No. of frame type groups
-
-    ROITCRunning : Boolean ;
     NumROIsPlotted : Integer ;
-
-    TimerTickCount : Cardinal ;
-
-    ImageBuf : Array[0..MaxPixelsPerFrame-1] of Integer ;
 
     ADCReadoutCursor : Integer ; // A/D readout cursor index on scADCDisplay
     FLReadoutCursor : Integer ;  // Fluorescence readout cursor index on scFLDisplay
     RReadoutCursor : Integer ;  // Fluorescence readout cursor index on scRDisplay
 
-    //NumScans : Integer ;
-
     ROIPixelList : Array[0..cMaxROIs] of PROIPixelList ;
     ROINumPixels : Array[0..cMaxROIs] of Integer ;
 
-    //ROIExclusionThreshold : Array[0..cMaxROIs] of Integer ;
+    CompThread : TViewPlotThread ;   // Time course computation thread
+
 
     function GetFLYMax( i : Integer ) : Single ;
     procedure SetFLYMax( i : Integer ; Value : single ) ;
@@ -165,11 +153,19 @@ type
     procedure DisplayADCChannels ;
     procedure SetDisplayUnits ;
     function GetFLTimeCourseAvailable : Boolean ;
+    procedure StopCompThread ;
 
   public
     { Public declarations }
     PlotAvailable : Boolean ;
     CurrentFrame : Integer ;       // Current frame on display
+    TCBFileName : string ;
+
+    ROITCSPacing : Integer ;       // No. of points in an ROI time course
+    ROITCNumFrames : Integer ;     // No. of points in time course buffer
+    ROITCAvailable : Boolean ;     // Tiem course data available flag
+    ROITCNumBytes : Integer ;      // No. of bytes in TC buffer
+    CompDone : Boolean ;         // Computation done flag
 
     AllowClose : Boolean ;           // Set TRUE to allow window to close
 
@@ -227,7 +223,6 @@ begin
      NumROIsPlotted := 0 ;
      PlotAvailable := False ;
      AllowClose := False ;
-     TimerTickCount := 0 ;
 
      NewFile ;
 
@@ -245,13 +240,15 @@ var
 begin
 
      // Keep existing ROI
-     if (cbROI.Items.Count > 0) and (cbROI.ItemIndex >= 0) then begin
+     if (cbROI.Items.Count > 0) and (cbROI.ItemIndex >= 0) then
+        begin
         iDisplayROI := Integer(cbROI.Items.Objects[cbROI.ItemIndex]) ;
         end
      else iDisplayROI := -1 ;
 
      // Keep existing subtraction ROI
-     if (cbSubROI.Items.Count > 0) and (cbSubROI.ItemIndex >= 0) then begin
+     if (cbSubROI.Items.Count > 0) and (cbSubROI.ItemIndex >= 0) then
+        begin
         iSubROI := Integer(cbSubROI.Items.Objects[cbSubROI.ItemIndex]) ;
         end
      else iSubROI := -1 ;
@@ -260,7 +257,8 @@ begin
      cbROI.Clear ;
      cbSubROI.Clear ;
      cbSubROI.Items.AddObject(' ',TObject(MainFrm.IDRFile.MaxROI+1)) ;
-     for i := 1 to MainFrm.IDRFile.MaxROI do if MainFrm.IDRFile.ROI[i].InUse then begin
+     for i := 1 to MainFrm.IDRFile.MaxROI do if MainFrm.IDRFile.ROI[i].InUse then
+        begin
         cbROI.Items.AddObject(format('ROI %d',[i]),TObject(i)) ;
         cbSubROI.Items.AddObject(format('ROI %d',[i]),TObject(i)) ;
         if i = iDisplayROI then cbROI.ItemIndex := cbROI.Items.Count-1 ;
@@ -268,23 +266,23 @@ begin
         end ;
 
      if (cbROI.Items.Count > 0) and
-        ((iDisplayROI < 0) or (iDisplayROI > MainFrm.IDRFile.MaxROI)) then begin
+        ((iDisplayROI < 0) or (iDisplayROI > MainFrm.IDRFile.MaxROI)) then
+         begin
          cbROI.ItemIndex := 0 ;
          end ;
 
      if (cbSubROI.Items.Count > 0) and
-        ((iSubROI < 0) or (iSubROI > MainFrm.IDRFile.MaxROI)) then begin
+        ((iSubROI < 0) or (iSubROI > MainFrm.IDRFile.MaxROI)) then
+         begin
          cbSubROI.ItemIndex := 0 ;
          end ;
 
      // Clear fluorescence and ratio displays in no ROIs
-     if cbROI.Items.Count <= 0 then begin
+     if cbROI.Items.Count <= 0 then
+        begin
         ckDisplayFluorescence.Checked := False ;
         ckDisplayR.Checked := False ;
         end ;
-
-     // Re-calculate time course
-     NewFLTimeCourseRequired ;
 
      end ;
 
@@ -295,7 +293,7 @@ procedure TViewPlotFrm.NewFile ;
 // -----------------------------------------------
 var
      ch,i : Integer ;
-     TCBFileName : string ;
+
      FileHandle : THandle ;
 begin
 
@@ -333,6 +331,7 @@ begin
      // Get number and types of frames in use
      if MainFrm.IDRFile.SpectralDataFile then scFLDisplay.NumChannels := 1
      else scFLDisplay.NumChannels := MainFrm.IDRFile.NumFrameTypes ;
+     ROITCSpacing := MainFrm.IDRFile.NumFrames*scFLDisplay.NumChannels ;
 
      scFLDisplay.MinADCValue := -MainFrm.IDRFile.GreyMax ;
      scFLDisplay.MaxADCValue := MainFrm.IDRFile.GreyMax ;
@@ -359,7 +358,8 @@ begin
      scFLDisplay.xMin := 0 ;
 
      { Set channel information }
-     for ch := 0 to scFLDisplay.NumChannels-1 do begin
+     for ch := 0 to scFLDisplay.NumChannels-1 do
+         begin
          scFLDisplay.ChanOffsets[ch] := ch ;
          scFLDisplay.ChanUnits[ch] := '';
          scFLDisplay.ChanName[ch] := MainFrm.IDRFile.FrameType[ch] ;
@@ -377,7 +377,7 @@ begin
     scFLDisplay.FloatingPointSamples := True ;
 
     scFLDisplay.ClearVerticalCursors ;
-    FLReadoutCursor := scFLDisplay.AddVerticalCursor(-1,clGreen,'?y') ;
+    FLReadoutCursor := scFLDisplay.AddVerticalCursor(-1,clGreen,'?t?y') ;
     scFLDisplay.VerticalCursors[FLReadoutCursor] := scFLDisplay.MaxPoints div 2 ;
     scFLDisplay.DisplaySelected := True ;
 
@@ -417,7 +417,7 @@ begin
     scRDisplay.SetDataBuf( RDisplayBuf ) ;
 
     scRDisplay.ClearVerticalCursors ;
-    RReadoutCursor := scRDisplay.AddVerticalCursor(-1,clGreen,'?y') ;
+    RReadoutCursor := scRDisplay.AddVerticalCursor(-1,clGreen,'?t?y') ;
     scRDisplay.VerticalCursors[RReadoutCursor] := scRDisplay.MaxPoints div 2 ;
     scRDisplay.DisplaySelected := False ;
 
@@ -444,7 +444,8 @@ begin
        scADCDisplay.xMin := 0 ;
        scADCDisplay.TScale := MainFrm.IDRFile.ADCSCanInterval ;
        { Set channel information }
-       for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do begin
+       for ch := 0 to MainFrm.IDRFile.ADCNumChannels-1 do
+           begin
            scADCDisplay.ChanOffsets[ch] := MainFrm.IDRFile.ADCChannel[ch].ChannelOffset ;
            scADCDisplay.ChanUnits[ch] := MainFrm.IDRFile.ADCChannel[ch].ADCUnits ;
            scADCDisplay.ChanName[ch] := MainFrm.IDRFile.ADCChannel[ch].ADCName ;
@@ -461,7 +462,7 @@ begin
        scADCDisplay.SetDataBuf( ADCBuf ) ;
 
        scADCDisplay.ClearVerticalCursors ;
-       ADCReadoutCursor := scADCDisplay.AddVerticalCursor(-1,clGreen,'?y') ;
+       ADCReadoutCursor := scADCDisplay.AddVerticalCursor(-1,clGreen,'?t?y') ;
        scADCDisplay.VerticalCursors[ADCReadoutCursor] := scADCDisplay.MaxPoints div 2 ;
 
        scFLDisplay.DisplaySelected := False ;
@@ -473,12 +474,15 @@ begin
 
     // Load plot from .TCB storage file (if it exists)
     TCBFileName :=  ChangeFileExt(Mainfrm.IDRFile.FileName,'.TCB') ;
-    if FileExists(TCBFileName) then begin
+    ROITCAVailable := False ;
+    if FileExists(TCBFileName) then
+       begin
        FileHandle := FileOpen( TCBFileName, fmOpenRead );
-       if NativeInt(FileHandle) <> -1 then begin
+       if NativeInt(FileHandle) <> -1 then
+          begin
           FileRead( FileHandle,ROITimeCourseBuf^,ROITCNumBytes);
           FileClose( FileHandle) ;
-          ROITCNumFramesDone := ROITCNumFrames ;
+          ROITCAVailable := True ;
           end
        else NewFLTimeCourseRequired ;
        end
@@ -488,62 +492,6 @@ begin
 
     end ;
 
-
-procedure TViewPlotFrm.DisplayADCChannels ;
-// ------------------------------------------
-// Display analogue signals stored on file
-// ------------------------------------------
-var
-    StartScan : Int64 ;
-    CursorScan : Integer ;
-    i : Integer ;
-    MarkerAt : Integer ;
-    TMarkerScale : Single ;
-    CursorTime,StartTime : Single ;
-    NumScans : Integer ;
-begin
-
-     // No. of multi-channel scans to be displayed
-     NumScans := Max( Round(edTDisplay.Value/MainFrm.IDRFile.ADCScanInterval),1 ) ;
-     scADCDisplay.MaxPoints := NumScans ;
-
-     // Find starting scan number
-     CursorTime := CurrentFrame*MainFrm.IDRFile.FrameInterval ;
-     CursorScan := Round( CursorTime / MainFrm.IDRFile.ADCScanInterval ) ;
-
-     StartTime := scFLDisplay.XOffset*MainFrm.IDRFile.FrameInterval ;
-
-     StartScan := Round( StartTime/MainFrm.IDRFile.ADCScanInterval ) ;
-     scADCDisplay.XOffset := Cardinal(StartScan) ;
-     scADCDisplay.VerticalCursors[ADCReadoutCursor] := Cardinal ( (CursorScan - StartScan) ) ;
-
-     // Set display time units
-     SetDisplayUnits ;
-
-     // Read data from file
-     if ADCBuf <> Nil then FreeMem( ADCBuf ) ;
-     ADCBuf := AllocMem( scADCDisplay.MaxPoints*MainFrm.IDRFile.ADCNumChannels*2 ) ;
-     scADCDisplay.SetDataBuf( ADCBuf ) ;
-     scADCDisplay.NumPoints := MainFrm.IDRFile.LoadADC( StartScan,
-                                                        Min(NumScans,MainFrm.IDRFile.ADCNumScansInFile-StartScan),
-                                                        ADCBuf^ ) ;
-     scADCDisplay.xMin := 0 ;
-     scADCDisplay.xMax := scADCDisplay.MaxPoints-1 ;
-
-     // Add markers (if any appear on display
-     scadcDisplay.ClearMarkers ;
-     if rbTDisplayUnitMins.Checked then TMarkerScale := 60.0/scADCDisplay.TScale
-                                   else TMarkerScale := 1.0/scADCDisplay.TScale ;
-     for i := 0 to MainFrm.IDRFile.NumMarkers-1 do begin
-         MarkerAt := Round(MainFrm.IDRFile.MarkerTime[i]*TMarkerScale)
-                     - scADCDisplay.XOffset ;
-         if (MarkerAt >= 0) and (MarkerAt < scadcDisplay.MaxPoints) then
-            scadcDisplay.AddMarker( MarkerAt, MainFrm.IDRFile.MarkerText[i] );
-         end ;
-
-     scADCDisplay.Invalidate ;
-
-     end ;
 
 
 procedure TViewPlotFrm.FormResize(Sender: TObject);
@@ -651,12 +599,14 @@ procedure TViewPlotFrm.SetDisplayUnits ;
 // ----------------------
 begin
 
-    if rbTDisplayUnitsSecs.Checked then begin
+    if rbTDisplayUnitsSecs.Checked then
+       begin
        edTDisplay.Units := 's' ;
        edTDisplay.Scale := 1.0 ;
 
        end
-    else begin
+    else
+       begin
        edTDisplay.Units := 'm' ;
        edTDisplay.Scale := 1.0/60.0 ;
        end ;
@@ -670,11 +620,13 @@ begin
     scFLDisplay.Invalidate ;
 
     // Set ratio display
-    if MainFrm.IDRFile.SpectralDataFile then begin
+    if MainFrm.IDRFile.SpectralDataFile then
+       begin
        scRDisplay.MaxPoints := scFLDisplay.MaxPoints ;
        scRDisplay.TScale := scFLDisplay.TScale ;
        end
-    else begin
+    else
+       begin
        scRDisplay.MaxPoints := scFLDisplay.MaxPoints ;
        scRDisplay.TScale := scFLDisplay.TScale ;
        end ;
@@ -691,10 +643,7 @@ function TViewPlotFrm.GetFLTimeCourseAvailable : Boolean ;
 // Return TRUE if ROI time course buffer available
 // ------------------------------------------
 begin
-
-      if ROITCNumFramesDone >= ROITCNumFrames then
-         Result := True
-      else Result := False ;
+      Result := ROITCAvailable ;
       end ;
 
 
@@ -706,15 +655,25 @@ var
     i : Integer ;
 begin
 
-     ROITCNumFramesDone := 0 ;
+     ROITCAVailable := False ;
 
-     for i:= 0 to High(ROIPixelList) do begin
-         if ROIPixelList[i] <> Nil then begin
+     // If computation thread is running, stop it
+     StopCompThread ;
+
+     for i:= 0 to High(ROIPixelList) do
+         begin
+         if ROIPixelList[i] <> Nil then
+            begin
             FreeMem(ROIPixelList[i]) ;
             ROIPixelList[i] := Nil ;
             ROINumPixels[i] := 0 ;
             end ;
          end ;
+
+     CompDone := False ;
+
+     // Create and run computation thread
+     CompThread := TViewPlotThread.Create ;
 
      end ;
 
@@ -736,11 +695,7 @@ var
 begin
 
     if AtFrame < 1 then Exit ;
-
-    // Update A/D signals display
-    if MainFrm.IDRFile.ADCNumChannels > 0 then DisplayADCChannels ;
-
-    if ROITCNumFramesDone < MainFrm.IDRFile.NumFrames then Exit ;
+    if not ROITCAvailable then Exit ;
 
     // Find starting frame group
     NumDisplayFrames := scFLDisplay.MaxPoints ;
@@ -758,7 +713,7 @@ begin
     scFLDisplay.SetDataBuf( FLDisplayBuf ) ;
     scFLDisplay.NumBytesPerSample := SizeOf(Integer) ;
 
-    scFLDisplay.VerticalCursors[FLReadoutCursor] := CursorGroup - StartGroup ;
+    scFLDisplay.VerticalCursors[FLReadoutCursor] := CursorGroup - StartGroup - 1 ;
 
     // Plot selected fluorescence ROI
 
@@ -771,15 +726,18 @@ begin
 
         // Copy time course data into display buffer
         j := ((iROI-1)*ROITCSpacing) + (StartGroup*scFLDisplay.NumChannels)  ;
-        for i := 0 to NumDisplayFrames*scFLDisplay.NumChannels-1 do begin
+        for i := 0 to NumDisplayFrames*scFLDisplay.NumChannels-1 do
+            begin
             FLDisplayBuf^[i] := ROITimeCourseBuf^[j] ;
             Inc(j) ;
             end ;
 
         // Subtract background ROI
-        if iSubROI > 0 then begin
+        if iSubROI > 0 then
+           begin
            j := ((iSubROI-1)*ROITCSpacing) + (StartGroup*scFLDisplay.NumChannels)  ;
-           for i := 0 to NumDisplayFrames*scFLDisplay.NumChannels-1 do begin
+           for i := 0 to NumDisplayFrames*scFLDisplay.NumChannels-1 do
+               begin
                FLDisplayBuf^[i] := FLDisplayBuf^[i] - ROITimeCourseBuf^[j] ;
                Inc(j) ;
                end ;
@@ -790,9 +748,9 @@ begin
      scFLDisplay.ClearMarkers ;
      if rbTDisplayUnitMins.Checked then TMarkerScale := 60.0/scFLDisplay.TScale
                                    else TMarkerScale := 1.0/scFLDisplay.TScale ;
-     for i := 0 to MainFrm.IDRFile.NumMarkers-1 do begin
-         MarkerAt := Round(MainFrm.IDRFile.MarkerTime[i]*TMarkerScale)
-                     - scFLDisplay.XOffset ;
+     for i := 0 to MainFrm.IDRFile.NumMarkers-1 do
+         begin
+         MarkerAt := Round(MainFrm.IDRFile.MarkerTime[i]*TMarkerScale) - scFLDisplay.XOffset ;
          if (MarkerAt >= 0) and (MarkerAt < scFLDisplay.MaxPoints) then
             scFLDisplay.AddMarker( MarkerAt, MainFrm.IDRFile.MarkerText[i] );
          end ;
@@ -805,7 +763,72 @@ begin
 
     if ckDisplayR.Checked then DisplayRatio( AtFrame ) ;
 
+    // Update A/D signals display
+    if MainFrm.IDRFile.ADCNumChannels > 0 then DisplayADCChannels ;
+
     end ;
+
+
+procedure TViewPlotFrm.DisplayADCChannels ;
+// ------------------------------------------
+// Display analogue signals stored on file
+// ------------------------------------------
+var
+    StartScan : Int64 ;
+    CursorScan : Integer ;
+    i : Integer ;
+    MarkerAt : Integer ;
+    TMarkerScale : Single ;
+    CursorTime,StartTime : Single ;
+    NumScans : Integer ;
+begin
+
+     // No. of multi-channel scans to be displayed
+     NumScans := Max( Round(edTDisplay.Value/MainFrm.IDRFile.ADCScanInterval),1 ) ;
+     scADCDisplay.MaxPoints := NumScans ;
+
+     // Find starting scan number
+     CursorTime := CurrentFrame*MainFrm.IDRFile.FrameInterval ;
+     CursorScan := Round( CursorTime / MainFrm.IDRFile.ADCScanInterval ) ;
+
+     // Make start time of A/D display same as fluorescence display
+     StartTime := scFLDisplay.XOffset*MainFrm.IDRFile.FrameInterval ;
+     StartScan := Round( StartTime/MainFrm.IDRFile.ADCScanInterval ) ;
+     scADCDisplay.XOffset := Cardinal(StartScan) ;
+
+     // Make A/D readout cursor same as fluorescence readout cursor
+     scADCDisplay.VerticalCursors[ADCReadoutCursor] := Round( scFLDisplay.VerticalCursors[FLReadoutCursor]*
+                                                             (scFLDisplay.TScale / scADCDisplay.TScale) ) ;
+     // Set display time units
+     SetDisplayUnits ;
+
+     // Read data from file
+     if ADCBuf <> Nil then FreeMem( ADCBuf ) ;
+     ADCBuf := AllocMem( scADCDisplay.MaxPoints*MainFrm.IDRFile.ADCNumChannels*2 ) ;
+     scADCDisplay.SetDataBuf( ADCBuf ) ;
+     scADCDisplay.NumPoints := MainFrm.IDRFile.LoadADC( StartScan,
+                                                        Min(NumScans,MainFrm.IDRFile.ADCNumScansInFile-StartScan),
+                                                        ADCBuf^ ) ;
+     scADCDisplay.xMin := 0 ;
+     scADCDisplay.xMax := scADCDisplay.MaxPoints-1 ;
+
+     // Add markers (if any appear on display)
+     scadcDisplay.ClearMarkers ;
+     if rbTDisplayUnitMins.Checked then TMarkerScale := 60.0/scADCDisplay.TScale
+                                   else TMarkerScale := 1.0/scADCDisplay.TScale ;
+     for i := 0 to MainFrm.IDRFile.NumMarkers-1 do
+         begin
+         MarkerAt := Round(MainFrm.IDRFile.MarkerTime[i]*TMarkerScale)
+                     - scADCDisplay.XOffset ;
+         if (MarkerAt >= 0) and (MarkerAt < scadcDisplay.MaxPoints) then
+            scadcDisplay.AddMarker( MarkerAt, MainFrm.IDRFile.MarkerText[i] );
+         end ;
+
+     scADCDisplay.Invalidate ;
+
+     end ;
+
+
 
 
 procedure TViewPlotFrm.DisplayRatio(
@@ -830,7 +853,7 @@ var
 begin
 
     if cbROI.ItemIndex < 0 then Exit ; // Quit if no ROIs defined
-    if ROITCNumFramesDone < MainFrm.IDRFile.NumFrames then Exit ;
+    if not ROITCAvailable then Exit ;
 
     // Find starting frame group
     NumFrameTypes := MainFrm.IDRFile.NumFrameTypes ;
@@ -1543,6 +1566,9 @@ begin
      // Save position/size of form within parent window
      MainFrm.SaveFormPosition( Self ) ;
 
+     // Close computation thread (if active)
+     StopCompThread ;
+
      end;
 
 
@@ -1749,116 +1775,21 @@ var
     FileHandle : THandle ;
 begin
 
-    if ROITCRunning then Exit ;
+    if CompDone then
+       begin
+       // Reload from file and update display if time course computation complete
+       FileHandle := FileOpen( TCBFileName, fmOpenRead );
+       if NativeInt(FileHandle) <> -1 then
+          begin
+          FileRead( FileHandle,ROITimeCourseBuf^,ROITCNumBytes);
+          FileClose( FileHandle) ;
+          ROITCAvailable := True ;
+          end ;
 
-    if MainFrm.IDRFile.SpectralDataFile then NumFrameTypes := 1
-                                        else NumFrameTypes := MainFrm.IDRFile.NumFrameTypes ;
-    NumFrames :=  MainFrm.IDRFile.NumFrames ;
-    ROITCSpacing := NumFrameTypes*NumFrames ;
-
-    // Don't start calculation until 3 ticks after form opened
-    Inc( TimerTickCount ) ;
-    if TimerTickCount < 3 then Exit ;
-
-    if ROITCNumFramesDone >= NumFrames Then Exit ;
-
-    // Exit of no ROIs available
-    ROIsAvailable := False ;
-    for iROI := 1 to MainFrm.IDRFile.MaxROIInUse do
-        ROIsAvailable := ROIsAvailable or MainFrm.IDRFile.ROI[iROI].InUse ;
-    if not ROIsAvailable then Exit ;
-
-    ROITCRunning := True ;
-
-    // Initialise empty buffer
-    if ROITCNumFramesDone <= 0 then begin
-       if ROITimeCourseBuf <> Nil then FreeMem( ROITimeCourseBuf ) ;
-       np := MainFrm.IDRFile.NumFrames*MainFrm.IDRFile.NumFrameTypes*Max(MainFrm.IDRFile.MaxROIInUse+1,1) ;
-       ROITimeCourseBuf := AllocMem( np*sizeof(Single));
-       for i := 0 to np-1 do ROITimeCourseBuf^[i] := ROITimeCourseBufEmptyFlag ;
+       sbDisplay.Position := 1 ;
+       DisplayTimeCourse( sbDisplay.Position ) ;
+       CompDone := False ;
        end ;
-
-    // Create time course for each frame type
-    Done := False ;
-    TDone := TimeGetTime + Round(Timer.Interval*0.8) ;
-    While not Done do begin
-
-        // Load image from file
-        if not MainFrm.IDRFile.LoadFrame32( ROITCNumFramesDone+1, @ImageBuf ) then begin
-           ROITCNumFramesDone := NumFrames ;
-           Break ;
-           end ;
-
-        // Frame type for this frame
-        iFrameType := MainFrm.IDRFile.TypeOfFrame(ROITCNumFramesDone+1) ;
-
-        // Compute mean intensity
-        for iROI := 1 to MainFrm.IDRFile.MaxROIInUse do
-            if MainFrm.IDRFile.ROI[iROI].InUse then begin
-
-            // Save in buffer
-            j := (ROITCSpacing*(iROI-1)) +
-                 (ROITCNumFramesDone*NumFrameTypes) +
-                 iFrameType ;
-            ROITimeCourseBuf^[j] := MeanROIIntensity( iROI, @ImageBuf )/
-                                    MainFrm.IDRFile.IntensityScale ;
-
-            end ;
-
-        Inc( ROITCNumFramesDone ) ;
-        if (TimeGetTime >= TDone) or (ROITCNumFramesDone >= NumFrames) then Done := True ;
-
-        end ;
-
-     //
-     // Time course complete
-     //
-     if ROITCNumFramesDone >= NumFrames then begin
-        // Fill in remaining time points with most recent values
-        for iROI := 1 to MainFrm.IDRFile.MaxROIInUse do
-            if MainFrm.IDRFile.ROI[iROI].InUse then begin
-
-            for iFrameType := 0 to NumFrameTypes-1 do begin
-                j := (ROITCSpacing*(iROI-1)) + (iFrameType*NumFrameTypes) + iFrameType ;
-                LatestValue[iFrameType] := ROITimeCourseBuf^[j] ;
-                end ;
-
-            // Update remaining empty entries with latest available frame
-           for iFrameType := 0 to NumFrameTypes-1 do begin
-               for iFrame := 0 to NumFrames-1 do begin
-                   j := (ROITCSpacing*(iROI-1)) + (iFrame*NumFrameTypes) + iFrameType ;
-                   if ROITimeCourseBuf^[j] <> ROITimeCourseBufEmptyFlag then
-                      LatestValue[iFrameType] := ROITimeCourseBuf^[j]
-                   else ROITimeCourseBuf^[j] := LatestValue[iFrameType] ;
-                   end ;
-               end ;
-
-           // Set first set of points equal to second
-           for i := 0 to scFLDisplay.NumChannels-1 do begin
-               j := ROITCSpacing*(iROI-1) + i ;
-               ROITimeCourseBuf[j] := ROITimeCourseBuf[j+NumFrameTypes] ;
-               end ;
-
-           end ;
-
-        // Save plot to .TCB storage file
-        FileHandle := FileCreate( ChangeFileExt(Mainfrm.IDRFile.FileName,'.TCB'));
-        if NativeInt(FileHandle) <> -1 then begin
-           FileWrite( FileHandle,ROITimeCourseBuf^,ROITCNumBytes);
-           FileClose( FileHandle) ;
-           end;
-
-        // Update display if computation complete
-        sbDisplay.Position := 1 ;
-        DisplayTimeCourse( sbDisplay.Position ) ;
-
-        end ;
-
-    MainFrm.StatusBar.SimpleText := format(
-                                    'ROI: Computing Intensity time course %d/%d',
-                                    [ROITCNumFramesDone,ROITCNumFrames]) ;
-
-    ROITCRunning := False ;
 
     end ;
 
@@ -1893,7 +1824,8 @@ begin
      if ADCBuf <> Nil then FreeMem(ADCBuf) ;
      ADCBuf := Nil ;
 
-     for i := 0 to High(ROIPixelList) do begin
+     for i := 0 to High(ROIPixelList) do
+         begin
          if ROIPixelList[i] <> Nil then FreeMem(ROIPixelList[i]) ;
          ROIPixelList[i] := Nil ;
          end ;
@@ -1913,10 +1845,26 @@ begin
     ADCBuf := Nil ;
     FLDisplayBuf := Nil ;
     RDisplayBuf := Nil ;
+    CompThread := Nil ;
+    CompDone := False ;
+    ROITCAvailable := False ;
 
     for i := 0 to High(ROIPixelList) do ROIPixelList[i] := Nil ;
     for i := 0 to High(ROINumPixels) do ROINumPixels[i] := 0 ;
 
     end;
+
+
+procedure TViewPlotFrm.StopCompThread ;
+// ------------------------
+// Stop and free computation thread
+// ------------------------
+begin
+     if CompThread = Nil Then Exit ;
+     CompThread.Terminate ;
+     CompThread.WaitFor ;
+     FreeAndNil(CompThread);
+end;
+
 
 end.

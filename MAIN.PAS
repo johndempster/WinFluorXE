@@ -278,8 +278,9 @@ unit Main;
 //                 to test if this is cause of intermittent hang ups with Zylas.
 //                 LabIOUnit ChannelList size increased to 10000 characters because array too small error occurs on some systems
 // 23.10.20 V4.1.6 JD sCMOS cameras now detected from model numbers containing '440' so that it
-//                 now includes OCRCA-FUSION and FRASH 4.0 V3. Min. frame interval for sCMOS
+//                 now includes OCRCA-FUSION and FLASH 4.0 V3. Min. frame interval for sCMOS
 //                 cameras set to twice readout rate
+// 13.10.21 V4.1.7 +/-10V DAC output voltage range now correctly identified for devices (e.g. USB6363) which support more than 1 output range
 
 
 interface
@@ -893,7 +894,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.6 32-20-20 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.7 13-10-21 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
@@ -2040,7 +2041,8 @@ begin
 
      // Create settings directory path
      SettingsDirectory := GetSpecialFolder(CSIDL_COMMON_DOCUMENTS) + '\WinFluor\';
-     if not SysUtils.DirectoryExists(SettingsDirectory) then begin
+     if not SysUtils.DirectoryExists(SettingsDirectory) then
+        begin
         if not SysUtils.ForceDirectories(SettingsDirectory) then
            ShowMessage( 'Unable to create settings folder' + SettingsDirectory) ;
         end ;
@@ -2050,19 +2052,22 @@ begin
      Application.HelpFile := ProgramDirectory + 'Winfluor.chm';
 
      DataDirectory := SettingsDirectory + 'Data\' ;
-     if not SysUtils.DirectoryExists(DataDirectory) then begin
+     if not SysUtils.DirectoryExists(DataDirectory) then
+         begin
          if not SysUtils.ForceDirectories(DataDirectory) then
             ShowMessage( 'Unable to create protocols folder' + DataDirectory) ;
          end ;
 
      VProtDirectory :=  SettingsDirectory + 'vprot\' ;
-     if not SysUtils.DirectoryExists(VProtDirectory) then begin
+     if not SysUtils.DirectoryExists(VProtDirectory) then
+         begin
          if not SysUtils.ForceDirectories(VProtDirectory) then
             ShowMessage( 'Unable to create protocols folder' + VProtDirectory) ;
          end ;
 
      PProtDirectory :=  SettingsDirectory + 'pprot\' ;
-     if not SysUtils.DirectoryExists(PProtDirectory) then begin
+     if not SysUtils.DirectoryExists(PProtDirectory) then
+         begin
          if not SysUtils.ForceDirectories(PProtDirectory) then
             ShowMessage( 'Unable to create protocols folder' + PProtDirectory) ;
          end ;
@@ -2070,7 +2075,8 @@ begin
      ExportDirectory := DataDirectory ;
 
      // Initialise form positions
-     for i := 0 to High(FormPos) do begin
+     for i := 0 to High(FormPos) do
+         begin
          FormPos[i].Left := 0 ;
          FormPos[i].Top := 0 ;
          FormPos[i].Width := 0 ;

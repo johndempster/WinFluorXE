@@ -64,7 +64,8 @@ uses
   ZStageUnit in 'ZStageUnit.pas' {ZStage: TDataModule},
   Maths in '..\SESComponentsXE\Maths.pas',
   XYStageUnit in 'XYStageUnit.pas' {XYStageFrm},
-  nidaqmxlib in 'nidaqmxlib.pas';
+  nidaqmxlib in 'nidaqmxlib.pas',
+  ViewPlotThread in 'ViewPlotThread.pas';
 
 {$R *.TLB}
 

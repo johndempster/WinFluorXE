@@ -60,7 +60,7 @@ unit LabIOUnit;
 // 09.12.19 JD ... NIDAQ_GetDeviceDACChannelProperties() NIDAQ_GetDeviceDACChannelProperties() now use property functions calls to determine
 //                 nos. of available channels rather than incrementing through channels until errors occur.
 // 03.02.20 JD ... ChannelList size increased to 10000 characters because array too small error occurs on some systems
-
+// 13.10.21 JD ... +/-10V D/A output voltage range of devices which support more than one range (e.g. USB 6363) now correctly identified as available for use.
 
 interface
 
@@ -1389,13 +1389,17 @@ procedure TLabIO.NIDAQMX_GetDeviceDACChannelProperties(
 // ------------------------------------------------
 // Get number of device D/A channels and properties
 // ------------------------------------------------
+const
+    MaxVRanges = 9 ;
+    VRangeSize = MaxVRanges*2 ;
+
 var
     DValue,VMin,VMax : Double ;
-    i,Err : Integer ;
+    i,j,Err : Integer ;
     ChannelName : ANSIString ;
     NumChannels : Integer ;
     ChannelList : Array[0..9999] of ANSICHar ;
-    VRanges : Array[0..15] of Double ;
+    VRanges : Array[0..VRangeSize-1] of Double ;
 begin
 
     DisableFPUExceptions ;
@@ -1406,26 +1410,23 @@ begin
     while ContainsText(String(ChannelList),format('ao%d',[NumChannels])) do Inc(NumChannels) ;
     NumDACs[DeviceNum] := NumChannels ;
 
-    // Determine output voltage ranges
+    // Get output voltage ranges available
     for i := 0 to High(VRanges) do VRanges[i] := 0.0 ;
     CheckError( DAQmxGetDevAOVoltageRngs( PANSIChar(DeviceName[DeviceNum]), VRanges, High(VRanges) ) );
-    DACMaxVolts[DeviceNum] := VRanges[1] ;
-    DACMinVolts[DeviceNum] := VRanges[0] ;
+
+    // Find largest available DAC voltage range <= +/- 10V
+    DACMaxVolts[DeviceNum] := 0.0 ;
+    DACMinVolts[DeviceNum] := 0.0 ;
+    for i := 0 to MaxVRanges-1 do
+        begin
+        j := i*2 ;
+        if DACMinVolts[DeviceNum] > VRanges[j] then DACMinVolts[DeviceNum] := Max(VRanges[j],-10.0) ;
+        if DACMaxVolts[DeviceNum] < VRanges[j+1] then DACMaxVolts[DeviceNum] := Min(VRanges[j+1],10.0) ;
+        end;
 
     // Create D/A task
     CheckError( DAQmxCreateTask( '', DACTask[DeviceNum] ) ) ;
     ChannelName := format('%s/ao0',[DeviceName[DeviceNum]]) ;
-
-{    if AnsiContainsText(DeviceBoardName[DeviceNum],'600') then
-       begin
-       VMin := 0.0 ;
-       VMax := 5.0 ;
-       end
-    else
-       begin
-       VMin := -10.0 ;
-       VMax := 10.0 ;
-       end;}
 
     CheckError( DAQmxCreateAOVoltageChan( DACTask[DeviceNum],
                                           PANSIChar(ChannelName),
