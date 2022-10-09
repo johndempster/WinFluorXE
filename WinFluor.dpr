@@ -2,6 +2,8 @@ program WinFluor;
 
 uses
   Forms,
+  System.SysUtils,
+  Windows,
   MAIN in 'MAIN.PAS' {MainFrm},
   about in 'about.pas' {AboutBox},
   RecUnit in 'RecUnit.pas' {RecordFrm},
@@ -72,6 +74,11 @@ uses
 {$R *.RES}
 
 begin
+
+  // Prevent multiple instances
+  if CreateMutex(nil, True, 'Dempster.WinFluor') = 0 then RaiseLastOSError ;
+  if GetLastError = ERROR_ALREADY_EXISTS then Exit;
+
   Application.Initialize;
   Application.Title := 'WinFluor V4.1.5';
   Application.HelpFile := 'C:\Program Files\Borland\Delphi7\WinFluor\WINFLUOR.chm';

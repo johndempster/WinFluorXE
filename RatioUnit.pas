@@ -86,7 +86,7 @@ var
 
 implementation
 
-uses Main, strUtils, maths, math, shared  ;
+uses Main, strUtils, maths, math  ;
 
 {$R *.dfm}
 

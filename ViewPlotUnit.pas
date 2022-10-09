@@ -672,6 +672,9 @@ begin
 
      CompDone := False ;
 
+     // Call NewFile procedure to ensure ROITimwCourseBuf is big enough
+     NewFile ;
+
      // Create and run computation thread
      CompThread := TViewPlotThread.Create ;
 
@@ -1769,9 +1772,6 @@ procedure TViewPlotFrm.TimerTimer(Sender: TObject);
 // -------------------------
 
 var
-    i,j,iROI,TDone,iFrameType,iFrame,NumFrames,NumFrameTypes,np  : Integer ;
-    Done,ROIsAvailable : Boolean ;
-    LatestValue : Array[0..MaxLightSourceCycleLength+1] of Single ;
     FileHandle : THandle ;
 begin
 

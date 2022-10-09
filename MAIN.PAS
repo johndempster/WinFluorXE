@@ -281,13 +281,15 @@ unit Main;
 //                 now includes OCRCA-FUSION and FLASH 4.0 V3. Min. frame interval for sCMOS
 //                 cameras set to twice readout rate
 // 13.10.21 V4.1.7 +/-10V DAC output voltage range now correctly identified for devices (e.g. USB6363) which support more than 1 output range
-
+// 28.09.22 V4.1.8 TimeCourseUnit Updated. ROI plots faster. Now checks for plot in progress when form closed
+//                 Creation of multiple instances of WinFluor.exe now prevented (see winfluor.dpr)
+//                 ROIs increased to 1000
 
 interface
 
 uses Windows, SysUtils, Classes, Graphics, Forms, Controls, Menus,
   StdCtrls, Dialogs, Buttons, Messages, ExtCtrls, ComCtrls, StdActns,
-  ActnList, ToolWin, ImgList, SESCam, shared, ValEdit, SetupUnit, SealTest,
+  ActnList, ToolWin, ImgList, SESCam, ValEdit, SetupUnit, SealTest,
   StimSetupUnit, ImageFile, IDRFile, Sockets, UltimaUnit, ViewPlotUnit,
   EventAnalysisUnit, ExcSetupUnit, math, shlobj, UITypes, VCL.HTMLHelpViewer,
   Vcl.AppEvnts, System.ImageList ;
@@ -894,7 +896,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.7 13-10-21 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.8 09-10-22 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

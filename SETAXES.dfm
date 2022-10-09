@@ -436,6 +436,8 @@ object SetAxesFrm: TSetAxesFrm
       Left = 0
       Top = 0
       Caption = 'XYGraph'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object TraceGrp: TGroupBox
         Left = 8
         Top = 0

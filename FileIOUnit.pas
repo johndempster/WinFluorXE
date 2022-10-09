@@ -73,6 +73,7 @@ unit FileIOUnit;
 // 31.07.17 ......... 'CAMSPNR=', MainFrm.Cam1.SpotNoiseReduction added
 // 18.01.18 ......... CAMLIGHTSPEEDMODE= MainFr.Cam1.LIGHTSPEEDMODE added
 // 20.11.19 ......... 'EXPDIR=', MainFrm.ExportDirectory added
+// 01.09.22 ......... TStringList now used to hold INI file KEY=Value settings
 
 interface
 
@@ -116,6 +117,59 @@ TOVERLAPPED = Record
     procedure ExportFile ;
     procedure SaveFrameAsTIFF ;
 
+    procedure AddKeyValue( List : TStringList ;  // List for Key=Value pairs
+                           Keyword : string ;    // Key
+                           Value : single        // Value
+                           ) ; Overload ;
+
+    procedure AddKeyValue( List : TStringList ;  // List for Key=Value pairs
+                           Keyword : string ;    // Key
+                           Value : Integer        // Value
+                           ) ; Overload ;
+
+    procedure AddKeyValue( List : TStringList ;  // List for Key=Value pairs
+                           Keyword : string ;    // Key
+                           Value : NativeInt        // Value
+                           ) ; Overload ;
+
+    procedure AddKeyValue( List : TStringList ;  // List for Key=Value pairs
+                           Keyword : string ;    // Key
+                           Value : String        // Value
+                           ) ; Overload ;
+
+    procedure AddKeyValue( List : TStringList ;  // List for Key=Value pairs
+                           Keyword : string ;    // Key
+                           Value : Boolean        // Value
+                           ) ; Overload ;
+
+
+   function GetKeyValue( List : TStringList ;  // List for Key=Value pairs
+                         KeyWord : string ;   // Key
+                         Value : single       // Value
+                         ) : Single ; Overload ;        // Return value
+
+   function GetKeyValue( List : TStringList ;  // List for Key=Value pairs
+                         KeyWord : string ;   // Key
+                         Value : Integer       // Value
+                         ) : Integer ; Overload ;        // Return value
+
+   function GetKeyValue( List : TStringList ;  // List for Key=Value pairs
+                         KeyWord : string ;   // Key
+                         Value : NativeInt       // Value
+                         ) : NativeInt ; Overload ;        // Return value
+
+   function GetKeyValue( List : TStringList ;  // List for Key=Value pairs
+                         KeyWord : string ;   // Key
+                         Value : string       // Value
+                         ) : string ; Overload ;        // Return value
+
+   function GetKeyValue( List : TStringList ;  // List for Key=Value pairs
+                         KeyWord : string ;   // Key
+                         Value : Boolean       // Value
+                         ) : Boolean ; Overload ;        // Return value
+
+  function ExtractFileNameOnly( FilePath : string ) : string ;
+
   end;
 
 var
@@ -123,7 +177,7 @@ var
 
 implementation
 
-uses Main, shared, LabIOUnit, maths, AmpModule , RecUnit, ViewUnit,
+uses Main, LabIOUnit, maths, AmpModule , RecUnit, ViewUnit,
   LightSourceUnit, ZStageUnit, XYStageUnit;
 
 {$R *.DFM}
@@ -175,13 +229,12 @@ procedure TFileIO.SaveInitialisationFile(
 // Save initialisation file
 // ------------------------
 var
-   Header : array[1..cNumIDRHeaderBytes] of ANSIchar ;
+   Header : TStringList ;
    i,iSeq,iWav,ch,nWritten : Integer ;
-   INIFileHandle : THandle ;
    Dev : Integer ;
 begin
 
-     INIFileHandle := FileCreate( FileName ) ;
+{     INIFileHandle := FileCreate( FileName ) ;
 
      if Integer(INIFileHandle) < 0 then begin
         MainFrm.StatusBar.SimpleText := 'Unable to create : ' + FileName ;
@@ -190,368 +243,371 @@ begin
         end ;
 
      // Initialise empty header buffer with zero bytes
-     for i := 1 to sizeof(Header) do Header[i] := #0 ;
+     for i := 1 to sizeof(Header) do Header[i] := #0 ;}
+
+     // Create string list to hold header key=values
+     Header := TStringList.Create ;
 
      // Camera settings
-     AppendInt( Header, 'CAMTYPE=', MainFrm.CameraType ) ;
+     AddKeyValue( Header, 'CAMTYPE', MainFrm.CameraType ) ;
 
      // Auxiliary camera settings
-     AppendInt( Header, 'CAMTYPEAUX=', MainFrm.AuxCameraType ) ;
+     AddKeyValue( Header, 'CAMTYPEAUX', MainFrm.AuxCameraType ) ;
 
-     AppendInt( Header, 'CAMSEL=', MainFrm.Cam1.SelectedCamera ) ;
+     AddKeyValue( Header, 'CAMSEL', MainFrm.Cam1.SelectedCamera ) ;
 
-     AppendFloat( Header, 'CAMFI=', MainFrm.Cam1.FrameInterval ) ;
-     AppendInt( Header, 'CAMFL=', MainFrm.Cam1.FrameLeft ) ;
-     AppendInt( Header, 'CAMFR=', MainFrm.Cam1.FrameRight ) ;
-     AppendInt( Header, 'CAMFT=', MainFrm.Cam1.FrameTop ) ;
-     AppendInt( Header, 'CAMFB=', MainFrm.Cam1.FrameBottom ) ;
-     AppendInt( Header, 'CAMBIN=', MainFrm.Cam1.BinFactor ) ;
-     AppendInt( Header, 'CAMRS=', MainFrm.Cam1.ReadoutSpeed ) ;
-     AppendInt( Header, 'CAMVM=', MainFrm.Cam1.CameraMode ) ;
-     AppendInt( Header, 'CAMADC=', MainFrm.Cam1.CameraADC ) ;
-     AppendLogical( Header, 'CAMCCDCLR=', MainFrm.Cam1.CCDClearPreExposure ) ;
-     AppendLogical( Header, 'CAMCCDPERO=', MainFrm.Cam1.CCDPostExposureReadout ) ;
-     AppendLogical( Header, 'CAMLIGHTSPEEDMODE=', MainFrm.Cam1.LightSpeedMode ) ;
+     AddKeyValue( Header, 'CAMFI', MainFrm.Cam1.FrameInterval ) ;
+     AddKeyValue( Header, 'CAMFL', MainFrm.Cam1.FrameLeft ) ;
+     AddKeyValue( Header, 'CAMFR', MainFrm.Cam1.FrameRight ) ;
+     AddKeyValue( Header, 'CAMFT', MainFrm.Cam1.FrameTop ) ;
+     AddKeyValue( Header, 'CAMFB', MainFrm.Cam1.FrameBottom ) ;
+     AddKeyValue( Header, 'CAMBIN', MainFrm.Cam1.BinFactor ) ;
+     AddKeyValue( Header, 'CAMRS', MainFrm.Cam1.ReadoutSpeed ) ;
+     AddKeyValue( Header, 'CAMVM', MainFrm.Cam1.CameraMode ) ;
+     AddKeyValue( Header, 'CAMADC', MainFrm.Cam1.CameraADC ) ;
+     AddKeyValue( Header, 'CAMCCDCLR', MainFrm.Cam1.CCDClearPreExposure ) ;
+     AddKeyValue( Header, 'CAMCCDPERO', MainFrm.Cam1.CCDPostExposureReadout ) ;
+     AddKeyValue( Header, 'CAMLIGHTSPEEDMODE', MainFrm.Cam1.LightSpeedMode ) ;
 
-     AppendInt( Header, 'NFREQ=', MainFrm.NumFramesRequired ) ;
-     AppendFloat( Header, 'NRECPER=', MainFrm.RecordingPeriod ) ;
-     AppendFloat( Header, 'ADCRECTIME=', MainFrm.ADCRecordingTime ) ;
-     AppendInt( Header, 'CAMCOM=', MainFrm.Cam1.ComPort ) ;
-     AppendInt( Header, 'CAMGN=', MainFrm.Cam1.AmpGain ) ;
+     AddKeyValue( Header, 'NFREQ', MainFrm.NumFramesRequired ) ;
+     AddKeyValue( Header, 'NRECPER', MainFrm.RecordingPeriod ) ;
+     AddKeyValue( Header, 'ADCRECTIME', MainFrm.ADCRecordingTime ) ;
+     AddKeyValue( Header, 'CAMCOM', MainFrm.Cam1.ComPort ) ;
+     AddKeyValue( Header, 'CAMGN', MainFrm.Cam1.AmpGain ) ;
      // Camera exposure/readout trigger offset
-     AppendFloat( Header, 'CAMTRIGOFFSET=', MainFrm.CameraTriggerOffset ) ;
+     AddKeyValue( Header, 'CAMTRIGOFFSET', MainFrm.CameraTriggerOffset ) ;
 
-     AppendFloat( Header, 'CAMTEMPSET=', MainFrm.Cam1.CameraTemperatureSetPoint ) ;
+     AddKeyValue( Header, 'CAMTEMPSET', MainFrm.Cam1.CameraTemperatureSetPoint ) ;
 
-     AppendFloat( Header, 'CAMADDRT=', MainFrm.Cam1.AdditionalReadoutTime ) ;
+     AddKeyValue( Header, 'CAMADDRT', MainFrm.Cam1.AdditionalReadoutTime ) ;
 
-     AppendLogical( Header, 'CAMDEIL=',  MainFrm.Cam1.DisableExposureIntervalLimit ) ;
+     AddKeyValue( Header, 'CAMDEIL',  MainFrm.Cam1.DisableExposureIntervalLimit ) ;
 
-     AppendLogical( Header, 'BULBEXP=', MainFrm.BulbExposureMode ) ;
+     AddKeyValue( Header, 'BULBEXP', MainFrm.BulbExposureMode ) ;
 
      // Camera readout A/D converter gain
-     AppendINT( Header, 'CAMADCGN=', MainFrm.Cam1.ADCGain ) ;
+     AddKeyValue( Header, 'CAMADCGN', MainFrm.Cam1.ADCGain ) ;
 
      // Camera CCD vertical line shift speed
-     AppendINT( Header, 'CAMVSS=', MainFrm.Cam1.CCDVerticalShiftSpeed ) ;
+     AddKeyValue( Header, 'CAMVSS', MainFrm.Cam1.CCDVerticalShiftSpeed ) ;
 
-     AppendFloat( Header, 'LENSMAG=', MainFrm.Cam1.LensMagnification ) ;
+     AddKeyValue( Header, 'LENSMAG', MainFrm.Cam1.LensMagnification ) ;
 
-     AppendFloat( Header, 'CALBARSZ=', MainFrm.CalibrationBarSize ) ;
-     AppendFloat( Header, 'CALBARTH=', MainFrm.CalibrationBarThickness ) ;
+     AddKeyValue( Header, 'CALBARSZ', MainFrm.CalibrationBarSize ) ;
+     AddKeyValue( Header, 'CALBARTH', MainFrm.CalibrationBarThickness ) ;
 
-     AppendString(  Header, 'SPLIM0=',MainFrm.SplitImageName[0]);
-     AppendString(  Header, 'SPLIM1=',MainFrm.SplitImageName[1]);
-     AppendLogical( Header, 'SPLIM=',MainFrm.SplitImage) ;
+     AddKeyValue(  Header, 'SPLIM0',MainFrm.SplitImageName[0]);
+     AddKeyValue(  Header, 'SPLIM1',MainFrm.SplitImageName[1]);
+     AddKeyValue( Header, 'SPLIM',MainFrm.SplitImage) ;
 
-     AppendInt( Header, 'RECMODE=', MainFrm.RecordingMode ) ;
-     AppendFloat( Header, 'RECPER=', MainFrm.RecordingPeriod ) ;
-     AppendFloat( Header, 'TLAPINT=', MainFrm.TimeLapseInterval ) ;
-     AppendFloat( Header, 'BURDUR=', MainFrm.BurstDuration ) ;
-     AppendFloat( Header, 'BURINT=', MainFrm.BurstInterval ) ;
+     AddKeyValue( Header, 'RECMODE', MainFrm.RecordingMode ) ;
+     AddKeyValue( Header, 'RECPER', MainFrm.RecordingPeriod ) ;
+     AddKeyValue( Header, 'TLAPINT', MainFrm.TimeLapseInterval ) ;
+     AddKeyValue( Header, 'BURDUR', MainFrm.BurstDuration ) ;
+     AddKeyValue( Header, 'BURINT', MainFrm.BurstInterval ) ;
 
-     AppendInt( Header, 'PAL=', Integer(MainFrm.PaletteType) ) ;
-     AppendInt( Header, 'DZOOM=', MainFrm.DisplayZoomIndex ) ;
+     AddKeyValue( Header, 'PAL', Integer(MainFrm.PaletteType) ) ;
+     AddKeyValue( Header, 'DZOOM', MainFrm.DisplayZoomIndex ) ;
 
-     AppendInt( Header, 'ROISIZE=', MainFrm.ROISize ) ;
-     AppendInt( Header, 'ROIX=', MainFrm.ROIX ) ;
-     AppendInt( Header, 'ROIY=', MainFrm.ROIY ) ;
-     AppendInt( Header, 'LIVEWVL=', MainFrm.LiveWindowWavelength ) ;
+     AddKeyValue( Header, 'ROISIZE', MainFrm.ROISize ) ;
+     AddKeyValue( Header, 'ROIX', MainFrm.ROIX ) ;
+     AddKeyValue( Header, 'ROIY', MainFrm.ROIY ) ;
+     AddKeyValue( Header, 'LIVEWVL', MainFrm.LiveWindowWavelength ) ;
 
      // A/D channel settings
-     AppendInt( Header, 'ADCNC=', MainFrm.ADCNumChannels ) ;
-     AppendInt( Header, 'ADCINPUTMODE=', LabIO.ADCInputMode ) ;
+     AddKeyValue( Header, 'ADCNC', MainFrm.ADCNumChannels ) ;
+     AddKeyValue( Header, 'ADCINPUTMODE', LabIO.ADCInputMode ) ;
      // NI interface API
-     AppendInt( Header, 'NIDAQAPI=', LabIO.NIDAQAPI ) ;
+     AddKeyValue( Header, 'NIDAQAPI', LabIO.NIDAQAPI ) ;
 
-     AppendFloat( Header, 'ADCSI=', MainFrm.ADCScanInterval ) ;
-     AppendFloat( Header, 'ADCVR=', MainFrm.ADCVoltageRange ) ;
-     AppendFloat( Header, 'ADCDW=', MainFrm.ADCDisplayWindow ) ;
+     AddKeyValue( Header, 'ADCSI', MainFrm.ADCScanInterval ) ;
+     AddKeyValue( Header, 'ADCVR', MainFrm.ADCVoltageRange ) ;
+     AddKeyValue( Header, 'ADCDW', MainFrm.ADCDisplayWindow ) ;
      for ch := 0 to MainFrm.ADCNumChannels-1 do begin
-         AppendInt( Header, format('CIN%d=',[ch]), MainFrm.ADCChannel[ch].ChannelOffset) ;
-         AppendString( Header, format('CU%d=',[ch]), MainFrm.ADCChannel[ch].ADCUnits ) ;
-         AppendString( Header, format('CN%d=',[ch]), MainFrm.ADCChannel[ch].ADCName ) ;
-         AppendFloat( Header, format('CCF%d=',[ch]), MainFrm.ADCChannel[ch].ADCCalibrationFactor ) ;
-         AppendFloat( Header, format('CSC%d=',[ch]), MainFrm.ADCChannel[ch].ADCScale) ;
+         AddKeyValue( Header, format('CIN%d',[ch]), MainFrm.ADCChannel[ch].ChannelOffset) ;
+         AddKeyValue( Header, format('CU%d',[ch]), MainFrm.ADCChannel[ch].ADCUnits ) ;
+         AddKeyValue( Header, format('CN%d',[ch]), MainFrm.ADCChannel[ch].ADCName ) ;
+         AddKeyValue( Header, format('CCF%d',[ch]), MainFrm.ADCChannel[ch].ADCCalibrationFactor ) ;
+         AddKeyValue( Header, format('CSC%d',[ch]), MainFrm.ADCChannel[ch].ADCScale) ;
          end ;
 
      // Patch clamp amplifier data
      for i := 1 to 2 do begin
-         AppendInt( Header, format('AMP%d=',[i]),Amplifier.AmplifierType[i] ) ;
-         AppendInt( Header, format('AMPCH%d=',[i]),Amplifier.GainTelegraphChannel[i] ) ;
-         AppendInt( Header, format('AMPGAINCH%d=',[i]),Amplifier.GainTelegraphChannel[i] ) ;
-         AppendInt( Header, format('AMPMODECH%d=',[i]),Amplifier.ModeTelegraphChannel[i] ) ;
+         AddKeyValue( Header, format('AMP%d',[i]),Amplifier.AmplifierType[i] ) ;
+         AddKeyValue( Header, format('AMPCH%d',[i]),Amplifier.GainTelegraphChannel[i] ) ;
+         AddKeyValue( Header, format('AMPGAINCH%d',[i]),Amplifier.GainTelegraphChannel[i] ) ;
+         AddKeyValue( Header, format('AMPMODECH%d',[i]),Amplifier.ModeTelegraphChannel[i] ) ;
          end ;
 
      // Command voltage settings
-     AppendFloat( Header, 'VCDIV0=', MainFrm.VCommand[0].DivideFactor ) ;
-     AppendFloat( Header, 'VCHOLD0=', MainFrm.VCommand[0].HoldingVoltage ) ;
-     AppendFloat( Header, 'VCDIV1=', MainFrm.VCommand[1].DivideFactor ) ;
-     AppendFloat( Header, 'VCHOLD1=', MainFrm.VCommand[1].HoldingVoltage ) ;
-     AppendFloat( Header, 'VCDIV2=', MainFrm.VCommand[2].DivideFactor ) ;
-     AppendFloat( Header, 'VCHOLD2=', MainFrm.VCommand[2].HoldingVoltage ) ;
+     AddKeyValue( Header, 'VCDIV0', MainFrm.VCommand[0].DivideFactor ) ;
+     AddKeyValue( Header, 'VCHOLD0', MainFrm.VCommand[0].HoldingVoltage ) ;
+     AddKeyValue( Header, 'VCDIV1', MainFrm.VCommand[1].DivideFactor ) ;
+     AddKeyValue( Header, 'VCHOLD1', MainFrm.VCommand[1].HoldingVoltage ) ;
+     AddKeyValue( Header, 'VCDIV2', MainFrm.VCommand[2].DivideFactor ) ;
+     AddKeyValue( Header, 'VCHOLD2', MainFrm.VCommand[2].HoldingVoltage ) ;
 
      // Default digital output port states
      for Dev := 1 to MaxDevices do begin
-         AppendInt( Header, format('DIGOUTSTATE%d=',[Dev]), LabIO.DigOutState[Dev] ) ;
+         AddKeyValue( Header, format('DIGOUTSTATE%d',[Dev]), LabIO.DigOutState[Dev] ) ;
          end ;
 
      // Light source
-     AppendInt( Header, 'LSDEV=', LightSource.DeviceType ) ;
-     AppendFloat( Header, 'LSW1=', LightSource.Wavelength1 ) ;
-     AppendFloat( Header, 'LSV1=', LightSource.Voltage1 ) ;
-     AppendFloat( Header, 'LSW2=', LightSource.Wavelength2 ) ;
-     AppendFloat( Header, 'LSV2=', LightSource.Voltage2 ) ;
+     AddKeyValue( Header, 'LSDEV', LightSource.DeviceType ) ;
+     AddKeyValue( Header, 'LSW1', LightSource.Wavelength1 ) ;
+     AddKeyValue( Header, 'LSV1', LightSource.Voltage1 ) ;
+     AddKeyValue( Header, 'LSW2', LightSource.Wavelength2 ) ;
+     AddKeyValue( Header, 'LSV2', LightSource.Voltage2 ) ;
 
      // Laser settings
      for i := 0 to lsMaxLightSources-1 do begin
-        AppendFloat( Header, format('LSLAS%dWAV=',[i+1]), LightSource.LaserWavelength[i] ) ;
-        AppendFloat( Header, format('LSLAS%dDEL=',[i+1]), LightSource.LaserDelay[i] ) ;
-        AppendFloat( Header, format('LSLAS%dVOFF=',[i+1]), LightSource.LaserOffVoltage[i] ) ;
-        AppendFloat( Header, format('LSLAS%dVON=',[i+1]), LightSource.LaserOnVoltage[i] ) ;
-        AppendFloat( Header, format('LSLAS%dINT=',[i+1]), LightSource.LaserIntensity[i] ) ;
+        AddKeyValue( Header, format('LSLAS%dWAV',[i+1]), LightSource.LaserWavelength[i] ) ;
+        AddKeyValue( Header, format('LSLAS%dDEL',[i+1]), LightSource.LaserDelay[i] ) ;
+        AddKeyValue( Header, format('LSLAS%dVOFF',[i+1]), LightSource.LaserOffVoltage[i] ) ;
+        AddKeyValue( Header, format('LSLAS%dVON',[i+1]), LightSource.LaserOnVoltage[i] ) ;
+        AddKeyValue( Header, format('LSLAS%dINT',[i+1]), LightSource.LaserIntensity[i] ) ;
         end ;
 
      // LED settings
-     AppendFloat( Header, 'LSLEDOFFV=', LightSource.LEDOffVoltage ) ;
-     AppendFloat( Header, 'LSLEDMAXV=', LightSource.LEDMaxVoltage ) ;
+     AddKeyValue( Header, 'LSLEDOFFV', LightSource.LEDOffVoltage ) ;
+     AddKeyValue( Header, 'LSLEDMAXV', LightSource.LEDMaxVoltage ) ;
 
      // TIRF settings
      for i := 1 to lsMaxTIRFGalvos do begin
-        AppendFloat( Header, format('LSTIRFOFF%d=',[i]), LightSource.TIRFOff[i] ) ;
-        AppendFloat( Header, format('LSTIRFON%d=',[i]), LightSource.TIRFOn[i] ) ;
-        AppendFloat( Header, format('LSTIRFWF%d=',[i]), LightSource.TIRFWF[i] ) ;
+        AddKeyValue( Header, format('LSTIRFOFF%d',[i]), LightSource.TIRFOff[i] ) ;
+        AddKeyValue( Header, format('LSTIRFON%d',[i]), LightSource.TIRFOn[i] ) ;
+        AddKeyValue( Header, format('LSTIRFWF%d',[i]), LightSource.TIRFWF[i] ) ;
         end ;
 
      // Shutter closed wavelength
-     AppendFloat( Header, 'LSSCWAVEL=', LightSource.ShutterClosedWavelength ) ;
+     AddKeyValue( Header, 'LSSCWAVEL', LightSource.ShutterClosedWavelength ) ;
 
      // Shutter blanking period
-     AppendFloat( Header, 'LSSCBLANK=', LightSource.ShutterBlankingPeriod ) ;
+     AddKeyValue( Header, 'LSSCBLANK', LightSource.ShutterBlankingPeriod ) ;
 
      // Shutter open/close change time
-     AppendFloat( Header, 'LSSCHTIME=', LightSource.ShutterChangeTime ) ;
+     AddKeyValue( Header, 'LSSCHTIME', LightSource.ShutterChangeTime ) ;
 
      // Emission filter
-     AppendFloat( Header, 'EMFCHTIME=', LightSource.EMFilterChangeTime ) ;
+     AddKeyValue( Header, 'EMFCHTIME', LightSource.EMFilterChangeTime ) ;
 
      // Excitation wavelength settings
-     AppendLogical( Header, 'EXCSW=', MainFrm.EXCSingleWavelength ) ;
+     AddKeyValue( Header, 'EXCSW', MainFrm.EXCSingleWavelength ) ;
 
      // Single wavelength selected
-     AppendInt( Header, 'EXCSWN=', MainFrm.EXCSingleWavelengthNum ) ;
+     AddKeyValue( Header, 'EXCSWN', MainFrm.EXCSingleWavelengthNum ) ;
 
-     AppendLogical( Header, 'EXCONREC=', MainFrm.ExcitationOnWhenRecording ) ;
+     AddKeyValue( Header, 'EXCONREC', MainFrm.ExcitationOnWhenRecording ) ;
 
      // Excitation multi-wavelength sequence settings
-     AppendInt( Header, 'EXCSEQNUM=', MainFrm.EXCSequenceNum ) ;
+     AddKeyValue( Header, 'EXCSEQNUM', MainFrm.EXCSequenceNum ) ;
      for iSeq := 0 to MaxEXCSequences-1 do begin
-         AppendInt( Header, format('EXCNW%d=',[iSeq]), MainFrm.EXCNumWavelengths[iSeq] ) ;
-         AppendString( Header, format('EXCSEQNAM%d=',[iSeq]), MainFrm.EXCSequenceName[iSeq] ) ;
+         AddKeyValue( Header, format('EXCNW%d',[iSeq]), MainFrm.EXCNumWavelengths[iSeq] ) ;
+         AddKeyValue( Header, format('EXCSEQNAM%d',[iSeq]), MainFrm.EXCSequenceName[iSeq] ) ;
          for iWav := 0 to MainFrm.EXCNumWavelengths[iSeq] do begin
-             AppendInt( Header, format('EXCSEQ%dW%d=',[iSeq,iWav]), MainFrm.EXCSequence[iWav,iSeq].WavelengthNum) ;
-             AppendInt( Header, format('EXCSEQ%dDF%d=',[iSeq,iWav]), MainFrm.EXCSequence[iWav,iSeq].DivideFactor) ;
+             AddKeyValue( Header, format('EXCSEQ%dW%d',[iSeq,iWav]), MainFrm.EXCSequence[iWav,iSeq].WavelengthNum) ;
+             AddKeyValue( Header, format('EXCSEQ%dDF%d',[iSeq,iWav]), MainFrm.EXCSequence[iWav,iSeq].DivideFactor) ;
              end ;
          end ;
 
      // Save sequence 0 for compatibility with older versions of WinFluor
-     AppendInt( Header, 'EXCNW=', MainFrm.EXCNumWavelengths[0] ) ;
+     AddKeyValue( Header, 'EXCNW', MainFrm.EXCNumWavelengths[0] ) ;
      for iWav := 0 to MainFrm.EXCNumWavelengths[0] do begin
-         AppendInt( Header, format('EXCSEQW%d=',[iWav]), MainFrm.EXCSequence[iWav,0].WavelengthNum) ;
-         AppendInt( Header, format('EXCSEQDF%d=',[iWav]), MainFrm.EXCSequence[iWav,0].DivideFactor) ;
+         AddKeyValue( Header, format('EXCSEQW%d',[iWav]), MainFrm.EXCSequence[iWav,0].WavelengthNum) ;
+         AddKeyValue( Header, format('EXCSEQDF%d',[iWav]), MainFrm.EXCSequence[iWav,0].DivideFactor) ;
          end ;
 
      // Save wavelengths list
      for iWav := 0 to High(MainFrm.EXCWavelengths) do begin
-         AppendInt( Header, format('EXCWC%d=',[iWav]), MainFrm.EXCWavelengths[iWav].Centre) ;
-         AppendInt( Header, format('EXCWW%d=',[iWav]), MainFrm.EXCWavelengths[iWav].Width) ;
-         AppendInt( Header, format('EXCWEMF%d=',[iWav]), MainFrm.EXCWavelengths[iWav].EmFilter) ;
-         AppendString( Header, format('EXCWEMN%d=',[iWav]), MainFrm.EXCWavelengths[iWav].EmName) ;
-         AppendFloat( Header, format('EXCWFEX%d=',[iWav]), MainFrm.EXCWavelengths[iWav].FractionalExposure) ;
+         AddKeyValue( Header, format('EXCWC%d',[iWav]), MainFrm.EXCWavelengths[iWav].Centre) ;
+         AddKeyValue( Header, format('EXCWW%d',[iWav]), MainFrm.EXCWavelengths[iWav].Width) ;
+         AddKeyValue( Header, format('EXCWEMF%d',[iWav]), MainFrm.EXCWavelengths[iWav].EmFilter) ;
+         AddKeyValue( Header, format('EXCWEMN%d',[iWav]), MainFrm.EXCWavelengths[iWav].EmName) ;
+         AddKeyValue( Header, format('EXCWFEX%d',[iWav]), MainFrm.EXCWavelengths[iWav].FractionalExposure) ;
          end ;
 
-     AppendFloat( Header, 'EXCSPSTARTW=', MainFrm.EXCSpectrumStartWavelength ) ;
-     AppendFloat( Header, 'EXCSPENDW=', MainFrm.EXCSpectrumEndWavelength ) ;
-     AppendFloat( Header, 'EXCSPBANDW=', MainFrm.EXCSpectrumBandwidth ) ;
-     AppendInt( Header, 'EXCSPEMFILT=', MainFrm.EXCSpectrumEMFilter ) ;
-     AppendFloat( Header, 'EXCSPSTEPS=', MainFrm.EXCSpectrumStepSize ) ;
+     AddKeyValue( Header, 'EXCSPSTARTW', MainFrm.EXCSpectrumStartWavelength ) ;
+     AddKeyValue( Header, 'EXCSPENDW', MainFrm.EXCSpectrumEndWavelength ) ;
+     AddKeyValue( Header, 'EXCSPBANDW', MainFrm.EXCSpectrumBandwidth ) ;
+     AddKeyValue( Header, 'EXCSPEMFILT', MainFrm.EXCSpectrumEMFilter ) ;
+     AddKeyValue( Header, 'EXCSPSTEPS', MainFrm.EXCSpectrumStepSize ) ;
 
      // Stimulus program file
-     AppendString( Header, 'STIMFILE=', MainFrm.StimFileName) ;
+     AddKeyValue( Header, 'STIMFILE', MainFrm.StimFileName) ;
 
      // Photo stimulus program file
-     AppendString( Header, 'PHOTOSTIMFIL=', MainFrm.PhotoStimFileName) ;
+     AddKeyValue( Header, 'PHOTOSTIMFIL', MainFrm.PhotoStimFileName) ;
 
      // Fluophore mainFrm.Binding mainFrm.BindingEquations table
      for i := 0 to MainFrm.IDRFile.MaxEquations-1 do begin
-         AppendLogical( Header, format('EQNUSE%d=',[i]), mainFrm.BindingEquations[i].InUse ) ;
-         AppendString( Header, format('EQNION%d=',[i]), mainFrm.BindingEquations[i].Ion) ;
-         AppendString( Header, format('EQNUN%d=',[i]), mainFrm.BindingEquations[i].Units) ;
-         AppendString( Header, format('EQNNAM%d=',[i]), mainFrm.BindingEquations[i].Name) ;
-         AppendFloat( Header, format('EQNRMAX%d=',[i]), mainFrm.BindingEquations[i].RMax) ;
-         AppendFloat( Header, format('EQNRMIN%d=',[i]), mainFrm.BindingEquations[i].RMin) ;
-         AppendFloat( Header, format('EQNKEFF%d=',[i]), mainFrm.BindingEquations[i].KEff) ;
+         AddKeyValue( Header, format('EQNUSE%d',[i]), mainFrm.BindingEquations[i].InUse ) ;
+         AddKeyValue( Header, format('EQNION%d',[i]), mainFrm.BindingEquations[i].Ion) ;
+         AddKeyValue( Header, format('EQNUN%d',[i]), mainFrm.BindingEquations[i].Units) ;
+         AddKeyValue( Header, format('EQNNAM%d',[i]), mainFrm.BindingEquations[i].Name) ;
+         AddKeyValue( Header, format('EQNRMAX%d',[i]), mainFrm.BindingEquations[i].RMax) ;
+         AddKeyValue( Header, format('EQNRMIN%d',[i]), mainFrm.BindingEquations[i].RMin) ;
+         AddKeyValue( Header, format('EQNKEFF%d',[i]), mainFrm.BindingEquations[i].KEff) ;
          end ;
 
-     AppendString( Header, 'DDIR=', MainFrm.DataDirectory ) ;
+     AddKeyValue( Header, 'DDIR', MainFrm.DataDirectory ) ;
 
-     AppendString( Header, 'VPDIR=', MainFrm.VProtDirectory ) ;
+     AddKeyValue( Header, 'VPDIR', MainFrm.VProtDirectory ) ;
 
-     AppendString( Header, 'EXPDIR=', MainFrm.ExportDirectory ) ;
+     AddKeyValue( Header, 'EXPDIR', MainFrm.ExportDirectory ) ;
 
      // Printer page settings
-     AppendInt( Header, 'PRTM=', MainFrm.PrinterTopMargin )  ;
-     AppendInt( Header, 'PRBM=', MainFrm.PrinterBottomMargin )  ;
-     AppendInt( Header, 'PRLM=', MainFrm.PrinterLeftMargin )  ;
-     AppendInt( Header, 'PRRM=', MainFrm.PrinterRightMargin )  ;
-     AppendInt( Header, 'PRLT=', MainFrm.PrinterLineThickness )  ;
-     AppendInt( Header, 'PRMS=', MainFrm.PrinterMarkerSize )  ;
-     AppendLogical( Header, 'PRUC=', MainFrm.PrinterUseColor ) ;
-     AppendString( Header, 'PRFN=', MainFrm.PrinterFontName ) ;
-     AppendInt( Header, 'PRFS=', MainFrm.PrinterFontSize )  ;
+     AddKeyValue( Header, 'PRTM', MainFrm.PrinterTopMargin )  ;
+     AddKeyValue( Header, 'PRBM', MainFrm.PrinterBottomMargin )  ;
+     AddKeyValue( Header, 'PRLM', MainFrm.PrinterLeftMargin )  ;
+     AddKeyValue( Header, 'PRRM', MainFrm.PrinterRightMargin )  ;
+     AddKeyValue( Header, 'PRLT', MainFrm.PrinterLineThickness )  ;
+     AddKeyValue( Header, 'PRMS', MainFrm.PrinterMarkerSize )  ;
+     AddKeyValue( Header, 'PRUC', MainFrm.PrinterUseColor ) ;
+     AddKeyValue( Header, 'PRFN', MainFrm.PrinterFontName ) ;
+     AddKeyValue( Header, 'PRFS', MainFrm.PrinterFontSize )  ;
 
      for i := 0 to High(MainFrm.RecentFiles) do
-         AppendString(Header,format('FILE%d=',[i]),MainFrm.RecentFiles[i]) ;
+         AddKeyValue(Header,format('FILE%d',[i]),MainFrm.RecentFiles[i]) ;
 
      // Input/output/control line configuration
-     AppendInt( Header, 'IOADCI=', MainFrm.IOConfig.ADCIn ) ;
-     AppendInt( Header, 'IOCAMS=', MainFrm.IOConfig.CameraStart ) ;
-     AppendLogical( Header, 'IOCAMSAH=', MainFrm.IOConfig.CameraStartActiveHigh ) ;
-     AppendInt( Header, 'IOVCOM0=', MainFrm.IOConfig.VCommand[0] ) ;
-     AppendInt( Header, 'IOVCOM1=', MainFrm.IOConfig.VCommand[1] ) ;
-     AppendInt( Header, 'IOVCOM2=', MainFrm.IOConfig.VCommand[2] ) ;
-     AppendInt( Header, 'IOLSSU=', MainFrm.IOConfig.LSShutter ) ;
-     AppendLogical( Header, 'IOLSSUAH=', MainFrm.IOConfig.LSShutterActiveHigh ) ;
+     AddKeyValue( Header, 'IOADCI', MainFrm.IOConfig.ADCIn ) ;
+     AddKeyValue( Header, 'IOCAMS', MainFrm.IOConfig.CameraStart ) ;
+     AddKeyValue( Header, 'IOCAMSAH', MainFrm.IOConfig.CameraStartActiveHigh ) ;
+     AddKeyValue( Header, 'IOVCOM0', MainFrm.IOConfig.VCommand[0] ) ;
+     AddKeyValue( Header, 'IOVCOM1', MainFrm.IOConfig.VCommand[1] ) ;
+     AddKeyValue( Header, 'IOVCOM2', MainFrm.IOConfig.VCommand[2] ) ;
+     AddKeyValue( Header, 'IOLSSU', MainFrm.IOConfig.LSShutter ) ;
+     AddKeyValue( Header, 'IOLSSUAH', MainFrm.IOConfig.LSShutterActiveHigh ) ;
 
      // Light source control outputs
      for i := 0 to MaxLSControlLine do begin
-        AppendInt( Header, format('IOLSCON%d=',[i]), MainFrm.IOConfig.LSControlLine[i] ) ;
+        AddKeyValue( Header, format('IOLSCON%d',[i]), MainFrm.IOConfig.LSControlLine[i] ) ;
         end ;
 
      // Emission filter control lines
-     AppendInt( Header, 'IOEMFS=', MainFrm.IOConfig.EMFilterStart ) ;
-     AppendInt( Header, 'IOEMFE=', MainFrm.IOConfig.EMFilterEnd ) ;
+     AddKeyValue( Header, 'IOEMFS', MainFrm.IOConfig.EMFilterStart ) ;
+     AddKeyValue( Header, 'IOEMFE', MainFrm.IOConfig.EMFilterEnd ) ;
 
-     AppendInt( Header, 'IODSTA=', MainFrm.IOConfig.DigitalStimStart ) ;
-     AppendInt( Header, 'IODEND=', MainFrm.IOConfig.DigitalStimEnd ) ;
-     AppendInt( Header, 'IOPSX=', MainFrm.IOConfig.PhotoStimX ) ;
-     AppendInt( Header, 'IOPSY=', MainFrm.IOConfig.PhotoStimY ) ;
-     AppendInt( Header, 'IOPSI1=', MainFrm.IOConfig.PhotoStimI1 ) ;
-     AppendInt( Header, 'IOPSI2=', MainFrm.IOConfig.PhotoStimI2 ) ;
-     AppendInt( Header, 'IOPSI3=', MainFrm.IOConfig.PhotoStimI3 ) ;
+     AddKeyValue( Header, 'IODSTA', MainFrm.IOConfig.DigitalStimStart ) ;
+     AddKeyValue( Header, 'IODEND', MainFrm.IOConfig.DigitalStimEnd ) ;
+     AddKeyValue( Header, 'IOPSX', MainFrm.IOConfig.PhotoStimX ) ;
+     AddKeyValue( Header, 'IOPSY', MainFrm.IOConfig.PhotoStimY ) ;
+     AddKeyValue( Header, 'IOPSI1', MainFrm.IOConfig.PhotoStimI1 ) ;
+     AddKeyValue( Header, 'IOPSI2', MainFrm.IOConfig.PhotoStimI2 ) ;
+     AddKeyValue( Header, 'IOPSI3', MainFrm.IOConfig.PhotoStimI3 ) ;
 
      // Photo-stimulus Pockels cell and shutter configuration (Added by NS)
-     AppendInt( Header, 'IOPSMETER=', MainFrm.IOConfig.PhotoStimMeter ) ;
-     AppendInt( Header, 'IOPSSU=', MainFrm.IOConfig.PhotoStimShutter ) ;
-     AppendFloat( Header, 'IOPSSLA=', MainFrm.IOConfig.PhotoStimShutterLatency ) ;
-     AppendLogical( Header, 'IOPSSUAH=', MainFrm.IOConfig.PhotoStimShutterActiveHigh ) ;
-     AppendLogical( Header, 'IOPSPCMAN=', MainFrm.IOconfig.PhotoStimPowerCalManual ) ;
-     AppendFloat( Header, 'IOPSMETERR=', MainFrm.IOConfig.PhotoStimMeterRange ) ;
-     AppendFloat( Header, 'IOPSMETERS=', MainFrm.IOconfig.PhotoStimMeterScale ) ;
+     AddKeyValue( Header, 'IOPSMETER', MainFrm.IOConfig.PhotoStimMeter ) ;
+     AddKeyValue( Header, 'IOPSSU', MainFrm.IOConfig.PhotoStimShutter ) ;
+     AddKeyValue( Header, 'IOPSSLA', MainFrm.IOConfig.PhotoStimShutterLatency ) ;
+     AddKeyValue( Header, 'IOPSSUAH', MainFrm.IOConfig.PhotoStimShutterActiveHigh ) ;
+     AddKeyValue( Header, 'IOPSPCMAN', MainFrm.IOconfig.PhotoStimPowerCalManual ) ;
+     AddKeyValue( Header, 'IOPSMETERR', MainFrm.IOConfig.PhotoStimMeterRange ) ;
+     AddKeyValue( Header, 'IOPSMETERS', MainFrm.IOconfig.PhotoStimMeterScale ) ;
 
 
-     AppendInt( Header, 'IOCLKSYNC=', MainFrm.IOConfig.ClockSyncLine ) ;
+     AddKeyValue( Header, 'IOCLKSYNC', MainFrm.IOConfig.ClockSyncLine ) ;
 
      // Event detection settings
-{     AppendFloat( Header, 'EVANDEADTIME=', MainFrm.EventAnalysis.DeadTime ) ;
-     AppendFloat( Header, 'EVANTHRESHOLD=', MainFrm.EventAnalysis.DetectionThreshold ) ;
-     AppendFloat( Header, 'EVANTHRESHDUR=', MainFrm.EventAnalysis.ThresholdDuration ) ;
-     AppendInt( Header, 'EVANPOLARITY=', MainFrm.EventAnalysis.DetectionThresholdPolarity ) ;
-     AppendLogical( Header, 'EVANFIXBASE=', MainFrm.EventAnalysis.FixedBaseline ) ;
-     AppendInt( Header, 'EVANSOURCE=', MainFrm.EventAnalysis.DetectionSource ) ;
-     AppendFloat( Header, 'EVANDISPLAYMAX=', MainFrm.EventAnalysis.DisplayMax ) ;
-     AppendFloat( Header, 'EVANROLLBASEPERIOD=', MainFrm.EventAnalysis.RollingBaselinePeriod ) ;}
+{     AddKeyValue( Header, 'EVANDEADTIME', MainFrm.EventAnalysis.DeadTime ) ;
+     AddKeyValue( Header, 'EVANTHRESHOLD', MainFrm.EventAnalysis.DetectionThreshold ) ;
+     AddKeyValue( Header, 'EVANTHRESHDUR', MainFrm.EventAnalysis.ThresholdDuration ) ;
+     AddKeyValue( Header, 'EVANPOLARITY', MainFrm.EventAnalysis.DetectionThresholdPolarity ) ;
+     AddKeyValue( Header, 'EVANFIXBASE', MainFrm.EventAnalysis.FixedBaseline ) ;
+     AddKeyValue( Header, 'EVANSOURCE', MainFrm.EventAnalysis.DetectionSource ) ;
+     AddKeyValue( Header, 'EVANDISPLAYMAX', MainFrm.EventAnalysis.DisplayMax ) ;
+     AddKeyValue( Header, 'EVANROLLBASEPERIOD', MainFrm.EventAnalysis.RollingBaselinePeriod ) ;}
 
      // Seal test settings
-     AppendInt( Header, 'SEALTUSE=',MainFrm.SealTest.Use ) ;
-     AppendFloat( Header, 'SEALTPH1=',MainFrm.SealTest.PulseHeight1 ) ;
-     AppendFloat( Header, 'SEALTHV1=',MainFrm.SealTest.HoldingVoltage1 ) ;
-     AppendFloat( Header, 'SEALTPH2=',MainFrm.SealTest.PulseHeight2 ) ;
-     AppendFloat( Header, 'SEALTHV2=',MainFrm.SealTest.HoldingVoltage2 ) ;
-     AppendFloat( Header, 'SEALTPH3=',MainFrm.SealTest.PulseHeight3 ) ;
-     AppendFloat( Header, 'SEALTHV3=',MainFrm.SealTest.HoldingVoltage3 ) ;
-     AppendFloat( Header, 'SEALTPW=',MainFrm.SealTest.PulseWidth ) ;
+     AddKeyValue( Header, 'SEALTUSE',MainFrm.SealTest.Use ) ;
+     AddKeyValue( Header, 'SEALTPH1',MainFrm.SealTest.PulseHeight1 ) ;
+     AddKeyValue( Header, 'SEALTHV1',MainFrm.SealTest.HoldingVoltage1 ) ;
+     AddKeyValue( Header, 'SEALTPH2',MainFrm.SealTest.PulseHeight2 ) ;
+     AddKeyValue( Header, 'SEALTHV2',MainFrm.SealTest.HoldingVoltage2 ) ;
+     AddKeyValue( Header, 'SEALTPH3',MainFrm.SealTest.PulseHeight3 ) ;
+     AddKeyValue( Header, 'SEALTHV3',MainFrm.SealTest.HoldingVoltage3 ) ;
+     AddKeyValue( Header, 'SEALTPW',MainFrm.SealTest.PulseWidth ) ;
 
      // Photo-stimulus settings
-     AppendFloat( Header, 'PSPER=',MainFrm.PhotoStim.Period ) ;
-     AppendLogical( Header, 'PSREP=',MainFrm.PhotoStim.RepeatedStim ) ;
-     AppendInt( Header, 'PSNSTIMP=',MainFrm.PhotoStim.NumStimPoints ) ;
-     AppendInt( Header, 'PSATTEN=',MainFrm.PhotoStim.Attenuator ) ;
+     AddKeyValue( Header, 'PSPER',MainFrm.PhotoStim.Period ) ;
+     AddKeyValue( Header, 'PSREP',MainFrm.PhotoStim.RepeatedStim ) ;
+     AddKeyValue( Header, 'PSNSTIMP',MainFrm.PhotoStim.NumStimPoints ) ;
+     AddKeyValue( Header, 'PSATTEN',MainFrm.PhotoStim.Attenuator ) ;
      for i := 1 to 3 do
      begin
-       AppendFloat( Header, format('PSXC%d=',[i]), MainFrm.PhotoStim.XCenter[i]) ;
-       AppendFloat( Header, format('PSYC%d=',[i]), MainFrm.PhotoStim.YCenter[i]) ;
-       AppendFloat( Header, format('PSXS%d=',[i]), MainFrm.PhotoStim.XScale[i]) ;
-       AppendFloat( Header, format('PSYS%d=',[i]), MainFrm.PhotoStim.YScale[i]) ;
-       AppendLogical( Header, format('PSPCPENA%d=',[i]), MainFrm.PhotoStim.PCEnable[i] ) ;
-       AppendFloat( Header, format('PSPCPMIN%d=',[i]), MainFrm.PhotoStim.PCPowerMin[i] ) ;
-       AppendFloat( Header, format('PSPCPMAX%d=',[i]), MainFrm.PhotoStim.PCPowerMax[i] ) ;
-       AppendFloat( Header, format('PSPCBIAS%d=',[i]), MainFrm.PhotoStim.PCBias[i] ) ;
-       AppendFloat( Header, format('PSPCVPI%d=',[i]), MainFrm.PhotoStim.PCVoltagePi[i] ) ;
-       AppendLogical( Header, format('PSPCPC%d=',[i]), MainFrm.PhotoStim.PCPolarizationCross[i] ) ;
-       AppendLogical( Header, format('PSPC302%d=',[i]), MainFrm.PhotoStim.PCConoptics302[i] ) ;
-       AppendFloat( Header, format('PSLPMIN%d=',[i]), MainFrm.PhotoStim.LinearPowerMin[i] ) ;
-       AppendFloat( Header, format('PSLPMAX%d=',[i]), MainFrm.PhotoStim.LinearPowerMax[i] ) ;
-       AppendFloat( Header, format('PSLVMIN%d=',[i]), MainFrm.PhotoStim.LinearVoltageMin[i] ) ;
-       AppendFloat( Header, format('PSLVMAX%d=',[i]), MainFrm.PhotoStim.LinearVoltageMax[i] );
-       AppendLogical( Header, format('PSPCSHU%d=',[i]), MainFrm.PhotoStim.EnableShutter[i] ) ;
+       AddKeyValue( Header, format('PSXC%d',[i]), MainFrm.PhotoStim.XCenter[i]) ;
+       AddKeyValue( Header, format('PSYC%d',[i]), MainFrm.PhotoStim.YCenter[i]) ;
+       AddKeyValue( Header, format('PSXS%d',[i]), MainFrm.PhotoStim.XScale[i]) ;
+       AddKeyValue( Header, format('PSYS%d',[i]), MainFrm.PhotoStim.YScale[i]) ;
+       AddKeyValue( Header, format('PSPCPENA%d',[i]), MainFrm.PhotoStim.PCEnable[i] ) ;
+       AddKeyValue( Header, format('PSPCPMIN%d',[i]), MainFrm.PhotoStim.PCPowerMin[i] ) ;
+       AddKeyValue( Header, format('PSPCPMAX%d',[i]), MainFrm.PhotoStim.PCPowerMax[i] ) ;
+       AddKeyValue( Header, format('PSPCBIAS%d',[i]), MainFrm.PhotoStim.PCBias[i] ) ;
+       AddKeyValue( Header, format('PSPCVPI%d',[i]), MainFrm.PhotoStim.PCVoltagePi[i] ) ;
+       AddKeyValue( Header, format('PSPCPC%d',[i]), MainFrm.PhotoStim.PCPolarizationCross[i] ) ;
+       AddKeyValue( Header, format('PSPC302%d',[i]), MainFrm.PhotoStim.PCConoptics302[i] ) ;
+       AddKeyValue( Header, format('PSLPMIN%d',[i]), MainFrm.PhotoStim.LinearPowerMin[i] ) ;
+       AddKeyValue( Header, format('PSLPMAX%d',[i]), MainFrm.PhotoStim.LinearPowerMax[i] ) ;
+       AddKeyValue( Header, format('PSLVMIN%d',[i]), MainFrm.PhotoStim.LinearVoltageMin[i] ) ;
+       AddKeyValue( Header, format('PSLVMAX%d',[i]), MainFrm.PhotoStim.LinearVoltageMax[i] );
+       AddKeyValue( Header, format('PSPCSHU%d',[i]), MainFrm.PhotoStim.EnableShutter[i] ) ;
      end;
-     AppendFloat( Header, 'PSROTAT=',MainFrm.PhotoStim.ImageRotation ) ;
-     AppendFloat( Header, 'PSMICPERPX=',MainFrm.PhotoStim.XMicronsPerPixel ) ;
-     AppendFloat( Header, 'PSMICPERPY=',MainFrm.PhotoStim.YMicronsPerPixel ) ;
-     AppendString( Header, 'PSPVLOG=',MainFrm.PhotoStim.PVLogFile ) ;
-     AppendLogical( Header, 'PSREFLE=',MainFrm.PhotoStim.RefLineEnabled ) ;
-     AppendLogical( Header, 'PSCMDTERM=',MainFrm.PhotoStim.CmdTermZero ) ;
+     AddKeyValue( Header, 'PSROTAT',MainFrm.PhotoStim.ImageRotation ) ;
+     AddKeyValue( Header, 'PSMICPERPX',MainFrm.PhotoStim.XMicronsPerPixel ) ;
+     AddKeyValue( Header, 'PSMICPERPY',MainFrm.PhotoStim.YMicronsPerPixel ) ;
+     AddKeyValue( Header, 'PSPVLOG',MainFrm.PhotoStim.PVLogFile ) ;
+     AddKeyValue( Header, 'PSREFLE',MainFrm.PhotoStim.RefLineEnabled ) ;
+     AddKeyValue( Header, 'PSCMDTERM',MainFrm.PhotoStim.CmdTermZero ) ;
 
-     AppendLogical( Header, 'DISPLAYGRID=', MainFrm.mnDisplayGrid.Checked ) ;
+     AddKeyValue( Header, 'DISPLAYGRID', MainFrm.mnDisplayGrid.Checked ) ;
 
      // Append visibility state of channels in RecADCOnlyUnit
      // Modified by NS 19 March 2009
      for ch := 0 to MainFrm.ADCNumChannels-1 do begin
-        AppendLogical( Header, format('CVRADCO%d=',[ch]), MainFrm.ADCChannelRecADCOnlyUnitVisible[ch] ) ;
+        AddKeyValue( Header, format('CVRADCO%d',[ch]), MainFrm.ADCChannelRecADCOnlyUnitVisible[ch] ) ;
      end ;
 
      // Append visibility state of channels in Sealtest
      // Modified by NS 24 March 2009
-     AppendInt( Header, 'CVSTNUM=', MainFrm.ADCChannelSealtestNumberOfChannels ) ;
+     AddKeyValue( Header, 'CVSTNUM', MainFrm.ADCChannelSealtestNumberOfChannels ) ;
      for ch := 0 to MainFrm.ADCChannelSealtestNumberOfChannels-1 do begin
-        AppendLogical( Header, format('CVST%d=',[ch]), MainFrm.ADCChannelSealtestVisible[ch] ) ;
+        AddKeyValue( Header, format('CVST%d',[ch]), MainFrm.ADCChannelSealtestVisible[ch] ) ;
      end ;
 
      // Append state of SmoothDifferentiate window
      // Modified by NS 10 April 2009
      for ch := 0 to (4 - 1) do begin
-        AppendLogical( Header, format('SDWCH%d=',[ch]), MainFrm.SmoothDifferentiateUnitVisible[ch] ) ;
+        AddKeyValue( Header, format('SDWCH%d',[ch]), MainFrm.SmoothDifferentiateUnitVisible[ch] ) ;
      end;
-     AppendInt( Header, 'SDWMA=', MainFrm.SmoothDifferentiateUnitMADataWindow ) ;
-     AppendInt( Header, 'SDWDX=', MainFrm.SmoothDifferentiateUnitMADXWindow ) ;
+     AddKeyValue( Header, 'SDWMA', MainFrm.SmoothDifferentiateUnitMADataWindow ) ;
+     AddKeyValue( Header, 'SDWDX', MainFrm.SmoothDifferentiateUnitMADXWindow ) ;
 
      // Display contrast settings optimisation
-     AppendLogical( Header, 'CNCAFT=', MainFrm.ContrastChangeAllFrameTypes ) ;
-     AppendLogical( Header, 'CNAUTOOP=', MainFrm.ContrastAutoOptimise ) ;
-     AppendLogical( Header, 'CN6SD=', MainFrm.Contrast6SD ) ;
+     AddKeyValue( Header, 'CNCAFT', MainFrm.ContrastChangeAllFrameTypes ) ;
+     AddKeyValue( Header, 'CNAUTOOP', MainFrm.ContrastAutoOptimise ) ;
+     AddKeyValue( Header, 'CN6SD', MainFrm.Contrast6SD ) ;
 
      // Append state of DynamicProtocol window
      // Modified by NS 22 December 2009
-     AppendInt( Header, 'DPCH=', MainFrm.DynamicProtocol.SelectedChannel ) ;
-     AppendInt( Header, 'DPDIR=', MainFrm.DynamicProtocol.Direction ) ;
-     AppendFloat( Header, 'DPTHRES=', MainFrm.DynamicProtocol.Threshold ) ;
-     AppendFloat( Header, 'DPDUR=', MainFrm.DynamicProtocol.Duration ) ;
-     AppendLogical( Header, 'DPEP=', MainFrm.DynamicProtocol.EPRestart ) ;
-     AppendLogical( Header, 'DPPS=', MainFrm.DynamicProtocol.PSRestart ) ;
-     AppendString( Header, 'DPEPF=',MainFrm.DynamicProtocol.EPStimFileName ) ;
-     AppendInt( Header, 'DPEPI=', MainFrm.DynamicProtocol.EPStimIndex ) ;
-     AppendString( Header, 'DPPSF=',MainFrm.DynamicProtocol.PSStimFileName ) ;
-     AppendInt( Header, 'DPPSI=', MainFrm.DynamicProtocol.PSStimIndex ) ;
+     AddKeyValue( Header, 'DPCH', MainFrm.DynamicProtocol.SelectedChannel ) ;
+     AddKeyValue( Header, 'DPDIR', MainFrm.DynamicProtocol.Direction ) ;
+     AddKeyValue( Header, 'DPTHRES', MainFrm.DynamicProtocol.Threshold ) ;
+     AddKeyValue( Header, 'DPDUR', MainFrm.DynamicProtocol.Duration ) ;
+     AddKeyValue( Header, 'DPEP', MainFrm.DynamicProtocol.EPRestart ) ;
+     AddKeyValue( Header, 'DPPS', MainFrm.DynamicProtocol.PSRestart ) ;
+     AddKeyValue( Header, 'DPEPF',MainFrm.DynamicProtocol.EPStimFileName ) ;
+     AddKeyValue( Header, 'DPEPI', MainFrm.DynamicProtocol.EPStimIndex ) ;
+     AddKeyValue( Header, 'DPPSF',MainFrm.DynamicProtocol.PSStimFileName ) ;
+     AddKeyValue( Header, 'DPPSI', MainFrm.DynamicProtocol.PSStimIndex ) ;
 
      // Auto reset interface cards
-     AppendLogical( Header, 'ARI=', MainFrm.AutoResetInterfaceCards ) ;
+     AddKeyValue( Header, 'ARI', MainFrm.AutoResetInterfaceCards ) ;
 
-     AppendLogical( Header, 'STARTSTIMONREC=', MainFrm.StartStimOnRecord ) ;
+     AddKeyValue( Header, 'STARTSTIMONREC', MainFrm.StartStimOnRecord ) ;
 
      // Camera dark level detection range
-     AppendInt( Header, 'DARKLEVLO=',MainFrm.DarkLevelLo ) ;
-     AppendInt( Header, 'DARKLEVHI=',MainFrm.DarkLevelHi ) ;
+     AddKeyValue( Header, 'DARKLEVLO',MainFrm.DarkLevelLo ) ;
+     AddKeyValue( Header, 'DARKLEVHI',MainFrm.DarkLevelHi ) ;
 
      // Save Z Stage control settings
      ZStage.SaveSettings( Header ) ;
@@ -560,39 +616,34 @@ begin
      XYStageFrm.SaveSettings( Header ) ;
 
      // Save PMT Ratio calculation settings
-     AppendLogical( Header, 'PMTRATIOEN=',MainFrm.PMTRatio.Enabled ) ;
-     AppendInt( Header, 'PMTRATIONUM=',MainFrm.PMTRatio.NumerChan ) ;
-     AppendInt( Header, 'PMTRATIODEN=',MainFrm.PMTRatio.DenomChan ) ;
-     AppendInt( Header, 'PMTRATIORAT=',MainFrm.PMTRatio.RatioChan ) ;
-     AppendInt( Header, 'PMTRATIOCON=',MainFrm.PMTRatio.ConcChan ) ;
-     AppendFloat( Header, 'PMTRATIOTHR=',MainFrm.PMTRatio.Threshold ) ;
-     AppendFloat( Header, 'PMTRATIORATMAX=',MainFrm.PMTRatio.RatioMax ) ;
-     AppendLogical( Header, 'PMTRATIOCEN=',MainFrm.PMTRatio.ConcEnabled ) ;
-     AppendFloat( Header, 'PMTRATIOCONCMAX=',MainFrm.PMTRatio.ConcMax ) ;
-     AppendString( Header, 'PMTRATIOINM=',MainFrm.PMTRatio.IonName ) ;
-     AppendString( Header, 'PMTRATIOUNI=',MainFrm.PMTRatio.ConcUnits ) ;
-     AppendFloat( Header, 'PMTRATIORMAX=',MainFrm.PMTRatio.RMax ) ;
-     AppendFloat( Header, 'PMTRATIORMIN=',MainFrm.PMTRatio.RMin ) ;
-     AppendFloat( Header, 'PMTRATIOKEFF=',MainFrm.PMTRatio.Keff ) ;
+     AddKeyValue( Header, 'PMTRATIOEN',MainFrm.PMTRatio.Enabled ) ;
+     AddKeyValue( Header, 'PMTRATIONUM',MainFrm.PMTRatio.NumerChan ) ;
+     AddKeyValue( Header, 'PMTRATIODEN',MainFrm.PMTRatio.DenomChan ) ;
+     AddKeyValue( Header, 'PMTRATIORAT',MainFrm.PMTRatio.RatioChan ) ;
+     AddKeyValue( Header, 'PMTRATIOCON',MainFrm.PMTRatio.ConcChan ) ;
+     AddKeyValue( Header, 'PMTRATIOTHR',MainFrm.PMTRatio.Threshold ) ;
+     AddKeyValue( Header, 'PMTRATIORATMAX',MainFrm.PMTRatio.RatioMax ) ;
+     AddKeyValue( Header, 'PMTRATIOCEN',MainFrm.PMTRatio.ConcEnabled ) ;
+     AddKeyValue( Header, 'PMTRATIOCONCMAX',MainFrm.PMTRatio.ConcMax ) ;
+     AddKeyValue( Header, 'PMTRATIOINM',MainFrm.PMTRatio.IonName ) ;
+     AddKeyValue( Header, 'PMTRATIOUNI',MainFrm.PMTRatio.ConcUnits ) ;
+     AddKeyValue( Header, 'PMTRATIORMAX',MainFrm.PMTRatio.RMax ) ;
+     AddKeyValue( Header, 'PMTRATIORMIN',MainFrm.PMTRatio.RMin ) ;
+     AddKeyValue( Header, 'PMTRATIOKEFF',MainFrm.PMTRatio.Keff ) ;
 
      // Save form positions
      for I := 0 to High(MainFrm.FormPos) do begin
-         AppendInt( Header, format('FPTOP%d=',[i]), MainFrm.FormPos[i].Top ) ;
-         AppendInt( Header, format('FPLEFT%d=',[i]), MainFrm.FormPos[i].Left) ;
-         AppendInt( Header, format('FPWIDTH%d=',[i]), MainFrm.FormPos[i].Width ) ;
-         AppendInt( Header, format('FPHEIGHT%d=',[i]), MainFrm.FormPos[i].Height) ;
+         AddKeyValue( Header, format('FPTOP%d',[i]), MainFrm.FormPos[i].Top ) ;
+         AddKeyValue( Header, format('FPLEFT%d',[i]), MainFrm.FormPos[i].Left) ;
+         AddKeyValue( Header, format('FPWIDTH%d',[i]), MainFrm.FormPos[i].Width ) ;
+         AddKeyValue( Header, format('FPHEIGHT%d',[i]), MainFrm.FormPos[i].Height) ;
          end;
 
-     nWritten := FileWrite( INIFileHandle, Header, Sizeof(Header) )  ;
-     if nWritten <> Sizeof(Header) then
-        ShowMessage( ' Initialisation file write failed ' ) ;
+     Header.SaveToFile( FileName ) ;
 
-     if INIFileHandle >= 0 then FileClose( INIFileHandle ) ;
+     // Dispose of list
+     Header.Free ;
 
- //    n := 0 ;
- //    for i:= 1 to High(Header) do if Header[i] <> #0 then Inc(n) ;
- //    OutputdebugString(pchar(format('Header size=%d',[n])));
- //    ShowMessage(format('Header size=%d',[n]));
      end ;
 
 
@@ -603,197 +654,146 @@ procedure TFileIO.LoadInitialisationFile(
 // Load initialisation file
 // ------------------------
 var
-   Header : array[1..cNumIDRHeaderBytes] of ANSIchar ;
+   Header : TStringList ;
    i,iStart,iEnd,iLine,iWav,iSeq,ch : Integer ;
-   INIFileHandle : THandle ;
    iValue : Integer ;
    fValue : Single ;
-   bValue : Boolean ;
    ADCChannel : TChannel ;
    Dev : Integer ;
 begin
 
      if not FileExists( FileName ) then Exit ;
 
-     INIFileHandle := FileOpen( FileName, fmOpenReadWrite ) ;
+     // Create and load list of key=value settings
 
-     if INIFileHandle < 0 then begin
-        ShowMessage('Unable to open ' +  FileName ) ;
-        Exit ;
-        end ;
-
-     // Fill with 0s
-     for i := 0 to High(Header) do Header[i] := #0 ;
-
-     // Read data from INI file
-     FileRead( INIFileHandle, Header, Sizeof(Header) ) ;
+     Header := TStringList.Create ;
+     Header.LoadFromFile( FileName ) ;
 
      // Camera settings
-     ReadInt( Header, 'CAMTYPE=', MainFrm.CameraType ) ;
+     MainFrm.CameraType := GetKeyValue( Header, 'CAMTYPE', MainFrm.CameraType ) ;
 
      // Auxiliary camera settings
-     ReadInt( Header, 'CAMTYPEAUX=', MainFrm.AuxCameraType ) ;
+     MainFrm.AuxCameraType := GetKeyValue( Header, 'CAMTYPEAUX', MainFrm.AuxCameraType ) ;
 
-     iValue := MainFrm.Cam1.SelectedCamera ;
-     ReadInt( Header, 'CAMSEL=', iValue ) ;
-     MainFrm.Cam1.SelectedCamera := iValue ;
+     MainFrm.Cam1.SelectedCamera := GetKeyValue( Header, 'CAMSEL', MainFrm.Cam1.SelectedCamera ) ;
 
-     iValue := MainFrm.Cam1.BinFactor ;
-     ReadInt( Header, 'CAMBIN=', iValue ) ;
-     MainFrm.Cam1.BinFactor := iValue ;
+     MainFrm.Cam1.BinFactor := GetKeyValue( Header, 'CAMBIN', MainFrm.Cam1.BinFactor ) ;
 
-     iValue := MainFrm.Cam1.ReadoutSpeed ;
-     ReadInt( Header, 'CAMRS=', iValue ) ;
-     MainFrm.Cam1.ReadoutSpeed := iValue ;
+     MainFrm.Cam1.ReadoutSpeed := GetKeyValue( Header, 'CAMRS', MainFrm.Cam1.ReadoutSpeed ) ;
 
-     iValue :=  MainFrm.Cam1.CameraMode ;
-     ReadInt( Header, 'CAMVM=', iValue ) ;
-     MainFrm.Cam1.CameraMode := iValue ;
+      MainFrm.Cam1.CameraMode := GetKeyValue( Header, 'CAMVM',  MainFrm.Cam1.CameraMode ) ;
 
-     iValue := MainFrm.Cam1.CameraADC ;
-     ReadInt( Header, 'CAMADC=', iValue ) ;
-     MainFrm.Cam1.CameraADC := iValue ;
+     MainFrm.Cam1.CameraADC := GetKeyValue( Header, 'CAMADC', MainFrm.Cam1.CameraADC ) ;
 
-     bValue := False ;
-     ReadLogical( Header, 'CAMCCDCLR=', bValue ) ;
-     MainFrm.Cam1.CCDClearPreExposure := bValue ;
+     MainFrm.Cam1.CCDClearPreExposure := GetKeyValue( Header, 'CAMCCDCLR', MainFrm.Cam1.CCDClearPreExposure ) ;
 
-     bValue := False ;
-     ReadLogical( Header, 'CAMCCDPERO=', bValue ) ;
-     MainFrm.Cam1.CCDPostExposureReadout := bValue ;
+     MainFrm.Cam1.CCDPostExposureReadout := GetKeyValue( Header, 'CAMCCDPERO', MainFrm.Cam1.CCDPostExposureReadout ) ;
 
-     bValue := False ;
-     ReadLogical( Header, 'CAMLIGHTSPEEDMODE=', bValue ) ;
-     MainFrm.Cam1.LightSpeedMode := bValue ;
+     MainFrm.Cam1.LightSpeedMode := GetKeyValue( Header, 'CAMLIGHTSPEEDMODE', MainFrm.Cam1.LightSpeedMode ) ;
 
-     iValue := MainFrm.Cam1.ComPort ;
-     ReadInt( Header, 'CAMCOM=', iValue ) ;
-     MainFrm.Cam1.ComPort := iValue ;
+     MainFrm.Cam1.ComPort := GetKeyValue( Header, 'CAMCOM', MainFrm.Cam1.ComPort ) ;
 
-     iValue := MainFrm.Cam1.AmpGain ;
-     ReadInt( Header, 'CAMGN=', iValue ) ;
-     MainFrm.Cam1.AmpGain := iValue ;
+     MainFrm.Cam1.AmpGain := GetKeyValue( Header, 'CAMGN', MainFrm.Cam1.AmpGain ) ;
 
-     iValue := MainFrm.Cam1.FrameLeft ;
-     ReadInt( Header, 'CAMFL=', iValue ) ;
-     MainFrm.Cam1.FrameLeft := iValue ;
+     MainFrm.Cam1.FrameLeft := GetKeyValue( Header, 'CAMFL', MainFrm.Cam1.FrameLeft ) ;
 
-     iValue := MainFrm.Cam1.FrameRight ;
-     ReadInt( Header, 'CAMFR=', iValue ) ;
-     MainFrm.Cam1.FrameRight := iValue ;
+     MainFrm.Cam1.FrameRight := GetKeyValue( Header, 'CAMFR', MainFrm.Cam1.FrameRight ) ;
 
-     iValue := MainFrm.Cam1.FrameTop ;
-     ReadInt( Header, 'CAMFT=', iValue ) ;
-     MainFrm.Cam1.FrameTop := iValue ;
+     MainFrm.Cam1.FrameTop := GetKeyValue( Header, 'CAMFT', MainFrm.Cam1.FrameTop ) ;
 
-     iValue := MainFrm.Cam1.FrameBottom ;
-     ReadInt( Header, 'CAMFB=', iValue ) ;
-     MainFrm.Cam1.FrameBottom := iValue ;
+     MainFrm.Cam1.FrameBottom := GetKeyValue( Header, 'CAMFB', MainFrm.Cam1.FrameBottom ) ;
 
      // NOTE. Bin factor, readout speed and imaging area need to be set before
      // .FrameInterval to ensure camera will accept short intervals
 
-     fValue := MainFrm.Cam1.FrameInterval ;
-     ReadFloat( Header, 'CAMFI=', fValue ) ;
-     MainFrm.Cam1.FrameInterval := fValue ;
+     MainFrm.Cam1.FrameInterval := GetKeyValue( Header, 'CAMFI', MainFrm.Cam1.FrameInterval ) ;
 
      // Camera exposure/readout trigger offset
-     ReadFloat( Header, 'CAMTRIGOFFSET=', MainFrm.CameraTriggerOffset ) ;
+     MainFrm.CameraTriggerOffset := GetKeyValue( Header, 'CAMTRIGOFFSET', MainFrm.CameraTriggerOffset ) ;
 
      // Camera temperature set point
      fValue := -50.0 ;
-     ReadFloat( Header, 'CAMTEMPSET=', fValue ) ;
-     MainFrm.Cam1.CameraTemperatureSetPoint := fValue ;
+     MainFrm.Cam1.CameraTemperatureSetPoint := GetKeyValue( Header, 'CAMTEMPSET', fValue ) ;
 
      // Camera additional readout time (s)
-     fValue := MainFrm.Cam1.AdditionalReadoutTime ;
-     ReadFloat( Header, 'CAMADDRT=', fValue ) ;
-     MainFrm.Cam1.AdditionalReadoutTime := fValue ;
+     MainFrm.Cam1.AdditionalReadoutTime := GetKeyValue( Header, 'CAMADDRT', MainFrm.Cam1.AdditionalReadoutTime ) ;
 
      // Disable exposure interval limit checking
-     bValue := MainFrm.Cam1.DisableExposureIntervalLimit ;
-     ReadLogical( Header, 'CAMDEIL=', bValue ) ;
-     MainFrm.Cam1.DisableExposureIntervalLimit := bValue ;
+     MainFrm.Cam1.DisableExposureIntervalLimit := GetKeyValue( Header, 'CAMDEIL', MainFrm.Cam1.DisableExposureIntervalLimit ) ;
 
      // Camera CCD readout A/D convert gain
      iValue := 0 ;
-     ReadINT( Header, 'CAMADCGN=', iValue ) ;
-     MainFrm.Cam1.ADCGain := iValue ;
+     MainFrm.Cam1.ADCGain := GetKeyValue( Header, 'CAMADCGN', iValue ) ;
 
      // Camera CCD vertical line shift speed
      iValue := -1 ;
-     ReadINT( Header, 'CAMVSS=', iValue ) ;
-     MainFrm.Cam1.CCDVerticalShiftSpeed := iValue ;
+     MainFrm.Cam1.CCDVerticalShiftSpeed := GetKeyValue( Header, 'CAMVSS', iValue ) ;
 
      fValue := 0.0 ;
-     ReadFloat( Header, 'LENSMAG=', fValue ) ;
+     fValue := GetKeyValue( Header, 'LENSMAG', fValue ) ;
      if fValue <> 0.0 then MainFrm.Cam1.LensMagnification := fValue ;
 
+     MainFrm.CalibrationBarSize := GetKeyValue( Header, 'CALBARSZ', MainFrm.CalibrationBarSize ) ;
+     MainFrm.CalibrationBarThickness := GetKeyValue( Header, 'CALBARTH', MainFrm.CalibrationBarThickness ) ;
 
+     MainFrm.SplitImageName[0] := GetKeyValue(  Header, 'SPLIM0',MainFrm.SplitImageName[0]);
+     MainFrm.SplitImageName[1] := GetKeyValue(  Header, 'SPLIM1',MainFrm.SplitImageName[1]);
+     MainFrm.SplitImage := GetKeyValue( Header, 'SPLIM',MainFrm.SplitImage) ;
 
-     ReadFloat( Header, 'CALBARSZ=', MainFrm.CalibrationBarSize ) ;
-     ReadFloat( Header, 'CALBARTH=', MainFrm.CalibrationBarThickness ) ;
-
-     ReadString(  Header, 'SPLIM0=',MainFrm.SplitImageName[0]);
-     ReadString(  Header, 'SPLIM1=',MainFrm.SplitImageName[1]);
-     ReadLogical( Header, 'SPLIM=',MainFrm.SplitImage) ;
-
-     ReadLogical( Header, 'BULBEXP=', MainFrm.BulbExposureMode ) ;
+     MainFrm.BulbExposureMode := GetKeyValue( Header, 'BULBEXP', MainFrm.BulbExposureMode ) ;
 
      iValue := Integer(MainFrm.PaletteType) ;
-     ReadInt( Header, 'PAL=', iValue ) ;
+     iValue := GetKeyValue( Header, 'PAL', iValue ) ;
      MainFrm.PaletteType := TPaletteType(iValue) ;
 
-     ReadInt( Header, 'DZOOM=', MainFrm.DisplayZoomIndex ) ;
+     MainFrm.DisplayZoomIndex:= GetKeyValue( Header, 'DZOOM', MainFrm.DisplayZoomIndex ) ;
 
-     ReadInt( Header, 'NFREQ=', MainFrm.NumFramesRequired ) ;
+     MainFrm.NumFramesRequired := GetKeyValue( Header, 'NFREQ', MainFrm.NumFramesRequired ) ;
 
-     ReadInt( Header, 'RECMODE=', MainFrm.RecordingMode ) ;
-     ReadFloat( Header, 'RECPER=', MainFrm.RecordingPeriod ) ;
-     ReadFloat( Header, 'TLAPINT=', MainFrm.TimeLapseInterval ) ;
-     ReadFloat( Header, 'BURDUR=', MainFrm.BurstDuration ) ;
-     ReadFloat( Header, 'BURINT=', MainFrm.BurstInterval ) ;
+     MainFrm.RecordingMode := GetKeyValue( Header, 'RECMODE', MainFrm.RecordingMode ) ;
+     MainFrm.RecordingPeriod := GetKeyValue( Header, 'RECPER', MainFrm.RecordingPeriod ) ;
+     MainFrm.TimeLapseInterval := GetKeyValue( Header, 'TLAPINT', MainFrm.TimeLapseInterval ) ;
+     MainFrm.BurstDuration := GetKeyValue( Header, 'BURDUR', MainFrm.BurstDuration ) ;
+     MainFrm.BurstInterval := GetKeyValue( Header, 'BURINT', MainFrm.BurstInterval ) ;
 
-     ReadFloat( Header, 'ADCRECTIME=', MainFrm.ADCRecordingTime ) ;
+     MainFrm.ADCRecordingTime := GetKeyValue( Header, 'ADCRECTIME', MainFrm.ADCRecordingTime ) ;
 
-     ReadInt( Header, 'ROISIZE=', MainFrm.ROISize ) ;
-     ReadInt( Header, 'ROIX=', MainFrm.ROIX ) ;
-     ReadInt( Header, 'ROIY=', MainFrm.ROIY ) ;
-     ReadInt( Header, 'LIVEWVL=', MainFrm.LiveWindowWavelength ) ;
+     MainFrm.ROISize := GetKeyValue( Header, 'ROISIZE', MainFrm.ROISize ) ;
+     MainFrm.ROIX := GetKeyValue( Header, 'ROIX', MainFrm.ROIX ) ;
+     MainFrm.ROIY := GetKeyValue( Header, 'ROIY', MainFrm.ROIY ) ;
+     MainFrm.LiveWindowWavelength := GetKeyValue( Header, 'LIVEWVL', MainFrm.LiveWindowWavelength ) ;
 
      // National Instruments interface library
      iValue := 0 ;
-     ReadInt( Header, 'NIDAQAPI=', iValue ) ;
-     LabIO.NIDAQAPI := iValue ;
+     LabIO.NIDAQAPI := GetKeyValue( Header, 'NIDAQAPI', iValue ) ;
 
      // A/D input mode (NRSE/Differential)
      iValue := 0 ;
-     ReadInt( Header, 'ADCINPUTMODE=', iValue ) ;
-     LabIO.ADCInputMode := iValue ;
+     LabIO.ADCInputMode := GetKeyValue( Header, 'ADCINPUTMODE', iValue ) ;
 
      // A/D channel settings
-     ReadInt( Header, 'ADCNC=', iValue  ) ;
-     MainFrm.ADCNumChannels := iValue ;
+     MainFrm.ADCNumChannels := GetKeyValue( Header, 'ADCNC', MainFrm.ADCNumChannels  ) ;
 
      // A/D channel scanning interval
-     ReadFloat( Header, 'ADCSI=', fValue ) ;
-     MainFrm.ADCScanInterval := fValue ;
+     MainFrm.ADCScanInterval := GetKeyValue( Header, 'ADCSI', MainFrm.ADCScanInterval ) ;
 
-     ReadFloat( Header, 'ADCVR=', fValue ) ;
-     MainFrm.ADCVoltageRange := fValue ;
+     MainFrm.ADCVoltageRange := GetKeyValue( Header, 'ADCVR', MainFrm.ADCVoltageRange ) ;
 
-     ReadFloat( Header, 'ADCDW=', MainFrm.ADCDisplayWindow ) ;
+     MainFrm.ADCDisplayWindow := GetKeyValue( Header, 'ADCDW', MainFrm.ADCDisplayWindow ) ;
 
-     for ch := 0 to MainFrm.ADCNumChannels-1 do begin
+     for ch := 0 to MainFrm.ADCNumChannels-1 do
+         begin
          // Get current channel settings
          ADCChannel := MainFrm.ADCChannel[ch] ;
-         // Load parameters from INI file
-         ReadInt( Header, format('CIN%d=',[ch]), ADCChannel.ChannelOffset ) ;
+
          ADCChannel.ChannelOffset := MainFrm.IDRFile.ADCNumChannels - ch - 1 ;
-         ReadString( Header, format('CU%d=',[ch]), ADCChannel.ADCUnits ) ;
-         ReadString( Header, format('CN%d=',[ch]), ADCChannel.ADCName ) ;
-         ReadFloat( Header, format('CCF%d=',[ch]), ADCChannel.ADCCalibrationFactor ) ;
-         ReadFloat( Header, format('CSC%d=',[ch]), ADCChannel.ADCScale) ;
+         // Load parameters from INI file
+         ADCChannel.ChannelOffset := GetKeyValue( Header, format('CIN%d',[ch]), ADCChannel.ChannelOffset ) ;
+
+         ADCChannel.ADCUnits := GetKeyValue( Header, format('CU%d',[ch]), ADCChannel.ADCUnits ) ;
+         ADCChannel.ADCName := GetKeyValue( Header, format('CN%d',[ch]), ADCChannel.ADCName ) ;
+         ADCChannel.ADCCalibrationFactor := GetKeyValue( Header, format('CCF%d',[ch]), ADCChannel.ADCCalibrationFactor ) ;
+         ADCChannel.ADCScale := GetKeyValue( Header, format('CSC%d',[ch]), ADCChannel.ADCScale) ;
          // Update channel
          MainFrm.ADCChannel[ch] := ADCChannel ;
          end ;
@@ -802,185 +802,184 @@ begin
 
      // Patch clamp amplifier data
      for i := 1 to 2 do begin
-         ReadInt( Header, format('AMP=',[i]),iValue ) ;
-         ReadInt( Header, format('AMP%d=',[i]),iValue ) ;
-         Amplifier.AmplifierType[i] := iValue ;
-         ReadInt( Header, format('AMPCH%d=',[i]),iValue ) ;
-         ReadInt( Header, format('AMPGAINCH%d=',[i]),iValue ) ;
-         Amplifier.GainTelegraphChannel[i] := iValue ;
-         ReadInt( Header, format('AMPMODECH%d=',[i]),iValue ) ;
-         Amplifier.ModeTelegraphChannel[i] := iValue ;
+         Amplifier.AmplifierType[i] := GetKeyValue( Header, format('AMP',[i]),Amplifier.AmplifierType[i] ) ;
+         Amplifier.AmplifierType[i] := GetKeyValue( Header, format('AMP%d',[i]),Amplifier.AmplifierType[i] ) ;
+         Amplifier.GainTelegraphChannel[i] := GetKeyValue( Header, format('AMPCH%d',[i]),Amplifier.GainTelegraphChannel[i] ) ;
+         Amplifier.GainTelegraphChannel[i] := GetKeyValue( Header, format('AMPGAINCH%d',[i]),Amplifier.GainTelegraphChannel[i] ) ;
+         Amplifier.ModeTelegraphChannel[i] := GetKeyValue( Header, format('AMPMODECH%d',[i]),Amplifier.ModeTelegraphChannel[i] ) ;
          end ;
 
      // Patch clamp command voltage divide factor
-     ReadFloat( Header, 'VCDIV=', MainFrm.VCommand[0].DivideFactor ) ;
+     MainFrm.VCommand[0].DivideFactor := GetKeyValue( Header, 'VCDIV', MainFrm.VCommand[0].DivideFactor ) ;
      // Patch clamp holding potential
-     ReadFloat( Header, 'VCHOLD=', MainFrm.VCommand[0].HoldingVoltage ) ;
+      MainFrm.VCommand[0].HoldingVoltage := GetKeyValue( Header, 'VCHOLD', MainFrm.VCommand[0].HoldingVoltage ) ;
 
-     ReadFloat( Header, 'VCDIV0=', MainFrm.VCommand[0].DivideFactor ) ;
-     ReadFloat( Header, 'VCHOLD0=', MainFrm.VCommand[0].HoldingVoltage ) ;
-     ReadFloat( Header, 'VCDIV1=', MainFrm.VCommand[1].DivideFactor ) ;
-     ReadFloat( Header, 'VCHOLD1=', MainFrm.VCommand[1].HoldingVoltage ) ;
-     ReadFloat( Header, 'VCDIV2=', MainFrm.VCommand[2].DivideFactor ) ;
-     ReadFloat( Header, 'VCHOLD2=', MainFrm.VCommand[2].HoldingVoltage ) ;
+     MainFrm.VCommand[0].DivideFactor := GetKeyValue( Header, 'VCDIV0', MainFrm.VCommand[0].DivideFactor ) ;
+     MainFrm.VCommand[0].HoldingVoltage := GetKeyValue( Header, 'VCHOLD0', MainFrm.VCommand[0].HoldingVoltage ) ;
+     MainFrm.VCommand[1].DivideFactor := GetKeyValue( Header, 'VCDIV1', MainFrm.VCommand[1].DivideFactor ) ;
+     MainFrm.VCommand[1].HoldingVoltage := GetKeyValue( Header, 'VCHOLD1', MainFrm.VCommand[1].HoldingVoltage ) ;
+     MainFrm.VCommand[2].DivideFactor := GetKeyValue( Header, 'VCDIV2', MainFrm.VCommand[2].DivideFactor ) ;
+     MainFrm.VCommand[2].HoldingVoltage:= GetKeyValue( Header, 'VCHOLD2', MainFrm.VCommand[2].HoldingVoltage ) ;
 
      // Default digital output port states
      for Dev := 1 to MaxDevices do begin
-         ReadInt( Header, format('DIGOUTSTATE%d=',[Dev]), LabIO.DigOutState[Dev] ) ;
+         LabIO.DigOutState[Dev] := GetKeyValue( Header, format('DIGOUTSTATE%d',[Dev]), LabIO.DigOutState[Dev] ) ;
          end ;
 
      // Light source
-     iValue := LightSource.DeviceType ;
-     ReadInt( Header, 'LSDEV=', iValue ) ;
-     LightSource.DeviceType := iValue ;
-     ReadFloat( Header, 'LSW1=', LightSource.Wavelength1 ) ;
-     ReadFloat( Header, 'LSV1=', LightSource.Voltage1 ) ;
-     ReadFloat( Header, 'LSW2=', LightSource.Wavelength2 ) ;
-     ReadFloat( Header, 'LSV2=', LightSource.Voltage2 ) ;
+     LightSource.DeviceType := GetKeyValue( Header, 'LSDEV', LightSource.DeviceType ) ;
+     LightSource.Wavelength1 := GetKeyValue( Header, 'LSW1', LightSource.Wavelength1 ) ;
+     LightSource.Voltage1 := GetKeyValue( Header, 'LSV1', LightSource.Voltage1 ) ;
+     LightSource.Wavelength2 := GetKeyValue( Header, 'LSW2', LightSource.Wavelength2 ) ;
+     LightSource.Voltage2 := GetKeyValue( Header, 'LSV2', LightSource.Voltage2 ) ;
 
      // Laser settings
      for i := 0 to lsMaxLightSources-1 do begin
-        ReadFloat( Header, format('LSLAS%dWAV=',[i+1]), LightSource.LaserWavelength[i] ) ;
-        ReadFloat( Header, format('LSLAS%dDEL=',[i+1]), LightSource.LaserDelay[i] ) ;
-        ReadFloat( Header, format('LSLAS%dVOFF=',[i+1]), LightSource.LaserOffVoltage[i] ) ;
-        ReadFloat( Header, format('LSLAS%dVON=',[i+1]), LightSource.LaserOnVoltage[i] ) ;
-        ReadFloat( Header, format('LSLAS%dINT=',[i+1]), LightSource.LaserIntensity[i] ) ;
+        LightSource.LaserWavelength[i] := GetKeyValue( Header, format('LSLAS%dWAV',[i+1]), LightSource.LaserWavelength[i] ) ;
+        LightSource.LaserDelay[i] := GetKeyValue( Header, format('LSLAS%dDEL',[i+1]), LightSource.LaserDelay[i] ) ;
+        LightSource.LaserOffVoltage[i] := GetKeyValue( Header, format('LSLAS%dVOFF',[i+1]), LightSource.LaserOffVoltage[i] ) ;
+        LightSource.LaserOnVoltage[i] := GetKeyValue( Header, format('LSLAS%dVON',[i+1]), LightSource.LaserOnVoltage[i] ) ;
+        LightSource.LaserIntensity[i] := GetKeyValue( Header, format('LSLAS%dINT',[i+1]), LightSource.LaserIntensity[i] ) ;
         end ;
 
      // LED settings
-     ReadFloat( Header, 'LSLEDOFFV=', LightSource.LEDOffVoltage ) ;
-     ReadFloat( Header, 'LSLEDMAXV=', LightSource.LEDMaxVoltage ) ;
+     LightSource.LEDOffVoltage  := GetKeyValue( Header, 'LSLEDOFFV', LightSource.LEDOffVoltage ) ;
+     LightSource.LEDMaxVoltage := GetKeyValue( Header, 'LSLEDMAXV', LightSource.LEDMaxVoltage ) ;
 
      // TIRF settings
      for i := 1 to lsMaxTIRFGalvos do begin
-        ReadFloat( Header, format('LSTIRFOFF%d=',[i]), LightSource.TIRFOff[i] ) ;
-        ReadFloat( Header, format('LSTIRFON%d=',[i]), LightSource.TIRFOn[i] ) ;
-        ReadFloat( Header, format('LSTIRFWF%d=',[i]), LightSource.TIRFWF[i] ) ;
+        LightSource.TIRFOff[i] := GetKeyValue( Header, format('LSTIRFOFF%d',[i]), LightSource.TIRFOff[i] ) ;
+        LightSource.TIRFOn[i] := GetKeyValue( Header, format('LSTIRFON%d',[i]), LightSource.TIRFOn[i] ) ;
+        LightSource.TIRFWF[i] := GetKeyValue( Header, format('LSTIRFWF%d',[i]), LightSource.TIRFWF[i] ) ;
         end ;
 
      // Shutter closed wavelength
-     ReadFloat( Header, 'LSSCWAVEL=', LightSource.ShutterClosedWavelength ) ;
+     LightSource.ShutterClosedWavelength := GetKeyValue( Header, 'LSSCWAVEL', LightSource.ShutterClosedWavelength ) ;
 
      // Shutter blanking period
-     ReadFloat( Header, 'LSSCBLANK=', LightSource.ShutterBlankingPeriod ) ;
+     LightSource.ShutterBlankingPeriod := GetKeyValue( Header, 'LSSCBLANK', LightSource.ShutterBlankingPeriod ) ;
 
      // Shutter open/close change time
-     ReadFloat( Header, 'LSSCHTIME=', LightSource.ShutterChangeTime ) ;
+     LightSource.ShutterChangeTime := GetKeyValue( Header, 'LSSCHTIME', LightSource.ShutterChangeTime ) ;
 
      // Emission filter
-     ReadFloat( Header, 'EMFCHTIME=', LightSource.EMFilterChangeTime ) ;
+     LightSource.EMFilterChangeTime := GetKeyValue( Header, 'EMFCHTIME', LightSource.EMFilterChangeTime ) ;
 
      // Excitation wavelength settings
-     ReadLogical( Header, 'EXCSW=', MainFrm.EXCSingleWavelength ) ;
+     MainFrm.EXCSingleWavelength := GetKeyValue( Header, 'EXCSW', MainFrm.EXCSingleWavelength ) ;
 
-     ReadLogical( Header, 'EXCONREC=', MainFrm.ExcitationOnWhenRecording ) ;
+     MainFrm.ExcitationOnWhenRecording := GetKeyValue( Header, 'EXCONREC', MainFrm.ExcitationOnWhenRecording ) ;
 
-     ReadInt( Header, 'EXCSWN=', MainFrm.EXCSingleWavelengthNum ) ;
+     MainFrm.EXCSingleWavelengthNum:= GetKeyValue( Header, 'EXCSWN', MainFrm.EXCSingleWavelengthNum ) ;
 
      // Read sequence 0 (for compatibility with older versions
-     ReadInt( Header, 'EXCNW=', MainFrm.EXCNumWavelengths[0] ) ;
-     for iWav := 0 to MainFrm.EXCNumWavelengths[0] do begin
-         ReadInt( Header, format('EXCSEQ%d=',[iWav]), MainFrm.EXCSequence[iWav,0].WavelengthNum) ;
+      MainFrm.EXCNumWavelengths[0] := GetKeyValue( Header, 'EXCNW', MainFrm.EXCNumWavelengths[0] ) ;
+     for iWav := 0 to MainFrm.EXCNumWavelengths[0] do
+         begin
+         MainFrm.EXCSequence[iWav,0].WavelengthNum:= GetKeyValue( Header, format('EXCSEQ%d',[iWav]), MainFrm.EXCSequence[iWav,0].WavelengthNum) ;
          MainFrm.EXCSequence[iWav,0].DivideFactor := 1 ;
-         ReadInt( Header, format('EXCSEQDF%d=',[iWav]), MainFrm.EXCSequence[iWav,0].DivideFactor) ;
-         ReadInt( Header, format('EXCWEMF%d=',[iWav]), MainFrm.EXCWavelengths[iWav].EmFilter) ;
-         ReadString( Header, format('EXCWEMN%d=',[iWav]), MainFrm.EXCWavelengths[iWav].EmName) ;
-         ReadFloat( Header, format('EXCWFEX%d=',[iWav]), MainFrm.EXCWavelengths[iWav].FractionalExposure) ;
+         MainFrm.EXCSequence[iWav,0].DivideFactor := GetKeyValue( Header, format('EXCSEQDF%d',[iWav]), MainFrm.EXCSequence[iWav,0].DivideFactor) ;
+         MainFrm.EXCWavelengths[iWav].EmFilter := GetKeyValue( Header, format('EXCWEMF%d',[iWav]), MainFrm.EXCWavelengths[iWav].EmFilter) ;
+         MainFrm.EXCWavelengths[iWav].EmName := GetKeyValue( Header, format('EXCWEMN%d',[iWav]), MainFrm.EXCWavelengths[iWav].EmName) ;
+         MainFrm.EXCWavelengths[iWav].FractionalExposure := GetKeyValue( Header, format('EXCWFEX%d',[iWav]), MainFrm.EXCWavelengths[iWav].FractionalExposure) ;
          end ;
 
      // Excitation multi-wavelength sequence settings
      MainFrm.EXCSequenceNum := 0 ;
-     ReadInt( Header, 'EXCSEQNUM=', MainFrm.EXCSequenceNum ) ;
-     for iSeq := 0 to MaxEXCSequences-1 do begin
-         ReadInt( Header, format('EXCNW%d=',[iSeq]), MainFrm.EXCNumWavelengths[iSeq] ) ;
-         ReadString( Header, format('EXCSEQNAM%d=',[iSeq]), MainFrm.EXCSequenceName[iSeq] ) ;
-         for iWav := 0 to MainFrm.EXCNumWavelengths[iSeq] do begin
-             ReadInt( Header, format('EXCSEQ%dW%d=',[iSeq,iWav]), MainFrm.EXCSequence[iWav,iSeq].WavelengthNum) ;
+     MainFrm.EXCSequenceNum := GetKeyValue( Header, 'EXCSEQNUM', MainFrm.EXCSequenceNum ) ;
+     for iSeq := 0 to MaxEXCSequences-1 do
+         begin
+         MainFrm.EXCNumWavelengths[iSeq] := GetKeyValue( Header, format('EXCNW%d',[iSeq]), MainFrm.EXCNumWavelengths[iSeq] ) ;
+         MainFrm.EXCSequenceName[iSeq] := GetKeyValue( Header, format('EXCSEQNAM%d',[iSeq]), MainFrm.EXCSequenceName[iSeq] ) ;
+         for iWav := 0 to MainFrm.EXCNumWavelengths[iSeq] do
+             begin
+             MainFrm.EXCSequence[iWav,iSeq].WavelengthNum := GetKeyValue( Header, format('EXCSEQ%dW%d',[iSeq,iWav]), MainFrm.EXCSequence[iWav,iSeq].WavelengthNum) ;
              MainFrm.EXCSequence[iWav,iSeq].DivideFactor := 1 ;
-             ReadInt( Header, format('EXCSEQ%dDF%d=',[iSeq,iWav]), MainFrm.EXCSequence[iWav,iSeq].DivideFactor) ;
+             MainFrm.EXCSequence[iWav,iSeq].DivideFactor := GetKeyValue( Header, format('EXCSEQ%dDF%d',[iSeq,iWav]), MainFrm.EXCSequence[iWav,iSeq].DivideFactor) ;
              end ;
          end ;
 
      // Read wavelengths table
      for i := 0 to High(MainFrm.EXCWavelengths) do begin
-         ReadInt( Header, format('EXCWC%d=',[i]), MainFrm.EXCWavelengths[i].Centre) ;
-         ReadInt( Header, format('EXCWW%d=',[i]), MainFrm.EXCWavelengths[i].Width) ;
+         MainFrm.EXCWavelengths[i].Centre := GetKeyValue( Header, format('EXCWC%d',[i]), MainFrm.EXCWavelengths[i].Centre) ;
+         MainFrm.EXCWavelengths[i].Width := GetKeyValue( Header, format('EXCWW%d',[i]), MainFrm.EXCWavelengths[i].Width) ;
          end ;
 
-     ReadFloat( Header, 'EXCSPSTARTW=', MainFrm.EXCSpectrumStartWavelength ) ;
-     ReadFloat( Header, 'EXCSPENDW=', MainFrm.EXCSpectrumEndWavelength ) ;
-     ReadFloat( Header, 'EXCSBANDW=', MainFrm.EXCSpectrumBandwidth ) ;
-     ReadInt( Header, 'EXCSPEMFILT=', MainFrm.EXCSpectrumEMFilter ) ;
-     ReadFloat( Header, 'EXCSPSTEPS=', MainFrm.EXCSpectrumStepSize ) ;
+     MainFrm.EXCSpectrumStartWavelength := GetKeyValue( Header, 'EXCSPSTARTW', MainFrm.EXCSpectrumStartWavelength ) ;
+     MainFrm.EXCSpectrumEndWavelength := GetKeyValue( Header, 'EXCSPENDW', MainFrm.EXCSpectrumEndWavelength ) ;
+     MainFrm.EXCSpectrumBandwidth := GetKeyValue( Header, 'EXCSBANDW', MainFrm.EXCSpectrumBandwidth ) ;
+     MainFrm.EXCSpectrumEMFilter := GetKeyValue( Header, 'EXCSPEMFILT', MainFrm.EXCSpectrumEMFilter ) ;
+     MainFrm.EXCSpectrumStepSize := GetKeyValue( Header, 'EXCSPSTEPS', MainFrm.EXCSpectrumStepSize ) ;
 
      // Stimulus program file
-     ReadString( Header, 'STIMFILE=', MainFrm.StimFileName) ;
+     MainFrm.StimFileName := GetKeyValue( Header, 'STIMFILE', MainFrm.StimFileName) ;
 
      // Photo stimulus program file
-     ReadString( Header, 'PHOTOSTIMFIL=', MainFrm.PhotoStimFileName) ;
+     MainFrm.PhotoStimFileName := GetKeyValue( Header, 'PHOTOSTIMFIL', MainFrm.PhotoStimFileName) ;
 
      // Fluophore binding equations table
-     for i := 0 to MainFrm.IDRFile.MaxEquations-1 do begin
-         ReadLogical( Header, format('EQNUSE%d=',[i]), mainFrm.BindingEquations[i].InUse ) ;
-         ReadString( Header, format('EQNION%d=',[i]), mainFrm.BindingEquations[i].Ion) ;
-         ReadString( Header, format('EQNUN%d=',[i]), mainFrm.BindingEquations[i].Units) ;
-         ReadString( Header, format('EQNNAM%d=',[i]), mainFrm.BindingEquations[i].Name) ;
-         ReadFloat( Header, format('EQNRMAX%d=',[i]), mainFrm.BindingEquations[i].RMax) ;
-         ReadFloat( Header, format('EQNRMIN%d=',[i]), mainFrm.BindingEquations[i].RMin) ;
-         ReadFloat( Header, format('EQNKEFF%d=',[i]), mainFrm.BindingEquations[i].KEff) ;
+     for i := 0 to MainFrm.IDRFile.MaxEquations-1 do
+         begin
+         mainFrm.BindingEquations[i].InUse := GetKeyValue( Header, format('EQNUSE%d',[i]), mainFrm.BindingEquations[i].InUse ) ;
+         mainFrm.BindingEquations[i].Ion := GetKeyValue( Header, format('EQNION%d',[i]), mainFrm.BindingEquations[i].Ion) ;
+          mainFrm.BindingEquations[i].Units := GetKeyValue( Header, format('EQNUN%d',[i]), mainFrm.BindingEquations[i].Units) ;
+         mainFrm.BindingEquations[i].Name := GetKeyValue( Header, format('EQNNAM%d',[i]), mainFrm.BindingEquations[i].Name) ;
+         mainFrm.BindingEquations[i].RMax := GetKeyValue( Header, format('EQNRMAX%d',[i]), mainFrm.BindingEquations[i].RMax) ;
+         mainFrm.BindingEquations[i].RMin := GetKeyValue( Header, format('EQNRMIN%d',[i]), mainFrm.BindingEquations[i].RMin) ;
+         mainFrm.BindingEquations[i].KEff := GetKeyValue( Header, format('EQNKEFF%d',[i]), mainFrm.BindingEquations[i].KEff) ;
          end ;
 
      // Printer page settings
-     ReadInt( Header, 'PRTM=', MainFrm.PrinterTopMargin )  ;
-     ReadInt( Header, 'PRBM=', MainFrm.PrinterBottomMargin )  ;
-     ReadInt( Header, 'PRLM=', MainFrm.PrinterLeftMargin )  ;
-     ReadInt( Header, 'PRRM=', MainFrm.PrinterRightMargin )  ;
-     ReadInt( Header, 'PRLT=', MainFrm.PrinterLineThickness )  ;
-     ReadInt( Header, 'PRMS=', MainFrm.PrinterMarkerSize )  ;
-     ReadLogical( Header, 'PRUC=', MainFrm.PrinterUseColor ) ;
-     ReadString( Header, 'PRFN=', MainFrm.PrinterFontName ) ;
-     ReadInt( Header, 'PRFS=', MainFrm.PrinterFontSize )  ;
+     MainFrm.PrinterTopMargin := GetKeyValue( Header, 'PRTM', MainFrm.PrinterTopMargin )  ;
+     MainFrm.PrinterBottomMargin := GetKeyValue( Header, 'PRBM', MainFrm.PrinterBottomMargin )  ;
+     MainFrm.PrinterLeftMargin := GetKeyValue( Header, 'PRLM', MainFrm.PrinterLeftMargin )  ;
+     MainFrm.PrinterRightMargin := GetKeyValue( Header, 'PRRM', MainFrm.PrinterRightMargin )  ;
+     MainFrm.PrinterLineThickness := GetKeyValue( Header, 'PRLT', MainFrm.PrinterLineThickness )  ;
+     MainFrm.PrinterMarkerSize := GetKeyValue( Header, 'PRMS', MainFrm.PrinterMarkerSize )  ;
+     MainFrm.PrinterUseColor := GetKeyValue( Header, 'PRUC', MainFrm.PrinterUseColor ) ;
+     MainFrm.PrinterFontName := GetKeyValue( Header, 'PRFN', MainFrm.PrinterFontName ) ;
+     MainFrm.PrinterFontSize := GetKeyValue( Header, 'PRFS', MainFrm.PrinterFontSize )  ;
 
-     ReadString( Header, 'DDIR=', MainFrm.DataDirectory ) ;
+     MainFrm.DataDirectory := GetKeyValue( Header, 'DDIR', MainFrm.DataDirectory ) ;
 
-     ReadString( Header, 'VPDIR=', MainFrm.VProtDirectory ) ;
+     MainFrm.VProtDirectory := GetKeyValue( Header, 'VPDIR', MainFrm.VProtDirectory ) ;
      // Use default if voltage protocol directory does not exist
      if not DirectoryExists(MainFrm.VProtDirectory) then begin
         MainFrm.VProtDirectory := MainFrm.DefVProtDirectory ;
         end ;
 
-     ReadString( Header, 'EXPDIR=', MainFrm.ExportDirectory ) ;
+     MainFrm.ExportDirectory := GetKeyValue( Header, 'EXPDIR', MainFrm.ExportDirectory ) ;
 
      for i := 0 to High(MainFrm.RecentFiles) do
-         ReadString(Header,format('FILE%d=',[i]),MainFrm.RecentFiles[i]) ;
+         MainFrm.RecentFiles[i] := GetKeyValue(Header,format('FILE%d',[i]),MainFrm.RecentFiles[i]) ;
 
      // Input/output/control line configuration
-     ReadInt( Header, 'IOADCI=', MainFrm.IOConfig.ADCIn ) ;
-     ReadInt( Header, 'IOCAMS=', MainFrm.IOConfig.CameraStart ) ;
-     ReadLogical( Header, 'IOCAMSAH=', MainFrm.IOConfig.CameraStartActiveHigh ) ;
+     MainFrm.IOConfig.ADCIn := GetKeyValue( Header, 'IOADCI', MainFrm.IOConfig.ADCIn ) ;
+     MainFrm.IOConfig.CameraStart := GetKeyValue( Header, 'IOCAMS', MainFrm.IOConfig.CameraStart ) ;
+     MainFrm.IOConfig.CameraStartActiveHigh := GetKeyValue( Header, 'IOCAMSAH', MainFrm.IOConfig.CameraStartActiveHigh ) ;
 
      // Command voltage O/P lines 1 & 2
-     ReadInt( Header, 'IOVCOM=', MainFrm.IOConfig.VCommand[0] ) ;
+     MainFrm.IOConfig.VCommand[0] := GetKeyValue( Header, 'IOVCOM', MainFrm.IOConfig.VCommand[0] ) ;
      // Above line for compatibility with versions earlier than V2.4.3
-     ReadInt( Header, 'IOVCOM0=', MainFrm.IOConfig.VCommand[0] ) ;
-     ReadInt( Header, 'IOVCOM1=', MainFrm.IOConfig.VCommand[1] ) ;
-     ReadInt( Header, 'IOVCOM2=', MainFrm.IOConfig.VCommand[2] ) ;
+     MainFrm.IOConfig.VCommand[0] := GetKeyValue( Header, 'IOVCOM0', MainFrm.IOConfig.VCommand[0] ) ;
+     MainFrm.IOConfig.VCommand[1] := GetKeyValue( Header, 'IOVCOM1', MainFrm.IOConfig.VCommand[1] ) ;
+     MainFrm.IOConfig.VCommand[2] := GetKeyValue( Header, 'IOVCOM2', MainFrm.IOConfig.VCommand[2] ) ;
 
-     ReadInt( Header, 'IOLSSU=', MainFrm.IOConfig.LSShutter ) ;
-     ReadLogical( Header, 'IOLSSUAH=', MainFrm.IOConfig.LSShutterActiveHigh ) ;
+     MainFrm.IOConfig.LSShutter := GetKeyValue( Header, 'IOLSSU', MainFrm.IOConfig.LSShutter ) ;
+     MainFrm.IOConfig.LSShutterActiveHigh := GetKeyValue( Header, 'IOLSSUAH', MainFrm.IOConfig.LSShutterActiveHigh ) ;
 
      // Read pre V3.7.2 light source control lines info
      iStart := 0 ;
      iEnd := 0 ;
-     ReadInt( Header, 'IOLSWS=', iStart ) ;
-     ReadInt( Header, 'IOLSWE=', iEnd ) ;
+     iStart := GetKeyValue( Header, 'IOLSWS', iStart ) ;
+     iEnd := GetKeyValue( Header, 'IOLSWE', iEnd ) ;
      iLine := 0 ;
      for i := iStart to iEnd do if iLine <= MaxLSControlLine then begin
          MainFrm.IOConfig.LSControlLine[iLine] := i ;
          Inc(iLine) ;
          end;
-     ReadInt( Header, 'IOLSLS=', iStart ) ;
-     ReadInt( Header, 'IOLSLE=', iEnd ) ;
+     iStart := GetKeyValue( Header, 'IOLSLS', iStart ) ;
+     iEnd := GetKeyValue( Header, 'IOLSLE', iEnd ) ;
      for i := iStart to iEnd do if iLine <= MaxLSControlLine then begin
          MainFrm.IOConfig.LSControlLine[iLine] := i ;
          Inc(iLine) ;
@@ -988,136 +987,138 @@ begin
 
      // Light source control outputs (post V3.7.2)
      for i := 0 to MaxLSControlLine do begin
-        ReadInt( Header, format('IOLSCON%d=',[i]), MainFrm.IOConfig.LSControlLine[i] ) ;
+        MainFrm.IOConfig.LSControlLine[i] := GetKeyValue( Header, format('IOLSCON%d',[i]), MainFrm.IOConfig.LSControlLine[i] ) ;
         end ;
 
      // Emission filter control lines
-     ReadInt( Header, 'IOEMFS=', MainFrm.IOConfig.EMFilterStart ) ;
-     ReadInt( Header, 'IOEMFE=', MainFrm.IOConfig.EMFilterEnd ) ;
+     MainFrm.IOConfig.EMFilterStart := GetKeyValue( Header, 'IOEMFS', MainFrm.IOConfig.EMFilterStart ) ;
+     MainFrm.IOConfig.EMFilterEnd  := GetKeyValue( Header, 'IOEMFE', MainFrm.IOConfig.EMFilterEnd ) ;
 
-     ReadInt( Header, 'IODSTA=', MainFrm.IOConfig.DigitalStimStart ) ;
-     ReadInt( Header, 'IODEND=', MainFrm.IOConfig.DigitalStimEnd ) ;
-     ReadInt( Header, 'IOPSX=', MainFrm.IOConfig.PhotoStimX ) ;
-     ReadInt( Header, 'IOPSY=', MainFrm.IOConfig.PhotoStimY ) ;
-     ReadInt( Header, 'IOPSI1=', MainFrm.IOConfig.PhotoStimI1 ) ;
-     ReadInt( Header, 'IOPSI2=', MainFrm.IOConfig.PhotoStimI2 ) ;
-     ReadInt( Header, 'IOPSI3=', MainFrm.IOConfig.PhotoStimI3 ) ;
+     MainFrm.IOConfig.DigitalStimStart := GetKeyValue( Header, 'IODSTA', MainFrm.IOConfig.DigitalStimStart ) ;
+     MainFrm.IOConfig.DigitalStimEnd := GetKeyValue( Header, 'IODEND', MainFrm.IOConfig.DigitalStimEnd ) ;
+     MainFrm.IOConfig.PhotoStimX := GetKeyValue( Header, 'IOPSX', MainFrm.IOConfig.PhotoStimX ) ;
+     MainFrm.IOConfig.PhotoStimY := GetKeyValue( Header, 'IOPSY', MainFrm.IOConfig.PhotoStimY ) ;
+     MainFrm.IOConfig.PhotoStimI1 := GetKeyValue( Header, 'IOPSI1', MainFrm.IOConfig.PhotoStimI1 ) ;
+     MainFrm.IOConfig.PhotoStimI2 := GetKeyValue( Header, 'IOPSI2', MainFrm.IOConfig.PhotoStimI2 ) ;
+     MainFrm.IOConfig.PhotoStimI3 := GetKeyValue( Header, 'IOPSI3', MainFrm.IOConfig.PhotoStimI3 ) ;
 
      // Photo-stimulus Pockels cell and shutter configuration
-     ReadInt( Header, 'IOPSMETER=', MainFrm.IOConfig.PhotoStimMeter ) ;
-     ReadInt( Header, 'IOPSSU=', MainFrm.IOConfig.PhotoStimShutter ) ;
-     ReadFloat( Header, 'IOPSSLA=', MainFrm.IOConfig.PhotoStimShutterLatency ) ;
-     ReadLogical( Header, 'IOPSSUAH=', MainFrm.IOConfig.PhotoStimShutterActiveHigh ) ;
-     ReadLogical( Header, 'IOPSPCMAN=', MainFrm.IOconfig.PhotoStimPowerCalManual ) ;
-     ReadFloat( Header, 'IOPSMETERR=', MainFrm.IOConfig.PhotoStimMeterRange ) ;
-     ReadFloat( Header, 'IOPSMETERS=', MainFrm.IOconfig.PhotoStimMeterScale ) ;
+     MainFrm.IOConfig.PhotoStimMeter := GetKeyValue( Header, 'IOPSMETER', MainFrm.IOConfig.PhotoStimMeter ) ;
+     MainFrm.IOConfig.PhotoStimShutter := GetKeyValue( Header, 'IOPSSU', MainFrm.IOConfig.PhotoStimShutter ) ;
+     MainFrm.IOConfig.PhotoStimShutterLatency := GetKeyValue( Header, 'IOPSSLA', MainFrm.IOConfig.PhotoStimShutterLatency ) ;
+     MainFrm.IOConfig.PhotoStimShutterActiveHigh := GetKeyValue( Header, 'IOPSSUAH', MainFrm.IOConfig.PhotoStimShutterActiveHigh ) ;
+     MainFrm.IOconfig.PhotoStimPowerCalManual:= GetKeyValue( Header, 'IOPSPCMAN', MainFrm.IOconfig.PhotoStimPowerCalManual ) ;
+     MainFrm.IOConfig.PhotoStimMeterRange := GetKeyValue( Header, 'IOPSMETERR', MainFrm.IOConfig.PhotoStimMeterRange ) ;
+     MainFrm.IOconfig.PhotoStimMeterScale := GetKeyValue( Header, 'IOPSMETERS', MainFrm.IOconfig.PhotoStimMeterScale ) ;
 
-     ReadInt( Header, 'IOCLKSYNC=', MainFrm.IOConfig.ClockSyncLine ) ;
+     MainFrm.IOConfig.ClockSyncLine := GetKeyValue( Header, 'IOCLKSYNC', MainFrm.IOConfig.ClockSyncLine ) ;
 
 
      // Event detection settings
-{     ReadFloat( Header, 'EVANDEADTIME=', MainFrm.EventAnalysis.DeadTime ) ;
-     ReadFloat( Header, 'EVANTHRESHOLD=', MainFrm.EventAnalysis.DetectionThreshold ) ;
-     ReadFloat( Header, 'EVANTHRESHDUR=', MainFrm.EventAnalysis.ThresholdDuration ) ;
-     ReadInt( Header, 'EVANPOLARITY=', MainFrm.EventAnalysis.DetectionThresholdPolarity ) ;
-     ReadLogical( Header, 'EVANFIXBASE=', MainFrm.EventAnalysis.FixedBaseline ) ;
-     ReadInt( Header, 'EVANSOURCE=', MainFrm.EventAnalysis.DetectionSource ) ;
-     ReadFloat( Header, 'EVANDISPLAYMAX=', MainFrm.EventAnalysis.DisplayMax ) ;
-     ReadFloat( Header, 'EVANROLLBASEPERIOD=', MainFrm.EventAnalysis.RollingBaselinePeriod ) ;}
+{     := GetKeyValue( Header, 'EVANDEADTIME', MainFrm.EventAnalysis.DeadTime ) ;
+     := GetKeyValue( Header, 'EVANTHRESHOLD', MainFrm.EventAnalysis.DetectionThreshold ) ;
+     := GetKeyValue( Header, 'EVANTHRESHDUR', MainFrm.EventAnalysis.ThresholdDuration ) ;
+     := GetKeyValue( Header, 'EVANPOLARITY', MainFrm.EventAnalysis.DetectionThresholdPolarity ) ;
+     := GetKeyValue( Header, 'EVANFIXBASE', MainFrm.EventAnalysis.FixedBaseline ) ;
+     := GetKeyValue( Header, 'EVANSOURCE', MainFrm.EventAnalysis.DetectionSource ) ;
+     := GetKeyValue( Header, 'EVANDISPLAYMAX', MainFrm.EventAnalysis.DisplayMax ) ;
+     := GetKeyValue( Header, 'EVANROLLBASEPERIOD', MainFrm.EventAnalysis.RollingBaselinePeriod ) ;}
 
      // Seal test settings
-     ReadInt( Header, 'SEALTUSE=',MainFrm.SealTest.Use ) ;
-     ReadFloat( Header, 'SEALTPH1=',MainFrm.SealTest.PulseHeight1 ) ;
-     ReadFloat( Header, 'SEALTHV1=',MainFrm.SealTest.HoldingVoltage1 ) ;
-     ReadFloat( Header, 'SEALTPH2=',MainFrm.SealTest.PulseHeight2 ) ;
-     ReadFloat( Header, 'SEALTHV2=',MainFrm.SealTest.HoldingVoltage2 ) ;
-     ReadFloat( Header, 'SEALTPH3=',MainFrm.SealTest.PulseHeight3 ) ;
-     ReadFloat( Header, 'SEALTHV3=',MainFrm.SealTest.HoldingVoltage3 ) ;
-     ReadFloat( Header, 'SEALTPW=',MainFrm.SealTest.PulseWidth ) ;
+     MainFrm.SealTest.Use := GetKeyValue( Header, 'SEALTUSE',MainFrm.SealTest.Use ) ;
+     MainFrm.SealTest.PulseHeight1 := GetKeyValue( Header, 'SEALTPH1',MainFrm.SealTest.PulseHeight1 ) ;
+     MainFrm.SealTest.HoldingVoltage1 := GetKeyValue( Header, 'SEALTHV1',MainFrm.SealTest.HoldingVoltage1 ) ;
+     MainFrm.SealTest.PulseHeight2 := GetKeyValue( Header, 'SEALTPH2',MainFrm.SealTest.PulseHeight2 ) ;
+     MainFrm.SealTest.HoldingVoltage2 := GetKeyValue( Header, 'SEALTHV2',MainFrm.SealTest.HoldingVoltage2 ) ;
+     MainFrm.SealTest.PulseHeight3 := GetKeyValue( Header, 'SEALTPH3',MainFrm.SealTest.PulseHeight3 ) ;
+     MainFrm.SealTest.HoldingVoltage3 := GetKeyValue( Header, 'SEALTHV3',MainFrm.SealTest.HoldingVoltage3 ) ;
+     MainFrm.SealTest.PulseWidth := GetKeyValue( Header, 'SEALTPW',MainFrm.SealTest.PulseWidth ) ;
 
      // Photo-stimulus settings
-     ReadFloat( Header, 'PSPER=',MainFrm.PhotoStim.Period ) ;
-     ReadLogical( Header, 'PSREP=',MainFrm.PhotoStim.RepeatedStim ) ;
-     ReadInt( Header, 'PSNSTIMP=',MainFrm.PhotoStim.NumStimPoints ) ;
-     ReadInt( Header, 'PSATTEN=',MainFrm.PhotoStim.Attenuator ) ;
-     ReadFloat( Header, 'PSROTAT=',MainFrm.PhotoStim.ImageRotation ) ;
-     ReadFloat( Header, 'PSMICPERPX=',MainFrm.PhotoStim.XMicronsPerPixel ) ;
-     ReadFloat( Header, 'PSMICPERPY=',MainFrm.PhotoStim.YMicronsPerPixel ) ;
-     ReadString( Header, 'PSPVLOG=',MainFrm.PhotoStim.PVLogFile ) ;
-     ReadLogical( Header, 'PSREFLE=',MainFrm.PhotoStim.RefLineEnabled ) ;
-     ReadLogical( Header, 'PSCMDTERM=',MainFrm.PhotoStim.CmdTermZero ) ;
+     MainFrm.PhotoStim.Period := GetKeyValue( Header, 'PSPER',MainFrm.PhotoStim.Period ) ;
+     MainFrm.PhotoStim.RepeatedStim := GetKeyValue( Header, 'PSREP',MainFrm.PhotoStim.RepeatedStim ) ;
+     MainFrm.PhotoStim.NumStimPoints := GetKeyValue( Header, 'PSNSTIMP',MainFrm.PhotoStim.NumStimPoints ) ;
+     MainFrm.PhotoStim.Attenuator := GetKeyValue( Header, 'PSATTEN',MainFrm.PhotoStim.Attenuator ) ;
+     MainFrm.PhotoStim.ImageRotation := GetKeyValue( Header, 'PSROTAT',MainFrm.PhotoStim.ImageRotation ) ;
+     MainFrm.PhotoStim.XMicronsPerPixel := GetKeyValue( Header, 'PSMICPERPX',MainFrm.PhotoStim.XMicronsPerPixel ) ;
+     MainFrm.PhotoStim.YMicronsPerPixel  := GetKeyValue( Header, 'PSMICPERPY',MainFrm.PhotoStim.YMicronsPerPixel ) ;
+     MainFrm.PhotoStim.PVLogFile := GetKeyValue( Header, 'PSPVLOG',MainFrm.PhotoStim.PVLogFile ) ;
+     MainFrm.PhotoStim.RefLineEnabled := GetKeyValue( Header, 'PSREFLE',MainFrm.PhotoStim.RefLineEnabled ) ;
+     MainFrm.PhotoStim.CmdTermZero := GetKeyValue( Header, 'PSCMDTERM',MainFrm.PhotoStim.CmdTermZero ) ;
+
      for i := 1 to 3 do
      begin
-       ReadFloat( Header, format('PSXC%d=',[i]), MainFrm.PhotoStim.XCenter[i] ) ;
-       ReadFloat( Header, format('PSXS%d=',[i]), MainFrm.PhotoStim.XScale[i] ) ;
-       ReadFloat( Header, format('PSYC%d=',[i]), MainFrm.PhotoStim.YCenter[i] ) ;
-       ReadFloat( Header, format('PSYS%d=',[i]), MainFrm.PhotoStim.YScale[i] ) ;
-       ReadLogical( Header, format('PSPCPENA%d=',[i]), MainFrm.PhotoStim.PCEnable[i] ) ;
-       ReadFloat( Header, format('PSPCPMIN%d=',[i]), MainFrm.PhotoStim.PCPowerMin[i] ) ;
-       ReadFloat( Header, format('PSPCPMAX%d=',[i]), MainFrm.PhotoStim.PCPowerMax[i] ) ;
-       ReadFloat( Header, format('PSPCBIAS%d=',[i]), MainFrm.PhotoStim.PCBias[i] ) ;
-       ReadFloat( Header, format('PSPCVPI%d=',[i]), MainFrm.PhotoStim.PCVoltagePi[i] ) ;
-       ReadLogical( Header, format('PSPCPC%d=',[i]), MainFrm.PhotoStim.PCPolarizationCross[i] ) ;
-       ReadLogical( Header, format('PSPC302%d=',[i]), MainFrm.PhotoStim.PCConoptics302[i] ) ;
-       ReadFloat( Header, format('PSLPMIN%d=',[i]), MainFrm.PhotoStim.LinearPowerMin[i] ) ;
-       ReadFloat( Header, format('PSLPMAX%d=',[i]), MainFrm.PhotoStim.LinearPowerMax[i] ) ;
-       ReadFloat( Header, format('PSLVMIN%d=',[i]), MainFrm.PhotoStim.LinearVoltageMin[i] ) ;
-       ReadFloat( Header, format('PSLVMAX%d=',[i]), MainFrm.PhotoStim.LinearVoltageMax[i] );
-       ReadLogical( Header, format('PSPCSHU%d=',[i]), MainFrm.PhotoStim.EnableShutter[i] ) ;
+       MainFrm.PhotoStim.XCenter[i] := GetKeyValue( Header, format('PSXC%d',[i]), MainFrm.PhotoStim.XCenter[i] ) ;
+        MainFrm.PhotoStim.XScale[i] := GetKeyValue( Header, format('PSXS%d',[i]), MainFrm.PhotoStim.XScale[i] ) ;
+       MainFrm.PhotoStim.YCenter[i] := GetKeyValue( Header, format('PSYC%d',[i]), MainFrm.PhotoStim.YCenter[i] ) ;
+       MainFrm.PhotoStim.YScale[i] := GetKeyValue( Header, format('PSYS%d',[i]), MainFrm.PhotoStim.YScale[i] ) ;
+       MainFrm.PhotoStim.PCEnable[i] := GetKeyValue( Header, format('PSPCPENA%d',[i]), MainFrm.PhotoStim.PCEnable[i] ) ;
+       MainFrm.PhotoStim.PCPowerMin[i] := GetKeyValue( Header, format('PSPCPMIN%d',[i]), MainFrm.PhotoStim.PCPowerMin[i] ) ;
+       MainFrm.PhotoStim.PCPowerMax[i] := GetKeyValue( Header, format('PSPCPMAX%d',[i]), MainFrm.PhotoStim.PCPowerMax[i] ) ;
+       MainFrm.PhotoStim.PCBias[i] := GetKeyValue( Header, format('PSPCBIAS%d',[i]), MainFrm.PhotoStim.PCBias[i] ) ;
+       MainFrm.PhotoStim.PCVoltagePi[i] := GetKeyValue( Header, format('PSPCVPI%d',[i]), MainFrm.PhotoStim.PCVoltagePi[i] ) ;
+       MainFrm.PhotoStim.PCPolarizationCross[i] := GetKeyValue( Header, format('PSPCPC%d',[i]), MainFrm.PhotoStim.PCPolarizationCross[i] ) ;
+       MainFrm.PhotoStim.PCConoptics302[i] := GetKeyValue( Header, format('PSPC302%d',[i]), MainFrm.PhotoStim.PCConoptics302[i] ) ;
+       MainFrm.PhotoStim.LinearPowerMin[i] := GetKeyValue( Header, format('PSLPMIN%d',[i]), MainFrm.PhotoStim.LinearPowerMin[i] ) ;
+       MainFrm.PhotoStim.LinearPowerMax[i] := GetKeyValue( Header, format('PSLPMAX%d',[i]), MainFrm.PhotoStim.LinearPowerMax[i] ) ;
+       MainFrm.PhotoStim.LinearVoltageMin[i] := GetKeyValue( Header, format('PSLVMIN%d',[i]), MainFrm.PhotoStim.LinearVoltageMin[i] ) ;
+       MainFrm.PhotoStim.LinearVoltageMax[i] := GetKeyValue( Header, format('PSLVMAX%d',[i]), MainFrm.PhotoStim.LinearVoltageMax[i] );
+       MainFrm.PhotoStim.EnableShutter[i] := GetKeyValue( Header, format('PSPCSHU%d',[i]), MainFrm.PhotoStim.EnableShutter[i] ) ;
      end;
 
-     bValue := MainFrm.mnDisplayGrid.Checked ;
-     ReadLogical( Header, 'DISPLAYGRID=', bValue) ;
-     MainFrm.mnDisplayGrid.Checked := bValue ;
+     MainFrm.mnDisplayGrid.Checked := GetKeyValue( Header, 'DISPLAYGRID', MainFrm.mnDisplayGrid.Checked ) ;
 
      // Display contrast settings optimisation
-     ReadLogical( Header, 'CNCAFT=', MainFrm.ContrastChangeAllFrameTypes ) ;
-     ReadLogical( Header, 'CNAUTOOP=', MainFrm.ContrastAutoOptimise ) ;
-     ReadLogical( Header, 'CN6SD=', MainFrm.Contrast6SD ) ;
+     MainFrm.ContrastChangeAllFrameTypes := GetKeyValue( Header, 'CNCAFT', MainFrm.ContrastChangeAllFrameTypes ) ;
+     MainFrm.ContrastAutoOptimise := GetKeyValue( Header, 'CNAUTOOP', MainFrm.ContrastAutoOptimise ) ;
+     MainFrm.Contrast6SD := GetKeyValue( Header, 'CN6SD', MainFrm.Contrast6SD ) ;
 
      // Read visibility state of channels in RecADCOnlyUnit
      // Modified by NS 19 March 2009
-     for ch := 0 to MainFrm.ADCNumChannels-1 do begin
-        ReadLogical( Header, format('CVRADCO%d=',[ch]), MainFrm.ADCChannelRecADCOnlyUnitVisible[ch]) ;
+     for ch := 0 to MainFrm.ADCNumChannels-1 do
+        begin
+        MainFrm.ADCChannelRecADCOnlyUnitVisible[ch] := GetKeyValue( Header, format('CVRADCO%d',[ch]), MainFrm.ADCChannelRecADCOnlyUnitVisible[ch]) ;
      end ;
 
      // Read visibility state of channels in Sealtest
      // Modified by NS 24 March 2009
      MainFrm.ADCChannelSealtestNumberOfChannels := 0 ;
-     ReadInt( Header, 'CVSTNUM=', MainFrm.ADCChannelSealtestNumberOfChannels ) ;
-     for ch := 0 to MainFrm.ADCChannelSealtestNumberOfChannels-1 do begin
-        ReadLogical( Header, format('CVST%d=',[ch]), MainFrm.ADCChannelSealtestVisible[ch] ) ;
+     MainFrm.ADCChannelSealtestNumberOfChannels := GetKeyValue( Header, 'CVSTNUM', MainFrm.ADCChannelSealtestNumberOfChannels ) ;
+     for ch := 0 to MainFrm.ADCChannelSealtestNumberOfChannels-1 do
+        begin
+        MainFrm.ADCChannelSealtestVisible[ch] := GetKeyValue( Header, format('CVST%d',[ch]), MainFrm.ADCChannelSealtestVisible[ch] ) ;
      end ;
 
      // Read state of SmoothDifferentiate window
      // Modified by NS 10 April 2009
-     for ch := 0 to (4 - 1) do begin
-        ReadLogical( Header, format('SDWCH%d=',[ch]), MainFrm.SmoothDifferentiateUnitVisible[ch] ) ;
+     for ch := 0 to (4 - 1) do
+        begin
+        MainFrm.SmoothDifferentiateUnitVisible[ch] := GetKeyValue( Header, format('SDWCH%d',[ch]), MainFrm.SmoothDifferentiateUnitVisible[ch] ) ;
      end;
-     ReadInt( Header, 'SDWMA=', MainFrm.SmoothDifferentiateUnitMADataWindow ) ;
-     ReadInt( Header, 'SDWDX=', MainFrm.SmoothDifferentiateUnitMADXWindow ) ;
+     MainFrm.SmoothDifferentiateUnitMADataWindow := GetKeyValue( Header, 'SDWMA', MainFrm.SmoothDifferentiateUnitMADataWindow ) ;
+     MainFrm.SmoothDifferentiateUnitMADXWindow := GetKeyValue( Header, 'SDWDX', MainFrm.SmoothDifferentiateUnitMADXWindow ) ;
 
      // Read state of DynamicProtocol window
      // Modified by NS 22 December 2009
-     ReadInt( Header, 'DPCH=', MainFrm.DynamicProtocol.SelectedChannel ) ;
-     ReadInt( Header, 'DPDIR=', MainFrm.DynamicProtocol.Direction ) ;
-     ReadFloat( Header, 'DPTHRES=', MainFrm.DynamicProtocol.Threshold ) ;
-     ReadFloat( Header, 'DPDUR=', MainFrm.DynamicProtocol.Duration ) ;
-     ReadLogical( Header, 'DPEP=', MainFrm.DynamicProtocol.EPRestart ) ;
-     ReadLogical( Header, 'DPPS=', MainFrm.DynamicProtocol.PSRestart ) ;
-     ReadString( Header, 'DPEPF=',MainFrm.DynamicProtocol.EPStimFileName ) ;
-     ReadInt( Header, 'DPEPI=', MainFrm.DynamicProtocol.EPStimIndex ) ;
-     ReadString( Header, 'DPPSF=',MainFrm.DynamicProtocol.PSStimFileName ) ;
-     ReadInt( Header, 'DPPSI=', MainFrm.DynamicProtocol.PSStimIndex ) ;
+     MainFrm.DynamicProtocol.SelectedChannel := GetKeyValue( Header, 'DPCH', MainFrm.DynamicProtocol.SelectedChannel ) ;
+     MainFrm.DynamicProtocol.Direction := GetKeyValue( Header, 'DPDIR', MainFrm.DynamicProtocol.Direction ) ;
+     MainFrm.DynamicProtocol.Threshold := GetKeyValue( Header, 'DPTHRES', MainFrm.DynamicProtocol.Threshold ) ;
+     MainFrm.DynamicProtocol.Duration := GetKeyValue( Header, 'DPDUR', MainFrm.DynamicProtocol.Duration ) ;
+     MainFrm.DynamicProtocol.EPRestart := GetKeyValue( Header, 'DPEP', MainFrm.DynamicProtocol.EPRestart ) ;
+     MainFrm.DynamicProtocol.PSRestart := GetKeyValue( Header, 'DPPS', MainFrm.DynamicProtocol.PSRestart ) ;
+     MainFrm.DynamicProtocol.EPStimFileName := GetKeyValue( Header, 'DPEPF',MainFrm.DynamicProtocol.EPStimFileName ) ;
+     MainFrm.DynamicProtocol.EPStimIndex := GetKeyValue( Header, 'DPEPI', MainFrm.DynamicProtocol.EPStimIndex ) ;
+     MainFrm.DynamicProtocol.PSStimFileName := GetKeyValue( Header, 'DPPSF',MainFrm.DynamicProtocol.PSStimFileName ) ;
+     MainFrm.DynamicProtocol.PSStimIndex:= GetKeyValue( Header, 'DPPSI', MainFrm.DynamicProtocol.PSStimIndex ) ;
 
      // Auto reset interface cards
-     ReadLogical( Header, 'ARI=', MainFrm.AutoResetInterfaceCards ) ;
+     MainFrm.AutoResetInterfaceCards := GetKeyValue( Header, 'ARI', MainFrm.AutoResetInterfaceCards ) ;
 
-     ReadLogical( Header, 'STARTSTIMONREC=', MainFrm.StartStimOnRecord ) ;
+     MainFrm.StartStimOnRecord := GetKeyValue( Header, 'STARTSTIMONREC', MainFrm.StartStimOnRecord ) ;
 
      // Camera dark level detection range
-     ReadInt( Header, 'DARKLEVLO=',MainFrm.DarkLevelLo ) ;
-     ReadInt( Header, 'DARKLEVHI=',MainFrm.DarkLevelHi ) ;
+     MainFrm.DarkLevelLo := GetKeyValue( Header, 'DARKLEVLO',MainFrm.DarkLevelLo ) ;
+     MainFrm.DarkLevelHi := GetKeyValue( Header, 'DARKLEVHI',MainFrm.DarkLevelHi ) ;
 
      // Read Z Stage control settings
      ZStage.ReadSettings( Header ) ;
@@ -1126,39 +1127,31 @@ begin
      XYStageFrm.ReadSettings( Header ) ;
 
      // Read PMT Ratio calculation settings
-     ReadLogical( Header, 'PMTRATIOEN=',MainFrm.PMTRatio.Enabled ) ;
-     ReadInt( Header, 'PMTRATIONUM=',MainFrm.PMTRatio.NumerChan ) ;
-     ReadInt( Header, 'PMTRATIODEN=',MainFrm.PMTRatio.DenomChan ) ;
-     ReadInt( Header, 'PMTRATIORAT=',MainFrm.PMTRatio.RatioChan ) ;
-     ReadInt( Header, 'PMTRATIOCON=',MainFrm.PMTRatio.ConcChan ) ;
-     ReadFloat( Header, 'PMTRATIOTHR=',MainFrm.PMTRatio.Threshold ) ;
-     ReadFloat( Header, 'PMTRATIORATMAX=',MainFrm.PMTRatio.RatioMax ) ;
-     ReadLogical( Header, 'PMTRATIOCEN=',MainFrm.PMTRatio.ConcEnabled ) ;
-     ReadFloat( Header, 'PMTRATIOCONCMAX=',MainFrm.PMTRatio.ConcMax ) ;
-     ReadString( Header, 'PMTRATIOINM=',MainFrm.PMTRatio.IonName ) ;
-     ReadString( Header, 'PMTRATIOUNI=',MainFrm.PMTRatio.ConcUnits ) ;
-     ReadFloat( Header, 'PMTRATIORMAX=',MainFrm.PMTRatio.RMax ) ;
-     ReadFloat( Header, 'PMTRATIORMIN=',MainFrm.PMTRatio.RMin ) ;
-     ReadFloat( Header, 'PMTRATIOKEFF=',MainFrm.PMTRatio.Keff ) ;
+     MainFrm.PMTRatio.Enabled := GetKeyValue( Header, 'PMTRATIOEN',MainFrm.PMTRatio.Enabled ) ;
+     MainFrm.PMTRatio.NumerChan := GetKeyValue( Header, 'PMTRATIONUM',MainFrm.PMTRatio.NumerChan ) ;
+     MainFrm.PMTRatio.DenomChan := GetKeyValue( Header, 'PMTRATIODEN',MainFrm.PMTRatio.DenomChan ) ;
+     MainFrm.PMTRatio.RatioChan := GetKeyValue( Header, 'PMTRATIORAT',MainFrm.PMTRatio.RatioChan ) ;
+     MainFrm.PMTRatio.ConcChan := GetKeyValue( Header, 'PMTRATIOCON',MainFrm.PMTRatio.ConcChan ) ;
+     MainFrm.PMTRatio.Threshold := GetKeyValue( Header, 'PMTRATIOTHR',MainFrm.PMTRatio.Threshold ) ;
+     MainFrm.PMTRatio.RatioMax := GetKeyValue( Header, 'PMTRATIORATMAX',MainFrm.PMTRatio.RatioMax ) ;
+     MainFrm.PMTRatio.ConcEnabled := GetKeyValue( Header, 'PMTRATIOCEN',MainFrm.PMTRatio.ConcEnabled ) ;
+     MainFrm.PMTRatio.ConcMax := GetKeyValue( Header, 'PMTRATIOCONCMAX',MainFrm.PMTRatio.ConcMax ) ;
+     MainFrm.PMTRatio.IonName := GetKeyValue( Header, 'PMTRATIOINM',MainFrm.PMTRatio.IonName ) ;
+     MainFrm.PMTRatio.ConcUnits := GetKeyValue( Header, 'PMTRATIOUNI',MainFrm.PMTRatio.ConcUnits ) ;
+     MainFrm.PMTRatio.RMax := GetKeyValue( Header, 'PMTRATIORMAX',MainFrm.PMTRatio.RMax ) ;
+     MainFrm.PMTRatio.RMin := GetKeyValue( Header, 'PMTRATIORMIN',MainFrm.PMTRatio.RMin ) ;
+     MainFrm.PMTRatio.Keff := GetKeyValue( Header, 'PMTRATIOKEFF',MainFrm.PMTRatio.Keff ) ;
 
-     for I := 0 to High(MainFrm.FormPos) do begin
-         iValue := MainFrm.FormPos[i].Top ;
-         ReadInt( Header, format('FPTOP%d=',[i]), iValue) ;
-         MainFrm.FormPos[i].Top := iValue ;
-         iValue := MainFrm.FormPos[i].Left ;
-         ReadInt( Header, format('FPLEFT%d=',[i]), iValue) ;
-         MainFrm.FormPos[i].Left := iValue ;
-
-         iValue := MainFrm.FormPos[i].Width ;
-         ReadInt( Header, format('FPWIDTH%d=',[i]), iValue ) ;
-         MainFrm.FormPos[i].Width := iValue ;
-
-         iValue := MainFrm.FormPos[i].Height ;
-         ReadInt( Header, format('FPHEIGHT%d=',[i]), iValue) ;
-         MainFrm.FormPos[i].Height := iValue ;
+     for I := 0 to High(MainFrm.FormPos) do
+         begin
+         MainFrm.FormPos[i].Top := GetKeyValue( Header, format('FPTOP%d',[i]), MainFrm.FormPos[i].Top ) ;
+         MainFrm.FormPos[i].Left := GetKeyValue( Header, format('FPLEFT%d',[i]), MainFrm.FormPos[i].Left) ;
+         MainFrm.FormPos[i].Width := GetKeyValue( Header, format('FPWIDTH%d',[i]), MainFrm.FormPos[i].Width ) ;
+         MainFrm.FormPos[i].Height := GetKeyValue( Header, format('FPHEIGHT%d',[i]), MainFrm.FormPos[i].Height ) ;
          end;
 
-     FileClose( INIFileHandle ) ;
+     // Dispose of list
+     Header.Free ;
 
      end ;
 
@@ -1484,6 +1477,214 @@ procedure TFileIO.OpenDialogTypeChange(Sender: TObject);
 begin
      OpenDialog.DefaultExt := RightStr(FileTypeExts[OpenDialog.FilterIndex],3) ;
      end;
+
+procedure TFileIO.AddKeyValue( List : TStringList ;  // List for Key=Value pairs
+                                KeyWord : string ;    // Key
+                                Value : single        // Value
+                                 ) ;
+// ---------------------
+// Add Key=Single Value to List
+// ---------------------
+begin
+
+     List.Add( ReplaceText(Keyword + format('=%.4g',[Value]),'==','=') ) ;
+end;
+
+
+procedure TFileIO.AddKeyValue( List : TStringList ;  // List for Key=Value pairs
+                                KeyWord : string ;    // Key
+                                Value : Integer        // Value
+                                 ) ;
+// ---------------------
+// Add Key=Integer Value to List
+// ---------------------
+begin
+     List.Add( ReplaceText( Keyword + format('=%d',[Value]),'==','=') ) ;
+end;
+
+procedure TFileIO.AddKeyValue( List : TStringList ;  // List for Key=Value pairs
+                                KeyWord : string ;    // Key
+                                Value : NativeInt        // Value
+                                 ) ;
+// ---------------------
+// Add Key=NativeInt Value to List
+// ---------------------
+begin
+     List.Add( ReplaceText(Keyword + format('=%d',[Value] ),'==','=') ) ;
+end;
+
+
+procedure TFileIO.AddKeyValue( List : TStringList ;  // List for Key=Value pairs
+                                KeyWord : string ;    // Key
+                                Value : string        // Value
+                                 ) ;
+// ---------------------
+// Add Key=string Value to List
+// ---------------------
+begin
+     List.Add( ReplaceText( Keyword + '=' + Value,'==','=') ) ;
+end;
+
+
+procedure TFileIO.AddKeyValue( List : TStringList ;  // List for Key=Value pairs
+                                KeyWord : string ;    // Key
+                                Value : Boolean        // Value
+                                 ) ;
+// ---------------------
+// Add Key=boolean Value to List
+// ---------------------
+begin
+     if Value then List.Add(  ReplaceText( Keyword + '= T','==','=') )
+              else List.Add(  ReplaceText( Keyword + '= F','==','=') ) ;
+end;
+
+
+function TFileIO.GetKeyValue( List : TStringList ;  // List for Key=Value pairs
+                               KeyWord : string ;   // Key
+                               Value : single       // Value
+                               ) : Single ;         // Return value
+// ------------------------------
+// Get Key=Single Value from List
+// ------------------------------
+var
+    istart,idx : Integer ;
+    s : string ;
+begin
+
+     idx := List.IndexOfName( Keyword ) ;
+     if idx >= 0 then
+        begin
+        s := List[idx] ;
+        // Find key=value separator and remove key
+        istart := Pos( '=', s ) ;
+        if istart > 0 then Delete( s, 1, istart ) ;
+        Result := ExtractFloat( s, Value ) ;
+        end
+     else Result := Value ;
+
+end;
+
+
+function TFileIO.GetKeyValue( List : TStringList ;  // List for Key=Value pairs
+                               KeyWord : string ;   // Key
+                               Value : Integer       // Value
+                               ) : Integer ;        // Return value
+// ------------------------------
+// Get Key=Integer Value from List
+// ------------------------------
+var
+    istart,idx : Integer ;
+    s : string ;
+begin
+
+     idx := List.IndexOfName( Keyword ) ;
+     if idx >= 0 then
+        begin
+        s := List[idx] ;
+        // Find key=value separator and remove key
+        istart := Pos( '=', s ) ;
+        if istart > 0 then Delete( s, 1, istart ) ;
+        Result := STrToInt( s ) ;
+        end
+     else Result := Value ;
+
+end;
+
+
+function TFileIO.GetKeyValue( List : TStringList ;  // List for Key=Value pairs
+                               KeyWord : string ;   // Key
+                               Value : NativeInt       // Value
+                               ) : NativeInt ;        // Return value
+// ------------------------------
+// Get Key=Integer Value from List
+// ------------------------------
+var
+    istart,idx : Integer ;
+    s : string ;
+begin
+
+     idx := List.IndexOfName( Keyword ) ;
+     if idx >= 0 then
+        begin
+        s := List[idx] ;
+        // Find key=value separator and remove key
+        istart := Pos( '=', s ) ;
+        if istart > 0 then Delete( s, 1, istart ) ;
+        Result := STrToInt( s ) ;
+        end
+     else Result := Value ;
+
+end;
+
+
+function TFileIO.GetKeyValue( List : TStringList ;  // List for Key=Value pairs
+                               KeyWord : string ;   // Key
+                               Value : string       // Value
+                               ) : string ;        // Return value
+// ------------------------------
+// Get Key=Integer Value from List
+// ------------------------------
+var
+    istart,idx : Integer ;
+    s : string ;
+begin
+
+      idx := List.IndexOfName( Keyword ) ;
+     if idx >= 0 then
+        begin
+        s := List[idx] ;
+        // Find key=value separator and remove key
+        istart := Pos( '=', s ) ;
+        if istart > 0 then Delete( s, 1, istart ) ;
+        Result := s ;
+        end
+     else Result := Value ;
+
+end;
+
+
+function TFileIO.GetKeyValue( List : TStringList ;  // List for Key=Value pairs
+                               KeyWord : string ;   // Key
+                               Value : Boolean       // Value
+                               ) : Boolean ;        // Return value
+// ------------------------------
+// Get Key=Boolean Value from List
+// ------------------------------
+var
+    istart,idx : Integer ;
+    s : string ;
+begin
+
+     idx := List.IndexOfName( Keyword ) ;
+     if idx >= 0 then
+        begin
+        s := List[idx] ;
+        // Find key=value separator and remove key
+        istart := Pos( '=', s ) ;
+        if istart > 0 then Delete( s, 1, istart ) ;
+        if ContainsText(s,'T') then Result := True
+                               else Result := False ;
+        end
+     else Result := Value ;
+
+end;
+
+
+function TFileIO.ExtractFileNameOnly( FilePath : string ) : string ;
+{ -----------------------------------------------------
+  Extract file name (without extension) from file path
+  ----------------------------------------------------}
+var
+   FileName : string ;
+   FileExt : string[6] ;
+begin
+     FileName := ExtractFileName(FilePath) ;
+     FileExt := ExtractFileExt(FileName) ;
+     Delete( FileName,Pos(FileExt,FileName),Length(FileExt) ) ;
+     ExtractFileNameOnly := FileName ;
+     end ;
+
+
 
 
 end.

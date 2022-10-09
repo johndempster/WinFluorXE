@@ -43,6 +43,14 @@ object XYStageFrm: TXYStageFrm
       RowCount = 3
       Options = [goFixedVertLine, goFixedHorzLine, goVertLine, goHorzLine, goRangeSelect, goEditing]
       TabOrder = 0
+      ColWidths = (
+        64
+        64
+        64)
+      RowHeights = (
+        20
+        20
+        20)
     end
     object bAddPosition: TButton
       Left = 8

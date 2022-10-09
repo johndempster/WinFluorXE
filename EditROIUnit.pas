@@ -10,7 +10,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, Grids, IDRFile, shared ;
+  Dialogs, StdCtrls, Grids, IDRFile ;
 
 type
   TEditROIFrm = class(TForm)
@@ -23,6 +23,9 @@ type
     procedure bCancelClick(Sender: TObject);
   private
     { Private declarations }
+    function ExtractInt (
+           CBuf : ANSIstring
+           ) : LongInt ;
   public
     { Public declarations }
   end;
@@ -160,5 +163,60 @@ procedure TEditROIFrm.bCancelClick(Sender: TObject);
 begin
     Hide ;
     end;
+
+
+function TEditROIFrm.ExtractInt ( CBuf : ANSIstring ) : longint ;
+{ ---------------------------------------------------
+  Extract a 32 bit integer number from a string which
+  may contain additional non-numeric text
+  ---------------------------------------------------}
+
+Type
+    TState = (RemoveLeadingWhiteSpace, ReadNumber) ;
+var CNum : ANSIstring ;
+    i : integer ;
+    Quit : Boolean ;
+    State : TState ;
+
+begin
+     CNum := '' ;
+     i := 1;
+     Quit := False ;
+     State := RemoveLeadingWhiteSpace ;
+     while not Quit do begin
+
+           case State of
+
+                { Ignore all non-numeric characters before number }
+                RemoveLeadingWhiteSpace : begin
+                   if CBuf[i] in ['0'..'9','+','-'] then State := ReadNumber
+                                                    else i := i + 1 ;
+                   end ;
+
+                { Copy number into string CNum }
+                ReadNumber : begin
+                    {End copying when a non-numeric character
+                    or the end of the string is encountered }
+                    if CBuf[i] in ['0'..'9','E','e','+','-','.'] then begin
+                       CNum := CNum + CBuf[i] ;
+                       i := i + 1 ;
+                       end
+                    else Quit := True ;
+                    end ;
+                else end ;
+
+           if i > Length(CBuf) then Quit := True ;
+           end ;
+     try
+
+
+        ExtractInt := StrToInt( CNum ) ;
+     except
+        ExtractInt := 1 ;
+        end ;
+     end ;
+
+
+
 
 end.

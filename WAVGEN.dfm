@@ -3522,6 +3522,12 @@ object WavGenFrm: TWavGenFrm
         TabOrder = 0
         OnExit = TableExit
         OnKeyPress = TableKeyPress
+        ColWidths = (
+          80
+          80)
+        RowHeights = (
+          18
+          18)
       end
       object PeriodGrp: TGroupBox
         Left = 232

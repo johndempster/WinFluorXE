@@ -57,7 +57,7 @@ interface
 
 uses
   SysUtils, WinTypes, WinProcs, Messages, Classes, Graphics, Controls,
-  Forms, Dialogs, ExtCtrls, StdCtrls, Grids, SHared, ClipBrd,
+  Forms, Dialogs, ExtCtrls, StdCtrls, Grids, ClipBrd,
   maths, Spin, ScopeDisplay, ValEdit, ValidatedEdit, LabIOUnit, math, strutils,
   FileCtrl  ;
 
@@ -285,7 +285,7 @@ var
 
 implementation
 
-uses Main, StimModule, RecUnit, RecADCOnlyUnit ;
+uses Main, StimModule, RecUnit, RecADCOnlyUnit , FileIOUnit;
 
 {$R *.DFM}
 
@@ -416,7 +416,7 @@ begin
      Stimulator.ClearWaveformElements ;
 
      FileName := ChangeFileExt( FileName, '.vpr' ) ;
-     Caption := 'Stimulus Protocol : ' + ExtractFileNameOnly(FileName) ;
+     Caption := 'Stimulus Protocol : ' + FileIO.ExtractFileNameOnly(FileName) ;
      
      { Get voltage program from VPR file }
      Stimulator.LoadProgram( FileName ) ;
@@ -490,7 +490,7 @@ begin
      UpdateWaveform ;
 
      FileName := ChangeFileExt( FileName, '.vpr' ) ;
-     Caption := 'Stimulus Protocol : ' + ExtractFileNameOnly(FileName) ;
+     Caption := 'Stimulus Protocol : ' + FileIO.ExtractFileNameOnly(FileName) ;
      Stimulator.SaveProgram( FileName ) ;
 
      // Update list of stimulus programs
@@ -507,7 +507,7 @@ var
     i : Integer ;
 begin
 
-      Caption := 'Stimulus Protocol : ' + ExtractFileNameOnly(Stimulator.FileName) ;
+      Caption := 'Stimulus Protocol : ' + FileIO.ExtractFileNameOnly(Stimulator.FileName) ;
 
       // VChan1 waveform element
       Prot0.Picture := TIMage(Components[ImageIndex[Ord(Stimulator.Prog.Shape[0])]]).Picture ;

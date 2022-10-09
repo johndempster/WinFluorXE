@@ -87,7 +87,7 @@ var
 
 implementation
 
-uses Main, maths , RecUnit, SnapUnit, shared , LogUnit;
+uses Main, maths , RecUnit, SnapUnit, LogUnit;
 
 {$R *.DFM}
 

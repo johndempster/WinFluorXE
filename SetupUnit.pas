@@ -453,7 +453,7 @@ var
 
 implementation
 
-uses Main, shared, LabIOUnit, TimeCourseUnit, AmpModule , LightSourceUnit,
+uses Main, LabIOUnit, TimeCourseUnit, AmpModule , LightSourceUnit,
   RecUnit, SnapUnit, RecADCOnlyUnit, Sealtest, LogUnit, ZStageUnit, XYStageUnit;
 
 const

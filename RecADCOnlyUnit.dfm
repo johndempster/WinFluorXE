@@ -679,6 +679,7 @@ object RecADCOnlyFrm: TRecADCOnlyFrm
       MaxADCValue = 2047
       MinADCValue = -2048
       NumBytesPerSample = 2
+      FloatingPointSamples = False
       FixZeroLevels = False
       DisplaySelected = True
       FontSize = 8

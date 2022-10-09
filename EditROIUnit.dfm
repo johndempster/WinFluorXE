@@ -34,6 +34,19 @@ object EditROIFrm: TEditROIFrm
     ParentFont = False
     ScrollBars = ssVertical
     TabOrder = 0
+    ColWidths = (
+      80
+      80
+      80
+      80
+      80
+      80)
+    RowHeights = (
+      20
+      20
+      20
+      20
+      20)
   end
   object bOK: TButton
     Left = 4

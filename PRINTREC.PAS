@@ -9,7 +9,7 @@ unit PrintRec;
 interface
 
 uses WinTypes, WinProcs, Classes, Graphics, Forms, Controls, Buttons,
-  StdCtrls, ExtCtrls,Printers,Shared, Grids, SysUtils, Spin,
+  StdCtrls, ExtCtrls,Printers, Grids, SysUtils, Spin,
   ValEdit,  ScopeDisplay, ChartDisplay, ValidatedEdit ;
 
 type

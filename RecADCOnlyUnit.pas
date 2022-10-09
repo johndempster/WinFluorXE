@@ -505,8 +505,7 @@ procedure TRecADCOnlyFrm.StartADC ;
 // Start A/D sampling into circular buffer
 // ---------------------------------------
 var
-     i,j,ch : Integer ;
-     tStim : Single ;
+     i,ch : Integer ;
      NumScansInWriteBuffer : Integer ;
      DACValue : SmallInt ;
      VHoldDACValue : SmallInt ;
@@ -2360,11 +2359,7 @@ procedure TRecADCOnlyFrm.ImportImageFile(
 // Import images from image file
 // -----------------------------
 var
-    OK : Boolean ;
-    FrameNum : Integer ; // Frame counter
     PFrameBuf : Pointer ; // Image frame buffer pointer
-    IDRFileName : String ; // Name of .IDR file to hold imported images
-    i : Integer ;
     FileNum : Integer ;    // Index into OpenDialog.Files list
     iFrame : Integer ;     // Frame counter
     NumFramesImported : Integer ;

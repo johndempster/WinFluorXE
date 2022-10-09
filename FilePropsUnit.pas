@@ -189,11 +189,7 @@ begin
 
      ckSpectralDataFile.Checked := MainFrm.IDRFile.SpectralDataFile ;
 
-     // Display file header
-
-     //FileSeek( MainFrm.IDRFile.IDRFileHandle, 0,0) ;
-//     FillChar( Header, Sizeof(Header), 0) ;
-//     FileRead( MainFrm.IDRFile.IDRFileHandle, Header, SizeOf(Header) ) ;
+     // Display file header text
      meFileHeader.Lines.Clear ;
      meFileHeader.Lines.Text := MainFrm.IDRFile.FileHeader ;
 

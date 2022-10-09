@@ -164,7 +164,7 @@ var
 implementation
 
 uses Main, SysUtils, shared, winprocs, maths, RecADCOnlyUnit ,
-     LabIOUnit, RecUnit ;
+     LabIOUnit, RecUnit , FileIOUnit;
 
 {$R *.DFM}
 
@@ -463,51 +463,44 @@ procedure TStimSetupFrm.LoadStimulusProgram(
 // -------------------------------
 var
      i : Integer ;
-     FileHandle : THandle ;
-     TextBuf : Array[1..TextBufSize] of ANSIchar ;
      Path : string ;
+     List : TStringList ;
 begin
 
      // Stimulus files held in \stim sub-folder within program folder
      Path := MainFrm.ProgramDirectory + StimSubFolder + FileName + '.' + FileExtension ;
 
-     FileHandle := FileOpen( Path, fmOpenReadWrite ) ;
-     if FileHandle <= 0 then begin
-        MessageDlg( 'Could not open file ' + Path, mtWarning, [mbOK], 0 ) ;
-        Exit ;
-        end ;
+     List := TStringList.Create ;
+     List.LoadFromFile( Path ) ;
 
-     if FileRead( FileHandle, TextBuf, Sizeof(TextBuf) ) = Sizeof(TextBuf) then begin
+     StimProg.Period := FileIO.GetKeyValue( List, 'STPER=', StimProg.Period ) ;
+     StimProg.SingleStimulus := FileIO.GetKeyValue( List, 'STSP=', StimProg.SingleStimulus ) ;
 
-        ReadFloat( TextBuf, 'STPER=', StimProg.Period ) ;
-        ReadLogical( TextBuf, 'STSP=', StimProg.SingleStimulus ) ;
+     // Voltage pulse settings
+     StimProg.VDelay := FileIO.GetKeyValue( List, 'STVDEL=', StimProg.VDelay ) ;
+     StimProg.VPrePulseWidth := FileIO.GetKeyValue( List, 'STVPRW=', StimProg.VPrePulseWidth ) ;
+     StimProg.VPrePulseAmplitude := FileIO.GetKeyValue( List, 'STVPRA=', StimProg.VPrePulseAmplitude ) ;
+     StimProg.VPrimaryPulseWidth := FileIO.GetKeyValue( List, 'STVPPW=', StimProg.VPrimaryPulseWidth ) ;
+     StimProg.VPrimaryPulseAmplitude := FileIO.GetKeyValue( List, 'STVPPA=', StimProg.VPrimaryPulseAmplitude ) ;
+     StimProg.VPrimaryPulseWidthIncrement := FileIO.GetKeyValue( List, 'STVPPWI=', StimProg.VPrimaryPulseWidthIncrement ) ;
+     StimProg.VPrimaryPulseAmplitudeIncrement := FileIO.GetKeyValue( List, 'STVPPAI=', StimProg.VPrimaryPulseAmplitudeIncrement ) ;
+     StimProg.VNumPulses := FileIO.GetKeyValue( List, 'STVNP=', StimProg.VNumPulses ) ;
+     StimProg.VPulseInterval := FileIO.GetKeyValue( List, 'STVPI=', StimProg.VPulseInterval ) ;
 
-        // Voltage pulse settings
-        ReadFloat( TextBuf, 'STVDEL=', StimProg.VDelay ) ;
-        ReadFloat( TextBuf, 'STVPRW=', StimProg.VPrePulseWidth ) ;
-        ReadFloat( TextBuf, 'STVPRA=', StimProg.VPrePulseAmplitude ) ;
-        ReadFloat( TextBuf, 'STVPPW=', StimProg.VPrimaryPulseWidth ) ;
-        ReadFloat( TextBuf, 'STVPPA=', StimProg.VPrimaryPulseAmplitude ) ;
-        ReadFloat( TextBuf, 'STVPPWI=', StimProg.VPrimaryPulseWidthIncrement ) ;
-        ReadFloat( TextBuf, 'STVPPAI=', StimProg.VPrimaryPulseAmplitudeIncrement ) ;
-        ReadInt( TextBuf, 'STVNP=', StimProg.VNumPulses ) ;
-        ReadFloat( TextBuf, 'STVPI=', StimProg.VPulseInterval ) ;
+     // Stimulus pulse settings
+     for i := 0 to High(StimProg.Pulses) do
+         begin
+         StimProg.Pulses[i].InUse := FileIO.GetKeyValue( List, format('STUSE%d=',[i]), StimProg.Pulses[i].InUse) ;
+         StimProg.Pulses[i].Delay := FileIO.GetKeyValue( List, format('STSTA%d=',[i]), StimProg.Pulses[i].Delay) ;
+         StimProg.Pulses[i].Width := FileIO.GetKeyValue( List, format('STWID%d=',[i]), StimProg.Pulses[i].Width) ;
+         StimProg.Pulses[i].NumPulses := FileIO.GetKeyValue( List, format('STNP%d=',[i]),StimProg.Pulses[i].NumPulses) ;
+         StimProg.Pulses[i].Interval := FileIO.GetKeyValue( List, format('STINT%d=',[i]), StimProg.Pulses[i].Interval) ;
+         StimProg.Pulses[i].ActiveHigh := FileIO.GetKeyValue( List, format('STACH%d=',[i]), StimProg.Pulses[i].ActiveHigh) ;
+         end ;
 
-        // Stimulus pulse settings
-        for i := 0 to High(StimProg.Pulses) do begin
-            ReadLogical( TextBuf, format('STUSE%d=',[i]), StimProg.Pulses[i].InUse) ;
-            ReadFloat( TextBuf, format('STSTA%d=',[i]), StimProg.Pulses[i].Delay) ;
-            ReadFloat( TextBuf, format('STWID%d=',[i]), StimProg.Pulses[i].Width) ;
-            ReadInt( TextBuf, format('STNP%d=',[i]),StimProg.Pulses[i].NumPulses) ;
-            ReadFloat( TextBuf, format('STINT%d=',[i]), StimProg.Pulses[i].Interval) ;
-            ReadLogical( TextBuf, format('STACH%d=',[i]), StimProg.Pulses[i].ActiveHigh) ;
-            end ;
-        end ;
+     StimProg.Duration := FileIO.GetKeyValue( List, 'STDUR=', StimProg.Duration ) ;
 
-     ReadFloat( TextBuf, 'STDUR=', StimProg.Duration ) ;
-
-     if FileHandle >= 0 then FileClose( FileHandle ) ;
-
+     List.Free ;
 
      end ;
 
@@ -521,9 +514,8 @@ procedure TStimSetupFrm.SaveStimulusProgram(
 // -------------------------------
 var
      i : Integer ;
-     FileHandle : THandle ;
-     TextBuf : Array[1..TextBufSize] of ANSIchar ;
      Path : String ;
+     List : TStringList ;
 begin
 
 
@@ -533,47 +525,41 @@ begin
      // Stimulus files held in \stim sub-folder within program folder
      Path := MainFrm.ProgramDirectory + StimSubFolder + FileName + '.' + FileExtension ;
 
-     FileHandle := FileCreate( Path ) ;
-     if FileHandle <= 0 then begin
-        ShowMessage( ' Could not create file ' ) ;
-        Exit ;
-        end ;
+     // Create list
+     List := TStringList.Create ;
 
-     // Initialise empty buffer with zero bytes
-     for i := 1 to High(TextBuf) do TextBuf[i] := chr(0) ;
+     // add key=value pairs
 
-     AppendFloat( TextBuf, 'STPER=', StimProg.Period ) ;
-     AppendLogical( TextBuf, 'STSP=', StimProg.SingleStimulus ) ;
+     FileIO.AddKeyValue( List, 'STPER=', StimProg.Period ) ;
+     FileIO.AddKeyValue( List, 'STSP=', StimProg.SingleStimulus ) ;
 
      // Voltage pulse settings
-     AppendFloat( TextBuf, 'STVDEL=', StimProg.VDelay ) ;
-     AppendFloat( TextBuf, 'STVPRW=', StimProg.VPrePulseWidth ) ;
-     AppendFloat( TextBuf, 'STVPRA=', StimProg.VPrePulseAmplitude ) ;
-     AppendFloat( TextBuf, 'STVPPW=', StimProg.VPrimaryPulseWidth ) ;
-     AppendFloat( TextBuf, 'STVPPA=', StimProg.VPrimaryPulseAmplitude ) ;
-     AppendFloat( TextBuf, 'STVPPWI=', StimProg.VPrimaryPulseWidthIncrement ) ;
-     AppendFloat( TextBuf, 'STVPPAI=', StimProg.VPrimaryPulseAmplitudeIncrement ) ;
-     AppendFloat( TextBuf, 'STVPPW=', StimProg.VPrePulseWidth ) ;
-     AppendInt( TextBuf, 'STVNP=', StimProg.VNumPulses ) ;
-     AppendFloat( TextBuf, 'STVPI=', StimProg.VPulseInterval ) ;
-
+     FileIO.AddKeyValue( List, 'STVDEL=', StimProg.VDelay ) ;
+     FileIO.AddKeyValue( List, 'STVPRW=', StimProg.VPrePulseWidth ) ;
+     FileIO.AddKeyValue( List, 'STVPRA=', StimProg.VPrePulseAmplitude ) ;
+     FileIO.AddKeyValue( List, 'STVPPW=', StimProg.VPrimaryPulseWidth ) ;
+     FileIO.AddKeyValue( List, 'STVPPA=', StimProg.VPrimaryPulseAmplitude ) ;
+     FileIO.AddKeyValue( List, 'STVPPWI=', StimProg.VPrimaryPulseWidthIncrement ) ;
+     FileIO.AddKeyValue( List, 'STVPPAI=', StimProg.VPrimaryPulseAmplitudeIncrement ) ;
+     FileIO.AddKeyValue( List, 'STVPPW=', StimProg.VPrePulseWidth ) ;
+     FileIO.AddKeyValue( List, 'STVNP=', StimProg.VNumPulses ) ;
+     FileIO.AddKeyValue( List, 'STVPI=', StimProg.VPulseInterval ) ;
 
      // Stimulus pulse settings
-     for i := 0 to High(StimProg.Pulses) do begin
-         AppendLogical( TextBuf, format('STUSE%d=',[i]), StimProg.Pulses[i].InUse) ;
-         AppendFloat( TextBuf, format('STSTA%d=',[i]), StimProg.Pulses[i].Delay) ;
-         AppendFloat( TextBuf, format('STWID%d=',[i]), StimProg.Pulses[i].Width) ;
-         AppendInt( TextBuf, format('STNP%d=',[i]),StimProg.Pulses[i].NumPulses) ;
-         AppendFloat( TextBuf, format('STINT%d=',[i]), StimProg.Pulses[i].Interval) ;
-         AppendLogical( TextBuf, format('STACH%d=',[i]), StimProg.Pulses[i].ActiveHigh) ;
+     for i := 0 to High(StimProg.Pulses) do
+         begin
+         FileIO.AddKeyValue( List, format('STUSE%d=',[i]), StimProg.Pulses[i].InUse) ;
+         FileIO.AddKeyValue( List, format('STSTA%d=',[i]), StimProg.Pulses[i].Delay) ;
+         FileIO.AddKeyValue( List, format('STWID%d=',[i]), StimProg.Pulses[i].Width) ;
+         FileIO.AddKeyValue( List, format('STNP%d=',[i]),StimProg.Pulses[i].NumPulses) ;
+         FileIO.AddKeyValue( List, format('STINT%d=',[i]), StimProg.Pulses[i].Interval) ;
+         FileIO.AddKeyValue( List, format('STACH%d=',[i]), StimProg.Pulses[i].ActiveHigh) ;
          end ;
 
-     AppendFloat( TextBuf, 'STDUR=', StimProg.Duration ) ;
+     FileIO.AddKeyValue( List, 'STDUR=', StimProg.Duration ) ;
 
-     if FileWrite( FileHandle, TextBuf, Sizeof(TextBuf) ) <> Sizeof(TextBuf) then
-        ShowMessage( ' Write to ' + FileName + ' failed!' ) ;
-
-     if FileHandle >= 0 then FileClose( FileHandle ) ;
+     // Save to file
+     List.SaveToFile( FileName ) ;
 
      // Update file name
      edFileName.Text := FileName ;
@@ -600,7 +586,7 @@ begin
 
 
      if OpenDialog.execute then begin
-        FileName := ExtractFilenameOnly(OpenDialog.FileName) ;
+        FileName := FileIO.ExtractFilenameOnly(OpenDialog.FileName) ;
         LoadStimulusProgram( StimProg, FileName ) ;
         // Update edit boxes on form
         StimProgToEditBoxes ;
@@ -628,7 +614,7 @@ begin
      SaveDialog.Title := 'Save Stimulus Program' ;
 
      if SaveDialog.execute then begin
-        FileName := ExtractFileNameOnly(SaveDialog.FileName) ;
+        FileName := FileIO.ExtractFileNameOnly(SaveDialog.FileName) ;
         SaveStimulusProgram( StimProg, FileName ) ;
         edFileName.Text := FileName ;
         end ;
@@ -666,7 +652,7 @@ begin
            FileFound := FindNext( SearchRec ) ;
 
         { Add file name (no extension or path) to list }
-        if FileFound = 0 then cbList.items.Add(ExtractFileNameOnly(SearchRec.Name))
+        if FileFound = 0 then cbList.items.Add(FileIO.ExtractFileNameOnly(SearchRec.Name))
                          else FindClose(SearchRec.FindHandle) ;
         First := False ;
         Until FileFound <> 0 ;

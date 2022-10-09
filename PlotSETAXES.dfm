@@ -476,6 +476,8 @@ object PlotSetAxesFrm: TPlotSetAxesFrm
       Left = 0
       Top = 0
       Caption = 'Histogram'
+      ExplicitWidth = 0
+      ExplicitHeight = 0
       object GroupBox1: TGroupBox
         Left = 16
         Top = 0

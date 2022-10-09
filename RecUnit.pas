@@ -187,7 +187,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Classes, Graphics, Controls, Forms, Dialogs,
-  StdCtrls, ExtCtrls, ValEdit, RangeEdit, ScopeDisplay, Spin, shared,
+  StdCtrls, ExtCtrls, ValEdit, RangeEdit, ScopeDisplay, Spin,
   ValidatedEdit, IDRFile, LabIOUnit, math, StrUtils, ComCtrls, LightSourceUnit, excsetupunit,
   Menus, Buttons, filectrl, Types ;
 

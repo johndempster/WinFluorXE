@@ -29,10 +29,6 @@ object FilePropsFrm: TFilePropsFrm
     TabOrder = 0
     object PropTab: TTabSheet
       Caption = 'Properties'
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object meProperties: TMemo
         Left = 8
         Top = 8
@@ -154,10 +150,6 @@ object FilePropsFrm: TFilePropsFrm
     object ADCTab: TTabSheet
       Caption = 'Analogue Channels'
       ImageIndex = 1
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object ChannelsGrp: TGroupBox
         Left = 8
         Top = 0
@@ -183,6 +175,11 @@ object FilePropsFrm: TFilePropsFrm
           ParentFont = False
           ScrollBars = ssNone
           TabOrder = 0
+          ColWidths = (
+            50
+            50
+            50
+            50)
           RowHeights = (
             18
             18
@@ -244,10 +241,6 @@ object FilePropsFrm: TFilePropsFrm
     object MarkerTab: TTabSheet
       Caption = 'Markers'
       ImageIndex = 2
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object MarkersGrp: TGroupBox
         Left = 8
         Top = 8
@@ -274,6 +267,9 @@ object FilePropsFrm: TFilePropsFrm
           ParentFont = False
           ScrollBars = ssNone
           TabOrder = 0
+          ColWidths = (
+            150
+            150)
           RowHeights = (
             18
             18
@@ -305,10 +301,6 @@ object FilePropsFrm: TFilePropsFrm
     object FrameTypesTab: TTabSheet
       Caption = 'Frame Types'
       ImageIndex = 3
-      ExplicitLeft = 0
-      ExplicitTop = 0
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object FrameTypesGrp: TGroupBox
         Left = 8
         Top = 8
@@ -334,6 +326,9 @@ object FilePropsFrm: TFilePropsFrm
           ParentFont = False
           ScrollBars = ssNone
           TabOrder = 0
+          ColWidths = (
+            50
+            50)
           RowHeights = (
             18
             18

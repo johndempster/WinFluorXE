@@ -5,6 +5,7 @@ unit ZStageUnit;
 // 25.01.13 Started
 // 25.10.13 .UpdateDACBuffer() modified. Z stage now moved after end wavelength sequence
 //          StepTime added ... Max. Time taken to move to Z position.
+// 30.08.22 ReadSettings() SaveSettings() now has TStringList argument
 
 interface
 
@@ -41,10 +42,10 @@ type
       EndExposureAtStep : Boolean ;       // End camera exposure when step starts
 
      procedure ReadSettings(
-               var Header : Array of ANSIChar
+               Header : TStringList
                ) ;
      procedure SaveSettings(
-               var Header : Array of ANSIChar
+               Header : TStringList
                ) ;
 
       property Position : Double read FPosition write SetPosition ;
@@ -72,7 +73,7 @@ var
 
 implementation
 
-uses Main, shared ;
+uses Main, FileIOUnit ;
 
 {$R *.dfm}
 
@@ -275,62 +276,62 @@ begin
 
 
 procedure TZStage.ReadSettings(
-          var Header : Array of ANSIChar
+          Header : TStringList
           ) ;
 // -----------------------------------
 // Read Z stage settings from INI text
 // -----------------------------------
 begin
       // Settings
-      ReadLogical( Header, 'ZSAVAIL=', Available ) ;
-      ReadDouble( Header, 'ZSCALP1=', CalPosition1 ) ;
-      ReadDouble( Header, 'ZSCALV1=', CalVoltage1 ) ;
-      ReadDouble( Header, 'ZSCALP2=', CalPosition2 ) ;
-      ReadDouble( Header, 'ZSCALV2=', CalVoltage2 ) ;
-      ReadDouble( Header, 'ZSVMIN=', VMin ) ;
-      ReadDouble( Header, 'ZSVMAX=', VMax ) ;
-      ReadDouble( Header, 'ZSMINST=', MinStepSize ) ;
-      ReadLogical( Header, 'ZSSTEN=', StackEnabled ) ;
-      ReadDouble( Header, 'ZSTEP=', StepSize ) ;
-      ReadDouble( Header, 'ZSPOS=', FPosition ) ;
-      ReadDouble( Header, 'ZSTIME=', StepTime ) ;
-      ReadDouble( Header, 'ZSTART=', StartAt ) ;
-      ReadInt( Header, 'ZSNSTEPS=', NumSteps ) ;
-      ReadLogical( Header, 'ZSEXOFF=', ExcitationOffDuringStep ) ;
-      ReadLogical( Header, 'ZSENDEX=', EndExposureAtStep ) ;
+      Available := FileIO.GetKeyValue( Header, 'ZSAVAIL', Available ) ;
+      CalPosition1 := FileIO.GetKeyValue( Header, 'ZSCALP1', CalPosition1 ) ;
+      CalVoltage1 := FileIO.GetKeyValue( Header, 'ZSCALV1', CalVoltage1 ) ;
+      CalPosition2 := FileIO.GetKeyValue( Header, 'ZSCALP2', CalPosition2 ) ;
+      CalVoltage2 := FileIO.GetKeyValue( Header, 'ZSCALV2', CalVoltage2 ) ;
+      VMin := FileIO.GetKeyValue( Header, 'ZSVMIN', VMin ) ;
+      VMax := FileIO.GetKeyValue( Header, 'ZSVMAX', VMax ) ;
+      MinStepSize := FileIO.GetKeyValue( Header, 'ZSMINST', MinStepSize ) ;
+      StackEnabled := FileIO.GetKeyValue( Header, 'ZSSTEN', StackEnabled ) ;
+      StepSize := FileIO.GetKeyValue( Header, 'ZSTEP', StepSize ) ;
+      FPosition := FileIO.GetKeyValue( Header, 'ZSPOS', FPosition ) ;
+      StepTime := FileIO.GetKeyValue( Header, 'ZSTIME', StepTime ) ;
+      StartAt := FileIO.GetKeyValue( Header, 'ZSTART', StartAt ) ;
+      NumSteps := FileIO.GetKeyValue( Header, 'ZSNSTEPS', NumSteps ) ;
+      ExcitationOffDuringStep := FileIO.GetKeyValue( Header, 'ZSEXOFF', ExcitationOffDuringStep ) ;
+      EndExposureAtStep := FileIO.GetKeyValue( Header, 'ZSENDEX', EndExposureAtStep ) ;
 
       // Z stage control line
-      ReadInt( Header, 'IOZSTAGE=', MainFrm.IOConfig.ZStageControl ) ;
+      MainFrm.IOConfig.ZStageControl := FileIO.GetKeyValue( Header, 'IOZSTAGE', MainFrm.IOConfig.ZStageControl ) ;
 
       end ;
 
 procedure TZStage.SaveSettings(
-          var Header : Array of ANSIChar
+          Header : TStringList
           ) ;
 // -----------------------------------
 // Read Z stage settings from INI text
 // -----------------------------------
 begin
       // Settings
-      AppendLogical( Header, 'ZSAVAIL=', Available ) ;
-      AppendDouble( Header, 'ZSCALP1=', CalPosition1 ) ;
-      AppendDouble( Header, 'ZSCALV1=', CalVoltage1 ) ;
-      AppendDouble( Header, 'ZSCALP2=', CalPosition2 ) ;
-      AppendDouble( Header, 'ZSCALV2=', CalVoltage2 ) ;
-      AppendDouble( Header, 'ZSVMIN=', VMin ) ;
-      AppendDouble( Header, 'ZSVMAX=', VMax ) ;
-      AppendDouble( Header, 'ZSMINST=', MinStepSize ) ;
-      AppendLogical( Header, 'ZSSTEN=', StackEnabled ) ;
-      AppendDouble( Header, 'ZSTEP=', StepSize ) ;
-      AppendDouble( Header, 'ZSPOS=', FPosition ) ;
-      AppendDouble( Header, 'ZSTIME=', StepTime ) ;
-      AppendDouble( Header, 'ZSTART=', StartAt ) ;
-      AppendInt( Header, 'ZSNSTEPS=', NumSteps ) ;
-      AppendLogical( Header, 'ZSEXOFF=', ExcitationOffDuringStep ) ;
-      AppendLogical( Header, 'ZSENDEX=', EndExposureAtStep ) ;
+      FileIO.AddKeyValue( Header, 'ZSAVAIL', Available ) ;
+      FileIO.AddKeyValue( Header, 'ZSCALP1', CalPosition1 ) ;
+      FileIO.AddKeyValue( Header, 'ZSCALV1', CalVoltage1 ) ;
+      FileIO.AddKeyValue( Header, 'ZSCALP2', CalPosition2 ) ;
+      FileIO.AddKeyValue( Header, 'ZSCALV2', CalVoltage2 ) ;
+      FileIO.AddKeyValue( Header, 'ZSVMIN', VMin ) ;
+      FileIO.AddKeyValue( Header, 'ZSVMAX', VMax ) ;
+      FileIO.AddKeyValue( Header, 'ZSMINST', MinStepSize ) ;
+      FileIO.AddKeyValue( Header, 'ZSSTEN', StackEnabled ) ;
+      FileIO.AddKeyValue( Header, 'ZSTEP', StepSize ) ;
+      FileIO.AddKeyValue( Header, 'ZSPOS', FPosition ) ;
+      FileIO.AddKeyValue( Header, 'ZSTIME', StepTime ) ;
+      FileIO.AddKeyValue( Header, 'ZSTART', StartAt ) ;
+      FileIO.AddKeyValue( Header, 'ZSNSTEPS', NumSteps ) ;
+      FileIO.AddKeyValue( Header, 'ZSEXOFF', ExcitationOffDuringStep ) ;
+      FileIO.AddKeyValue( Header, 'ZSENDEX', EndExposureAtStep ) ;
 
       // Z stage control line
-      AppendInt( Header, 'IOZSTAGE=', MainFrm.IOConfig.ZStageControl ) ;
+      FileIO.AddKeyValue( Header, 'IOZSTAGE', MainFrm.IOConfig.ZStageControl ) ;
 
       end ;
 

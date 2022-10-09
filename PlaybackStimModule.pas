@@ -8,7 +8,7 @@ unit PlaybackStimModule;
 interface
 
 uses
-  SysUtils, Classes, Dialogs, Math, LabIOUnit, StdCtrls, SHared;
+  SysUtils, Classes, Dialogs, Math, LabIOUnit, StdCtrls ;
 
 type
 

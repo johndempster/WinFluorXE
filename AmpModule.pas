@@ -835,7 +835,7 @@ var
 
 implementation
 
-uses Main, maths, shared, VP500Unit,VP500Lib , LabIOUnit, LogUnit;
+uses Main, maths, VP500Unit,VP500Lib , LabIOUnit, LogUnit;
 
 {$R *.DFM}
 

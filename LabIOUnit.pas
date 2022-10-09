@@ -1317,7 +1317,6 @@ var
     DValue : Double ;
     ADCScaleFactors : Array[0..20] of Double ;
     i : Integer ;
-    Err : Integer ;
     ChannelName : ANSIString ;
     NumChannels : Integer ;
     ChannelList : Array[0..9999] of ANSICHar ;
@@ -1394,8 +1393,8 @@ const
     VRangeSize = MaxVRanges*2 ;
 
 var
-    DValue,VMin,VMax : Double ;
-    i,j,Err : Integer ;
+    DValue : Double ;
+    i,j : Integer ;
     ChannelName : ANSIString ;
     NumChannels : Integer ;
     ChannelList : Array[0..9999] of ANSICHar ;

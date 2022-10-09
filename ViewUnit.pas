@@ -75,6 +75,7 @@ unit ViewUnit;
 // 17.06.14 12.5% display zoom added
 // 19.01.15 Frame time now has 3 fixed decimal places
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 06.10.22 .. JD ROI list now saved as comma delmited rather than tab delimited text
 
 interface
 
@@ -289,7 +290,7 @@ type
              X : Integer ;    // Current mouse X
              Y : Integer      // current mouse Y
              ) ;
-  function GetInt( var s : ANSIstring ) : Integer ;
+  function GetInt( var s : String ) : Integer ;
 
   public
     { Public declarations }
@@ -2245,60 +2246,48 @@ procedure TViewFrm.LoadROIsFromFile(
 // Load regions of interest from .ROI file
 // ---------------------------------------
 var
-    FileHandle : THandle ;
     i : Integer ;
     ROIs : Array[0..cMaxROIs] of TROI ;         // Regions of interest list (scaled by zoom)
-    InF : TextFile ;
-    s : ANSIstring ;
+    s : String ;
+    ROIList : TStringList ;
+
 begin
 
-    // Open file
-    FileHandle := FileOpen( FileName, fmOpenRead ) ;
-    if FileHandle = INVALID_HANDLE_VALUE then begin
-       MainFrm.StatusBar.SimpleText := ' Unable to load : ' + FileName ;
-       Exit ;
-       end ;
+    // Create and load ROI list from file
+    ROIList := TStringList.Create ;
+    ROIList.LoadFromFile ( FileName ) ;
 
-    if FileSeek( FileHandle, 0, 2 ) = SizeOf(ROIs) then begin
-       // If this binary format ROI file (file size same as ROI array) then load direct
-       FileSeek( FileHandle, 0, 0 ) ;
-       FileRead( FileHandle, ROIs, SizeOf(ROIs)) ;
-       FileClose( FileHandle ) ;
-       end
-    else begin
-       // Load from ASCII text format ROI file
-       FileClose( FileHandle ) ;
-       AssignFile( InF, FileName ) ;
-       Reset( InF ) ;
-       for i := 0 to High(ROIs) do ROIs[i].InUse := False ;
-       i := 0 ;
-       while not EOF(InF) do begin
-           ReadLn( InF, s ) ;
-           ROIs[i].InUse := True ;
-           ROIs[i].Shape := GetInt(s) ;
-           ROIs[i].Centre.X := GetInt(s) ;
-           ROIs[i].Centre.Y := GetInt(s) ;
-           ROIs[i].Width := GetInt(s) ;
-           ROIs[i].Height := GetInt(s) ;
-           ROIs[i].TopLeft.X := ROIs[i].Centre.X - ROIs[i].Width div 2 ;
-           ROIs[i].TopLeft.Y := ROIs[i].Centre.Y - ROIs[i].Height div 2 ;
-           ROIs[i].BottomRight.X := ROIs[i].TopLeft.X + ROIs[i].Width - 1 ;
-           ROIs[i].BottomRight.Y := ROIs[i].TopLeft.Y + ROIs[i].Height - 1 ;
-           ROIs[i].ZoomFactor := 1 ;
+    // Read ROI data from text into ROIs array
 
-           ROIs[i].NumPoints := 0 ;
-           while Length(s) > 0 do begin
-               ROIs[i].XY[ROIs[i].NumPoints].X := GetInt(s) ;
-               ROIs[i].XY[ROIs[i].NumPoints].Y := GetInt(s) ;
-               Inc(ROIs[i].NumPoints) ;
-               end;
-           Inc(i) ;
-           end;
-       CloseFile( InF ) ;
-       end;
+    for i := 0 to High(ROIs) do ROIs[i].InUse := False ;
+    for i := 0  to ROIList.Count-1 do
+        begin
+
+        s := ROILIst[i] ;
+        ROIs[i].InUse := True ;
+        ROIs[i].Shape := GetInt(s) ;
+        ROIs[i].Centre.X := GetInt(s) ;
+        ROIs[i].Centre.Y := GetInt(s) ;
+        ROIs[i].Width := GetInt(s) ;
+        ROIs[i].Height := GetInt(s) ;
+        ROIs[i].TopLeft.X := ROIs[i].Centre.X - ROIs[i].Width div 2 ;
+        ROIs[i].TopLeft.Y := ROIs[i].Centre.Y - ROIs[i].Height div 2 ;
+        ROIs[i].BottomRight.X := ROIs[i].TopLeft.X + ROIs[i].Width - 1 ;
+        ROIs[i].BottomRight.Y := ROIs[i].TopLeft.Y + ROIs[i].Height - 1 ;
+        ROIs[i].ZoomFactor := 1 ;
+
+        ROIs[i].NumPoints := 0 ;
+        while Length(s) > 0 do
+              begin
+              ROIs[i].XY[ROIs[i].NumPoints].X := GetInt(s) ;
+              ROIs[i].XY[ROIs[i].NumPoints].Y := GetInt(s) ;
+              Inc(ROIs[i].NumPoints) ;
+              end;
+        end;
 
     // Disable any ROIs which lie outside current frame
-    for i := 1 to MainFrm.IDRFile.MaxROI do if ROIs[i].InUse then begin
+    for i := 1 to MainFrm.IDRFile.MaxROI do if ROIs[i].InUse then
+        begin
         if (ROIs[i].TopLeft.x >= MainFrm.IDRFile.FrameWidth) or
            (ROIs[i].TopLeft.y >= MainFrm.IDRFile.FrameHeight) or
            (ROIs[i].BottomRight.x >= MainFrm.IDRFile.FrameWidth) or
@@ -2308,7 +2297,8 @@ begin
 
     // Load internal ROI records from master records
     // scaled by display zoom factor
-    for i := 1 to MainFrm.IDRFile.MaxROI do begin
+    for i := 1 to MainFrm.IDRFile.MaxROI do
+        begin
         MainFrm.IDRFile.ROI[i] := ROIs[i] ;
         end ;
 
@@ -2319,13 +2309,14 @@ begin
     CurrentPosition :=  -1 ;
 
     LogFrm.AddLine( 'ROIs loaded from ' + FileName ) ;
+    ROIList.Free ;
 
     end ;
 
-function TViewFrm.GetInt( var s : ANSIstring ) : Integer ;
-// -------------------------------------------------------
-// Extract and return a tab-delimited integer value from s
-// -------------------------------------------------------
+function TViewFrm.GetInt( var s : String ) : Integer ;
+// --------------------------------------------------------------------------
+// Extract and return a tab-delimited or comma-delimited integer value from s
+// --------------------------------------------------------------------------
 var
     sNum : ANSIstring ;
     i,iNum, iErr : Integer ;
@@ -2333,7 +2324,7 @@ begin
 
     sNum := '' ;
     i := 1 ;
-    while (i <= Length(s)) and (s[i] <> #9) do begin
+    while (i <= Length(s)) and (s[i] <> #9) and (s[i] <> ',') do begin
         sNum := sNum + s[i] ;
         Inc(i) ;
         end ;
@@ -2355,28 +2346,31 @@ procedure TViewFrm.SaveROIsToFile(
 var
      i,j : Integer ;
      OutF : TextFile ;
-     s : ANSIString ;
+     s : String ;
+     ROIList : TStringList ;
 begin
 
-    AssignFile( OutF, FileName ) ;
-    ReWrite(OutF) ;
+    ROIList := TStringList.Create ;
 
-    for i := 0 to MainFrm.IDRFile.MaxROI do begin
-        if MainFrm.IDRFile.ROI[i].InUse then begin
+    for i := 0 to MainFrm.IDRFile.MaxROI do
+        begin
+        if MainFrm.IDRFile.ROI[i].InUse then
+           begin
            s := format('%d',[MainFrm.IDRFile.ROI[i].Shape]) ;
-           s := s + #9 + format('%d',[MainFrm.IDRFile.ROI[i].Centre.X]) ;
-           s := s + #9 + format('%d',[MainFrm.IDRFile.ROI[i].Centre.Y]) ;
-           s := s + #9 + format('%d',[MainFrm.IDRFile.ROI[i].Width]) ;
-           s := s + #9 + format('%d',[MainFrm.IDRFile.ROI[i].Height]) ;
+           s := s + format(',%d',[MainFrm.IDRFile.ROI[i].Centre.X]) ;
+           s := s + format(',%d',[MainFrm.IDRFile.ROI[i].Centre.Y]) ;
+           s := s + format(',%d',[MainFrm.IDRFile.ROI[i].Width]) ;
+           s := s + format(',%d',[MainFrm.IDRFile.ROI[i].Height]) ;
            for j := 0 to MainFrm.IDRFile.ROI[i].NumPoints-1 do begin
-               s := s + #9 + format('%d',[MainFrm.IDRFile.ROI[i].XY[j].X]);
-               s := s + #9 + format('%d',[MainFrm.IDRFile.ROI[i].XY[j].Y]);
+               s := s + format(',%d',[MainFrm.IDRFile.ROI[i].XY[j].X]);
+               s := s + format(',%d',[MainFrm.IDRFile.ROI[i].XY[j].Y]);
                end ;
-           WriteLn( OutF, s ) ;
+           ROILIst.Add(s) ;
            end;
         end ;
 
-     CloseFile( OutF ) ;
+     ROIList.SaveToFile( FileName ) ;
+     ROIList.Free ;
 
      LogFrm.AddLine( 'ROIs saved to ' + FileName ) ;
 
@@ -2390,13 +2384,9 @@ procedure TViewFrm.bLoadROisClick(Sender: TObject);
 begin
 
      OpenDialog.options := [ofPathMustExist] ;
-     OpenDialog.DefaultExt := ROIFileExtension ;
-
-     if MainFrm.DataDirectory <> '' then
-        OpenDialog.InitialDir := MainFrm.DataDirectory ;
-
-     OpenDialog.Filter := format(' %s Files (*.%s)|*.%s',
-                          [ROIFileExtension,ROIFileExtension,ROIFileExtension]);
+     OpenDialog.DefaultExt := 'csv' ;
+     if MainFrm.DataDirectory <> '' then OpenDialog.InitialDir := MainFrm.DataDirectory ;
+     OpenDialog.Filter := format(' %s Files (*.%s)|*.%s',['csv','csv','csv']);
      OpenDialog.Title := 'Load ROIs from File' ;
 
      if not OpenDialog.Execute then Exit ;
@@ -2421,14 +2411,12 @@ procedure TViewFrm.bSaveROIsClick(Sender: TObject);
 begin
 
      //SaveDialog.options := [ofPathMustExist] ;
-     SaveDialog.DefaultExt := ROIFileExtension ;
-
-     if MainFrm.DataDirectory <> '' then
-        SaveDialog.InitialDir := MainFrm.DataDirectory ;
-
-     SaveDialog.Filter := format(' %s Files (*.%s)|*.%s',
-                          [ROIFileExtension,ROIFileExtension,ROIFileExtension]);
+     SaveDialog.DefaultExt := 'csv' ;
+     if MainFrm.DataDirectory <> '' then SaveDialog.InitialDir := MainFrm.DataDirectory ;
+     SaveDialog.Filter := format(' %s Files (*.%s)|*.%s',['csv','csv','csv']);
      SaveDialog.Title := 'Save ROIs to File ' ;
+     SaveDialog.FileName := ExtractFileName(MainFrm.IDRFile.FileName) + '.roi.saved.csv' ;
+
      if SaveDialog.Execute then SaveROIsToFile( SaveDialog.FileName ) ;
 
      end;
@@ -2514,8 +2502,6 @@ begin
     end ;
 
 
-
-
 procedure TViewFrm.PrintImage ;
 { ------------------
   Print image
@@ -2582,8 +2568,6 @@ begin
      LogFrm.AddLine( format('Marker (off-line) at %.4gs %s',[MarkerTime, MarkerText]));
 
      end;
-
-
 
 
 procedure TViewFrm.FormCloseQuery(Sender: TObject; var CanClose: Boolean);

@@ -230,6 +230,10 @@ object ViewFrm: TViewFrm
         TabOrder = 1
         object RangeTab: TTabSheet
           Caption = 'Display Contrast'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object bFullScale: TButton
             Left = 2
             Top = 4

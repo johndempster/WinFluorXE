@@ -45,7 +45,7 @@ unit Sealtest;
 interface
 
 uses WinTypes, WinProcs, Classes, Graphics, Forms, Controls, Buttons,
-  StdCtrls, ExtCtrls, shared, SysUtils, Spin, maths, dialogs,
+  StdCtrls, ExtCtrls, SysUtils, Spin, maths, dialogs,
   ValEdit, ScopeDisplay, ComCtrls, ValidatedEdit, IDRFile, LabIOUnit, Math ;
 
 type
@@ -216,7 +216,7 @@ implementation
 
 {$R *.DFM}
 
-uses Main, AmpModule, mmsystem, SetupUnit, RecUnit, RecADCOnlyUnit ;
+uses Main, AmpModule, mmsystem, SetupUnit, RecUnit, RecADCOnlyUnit, strutils ;
 
 const
      StimDACChannel = 0 ;
@@ -908,12 +908,12 @@ begin
 
      { Set scaling factors to convert current and voltage from user's
                      units to Volts and Amps }
-     if Contains('mV',TestChannel[ChVm].ADCUnits) then VScale := 1E-3
+     if ContainsText('mV',TestChannel[ChVm].ADCUnits) then VScale := 1E-3
                                                   else VScale := 1. ;
-     if Contains('nA',TestChannel[ChIm].ADCUnits) then IScale := 1E-9
-     else if Contains('pA',TestChannel[ChIm].ADCUnits) then IScale := 1E-12
-     else if Contains('uA',TestChannel[ChIm].ADCUnits) then IScale := 1E-6
-     else if Contains('mA',TestChannel[ChIm].ADCUnits) then IScale := 1E-3
+     if ContainsText('nA',TestChannel[ChIm].ADCUnits) then IScale := 1E-9
+     else if ContainsText('pA',TestChannel[ChIm].ADCUnits) then IScale := 1E-12
+     else if ContainsText('uA',TestChannel[ChIm].ADCUnits) then IScale := 1E-6
+     else if ContainsText('mA',TestChannel[ChIm].ADCUnits) then IScale := 1E-3
      else IScale := 1. ;
 
      // Voltage and current pulse amplitude in Volts and Amps

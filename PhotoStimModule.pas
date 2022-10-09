@@ -11,7 +11,7 @@ unit PhotoStimModule;
 interface
 
 uses
-  SysUtils, Classes, Dialogs, Math, LabIOUnit, StdCtrls, SHared;
+  SysUtils, Classes, Dialogs, Math, LabIOUnit, StdCtrls ;
 
 const
   MaxStimPoints = 100;                          // Max number of stimulus points
@@ -37,6 +37,8 @@ type
     private
 
       Prog : TWaveform;                            // Packed wavefrom record
+
+
 
     public
 
@@ -117,7 +119,7 @@ var
 
 implementation
 
-uses Main, LogUnit;
+uses Main, LogUnit, FileIOUnit ;
 
 {$R *.dfm}
 
@@ -226,7 +228,7 @@ begin
       FileFound := FindNext(SearchRec);
 
     //Add file name (no extension or path) to list
-    if FileFound = 0 then cbList.Items.Add(ExtractFileNameOnly(SearchRec.Name))
+    if FileFound = 0 then cbList.Items.Add(FileIO.ExtractFileNameOnly(SearchRec.Name))
     else FindClose(SearchRec);
 
     First := False;
@@ -617,7 +619,11 @@ begin
   // Update saved flag
   Prog.Saved := False;
 
+
+
 end;
+
+
 
 //------------------------------------------------------------------------------
 

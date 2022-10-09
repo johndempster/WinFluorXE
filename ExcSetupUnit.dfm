@@ -45,6 +45,13 @@ object ExcSetupFrm: TExcSetupFrm
       ScrollBars = ssVertical
       TabOrder = 0
       OnKeyPress = WaveTableKeyPress
+      ColWidths = (
+        50
+        50
+        50
+        50
+        50
+        50)
       RowHeights = (
         18
         18

@@ -16,23 +16,23 @@ uses
   maths, strutils ;
 
 
-  function ExtractFloat (
+{  function ExtractFloat (
            CBuf : ANSIstring ;
            Default : Single
-           ) : extended ;
-  function ExtractListOfFloats (
+           ) : extended ;}
+{  function ExtractListOfFloats (
            const CBuf : ANSIstring ;
            var Values : Array of Single ;
            PositiveOnly : Boolean
-           ) : Integer ;
-  function ExtractInt (
+           ) : Integer ;     }
+ { function ExtractInt (
            CBuf : ANSIstring
-           ) : LongInt ;
-  function VerifyInt(
+           ) : LongInt ;}
+ { function VerifyInt(
            text : ANSIstring ;
            LoLimit,HiLimit : LongInt
-           ) : ANSIstring ;
-  procedure AppendFloat(
+           ) : ANSIstring ;}
+{  procedure AppendFloat(
             var Dest : array of ANSIChar;
             Keyword : ANSIstring ;
             Value : Extended
@@ -97,8 +97,8 @@ uses
             const Source : array of ANSIChar ;
             Keyword : ANSIstring ;
             var Parameter : ANSIstring
-            ) ;
-  Function GetFromEditBox(
+            ) ;}
+{  Function GetFromEditBox(
            var ed : TEdit ;
            Default, Min, Max : Single ;
            const FormatString, Units : ANSIstring ;
@@ -123,12 +123,12 @@ uses
 
   function ExtractFileNameOnly(
            FilePath : string
-           ) : string ;
+           ) : string ;}
 
 
 
-  const
-     MaxSingle = 1E38 ;
+ { const
+     MaxSingle = 1E38 ;}
 
 implementation
 
@@ -302,198 +302,6 @@ begin
      end ;
 
 
-procedure AppendFloat( var Dest : Array of ANSIChar; Keyword : ANSIstring ; Value : Extended ) ;
-{ --------------------------------------------------------
-  Append a floating point parameter line
-  'Keyword' = 'Value' on to end of the header text array
-  --------------------------------------------------------}
-begin
-     CopyStringToArray( Dest, Keyword ) ;
-     CopyStringToArray( Dest, format( '%.6g',[Value] ) ) ;
-     CopyStringToArray( Dest, #13 + #10 ) ;
-     end ;
-
-
-procedure ReadFloat( const Source : Array of ANSIChar; Keyword : ANSIstring ; var Value : Single ) ;
-var
-   Parameter : ANSIstring ;
-begin
-     FindParameter( Source, Keyword, Parameter ) ;
-     if Parameter <> '' then Value := ExtractFloat( Parameter, 1. ) ;
-     end ;
-
-procedure AppendDouble( var Dest : Array of ANSIChar; Keyword : ANSIstring ; Value : Double ) ;
-{ --------------------------------------------------------
-  Append a DP floating point parameter line
-  'Keyword' = 'Value' on to end of the header text array
-  --------------------------------------------------------}
-begin
-     CopyStringToArray( Dest, Keyword ) ;
-     CopyStringToArray( Dest, format( '%.6g',[Value] ) ) ;
-     CopyStringToArray( Dest, #13 + #10 ) ;
-     end ;
-
-procedure ReadDouble( const Source : Array of ANSIChar; Keyword : ANSIstring ; var Value : Double ) ;
-var
-   Parameter : ANSIstring ;
-begin
-     FindParameter( Source, Keyword, Parameter ) ;
-     if Parameter <> '' then Value := ExtractFloat( Parameter, 1. ) ;
-     end ;
-
-
-procedure AppendInt( var Dest : Array of ANSIChar; Keyword : ANSIstring ; Value : LongInt ) ;
-{ -------------------------------------------------------
-  Append a long integer point parameter line
-  'Keyword' = 'Value' on to end of the header text array
-  ------------------------------------------------------ }
-begin
-     CopyStringToArray( Dest, Keyword ) ;
-     CopyStringToArray( Dest, InttoStr( Value ) ) ;
-     CopyStringToArray( Dest, #13 + #10 ) ;
-     end ;
-
-
-procedure ReadInt( const Source : Array of ANSIChar; Keyword : ANSIstring ; var Value : LongInt ) ;
-var
-   Parameter : ANSIstring ;
-begin
-     FindParameter( Source, Keyword, Parameter ) ;
-     if Parameter <> '' then Value := ExtractInt( Parameter ) ;
-     end ;
-
-{ Append a text string parameter line
-  'Keyword' = 'Value' on to end of the header text array}
-
-procedure AppendString( var Dest : Array of ANSIChar; Keyword, Value : ANSIstring ) ;
-begin
-CopyStringToArray( Dest, Keyword ) ;
-CopyStringToArray( Dest, Value ) ;
-CopyStringToArray( Dest, #13 + #10 ) ;
-end ;
-
-procedure ReadString(
-          const Source : Array of ANSIChar;
-          Keyword : ANSIstring ;
-          var Value : string ) ;
-var
-   Parameter : ANSIstring ;
-begin
-     FindParameter( Source, Keyword, Parameter ) ;
-     if Parameter <> '' then Value := String(Parameter)  ;
-     end ;
-
-{ Append a boolean True/False parameter line
-  'Keyword' = 'Value' on to end of the header text array}
-
-procedure AppendLogical( var Dest : Array of ANSIChar; Keyword : ANSIstring ; Value : Boolean ) ;
-begin
-     CopyStringToArray( Dest, Keyword ) ;
-     if Value = True then CopyStringToArray( Dest, 'T' )
-                     else CopyStringToArray( Dest, 'F' )  ;
-     CopyStringToArray( Dest, #13 + #10 ) ;
-     end ;
-
-procedure ReadLogical( const Source : Array of ANSIChar; Keyword : ANSIstring ; var Value : Boolean ) ;
-var
-   Parameter : ANSIstring ;
-begin
-     FindParameter( Source, Keyword, Parameter ) ;
-     if pos('T',Parameter) > 0 then Value := True
-                               else Value := False ;
-     end ;
-
-{ Copy a string variable to character array
-  NOTE. array MUST have been filled with 0 characters before
-        using the function }
-
-procedure CopyStringToArray( var Dest : array of ANSIChar ; Source : ANSIstring ) ;
-var
-   i,j : Integer ;
-begin
-
-     { Find end of character array }
-     j := 0 ;
-     while (Dest[j] <> chr(0)) and (j < High(Dest) ) do j := j + 1 ;
-
-     if (j + length(Source)) < High(Dest) then
-     begin
-          for i := 1 to length(Source) do
-          begin
-               Dest[j] := Source[i] ;
-               j := j + 1 ;
-               end ;
-          end
-     else
-         ShowMessage( ' Array Full ' ) ;
-
-     end ;
-
-procedure CopyArrayToString(
-          var Dest : ANSIstring ;
-          var Source : array of ANSIChar ) ;
-var
-   i : Integer ;
-begin
-     Dest := '' ;
-     for i := 0 to High(Source) do begin
-         Dest := Dest + Source[i] ;
-         end ;
-     end ;
-
-function ArrayToString(
-         const CharArray : Array of ANSIChar
-         ) : ANSIstring ;
-var
-   i : Integer ;
-   s : ANSIstring ;
-begin
-     s := '' ;
-     for i := 0 to High(CharArray) do begin
-         s := s + CharArray[i] ;
-         end ;
-     Result := s ;
-     end ;
-
-procedure FindParameter( const Source : array of ANSIChar ;
-                               Keyword : ANSIstring ;
-                               var Parameter : ANSIstring ) ;
-var
-s,k : integer ;
-Found : boolean ;
-begin
-
-     { Search for the string 'keyword' within the
-       array 'Source' }
-
-     s := 0 ;
-     k := 1 ;
-     Found := False ;
-     while (not Found) and (s < High(Source)) do
-     begin
-          if Source[s] = Keyword[k] then
-          begin
-               k := k + 1 ;
-               if k > length(Keyword) then Found := True
-               end
-               else k := 1;
-         s := s + 1;
-         end ;
-
-    { Copy parameter value into string 'Parameter'
-      to be returned to calling routine }
-
-    Parameter := '' ;
-    if Found then
-    begin
-        while (Source[s] <> #13) and (s < High(Source)) do
-        begin
-             Parameter := Parameter + Source[s] ;
-             s := s + 1
-             end ;
-        end ;
-    end ;
-
 
 Function GetFromEditBox( var ed : TEdit ;
                          Default, Min, Max : Single ;
@@ -528,7 +336,7 @@ var
    LoValue,HiValue : single ;
 begin
      {if ed.text = '' then ed.text := format( ' %d-%d', [Lo,Hi]) ;}
-     GetRangeFromEditBox( ed, LoValue,HiValue, Min, Max,'%.0f-%.0f','' ) ;
+ //    GetRangeFromEditBox( ed, LoValue,HiValue, Min, Max,'%.0f-%.0f','' ) ;
      Lo := Trunc( LoValue ) ;
      Hi := Trunc( HiValue ) ;
      end ;

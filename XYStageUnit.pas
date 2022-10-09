@@ -116,8 +116,8 @@ type
     YMotorID : Integer ;
 
     procedure GetList( List : TStrings ) ;
-    procedure ReadSettings( var Header : Array of ANSIChar ) ;
-    procedure SaveSettings( var Header : Array of ANSIChar ) ;
+    procedure ReadSettings( Header : TStringList ) ;
+    procedure SaveSettings( Header : TStringList ) ;
 
 
     property StageType : Integer read FStageType write SetStageType ;
@@ -142,7 +142,7 @@ const
 
 implementation
 
-uses shared,math , MAIN;
+uses math , MAIN, FIleIOUnit ;
 
 {$R *.dfm}
 
@@ -778,42 +778,39 @@ begin
 
 
 procedure TXYStageFrm.ReadSettings(
-          var Header : Array of ANSIChar
+          Header : TStringList
           ) ;
 // -----------------------------------
 // Read XY stage settings from INI text
 // -----------------------------------
 var
     i : Integer ;
-    bValue : Boolean ;
 begin
       // Settings
-      ReadInt( Header, 'XYSType=', FStageType ) ;
+      FStageType := FileIO.GetKeyValue( Header, 'XYSType', FStageType ) ;
 
-      ReadDouble( Header, 'XYSXMin=', FXMin ) ;
-      ReadDouble( Header, 'XYSXMax=', FXMax ) ;
-      ReadDouble( Header, 'XYSYMin=', FYMin ) ;
-      ReadDouble( Header, 'XYSYMaz=', FYMax ) ;
-      ReadInt( Header, 'XYXMSN=', XMotorID ) ;
-      ReadInt( Header, 'XYYMSN=', YMotorID ) ;
+      FXMin := FileIO.GetKeyValue( Header, 'XYSXMin', FXMin ) ;
+      FXMax := FileIO.GetKeyValue( Header, 'XYSXMax', FXMax ) ;
+      FYMin := FileIO.GetKeyValue( Header, 'XYSYMin', FYMin ) ;
+      FYMax := FileIO.GetKeyValue( Header, 'XYSYMaz', FYMax ) ;
+      XMotorID := FileIO.GetKeyValue( Header, 'XYXMSN', XMotorID ) ;
+      YMotorID := FileIO.GetKeyValue( Header, 'XYYMSN', YMotorID ) ;
 
       ReadPositionTable ;
-      ReadInt( Header, 'XYNPOS=', FNumPositions ) ;
+       FNumPositions := FileIO.GetKeyValue( Header, 'XYNPOS', FNumPositions ) ;
       for i := 0 to FNumPositions-1 do begin
-        ReadDouble( Header, format('XYXP%d=',[i]), XPosition[i] ) ;
-        ReadDouble( Header, format('XYYP%d=',[i]), YPosition[i] ) ;
+        XPosition[i] := FileIO.GetKeyValue( Header, format('XYXP%d',[i]), XPosition[i] ) ;
+        YPosition[i] := FileIO.GetKeyValue( Header, format('XYYP%d',[i]), YPosition[i] ) ;
         end;
-      ReadInt( Header, 'XYPOS=',FPosition) ;
+      FPosition := FileIO.GetKeyValue( Header, 'XYPOS',FPosition) ;
 
-      bValue := False ;
-      ReadLogical( Header, 'XYISP=', bValue ) ;
-      ckIncrementStagePosition.Checked := bValue ;
+      ckIncrementStagePosition.Checked := FileIO.GetKeyValue( Header, 'XYISP', ckIncrementStagePosition.Checked ) ;
 
       end ;
 
 
 procedure TXYStageFrm.SaveSettings(
-          var Header : Array of ANSIChar
+          Header : TStringList
           ) ;
 // -----------------------------------
 // Read XY stage settings from INI text
@@ -822,23 +819,24 @@ var
     i : Integer ;
 begin
       // Settings
-      AppendInt( Header, 'XYSType=', FStageType ) ;
+      FileIO.AddKeyValue( Header, 'XYSType', FStageType ) ;
 
-      AppendDouble( Header, 'XYSXMin=', FXMin ) ;
-      AppendDouble( Header, 'XYSXMax=', FXMax ) ;
-      AppendDouble( Header, 'XYSYMin=', FYMin ) ;
-      AppendDouble( Header, 'XYSYMaz=', FYMax ) ;
-      AppendInt( Header, 'XYXMSN=', XMotorID ) ;
-      AppendInt( Header, 'XYYMSN=', YMotorID ) ;
+      FileIO.AddKeyValue( Header, 'XYSXMin', FXMin ) ;
+      FileIO.AddKeyValue( Header, 'XYSXMax', FXMax ) ;
+      FileIO.AddKeyValue( Header, 'XYSYMin', FYMin ) ;
+      FileIO.AddKeyValue( Header, 'XYSYMaz', FYMax ) ;
+      FileIO.AddKeyValue( Header, 'XYXMSN', XMotorID ) ;
+      FileIO.AddKeyValue( Header, 'XYYMSN', YMotorID ) ;
 
-      AppendInt( Header, 'XYNPOS=', FNumPositions ) ;
-      for i := 0 to FNumPositions-1 do begin
-        AppendDouble( Header, format('XYXP%d=',[i]), XPosition[i] ) ;
-        AppendDouble( Header, format('XYYP%d=',[i]), YPosition[i] ) ;
+      FileIO.AddKeyValue( Header, 'XYNPOS', FNumPositions ) ;
+      for i := 0 to FNumPositions-1 do
+        begin
+        FileIO.AddKeyValue( Header, format('XYXP%d',[i]), XPosition[i] ) ;
+        FileIO.AddKeyValue( Header, format('XYYP%d',[i]), YPosition[i] ) ;
         end;
-      AppendInt( Header, 'XYPOS=',FPosition) ;
+      FileIO.AddKeyValue( Header, 'XYPOS',FPosition) ;
 
-      AppendLogical( Header, 'XYISP=', ckIncrementStagePosition.Checked ) ;
+      FileIO.AddKeyValue( Header, 'XYISP', ckIncrementStagePosition.Checked ) ;
 
       end ;
 

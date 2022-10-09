@@ -243,7 +243,7 @@ var
 
 implementation
 
-uses Main, shared, Wavgen ;
+uses Main, Wavgen , FileIOUnit;
 
 {$R *.DFM}
 
@@ -988,7 +988,7 @@ begin
            FileFound := FindNext( SearchRec ) ;
 
         { Add file name (no extension or path) to list }
-        if FileFound = 0 then cbList.items.Add(ExtractFileNameOnly(SearchRec.Name))
+        if FileFound = 0 then cbList.items.Add(FileIO.ExtractFileNameOnly(SearchRec.Name))
                         else FindClose(SearchRec.FindHandle) ;
         First := False ;
         Until FileFound <> 0 ;

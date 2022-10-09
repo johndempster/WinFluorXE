@@ -277,6 +277,10 @@ object RecordFrm: TRecordFrm
         TabOrder = 0
         object ExcitationLightTab: TTabSheet
           Caption = 'Excitation Light'
+          ExplicitLeft = 0
+          ExplicitTop = 0
+          ExplicitWidth = 0
+          ExplicitHeight = 0
           object GroupBox6: TGroupBox
             Left = 2
             Top = 0
@@ -724,6 +728,10 @@ object RecordFrm: TRecordFrm
           TabOrder = 0
           object RangeTab: TTabSheet
             Caption = 'Display Contrast'
+            ExplicitLeft = 0
+            ExplicitTop = 0
+            ExplicitWidth = 0
+            ExplicitHeight = 0
             object bFullScale: TButton
               Left = 2
               Top = 4

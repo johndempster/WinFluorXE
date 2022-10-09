@@ -10,7 +10,7 @@ uses
   SysUtils, Windows, WinTypes, WinProcs, Messages, Variants, Classes, Graphics,
   Controls, Forms, Dialogs, ExtCtrls, StdCtrls, RangeEdit, ComCtrls, IDRFile,
   math, ValidatedEdit, ImageFile, {GraphicEx,} Grids, strutils, mmsystem,
-  FileCtrl, SHared, SESCam, Menus;
+  FileCtrl, SESCam, Menus;
 
 const
   MaxStimPoints = 100;
@@ -169,7 +169,7 @@ var
 implementation
 
 uses Main, UltimaUnit, PhotoStimSetupUnit, LogUnit, PhotoStimModule,
-     RecUnit, RecADCOnlyUnit;
+     RecUnit, RecADCOnlyUnit, FileIOUnit;
 
 const
     CrossHalfWidth = 10 ;
@@ -1801,7 +1801,7 @@ begin
   bDeleteTargetsClick(nil);
 
   FileName := ChangeFileExt(FileName, '.ppr');
-  Caption := 'Photo-Stimulus Protocol: ' + ExtractFileNameOnly(FileName);
+  Caption := 'Photo-Stimulus Protocol: ' + FileIO.ExtractFileNameOnly(FileName);
 
   // Get voltage program from PPR file
   PhotoStimulator.LoadProgram(FileName);
@@ -1853,7 +1853,7 @@ begin
 
   // Set window caption
   FileName := ChangeFileExt(FileName, '.ppr');
-  Caption := 'Photo-Stimulus Protocol: ' + ExtractFileNameOnly(FileName);
+  Caption := 'Photo-Stimulus Protocol: ' + FileIO.ExtractFileNameOnly(FileName);
 
   // Update display
   UpdateDisplay();
@@ -1881,7 +1881,7 @@ begin
 
   // Set file name and save protocol
   FileName := ChangeFileExt(FileName, '.ppr');
-  Caption := 'Photo-stimulus Protocol : ' + ExtractFileNameOnly(FileName);
+  Caption := 'Photo-stimulus Protocol : ' + FileIO.ExtractFileNameOnly(FileName);
   PhotoStimulator.SaveProgram(FileName);
 
 end;

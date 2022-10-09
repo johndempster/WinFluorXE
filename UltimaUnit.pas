@@ -23,7 +23,7 @@ unit UltimaUnit;
 interface                              
 
 uses
-  SysUtils, Classes, Sockets, ExtCtrls, mmsystem, strutils, shared,
+  SysUtils, Classes, Sockets, ExtCtrls, mmsystem, strutils,
   ImageFile, dialogs, math, xmldom, XMLIntf, msxmldom, XMLDoc, windows, idrfile ;
 
 type
@@ -100,7 +100,36 @@ type
     // Read a file backwards, line by line
     procedure Readback (const f: integer; var Line: String; var _bof: boolean);
 
-    function CycleNumber( iNum : Integer ) : string ;    
+    function CycleNumber( iNum : Integer ) : string ;
+
+    procedure ReadFloat(
+            const Source : array of ANSIChar;
+            Keyword : ANSIstring ;
+            var Value : Single ) ;
+
+    function ExtractFloat (
+             CBuf : ANSIstring ;
+             Default : Single
+             ) : extended ;
+
+
+  procedure ReadInt(
+            const Source : array of ANSIChar;
+            Keyword : ANSIstring ;
+            var Value : LongInt
+            ) ;
+
+  procedure ReadString(
+            const Source : Array of ANSIChar;
+            Keyword : ANSIstring ;
+            var Value : string
+            ) ;
+
+  procedure FindParameter( const Source : array of ANSIChar ;
+                               Keyword : ANSIstring ;
+                               var Parameter : ANSIstring ) ;
+
+  Function ExtractInt ( CBuf : ANSIstring ) : LongInt ;
 
   public
     { Public declarations }
@@ -1967,4 +1996,178 @@ begin
 end;
 
 
+procedure TUltima.ReadInt( const Source : Array of ANSIChar; Keyword : ANSIstring ; var Value : LongInt ) ;
+var
+   Parameter : ANSIstring ;
+begin
+     FindParameter( Source, Keyword, Parameter ) ;
+     if Parameter <> '' then Value := ExtractInt( Parameter ) ;
+     end ;
+
+
+procedure TUltima.ReadString(
+          const Source : Array of ANSIChar;
+          Keyword : ANSIstring ;
+          var Value : string ) ;
+var
+   Parameter : ANSIstring ;
+begin
+     FindParameter( Source, Keyword, Parameter ) ;
+     if Parameter <> '' then Value := String(Parameter)  ;
+     end ;
+
+
+procedure TUltima.ReadFloat( const Source : Array of ANSIChar; Keyword : ANSIstring ; var Value : Single ) ;
+var
+   Parameter : ANSIstring ;
+begin
+     FindParameter( Source, Keyword, Parameter ) ;
+     if Parameter <> '' then Value := ExtractFloat( Parameter, 1. ) ;
+     end ;
+
+
+function TUltima.ExtractFloat (
+         CBuf : ANSIstring ;     { ASCII text to be processed }
+         Default : Single    { Default value if text is not valid }
+         ) : extended ;
+{ -------------------------------------------------------------------
+  Extract a floating point number from a string which
+  may contain additional non-numeric text
+  28/10/99 ... Now handles both comma and period as decimal separator
+  -------------------------------------------------------------------}
+
+var
+   CNum,dsep : ANSIstring ;
+   i : integer ;
+   Done,NumberFound : Boolean ;
+begin
+     { Extract number from othr text which may be around it }
+     CNum := '' ;
+     Done := False ;
+     NumberFound := False ;
+     i := 1 ;
+     repeat
+
+         if CBuf[i] in ['0'..'9', 'E', 'e', '+', '-', '.', ',' ] then begin
+            CNum := CNum + CBuf[i] ;
+            NumberFound := True ;
+            end
+         else if NumberFound then Done := True ;
+         Inc(i) ;
+         if i > Length(CBuf) then Done := True ;
+         until Done ;
+
+     { Correct for use of comma/period as decimal separator }
+     {$IF CompilerVersion > 7.0} dsep := formatsettings.DECIMALSEPARATOR ;
+     {$ELSE} dsep := DECIMALSEPARATOR ;
+     {$IFEND}
+     if dsep = '.' then CNum := ANSIReplaceText(CNum ,',',dsep);
+     if dsep = ',' then CNum := ANSIReplaceText(CNum, '.',dsep);
+
+     { Convert number from ASCII to real }
+     try
+        if Length(CNum)>0 then Result := StrToFloat( String(CNum) )
+                          else Result := Default ;
+     except
+        on E : EConvertError do Result := Default ;
+        end ;
+end ;
+
+
+
+
+procedure TUltima.FindParameter( const Source : array of ANSIChar ;
+                               Keyword : ANSIstring ;
+                               var Parameter : ANSIstring ) ;
+var
+s,k : integer ;
+Found : boolean ;
+begin
+
+     { Search for the string 'keyword' within the
+       array 'Source' }
+
+     s := 0 ;
+     k := 1 ;
+     Found := False ;
+     while (not Found) and (s < High(Source)) do
+     begin
+          if Source[s] = Keyword[k] then
+          begin
+               k := k + 1 ;
+               if k > length(Keyword) then Found := True
+               end
+               else k := 1;
+         s := s + 1;
+         end ;
+
+    { Copy parameter value into string 'Parameter'
+      to be returned to calling routine }
+
+    Parameter := '' ;
+    if Found then
+    begin
+        while (Source[s] <> #13) and (s < High(Source)) do
+        begin
+             Parameter := Parameter + Source[s] ;
+             s := s + 1
+             end ;
+        end ;
+    end ;
+
+
+function TUltima.ExtractInt ( CBuf : ANSIstring ) : longint ;
+{ ---------------------------------------------------
+  Extract a 32 bit integer number from a string which
+  may contain additional non-numeric text
+  ---------------------------------------------------}
+
+Type
+    TState = (RemoveLeadingWhiteSpace, ReadNumber) ;
+var CNum : ANSIstring ;
+    i : integer ;
+    Quit : Boolean ;
+    State : TState ;
+
+begin
+     CNum := '' ;
+     i := 1;
+     Quit := False ;
+     State := RemoveLeadingWhiteSpace ;
+     while not Quit do begin
+
+           case State of
+
+                { Ignore all non-numeric characters before number }
+                RemoveLeadingWhiteSpace : begin
+                   if CBuf[i] in ['0'..'9','+','-'] then State := ReadNumber
+                                                    else i := i + 1 ;
+                   end ;
+
+                { Copy number into string CNum }
+                ReadNumber : begin
+                    {End copying when a non-numeric character
+                    or the end of the string is encountered }
+                    if CBuf[i] in ['0'..'9','E','e','+','-','.'] then begin
+                       CNum := CNum + CBuf[i] ;
+                       i := i + 1 ;
+                       end
+                    else Quit := True ;
+                    end ;
+                else end ;
+
+           if i > Length(CBuf) then Quit := True ;
+           end ;
+     try
+
+
+        ExtractInt := StrToInt( CNum ) ;
+     except
+        ExtractInt := 1 ;
+        end ;
+     end ;
+
+
+
 end.
+

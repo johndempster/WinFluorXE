@@ -51,6 +51,11 @@ object PrintRecFrm: TPrintRecFrm
       ShowHint = True
       TabOrder = 0
       OnKeyPress = CalibrationBarTableKeyPress
+      ColWidths = (
+        45
+        45)
+      RowHeights = (
+        18)
     end
     object bDefaultSettings: TButton
       Left = 8
@@ -387,8 +392,6 @@ object PrintRecFrm: TPrintRecFrm
       Left = 0
       Top = 0
       Caption = 'Clipboard'
-      ExplicitWidth = 0
-      ExplicitHeight = 0
       object GroupBox4: TGroupBox
         Left = 4
         Top = 2

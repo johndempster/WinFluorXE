@@ -32,6 +32,10 @@ unit TimeCourseUnit;
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 08.12.16 plPlot.MaxPointsPerLine increased by 2 in attempt to avoid occasional access violations
 //          for not yet identified reasons. ROI # being plotted now reported in status line
+// 27.09.22 Form closure now checks if plotting in progress and stops plotting before closure
+//          ROI plots now much faster by limiting times that progress is reported
+//          Failure to initialise iBackg variable fixed
+//          Various uninitialised variable warnings fixed
 
 interface
 
@@ -135,6 +139,7 @@ type
     PlotStartFrame : Integer ;                  // Starting frame of plot on display
     TInterval : Single ;                        // Inter-Frame /-Line time interval (s)
     StopPlot : Boolean ;
+    PlottingInProgress : Boolean ;                     //
 
     procedure PlotLine ;
 
@@ -252,6 +257,8 @@ begin
      bSetAxes.Enabled := False ;
      bAddLineToPlot.Enabled := False ;
      DisplayModePage.ActivePage := FTab  ;
+     StopPLot := False ;
+     PlottingInProgress := False ;
 
      cbClearPlot.Clear ;
      cbClearPlot.Items.AddObject('All',TObject(MaxPlots)) ;
@@ -265,8 +272,6 @@ procedure TTimeCourseFrm.bNewPlotClick(Sender: TObject);
 // ---------------------------------
 // Add a new Y Axis and line to plot
 // ---------------------------------
-var
-     PlotNum : Integer ;
 begin
 
       // Prevent plotting if time course is being calculated
@@ -278,9 +283,10 @@ begin
       // Disable button while line is plotted
       bNewPlot.Enabled := False ;
       ROIGrp.Enabled := False ;
+      PlottingInProgress := True ;
 
      { Add new Y Axis to plot }
-     PlotNum := plPlot.CreatePlot ;
+     plPlot.CreatePlot ;
 
      FillPlotLists ;
 
@@ -291,6 +297,10 @@ begin
      bNewPlot.Enabled := True ;
      bAddLineToPlot.Enabled := True ;
      ROIGrp.Enabled := True ;
+     PlottingInProgress := False ;
+
+     // If plotting has been aborted, close form
+     if StopPlot then Close ;
 
      end ;
 
@@ -301,7 +311,6 @@ procedure TTimeCourseFrm.PlotLine ;
 // --------------------
 var
      StartAtFrame,EndAtFrame : Integer ;
-     PlotNum : Integer ;
      LineNum : Integer ;
      Col : TColor ;
      i : Integer ;
@@ -465,11 +474,16 @@ begin
     if iBackg <= MainFrm.IDRFile.MaxROI then
        LineName[LineNum] := LineName[LineNum] + format('-R.%d',[iBackg]) ;
 
+    RMax := 1.0 ;
+    RMin := 0.0 ;
+    Keff := 1.0 ;
+    F0 := 1.0 ;
+    F0Offset := 1.0 ;
+
     if DisplayModePage.ActivePage = FTab then begin
        // Raw fluorescence plot
        FrameTypeNum := cbWavelength.ItemIndex ;
        plPlot.yAxisLabel := cbWavelength.Text ;
-       yThreshold := 0.0 ;
        Mode := FMode ;
        end
     else if DisplayModePage.ActivePage = DFTab then begin
@@ -483,7 +497,6 @@ begin
           plPlot.yAxisLabel := 'F/F0' + '(' + cbWavelength.Text + ')' ;
           F0Offset := 0.0 ;
           end ;
-       yThreshold := 0.0 ;
        if rbF0Constant.Checked then begin
           // Set F0 to constant value
           F0 := edF0Constant.Value ;
@@ -555,59 +568,68 @@ begin
 
     // Initialise counters
     BlockCount := NumFramesPerBlock ;
+    yMin := MainFrm.IDRFile.GreyMax ;
+    yMax := -yMin -1 ;
+    yMinAt := 0 ;
+    yMaxAt := 0 ;
     NumPoints := 0 ;
-    ReportInterval := Max((EndAtFrame - StartAtFrame) div 100,1);
+    ReportInterval := Max((EndAtFrame - StartAtFrame) div 1,1);
     StopPlot := False ;
 
     yDenAvailable := False ;
     yNumAvailable := False ;
     yThreshold := Round(edRatioExclusionThreshold.Value) ;
 
-    for Frame := StartAtFrame to EndAtFrame do begin
+    for Frame := StartAtFrame to EndAtFrame do
+        begin
 
         // Time of acquisition
         t := (Frame-StartAtFrame)*MainFrm.IDRFile.FrameInterval ;
 
         // Compute background subtraction ROI (if available)
-        if (iBackg >= 0) and (iBackg <= MainFrm.IDRFile.MaxROI) then begin
+        if (iBackg >= 0) and (iBackg <= MainFrm.IDRFile.MaxROI) then
+            begin
             zBackg := ViewPlotFrm.ROIIntensity( iBackg, Frame, FrameTypeNum ) ;
             end
         else zBackg := 0 ;
 
         // Get numerator
-
         yNum := ViewPlotFrm.ROIIntensity( iROI,
                                           Frame,
                                           FrameTypeNum ) - zBackg ;
 
-        // Get denominator
-        if Mode = RatioMode then begin
-           yDen := ViewPlotFrm.ROIIntensity( iROI,
-                                             Frame,
-                                             FrameTypeDen )- zBackg ;
-           end ;
-
         // Add to plot when numerator (and denominator in ratio mode) available
-        if Mode = FMode then begin
+        if Mode = FMode then
+           begin
            // Raw fluorescence
            //y := (yNum - MainFrm.IDRFile.IntensityOffset)*MainFrm.IDRFile.IntensityScale ;
            y := yNum ;
            end
-        else if Mode = DFMode then begin
+        else if Mode = DFMode then
+           begin
            // Relative change in fluorescence
            y := (yNum / F0) - F0Offset ;
            end
-        else begin
+        else
+           begin
            // Fluorescence ratio
+
+           // Get denominator
+           yDen := ViewPlotFrm.ROIIntensity( iROI,
+                                             Frame,
+                                             FrameTypeDen )- zBackg ;
+           // Calculate ratio
            if yDen > yThreshold then Ratio := yNum / yDen
                                 else Ratio := 0.0 ;
-           if ckUseEquation.Checked then begin
+
+           if ckUseEquation.Checked then
+              begin
               // Plot computed ion concentration
-              if Ratio <= (RMax*0.99) then begin
-                 y := ((Ratio - RMin)/(RMax - Ratio))*KEff ;
-                 end ;
+              Ratio := Min(Ratio,RMax*0.99) ;
+              y := ((Ratio - RMin)/(RMax - Ratio))*KEff ;
               end
-           else begin
+           else
+              begin
               // Plot ratio
               y := Ratio ;
               if ckDivideByRMax.Checked then y := y / edRatioRMax.Value ;
@@ -615,18 +637,21 @@ begin
            end ;
 
            // Initialise compression block
-           if BlockCount >= NumFramesPerBlock then begin
+           if BlockCount >= NumFramesPerBlock then
+              begin
               yMin := MainFrm.IDRFile.GreyMax ;
               yMax := -yMin -1 ;
               BlockCount := 0 ;
               end ;
 
            // Update min/max
-           if y < yMin then begin
+           if y < yMin then
+              begin
               yMin := y ;
               yMinAt := BlockCount ;
               end ;
-           if y > yMax then begin
+           if y > yMax then
+              begin
               yMax := y ;
               yMaxAt := BlockCount ;
               end ;
@@ -634,26 +659,31 @@ begin
         Inc(BlockCount) ;
 
         // When block complete ... write min./max. to display buffer
-        if BlockCount >= NumFramesPerBlock then begin
+        if BlockCount >= NumFramesPerBlock then
+           begin
 
            // First point
            if yMaxAt <= yMinAt then plPlot.AddPoint(LineNum, t, yMax )
                                else plPlot.AddPoint(LineNum, t, yMin ) ;
            t := t + MainFrm.IDRFile.FrameInterval ;
-           Inc(NumPoints) ;
+ //          Inc(NumPoints) ;
 
            // Second point
-           if BlockCount > MainFrm.IDRFile.NumFrameTypes then begin
+           if BlockCount > MainFrm.IDRFile.NumFrameTypes then
+              begin
               if yMaxAt >= yMinAt then plPlot.AddPoint(LineNum, t, yMax )
                                   else plPlot.AddPoint(LineNum, t, yMin ) ;
-              Inc(NumPoints) ;
+ //             Inc(NumPoints) ;
               end ;
            end ;
 
         // Report progress
-        MainFrm.StatusBar.SimpleText :=
-              format(' Time Course: ROI %d Frame %d/%d',[iROI,Frame,EndAtFrame]) ;
-        if ((Frame-StartAtFrame) mod ReportInterval) = 0 then Application.ProcessMessages ;
+        if ((Frame-StartAtFrame) mod ReportInterval) = 0 then
+           begin
+           MainFrm.StatusBar.SimpleText :=
+                  format(' Time Course: ROI %d Frame %d/%d',[iROI,Frame,EndAtFrame]) ;
+           Application.ProcessMessages ;
+           end ;
 
         if StopPlot then Break ;
 
@@ -699,30 +729,38 @@ var
 
     NumPoints : Integer ;            // No. of points in plot
 
-     RatioMode : Boolean ;
+//     RatioMode : Boolean ;
      FrameTypeNum,FrameTypeDen : Integer ;
      nAvg : Integer ;
 begin
 
     LineName[LineNum] := 'Fluor' ;
 
-    if DisplayModePage.ActivePage = FTab then Begin
+    FrameTypeDen := 0 ;
+    RMax := 1.0 ;
+    RMin := 0.0 ;
+    KEff := 1.0 ;
+
+    if DisplayModePage.ActivePage = FTab then
+       Begin
        // Raw fluorescence display
        LineUnits[LineNum] := '' ;
        plPlot.yAxisLabel := format( '%s',[cbWavelength.Text]) ;
-       RatioMode := False ;
+//       RatioMode := False ;
        yDenominator := 1.0 ;
        yThreshold := 0.0 ;
        FrameTypeNum := cbWavelength.ItemIndex ;
        end
-    else if DisplayModePage.ActivePage = DFTab then begin
+    else if DisplayModePage.ActivePage = DFTab then
+       begin
        // Relative change plot
        LineUnits[LineNum] := '' ;
        plPlot.yAxisLabel := format( 'dF/F0 (%s)/',[cbWavelength.Text]) ;
-       RatioMode := False ;
+//       RatioMode := False ;
        yThreshold := 0.0 ;
        FrameTypeNum := cbDFWavelength.ItemIndex ;
-       if rbF0FromFrames.Checked then begin
+       if rbF0FromFrames.Checked then
+           begin
            // Compute F0 from average intensity within range of frame
            yDenominator := 0.0 ;
            nAvg := 0 ;
@@ -735,16 +773,18 @@ begin
            if nAvg > 0 then yDenominator := Round( yDenominator / nAvg )
                        else yDenominator := 0 ;
            end
-        else begin
+        else
+           begin
            // Constant F0 value
            yDenominator := Round(edF0Constant.Value) ;
-
            end ;
        end
-    else if DisplayModePage.ActivePage = RatioTab then begin
+    else
+       begin
        // Wavelength ratio/equation plot
-       RatioMode := True ;
+//       RatioMode := True ;
        yThreshold := edRatioExclusionThreshold.Value ;
+       yDenominator := 0.0 ;
        FrameTypeNum := cbNumWave.ItemIndex ;
        FrameTypeDen := cbDenomWave.ItemIndex ;
        if ckUseEquation.Checked then begin
@@ -777,6 +817,10 @@ begin
 
     // Initialise counters
     BlockCount := NumLinesPerBlock ;
+    yMin := 1E30 ;
+    yMax := -yMin -1 ;
+    yMinAt := 0 ;
+    yMaxAt := 0 ;
     NumPoints := 0 ;
     // tStep := (TInterval*TScale*NumLinesPerBlock)/NumPointsPerBlock ;
     // The NumPoints correction factors seem to be appropriate for ADC channel
@@ -950,6 +994,11 @@ begin
 
      // Initialise counters
      BlockCount := NumScansPerBlock ;
+     yMin := 1E30 ;
+     yMax := -1E30 ;
+     yMaxAt := 0 ;
+     yMinAt := 0 ;
+     NumSamplesRead := 0 ;
      NumScansRead := NumScansPerBuf ;
      iSample := NumScansRead*MainFrm.IDRFile.ADCNumChannels ;
      BufStartScan := Int64(StartScan) ;
@@ -1040,7 +1089,6 @@ procedure TTimeCourseFrm.UpdateSettings ;
 // -------------------------------------------------------
 var
     i,iOld,iOldWave,iOldNumWave,iOldDenomWave : Integer ;
-    Wavelength : Single ;
 begin
 
     // Create list of sources
@@ -1230,8 +1278,6 @@ procedure TTimeCourseFrm.bAddLineToPlotClick(Sender: TObject);
 // ------------------------------------
 // Add a new line to an existing Y Axis
 // ------------------------------------
-var
-    i : Integer ;
 begin
 
       // Prevent plotting if time course is being calculated
@@ -1242,6 +1288,7 @@ begin
 
      bAddLineToPlot.Enabled := False ;
      ROIGrp.Enabled := False ;
+     PlottingInProgress := True ;
 
      { Add new line to selected plot }
      plPlot.PlotNum := Integer(cbPlotNum.Items.Objects[cbPlotNum.ItemIndex]) ;
@@ -1250,6 +1297,10 @@ begin
 
      bAddLineToPlot.Enabled := True ;
      ROIGrp.Enabled := True ;
+     PlottingInProgress := False ;
+
+     // If plotting has been aborted, close form
+     if StopPlot then Close ;
 
      end ;
 
@@ -1260,7 +1311,6 @@ procedure TTimeCourseFrm.bAddAllROIsClick(Sender: TObject);
 // --------------------------
 var
     i,iROI,iBackg : Integer ;
-    PlotNum : Integer ;
 begin
 
      // Only use for image files
@@ -1277,20 +1327,20 @@ begin
 
      ROIGrp.Enabled := False ;
      bAddAllROIs.Enabled := False ;
+     PlottingInProgress := True ;
 
      { Add new Y Axis to plot }
-     PlotNum := plPlot.CreatePlot ;
+     plPlot.CreatePlot ;
 
      FillPlotLists ;
      cbPlotNum.ItemIndex := cbPlotNum.Items.Count-1 ;
 
-     if iBackg >= 0 then begin
-        iBackg := Integer(cbBackground.Items.Objects[cbBackground.ItemIndex]) ;
-        end
-     else iBackg := -1 ;
+     // Background ROI to be subtracted from others
+     iBackg := Integer(cbBackground.Items.Objects[cbBackground.ItemIndex]) ;
 
      // Add all ROIs (except background) to plot
-     for i := 0 to cbSource.Items.Count-1 do begin
+     for i := 0 to cbSource.Items.Count-1 do
+         begin
          iROI := Integer(cbSource.Items.Objects[i]) ;
          if (iROI <> iBackg) and (Pos('ROI',cbSource.Items.Strings[i]) > 0) then begin
             cbSource.ItemIndex := i ;
@@ -1302,25 +1352,30 @@ begin
      // Re-enable button
      bAddAllROIs.Enabled := True ;
      ROIGrp.Enabled := True ;
+     PlottingInProgress := False ;
+
+     // If plotting has been aborted, close form
+     if StopPlot then Close ;
 
      end;
 
 procedure TTimeCourseFrm.FormCloseQuery(Sender: TObject;
   var CanClose: Boolean);
-var
-    i : Integer ;
+// -------------------------------------
+// Check if form can be allowed to close
+// -------------------------------------
 begin
 
-   {  if not PlotGrp.Enabled then begin
-        CanClose := False ;
+
+     // If plotting in progress, prevent form closure and
+     // raise flag to stop plotting. Running methods thening close form
+
+     if PlottingInProgress then
+        begin
         StopPlot := True ;
-        for i := 0 to MainFrm.MDIChildCount-1 do
-            if MainFrm.MDIChildren[i].Name = 'ViewPlotFrm' then begin
-               if TViewPlotFrm(MainFrm.MDIChildren[i]).ComputeFLTimeCourseRunning then
-                  TViewPlotFrm(MainFrm.MDIChildren[i]).StopComputeFLTimeCourseRunning := True ;
-               end ;
+        CanClose := False ;
         end
-     else CanClose := True ;}
+     else CanClose := True ;
 
      end;
 
