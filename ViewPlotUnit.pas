@@ -40,6 +40,7 @@ unit ViewPlotUnit;
 // 20.03.21 .. JD A/D display start and readout cursor now made same as fluorescence display when displayed frame changed
 // 22.03.21 .. JD Time course computations now carried out by thread rather than Timer component
 //                CSV data table containing ROI time courses automatically created
+// 10.10.22 .. JD NewFile now called when ROI time couse computation completed to reload timw course buffer
 
 interface
 
@@ -293,7 +294,6 @@ procedure TViewPlotFrm.NewFile ;
 // -----------------------------------------------
 var
      ch,i : Integer ;
-
      FileHandle : THandle ;
 begin
 
@@ -671,9 +671,6 @@ begin
          end ;
 
      CompDone := False ;
-
-     // Call NewFile procedure to ensure ROITimwCourseBuf is big enough
-     NewFile ;
 
      // Create and run computation thread
      CompThread := TViewPlotThread.Create ;
@@ -1770,22 +1767,12 @@ procedure TViewPlotFrm.TimerTimer(Sender: TObject);
 // -------------------------
 // Plot time course of ROIs
 // -------------------------
-
-var
-    FileHandle : THandle ;
 begin
 
     if CompDone then
        begin
        // Reload from file and update display if time course computation complete
-       FileHandle := FileOpen( TCBFileName, fmOpenRead );
-       if NativeInt(FileHandle) <> -1 then
-          begin
-          FileRead( FileHandle,ROITimeCourseBuf^,ROITCNumBytes);
-          FileClose( FileHandle) ;
-          ROITCAvailable := True ;
-          end ;
-
+       NewFile ;
        sbDisplay.Position := 1 ;
        DisplayTimeCourse( sbDisplay.Position ) ;
        CompDone := False ;

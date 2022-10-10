@@ -96,17 +96,17 @@
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win32)'!=''">
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
-        <VerInfo_Release>8</VerInfo_Release>
+        <VerInfo_Release>9</VerInfo_Release>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
         <VerInfo_MinorVer>1</VerInfo_MinorVer>
         <VerInfo_Locale>1033</VerInfo_Locale>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=4.1.8.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=4.1.9.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2_Win64)'!=''">
-        <VerInfo_Release>8</VerInfo_Release>
+        <VerInfo_Release>9</VerInfo_Release>
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <VerInfo_MajorVer>4</VerInfo_MajorVer>
-        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=4.1.8.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
+        <VerInfo_Keys>CompanyName=;FileDescription=;FileVersion=4.1.9.0;InternalName=;LegalCopyright=;LegalTrademarks=;OriginalFilename=;ProductName=;ProductVersion=1.0.0.0;Comments=</VerInfo_Keys>
         <VerInfo_MinorVer>1</VerInfo_MinorVer>
         <VerInfo_Locale>1033</VerInfo_Locale>
     </PropertyGroup>

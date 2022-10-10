@@ -284,6 +284,9 @@ unit Main;
 // 28.09.22 V4.1.8 TimeCourseUnit Updated. ROI plots faster. Now checks for plot in progress when form closed
 //                 Creation of multiple instances of WinFluor.exe now prevented (see winfluor.dpr)
 //                 ROIs increased to 1000
+// 10.10.22 V4.1.9 ViewPlotUnit.pas Stack overflow in when new ROI computation completed fixed.
+//                 NewFile() now called from timer ROI when computation thread completes
+//
 
 interface
 
@@ -896,7 +899,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.8 09-10-22 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.9 10-10-22 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}
