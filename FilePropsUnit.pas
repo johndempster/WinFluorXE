@@ -8,6 +8,7 @@ unit FilePropsUnit;
 // 30.01.13 Z stack properties added
 // 19.01.15 File creation time displayed
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
+// 30.05.24 .. JD Changes to file header keyword=value settings can now be updated to file header
 
 interface
 
@@ -48,6 +49,7 @@ type
     ckSpectralDataFile: TCheckBox;
     HeaderTab: TTabSheet;
     meFileHeader: TMemo;
+    bUpdateHeaderProps: TButton;
     procedure FormShow(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -56,6 +58,7 @@ type
     procedure edPixelUnitsKeyPress(Sender: TObject; var Key: Char);
     procedure bUpdateMarkersClick(Sender: TObject);
     procedure bUpdateFrameTypesClick(Sender: TObject);
+    procedure bUpdateHeaderPropsClick(Sender: TObject);
   private
     { Private declarations }
     procedure UpdateChannelEditTable ;
@@ -235,7 +238,9 @@ begin
     FrameTypeTable.Height := bUpdateFrameTypes.Top - FrameTypeTable.Top - 5 ;
     ckSpectralDataFile.Top := bUpdateFrameTypes.Top ;
 
-    meFileHeader.Height := HeaderTab.ClientHeight - meFileHeader.Top - 5 ;
+    bUpdateHeaderProps.Top := HeaderTab.ClientHeight - bUpdateHeaderProps.Height - 5 ;
+    meFileHeader.Height := bUpdateHeaderProps.top - 5 - meFileHeader.Top ;
+
     meFileHeader.Width := HeaderTab.ClientWidth - meFileHeader.Left - 5 ;
 
     end;
@@ -445,5 +450,14 @@ begin
      ReadFrameTypesTable ;
      MainFrm.IDRFile.SpectralDataFile := ckSpectralDataFile.Checked ;
      end;
+
+procedure TFilePropsFrm.bUpdateHeaderPropsClick(Sender: TObject);
+// ---------------------------------------------
+// Update IDR File header text with editted text
+// ---------------------------------------------
+begin
+  MainFrm.IDRFile.FileHeader := meFileHeader.Lines.Text ;
+  end;
+
 
 end.

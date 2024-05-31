@@ -286,6 +286,7 @@ unit Main;
 //                 ROIs increased to 1000
 // 10.10.22 V4.1.9 ViewPlotUnit.pas Stack overflow in when new ROI computation completed fixed.
 //                 NewFile() now called from timer ROI when computation thread completes
+// 31.05.24 V4.2.0 Settings in header can now be editted to fix corrupted file headers
 //
 
 interface
@@ -899,7 +900,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.1.9 10-10-22 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.2.0 31-05-24 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

@@ -110,7 +110,7 @@ object FilePropsFrm: TFilePropsFrm
         end
         object bUpdateFileProps: TButton
           Left = 8
-          Top = 120
+          Top = 118
           Width = 113
           Height = 17
           Caption = 'Update Properties'
@@ -341,8 +341,8 @@ object FilePropsFrm: TFilePropsFrm
             18)
         end
         object bUpdateFrameTypes: TButton
-          Left = 8
-          Top = 200
+          Left = 9
+          Top = 199
           Width = 113
           Height = 17
           Caption = 'Update Properties'
@@ -375,13 +375,28 @@ object FilePropsFrm: TFilePropsFrm
       Caption = 'File Header'
       ImageIndex = 4
       object meFileHeader: TMemo
-        Left = 8
+        Left = 13
         Top = 8
         Width = 345
-        Height = 353
+        Height = 329
         Lines.Strings = (
           'meProperties')
         TabOrder = 0
+      end
+      object bUpdateHeaderProps: TButton
+        Left = 13
+        Top = 344
+        Width = 113
+        Height = 17
+        Caption = 'Update Properties'
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 1
+        OnClick = bUpdateHeaderPropsClick
       end
     end
   end
