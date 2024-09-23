@@ -653,7 +653,7 @@ begin
 
         { Add file name (no extension or path) to list }
         if FileFound = 0 then cbList.items.Add(FileIO.ExtractFileNameOnly(SearchRec.Name))
-                         else FindClose(SearchRec.FindHandle) ;
+                         else FindClose(SearchRec) ;
         First := False ;
         Until FileFound <> 0 ;
 

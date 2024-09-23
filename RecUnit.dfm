@@ -3,8 +3,8 @@ object RecordFrm: TRecordFrm
   Left = 1124
   Top = 26
   Caption = 'Record Images & Signals'
-  ClientHeight = 746
-  ClientWidth = 811
+  ClientHeight = 744
+  ClientWidth = 803
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -13,7 +13,6 @@ object RecordFrm: TRecordFrm
   Font.Style = []
   FormStyle = fsMDIChild
   Menu = MainMenu1
-  OldCreateOrder = False
   Position = poDefault
   Visible = True
   OnActivate = FormActivate
@@ -24,7 +23,6 @@ object RecordFrm: TRecordFrm
   OnResize = FormResize
   OnShortCut = FormShortCut
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 14
   object ImageGrp: TGroupBox
     Left = 223
@@ -277,10 +275,6 @@ object RecordFrm: TRecordFrm
         TabOrder = 0
         object ExcitationLightTab: TTabSheet
           Caption = 'Excitation Light'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object GroupBox6: TGroupBox
             Left = 2
             Top = 0
@@ -444,10 +438,6 @@ object RecordFrm: TRecordFrm
         object StimulatorTab: TTabSheet
           Caption = 'Stimulator'
           ImageIndex = 1
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object cbStimProgram: TComboBox
             Left = 2
             Top = 0
@@ -615,10 +605,6 @@ object RecordFrm: TRecordFrm
         object PhotoStimTab: TTabSheet
           Caption = 'Photo Stim.'
           ImageIndex = 2
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object cbPhotoStimProgram: TComboBox
             Left = 2
             Top = 0
@@ -728,10 +714,6 @@ object RecordFrm: TRecordFrm
           TabOrder = 0
           object RangeTab: TTabSheet
             Caption = 'Display Contrast'
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object bFullScale: TButton
               Left = 2
               Top = 4
@@ -839,10 +821,6 @@ object RecordFrm: TRecordFrm
           object SlidersTab: TTabSheet
             Caption = 'Sliders'
             ImageIndex = 1
-            ExplicitLeft = 0
-            ExplicitTop = 0
-            ExplicitWidth = 0
-            ExplicitHeight = 0
             object Label5: TLabel
               Left = 14
               Top = 0

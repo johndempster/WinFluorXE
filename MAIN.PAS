@@ -287,6 +287,8 @@ unit Main;
 // 10.10.22 V4.1.9 ViewPlotUnit.pas Stack overflow in when new ROI computation completed fixed.
 //                 NewFile() now called from timer ROI when computation thread completes
 // 31.05.24 V4.2.0 Settings in header can now be editted to fix corrupted file headers
+// 23.09.24 V4.2.1 NimagDX support for USB3 Vision updated (support for mono12p,mono12paccked,mono10p,mono10packed
+//                 Tested with FLIR Blakfly camera
 //
 
 interface
@@ -900,7 +902,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.2.0 31-05-24 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.2.1 23-09-24 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

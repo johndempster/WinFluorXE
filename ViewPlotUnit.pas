@@ -89,6 +89,7 @@ type
     scRDisplay: TScopeDisplay;
     scADCDisplay: TScopeDisplay;
     ckDisplayFluorescence: TCheckBox;
+    bUpdateFLTimeCourse: TButton;
     procedure FormShow(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure bTDisplayDoubleClick(Sender: TObject);
@@ -122,6 +123,7 @@ type
       var Key: Char);
     procedure FormDestroy(Sender: TObject);
     procedure FormCreate(Sender: TObject);
+    procedure bUpdateFLTimeCourseClick(Sender: TObject);
   private
     { Private declarations }
     ADCBuf : PBig16BitArray ;
@@ -1334,6 +1336,15 @@ begin
      SetDisplayUnits ;
      DisplayTimeCourse( CurrentFrame )
      end;
+
+
+procedure TViewPlotFrm.bUpdateFLTimeCourseClick(Sender: TObject);
+// -----------------------------------------
+// Request update of time course data buffer
+// -----------------------------------------
+begin
+  NewFLTimeCourseRequired ;
+end;
 
 
 procedure TViewPlotFrm.MagnifyChannelDisplay(

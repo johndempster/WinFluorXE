@@ -13,7 +13,6 @@ object ViewPlotFrm: TViewPlotFrm
   Font.Style = []
   FormStyle = fsMDIChild
   KeyPreview = True
-  OldCreateOrder = False
   Position = poDefault
   Visible = True
   OnClose = FormClose
@@ -22,7 +21,6 @@ object ViewPlotFrm: TViewPlotFrm
   OnKeyDown = FormKeyDown
   OnResize = FormResize
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object scFLDisplay: TScopeDisplay
     Left = 128
@@ -264,9 +262,9 @@ object ViewPlotFrm: TViewPlotFrm
   end
   object FluorGrp: TGroupBox
     Left = 8
-    Top = 0
+    Top = 5
     Width = 113
-    Height = 97
+    Height = 122
     Caption = ' Display '
     TabOrder = 3
     object Label1: TLabel
@@ -332,10 +330,30 @@ object ViewPlotFrm: TViewPlotFrm
       WordWrap = True
       OnClick = ckDisplayFluorescenceClick
     end
+    object bUpdateFLTimeCourse: TButton
+      Left = 16
+      Top = 93
+      Width = 87
+      Height = 17
+      Hint = 
+        'Re-compute all fluorescence time course data (may take several m' +
+        'inutes)'
+      Caption = 'Refresh T.C.'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 3
+      OnClick = bUpdateFLTimeCourseClick
+    end
   end
   object RatioGrp: TGroupBox
     Left = 8
-    Top = 96
+    Top = 133
     Width = 113
     Height = 153
     TabOrder = 4
@@ -440,9 +458,9 @@ object ViewPlotFrm: TViewPlotFrm
   end
   object ADCGrp: TGroupBox
     Left = 8
-    Top = 248
+    Top = 292
     Width = 113
-    Height = 41
+    Height = 69
     TabOrder = 5
     object ckDisplayADC: TCheckBox
       Left = 8

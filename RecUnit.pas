@@ -3424,7 +3424,7 @@ begin
                                   ]) ;
 
            if RecordingMode = rmRecordingInProgress then begin
-              RecordingStatus := RecordingStatus + 'Recording: ' ;
+              RecordingStatus := RecordingStatus + ' Recording: ' ;
               if TimeLapseMode then  RecordingStatus := RecordingStatus + '[Time lapse] ' ;
 
               RecordingStatus := RecordingStatus + format( 'Frames %5d/%5d (%.2fs) %s',

@@ -2,8 +2,8 @@ object StimSetupFrm: TStimSetupFrm
   Left = 324
   Top = 322
   Caption = 'Stimulus Setup'
-  ClientHeight = 321
-  ClientWidth = 488
+  ClientHeight = 320
+  ClientWidth = 484
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
   Font.Color = clWindowText
@@ -11,12 +11,10 @@ object StimSetupFrm: TStimSetupFrm
   Font.Name = 'Arial'
   Font.Style = []
   FormStyle = fsMDIChild
-  OldCreateOrder = False
   Position = poMainFormCenter
   Visible = True
   OnClose = FormClose
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 15
   object DigitalPulseGrp: TGroupBox
     Left = 7

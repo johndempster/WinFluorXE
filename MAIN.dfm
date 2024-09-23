@@ -14,13 +14,11 @@ object MainFrm: TMainFrm
   Font.Style = []
   FormStyle = fsMDIForm
   Menu = MainMenu1
-  OldCreateOrder = True
   WindowMenu = Windows
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnCreate = FormCreate
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object StatusBar: TStatusBar
     Left = 0
@@ -30,6 +28,8 @@ object MainFrm: TMainFrm
     AutoHint = True
     Panels = <>
     SimplePanel = True
+    ExplicitTop = 647
+    ExplicitWidth = 984
   end
   object MainMenu1: TMainMenu
     Tag = 21
@@ -311,7 +311,7 @@ object MainFrm: TMainFrm
     Left = 96
     Top = 16
     Bitmap = {
-      494C010112003401F40110001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
+      494C010112003401040010001000FFFFFFFFFF10FFFFFFFFFFFFFFFF424D3600
       0000000000003600000028000000400000005000000001002000000000000050
       0000000000000000000000000000000000000000000000000000000000000000
       0000000000000000000000000000000000000000000000000000000000000000
@@ -1064,6 +1064,7 @@ object MainFrm: TMainFrm
     CCDTapOffsetLB = 0
     CCDTapOffsetRB = 0
     LightSpeedMode = False
+    PulseIntervalTriggerMode = False
     Left = 288
     Top = 16
   end
