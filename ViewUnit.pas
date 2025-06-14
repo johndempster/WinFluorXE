@@ -77,6 +77,7 @@ unit ViewUnit;
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 06.10.22 .. JD ROI list now saved as comma delmited rather than tab delimited text
 
+
 interface
 
 uses

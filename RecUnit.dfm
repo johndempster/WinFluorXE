@@ -965,8 +965,8 @@ object RecordFrm: TRecordFrm
         ParentFont = False
       end
       object bRecord: TButton
-        Left = 8
-        Top = 16
+        Left = 11
+        Top = 13
         Width = 121
         Height = 17
         Caption = 'Record'

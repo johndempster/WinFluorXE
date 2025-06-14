@@ -12,7 +12,6 @@ object ViewFrm: TViewFrm
   Font.Name = 'Arial'
   Font.Style = []
   FormStyle = fsMDIChild
-  OldCreateOrder = False
   Position = poDefault
   Visible = True
   OnClose = FormClose
@@ -21,7 +20,6 @@ object ViewFrm: TViewFrm
   OnDestroy = FormDestroy
   OnResize = FormResize
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 14
   object ControlsGrp: TGroupBox
     Left = 8
@@ -230,10 +228,6 @@ object ViewFrm: TViewFrm
         TabOrder = 1
         object RangeTab: TTabSheet
           Caption = 'Display Contrast'
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object bFullScale: TButton
             Left = 2
             Top = 4
@@ -346,10 +340,6 @@ object ViewFrm: TViewFrm
           Font.Style = []
           ImageIndex = 1
           ParentFont = False
-          ExplicitLeft = 0
-          ExplicitTop = 0
-          ExplicitWidth = 0
-          ExplicitHeight = 0
           object Label5: TLabel
             Left = 0
             Top = 0

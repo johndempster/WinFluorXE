@@ -1,0 +1,1112 @@
+Cameras available:
+cam4: Basler a2A1920-160umPRO
+
+Interface Name: cam4
+Vendor: Basler
+Model: a2A1920-160umPRO
+Camera File: Basler a2A1920-160umPRO (#0000267601CB9FDB).icd
+URL: 
+None
+CCD: Width 1936, Height 1216, Pixel depth 8
+25: AcquisitionAttributes::Bayer::Pattern RW En: 
+5=Use hardware value,
+0=None,
+1=GB,
+2=GR,
+3=BG,
+4=RG,
+45: CameraAttributes::ImageFormatControl::PixelFormat RW En: 
+17301505=Mono 8,
+17825795=Mono 10,
+17432646=Mono 10 p,
+17825797=Mono 12,
+17563719=Mono 12p,
+46: CameraAttributes::ImageFormatControl::PixelSize R En: 
+8=8 Bits/Pixel,
+10=10 Bits/Pixel,
+12=12 Bits/Pixel,
+16=16 Bits/Pixel,
+24=24 Bits/Pixel,
+49: CameraAttributes::ImageFormatControl::TestPattern RW En: 
+0=Off,
+1=Black,
+2=White,
+3=Test Image 1,
+4=Test Image 2,
+5=Test Image 3,
+71: CameraAttributes::AcquisitionControl::TriggerSelector RW En: 
+0=Frame Burst Start,
+1=Frame Burst End,
+2=Frame Burst Active,
+3=Frame Start,
+4=Frame End,
+5=Frame Active,
+6=Exposure Start,
+7=Exposure End,
+8=Exposure Active,
+73: CameraAttributes::AcquisitionControl::TriggerSource RW En: 
+0=Software,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Software Signal 1,
+5=Software Signal 2,
+6=Software Signal 3,
+7=Counter 1 Active,
+8=Counter 1 End,
+9=Counter 1 Start,
+10=Counter 2 Active,
+11=Counter 2 End,
+12=Counter 2 Start,
+13=Timer 1 Active,
+14=Timer 1 End,
+15=Timer 2 Active,
+16=Timer 2 End,
+74: CameraAttributes::AcquisitionControl::TriggerActivation En: 
+0=Rising Edge,
+1=Falling Edge,
+2=Any Edge,
+3=Level High,
+4=Level Low,
+80: CameraAttributes::AcquisitionControl::AcquisitionStatusSelector RW En: 
+0=Acquisition Active,
+1=Exposure Active,
+2=Exposure Trigger Wait,
+3=Flash Window,
+4=Frame Burst Active,
+5=Frame Burst Trigger Wait,
+6=Frame Trigger Wait,
+118: CameraAttributes::ImageProcessingControl::BslStaticDefectPixelCorrection::BslStaticDefectPixelCorrectionFileStatus R En: 
+0=File Status Unknown,
+1=File Ok,
+2=File Not Found,
+3=File Empty,
+4=Invalid Header,
+5=Invalid Size,
+6=Invalid Sorting,
+7=Invalid Clustering,
+8=Invalid File Entry,
+122: CameraAttributes::BslLightControl::BslLightControlErrorSummary En: 
+0=No Device,
+1=No Error,
+2=Device 1,
+3=Device 2,
+4=Device 3,
+5=Device 4,
+6=Multiple Devices,
+123: CameraAttributes::BslLightControl::BslLightControlTriggerSource En: 
+0=Line 1,
+1=Line 2,
+2=Line 3,
+3=Acquisition Active,
+4=Exposure Active,
+5=Exposure Start,
+6=Exposure Trigger Wait,
+7=Flash Window,
+8=Frame Burst Active,
+9=Frame Burst Trigger Wait,
+10=Frame Trigger Wait,
+11=Software Signal 1,
+12=Software Signal 2,
+13=Software Signal 3,
+14=Counter 1 Active,
+15=Counter 1 End,
+16=Counter 1 Start,
+17=Counter 2 Active,
+18=Counter 2 End,
+19=Counter 2 Start,
+20=Timer 1 Active,
+21=Timer 1 End,
+22=Timer 2 Active,
+23=Timer 2 End,
+127: CameraAttributes::BslLightControl::BslLightDeviceSelector En: 
+0=Device 1,
+1=Device 2,
+2=Device 3,
+3=Device 4,
+128: CameraAttributes::BslLightControl::BslLightDeviceErrorStatus En: 
+0=No Error,
+1=Not Connected,
+2=Communication Error,
+3=Hardware Error,
+4=Light Device Error,
+5=Unsupported Device Version,
+6=Connection Lost,
+141: CameraAttributes::BslLightControl::BslLightDeviceNewID En: 
+0=Device 1,
+1=Device 2,
+2=Device 3,
+3=Device 4,
+144: CameraAttributes::DigitalIOControl::LineFormat R En: 
+0=Opto-coupled,
+1=Open Drain,
+2=LVTTL,
+3=RS-422,
+150: CameraAttributes::DigitalIOControl::LineSource En: 
+0=Off,
+1=User Output 1,
+2=User Output 2,
+3=User Output 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Trigger Wait,
+7=Flash Window,
+8=Frame Burst Active,
+9=Frame Burst Trigger Wait,
+10=Frame Trigger Wait,
+11=Counter 1 Active,
+12=Counter 2 Active,
+13=Timer 1 Active,
+14=Timer 2 Active,
+15=Serial Tx,
+157: CameraAttributes::SerialCommunicationControl::BslSerialRxSource RW En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Serial Tx,
+158: CameraAttributes::SerialCommunicationControl::BslSerialBaudRate RW En: 
+1200=1200 Baud,
+2400=2400 Baud,
+4800=4800 Baud,
+9600=9600 Baud,
+19200=19200 Baud,
+38400=38400 Baud,
+57600=57600 Baud,
+115200=115200 Baud,
+174: CameraAttributes::CounterAndTimerControl::CounterControl::CounterEventSource RW En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Start,
+7=Exposure Trigger Wait,
+8=Flash Window,
+9=Frame Burst Active,
+10=Frame Burst Trigger Wait,
+11=Frame Trigger Wait,
+12=Software Signal 1,
+13=Software Signal 2,
+14=Software Signal 3,
+15=Counter 1 Active,
+16=Counter 1 End,
+17=Counter 1 Start,
+18=Counter 2 Active,
+19=Counter 2 End,
+20=Counter 2 Start,
+21=Timer 1 Active,
+22=Timer 1 End,
+23=Timer 2 Active,
+24=Timer 2 End,
+176: CameraAttributes::CounterAndTimerControl::CounterControl::CounterResetSource RW En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Start,
+7=Exposure Trigger Wait,
+8=Flash Window,
+9=Frame Burst Active,
+10=Frame Burst Trigger Wait,
+11=Frame Trigger Wait,
+12=Software Signal 1,
+13=Software Signal 2,
+14=Software Signal 3,
+15=Counter 1 Active,
+16=Counter 1 End,
+17=Counter 1 Start,
+18=Counter 2 Active,
+19=Counter 2 End,
+20=Counter 2 Start,
+21=Timer 1 Active,
+22=Timer 1 End,
+23=Timer 2 Active,
+24=Timer 2 End,
+178: CameraAttributes::CounterAndTimerControl::CounterControl::CounterTriggerSource RW En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Start,
+7=Exposure Trigger Wait,
+8=Flash Window,
+9=Frame Burst Active,
+10=Frame Burst Trigger Wait,
+11=Frame Trigger Wait,
+12=Software Signal 1,
+13=Software Signal 2,
+14=Software Signal 3,
+15=Counter 1 Active,
+16=Counter 1 End,
+17=Counter 1 Start,
+18=Counter 2 Active,
+19=Counter 2 End,
+20=Counter 2 Start,
+21=Timer 1 Active,
+22=Timer 1 End,
+23=Timer 2 Active,
+24=Timer 2 End,
+179: CameraAttributes::CounterAndTimerControl::CounterControl::CounterTriggerActivation En: 
+0=Rising Edge,
+1=Falling Edge,
+2=Any Edge,
+3=Level High,
+4=Level Low,
+185: CameraAttributes::CounterAndTimerControl::TimerControl::TimerTriggerSource RW En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Start,
+7=Exposure Trigger Wait,
+8=Flash Window,
+9=Frame Burst Active,
+10=Frame Burst Trigger Wait,
+11=Frame Trigger Wait,
+12=Software Signal 1,
+13=Software Signal 2,
+14=Software Signal 3,
+15=Counter 1 Active,
+16=Counter 1 End,
+17=Counter 1 Start,
+18=Counter 2 Active,
+19=Counter 2 End,
+20=Counter 2 Start,
+21=Timer 1 Active,
+22=Timer 1 End,
+23=Timer 2 Active,
+24=Timer 2 End,
+186: CameraAttributes::CounterAndTimerControl::TimerControl::TimerTriggerActivation En: 
+0=Rising Edge,
+1=Falling Edge,
+2=Any Edge,
+3=Level High,
+4=Level Low,
+195: CameraAttributes::ChunkDataControl::ChunkSelector RW En: 
+0=Auto Brightness Status,
+1=Counter Value,
+2=Exposure Time,
+3=Frame ID,
+4=Gain,
+5=Line Status All,
+6=CRC Checksum,
+7=Sequencer Set Active,
+8=Timestamp,
+223: CameraAttributes::EventControl::EventSelector RW En: 
+0=Exposure End,
+1=Frame Buffer Overrun,
+2=Frame Start,
+3=Frame Trigger Missed,
+4=Overrun,
+5=Temperature Status Changed,
+6=Test,
+242: CameraAttributes::UserSetControl::UserSetSelector RW En: 
+0=Default User Set,
+1=User Set 1,
+2=User Set 2,
+3=User Set 3,
+245: CameraAttributes::UserSetControl::UserSetDefault RW En: 
+0=Default User Set,
+1=User Set 1,
+2=User Set 2,
+3=User Set 3,
+246: CameraAttributes::UserDefinedValues::UserDefinedValueSelector RW En: 
+0=Value 1,
+1=Value 2,
+2=Value 3,
+3=Value 4,
+4=Value 5,
+257: CameraAttributes::SequencerControl::SequencerTriggerSource En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Start,
+7=Exposure Trigger Wait,
+8=Flash Window,
+9=Frame Burst Active,
+10=Frame Burst Trigger Wait,
+11=Frame Trigger Wait,
+12=Software Signal 1,
+13=Software Signal 2,
+14=Software Signal 3,
+15=Counter 1 Active,
+16=Counter 1 End,
+17=Counter 1 Start,
+18=Counter 2 Active,
+19=Counter 2 End,
+20=Counter 2 Start,
+21=Timer 1 Active,
+22=Timer 1 End,
+23=Timer 2 Active,
+24=Timer 2 End,
+258: CameraAttributes::SequencerControl::SequencerTriggerActivation En: 
+0=Rising Edge,
+1=Falling Edge,
+2=Any Edge,
+3=Level High,
+4=Level Low,
+299: CameraAttributes::TransportLayerControl::BslUSBSpeedMode R En: 
+0=Low Speed,
+1=Full Speed,
+2=High Speed,
+3=SuperSpeed,
+305: CameraAttributes::FileAccessControl::FileSelector RW En: 
+0=None,
+1=Firmware Update,
+2=Firmware Update Package,
+3=Boot Firmware Update,
+4=Boot Firmware Update Package,
+5=User Data,
+8=Factory Defect Pixel Correction,
+9=User Defect Pixel Correction,
+306: CameraAttributes::FileAccessControl::FileOperationSelector RW En: 
+258=Open,
+259=Close,
+260=Write,
+261=Read,
+316: AcquisitionAttributes::BitsPerPixel RW En: 
+0=Use hardware value,
+10=10-bit,
+12=12-bit,
+14=14-bit,
+16=16-bit,
+321: AcquisitionAttributes::OutputImageType RW En: 
+2147483647=Auto,
+0=Grayscale (U8),
+1=Grayscale (I16),
+7=Grayscale (U16),
+4=RGB (U32),
+6=RGB (U64),
+328: CameraInformation::BusType R En: 
+825440564=FireWire,
+1768977972=Ethernet,
+544434541=Simulator,
+1685284983=DirectShow,
+1230005101=IP,
+1396924722=SmartCamera2,
+1230193440=Industrial Smart Camera,
+1431519795=USB3 Vision,
+1431716640=UVC,
+1129074251=Camera Link,
+1129861152=CoaXPress,
+334: CameraInformation::USBConnectionSpeed R En: 
+1=Low-Speed (USB 2.0),
+2=Full-Speed (USB 2.0),
+4=Hi-Speed (USB 2.0),
+8=SuperSpeed (USB 3.0),
+None
+CCD: Width 1936, Height 1216, Pixel depth 8
+Camera Attributes:
+0: CameraAttributes::ImageFormatControl::MultipleROI::BslMultipleROIColumnsEnable RW B
+1: CameraAttributes::ImageFormatControl::MultipleROI::BslMultipleROIColumnSelector RW En: 0=Column 1,1=Column 2,
+2: CameraAttributes::ImageFormatControl::MultipleROI::BslMultipleROIColumnSize RW I64      0 -   1936
+3: CameraAttributes::ImageFormatControl::MultipleROI::BslMultipleROIColumnOffset RW I64      0 -      0
+4: CameraAttributes::ImageFormatControl::MultipleROI::BslMultipleROIRowsEnable RW B
+5: CameraAttributes::ImageFormatControl::MultipleROI::BslMultipleROIRowSelector RW En: 0=Row 1,1=Row 2,
+6: CameraAttributes::ImageFormatControl::MultipleROI::BslMultipleROIRowSize RW I64      0 -   1216
+7: CameraAttributes::ImageFormatControl::MultipleROI::BslMultipleROIRowOffset RW I64      0 -      0
+8: CameraAttributes::ImageFormatControl::ImageCompression::ImageCompressionMode RW En: 0=Off,1=Compression Beyond,
+9: CameraAttributes::ImageFormatControl::ImageCompression::ImageCompressionRateOption En: 0=Lossless,1=Fix Ratio,
+10: CameraAttributes::ImageFormatControl::ImageCompression::BslImageCompressionRatio F64 2.225E-308 - 1.798E308
+11: CameraAttributes::ImageFormatControl::ImageCompression::BslImageCompressionLastRatio F64 2.225E-308 - 1.798E308
+12: CameraAttributes::ImageFormatControl::ImageCompression::BslImageCompressionLastSize I64 -9223372036854775808 - 9223372036854775807
+13: AcquisitionAttributes::AdvancedGenicam::CommandTimeout RW U32     10 - 3600000
+14: AcquisitionAttributes::AdvancedGenicam::EventQueueDepth RW U32      2 -  25000
+15: AcquisitionAttributes::AdvancedGenicam::EventsEnabled RW B
+16: AcquisitionAttributes::AdvancedGenicam::EventsSupported R B
+17: AcquisitionAttributes::AdvancedGenicam::IgnoreCameraValidationErrors RW B
+18: AcquisitionAttributes::AdvancedGenicam::PersistenceAlgorithm RW En: 0=Auto,1=NI-IMAQdx,2=GenICam,
+19: AcquisitionAttributes::AdvancedUSB3Vision::ActualMaximumPayloadTransferSize R U32      0 - 3424256
+20: AcquisitionAttributes::AdvancedUSB3Vision::RequiredPayloadSizeAlignment R U32      0 -     -1
+21: AcquisitionAttributes::Bayer::Algorithm RW En: 0=Bilinear,1=VNG,
+22: AcquisitionAttributes::Bayer::GainB RW F64 0 - 3.999
+23: AcquisitionAttributes::Bayer::GainG RW F64 0 - 3.999
+24: AcquisitionAttributes::Bayer::GainR RW F64 0 - 3.999
+25: AcquisitionAttributes::Bayer::Pattern RW En: 
+5=Use hardware value,
+0=None,
+1=GB,
+2=GR,
+3=BG,
+4=RG,
+26: AcquisitionAttributes::ChunkDataDecoding::ChunkDataDecodingEnabled RW B
+27: AcquisitionAttributes::ChunkDataDecoding::MaximumChunkCopySize RW U32     64 -     -1
+28: CameraAttributes::ImageFormatControl::SensorWidth R I64 -9223372036854775808 - 9223372036854775807
+29: CameraAttributes::ImageFormatControl::SensorHeight R I64 -9223372036854775808 - 9223372036854775807
+30: CameraAttributes::ImageFormatControl::ReverseX RW B
+31: CameraAttributes::ImageFormatControl::ReverseY RW B
+32: CameraAttributes::ImageFormatControl::BinningSelector RW En: 0=Region 1,1=Sensor,
+33: CameraAttributes::ImageFormatControl::BinningHorizontalMode RW En: 0=Sum,1=Average,
+34: CameraAttributes::ImageFormatControl::BinningHorizontal RW I64      1 -      4
+35: CameraAttributes::ImageFormatControl::BinningVerticalMode RW En: 0=Sum,1=Average,
+36: CameraAttributes::ImageFormatControl::BinningVertical RW I64      1 -      4
+37: CameraAttributes::ImageFormatControl::WidthMax R I64      0 - 4294967295
+38: CameraAttributes::ImageFormatControl::HeightMax R I64      0 - 4294967295
+39: CameraAttributes::ImageFormatControl::Width RW I64      4 -   1936
+40: CameraAttributes::ImageFormatControl::Height RW I64      1 -   1216
+41: CameraAttributes::ImageFormatControl::OffsetX RW I64      0 -     16
+42: CameraAttributes::ImageFormatControl::OffsetY RW I64      0 -     16
+43: CameraAttributes::ImageFormatControl::BslCenterXW COM
+44: CameraAttributes::ImageFormatControl::BslCenterYW COM
+45: CameraAttributes::ImageFormatControl::PixelFormat RW En: 
+17301505=Mono 8,
+17825795=Mono 10,
+17432646=Mono 10 p,
+17825797=Mono 12,
+17563719=Mono 12p,
+46: CameraAttributes::ImageFormatControl::PixelSize R En: 
+8=8 Bits/Pixel,
+10=10 Bits/Pixel,
+12=12 Bits/Pixel,
+16=16 Bits/Pixel,
+24=24 Bits/Pixel,
+47: CameraAttributes::ImageFormatControl::PixelDynamicRangeMin R I64 -9223372036854775808 - 9223372036854775807
+48: CameraAttributes::ImageFormatControl::PixelDynamicRangeMax R I64      0 - 4294967295
+49: CameraAttributes::ImageFormatControl::TestPattern RW En: 
+0=Off,
+1=Black,
+2=White,
+3=Test Image 1,
+4=Test Image 2,
+5=Test Image 3,
+50: CameraAttributes::AcquisitionControl::AcquisitionMode RW En: 0=Continuous,1=Single Frame,
+51: CameraAttributes::AcquisitionControl::BslAcquisitionStopMode RW En: 0=Complete Exposure,1=Abort Exposure,
+52: CameraAttributes::AcquisitionControl::SensorShutterMode RW En: 0=Global,
+53: CameraAttributes::AcquisitionControl::ExposureTimeMode RW En: 0=Common,3=Ultra Short,
+54: CameraAttributes::AcquisitionControl::ExposureTimeSelector RW En: 0=Common,
+55: CameraAttributes::AcquisitionControl::ExposureTime RW F64 19 - 1E007
+56: CameraAttributes::AcquisitionControl::BslEffectiveExposureTime R F64 0 - 4.295E009
+57: CameraAttributes::AcquisitionControl::ExposureAuto RW En: 0=Off,1=Once,2=Continuous,
+58: CameraAttributes::AcquisitionControl::ExposureMode RW En: 0=Timed,1=Trigger Width,2=Trigger Controlled,
+59: CameraAttributes::AcquisitionControl::BslTransferBitDepthMode RW En: 0=Auto,1=Manual,
+60: CameraAttributes::AcquisitionControl::BslTransferBitDepth R En: 1=Bpp10,
+61: CameraAttributes::AcquisitionControl::BslSensorBitDepthMode RW En: 0=Auto,1=Manual,
+62: CameraAttributes::AcquisitionControl::BslSensorBitDepth R En: 1=Bpp10,
+63: CameraAttributes::AcquisitionControl::AcquisitionFrameRate RW F64 0.1 - 1E006
+64: CameraAttributes::AcquisitionControl::AcquisitionFrameRateEnable RW B
+65: CameraAttributes::AcquisitionControl::SensorReadoutTime R F64 0 - 4.295E009
+66: CameraAttributes::AcquisitionControl::BslExposureStartDelay R F64 0 - 4.295E009
+67: CameraAttributes::AcquisitionControl::BslResultingAcquisitionFrameRate R F64 -1.798E308 - 1.798E308
+68: CameraAttributes::AcquisitionControl::BslResultingTransferFrameRate R F64 -1.798E308 - 1.798E308
+69: CameraAttributes::AcquisitionControl::BslFlashWindowDelay R F64 -1.798E308 - 1.798E308
+70: CameraAttributes::AcquisitionControl::BslFlashWindowDuration R F64 0 - 4.295E009
+71: CameraAttributes::AcquisitionControl::TriggerSelector RW En: 
+0=Frame Burst Start,
+1=Frame Burst End,
+2=Frame Burst Active,
+3=Frame Start,
+4=Frame End,
+5=Frame Active,
+6=Exposure Start,
+7=Exposure End,
+8=Exposure Active,
+72: CameraAttributes::AcquisitionControl::TriggerMode RW En: 0=Off,1=On,
+73: CameraAttributes::AcquisitionControl::TriggerSource RW En: 
+0=Software,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Software Signal 1,
+5=Software Signal 2,
+6=Software Signal 3,
+7=Counter 1 Active,
+8=Counter 1 End,
+9=Counter 1 Start,
+10=Counter 2 Active,
+11=Counter 2 End,
+12=Counter 2 Start,
+13=Timer 1 Active,
+14=Timer 1 End,
+15=Timer 2 Active,
+16=Timer 2 End,
+74: CameraAttributes::AcquisitionControl::TriggerActivation En: 
+0=Rising Edge,
+1=Falling Edge,
+2=Any Edge,
+3=Level High,
+4=Level Low,
+75: CameraAttributes::AcquisitionControl::TriggerSoftwareW COM
+76: CameraAttributes::AcquisitionControl::TriggerDelay RW F64 0 - 1E004
+77: CameraAttributes::AcquisitionControl::BslAcquisitionBurstMode RW En: 0=Standard,
+78: CameraAttributes::AcquisitionControl::AcquisitionBurstFrameCount RW I64      1 -   1023
+79: CameraAttributes::AcquisitionControl::BslResultingFrameBurstRate R F64 -1.798E308 - 1.798E308
+80: CameraAttributes::AcquisitionControl::AcquisitionStatusSelector RW En: 
+0=Acquisition Active,
+1=Exposure Active,
+2=Exposure Trigger Wait,
+3=Flash Window,
+4=Frame Burst Active,
+5=Frame Burst Trigger Wait,
+6=Frame Trigger Wait,
+81: CameraAttributes::AcquisitionControl::AcquisitionStatus R B
+82: CameraAttributes::AcquisitionControl::BslSensorState R En: 0=Off,1=Standby,2=On,
+83: CameraAttributes::AcquisitionControl::BslSensorOffW COM
+84: CameraAttributes::AcquisitionControl::BslSensorStandbyW COM
+85: CameraAttributes::AcquisitionControl::BslSensorOnW COM
+86: CameraAttributes::AutoFunctionControl::AutoTargetBrightness RW F64 0 - 1
+87: CameraAttributes::AutoFunctionControl::AutoFunctionProfile RW En: 0=Minimize Gain,1=Minimize Exposure Time,
+88: CameraAttributes::AutoFunctionControl::AutoGainLowerLimit RW F64 0 - 48
+89: CameraAttributes::AutoFunctionControl::AutoGainUpperLimit RW F64 0 - 48
+90: CameraAttributes::AutoFunctionControl::AutoExposureTimeLowerLimit RW F64 1 - 1E007
+91: CameraAttributes::AutoFunctionControl::AutoExposureTimeUpperLimit RW F64 1 - 1E007
+92: CameraAttributes::AutoFunctionControl::AutoFunctionROIControl::AutoFunctionROISelector RW En: 0=ROI 1,1=ROI 2,
+93: CameraAttributes::AutoFunctionControl::AutoFunctionROIControl::AutoFunctionROIWidth RW I64      4 -   1936
+94: CameraAttributes::AutoFunctionControl::AutoFunctionROIControl::AutoFunctionROIHeight RW I64      1 -   1216
+95: CameraAttributes::AutoFunctionControl::AutoFunctionROIControl::AutoFunctionROIOffsetX RW I64      0 -     16
+96: CameraAttributes::AutoFunctionControl::AutoFunctionROIControl::AutoFunctionROIOffsetY RW I64      0 -     16
+97: CameraAttributes::AutoFunctionControl::AutoFunctionROIControl::AutoFunctionROIUseBrightness RW B
+98: CameraAttributes::AutoFunctionControl::AutoFunctionROIControl::AutoFunctionROIHighlight RW B
+99: CameraAttributes::AnalogControl::GainSelector RW En: 0=All,
+100: CameraAttributes::AnalogControl::Gain RW F64 0 - 48
+101: CameraAttributes::AnalogControl::GainAuto RW En: 0=Off,1=Once,2=Continuous,
+102: CameraAttributes::AnalogControl::BlackLevelSelector RW En: 0=All,
+103: CameraAttributes::AnalogControl::BlackLevel RW F64 0 - 1024
+104: CameraAttributes::AnalogControl::Gamma RW F64 0 - 4
+105: CameraAttributes::AnalogControl::DigitalShift RW I64      0 -      4
+106: CameraAttributes::ImageProcessingControl::BslBrightness RW F64 -1 - 1
+107: CameraAttributes::ImageProcessingControl::BslContrastMode RW En: 0=Linear,1=S-Curve,
+108: CameraAttributes::ImageProcessingControl::BslContrast RW F64 -1 - 1
+109: CameraAttributes::ImageProcessingControl::LUTControl::LUTSelector RW En: 0=Luminance LUT,
+110: CameraAttributes::ImageProcessingControl::LUTControl::LUTEnable RW B
+111: CameraAttributes::ImageProcessingControl::LUTControl::LUTIndex RW I64      0 -   4095
+112: CameraAttributes::ImageProcessingControl::LUTControl::LUTValue RW I64      0 -   4095
+113: CameraAttributes::ImageProcessingControl::PGIControl::BslSharpnessEnhancement RW F64 1 - 3.984
+114: CameraAttributes::ImageProcessingControl::PGIControl::BslNoiseReduction RW F64 0 - 2
+115: CameraAttributes::ImageProcessingControl::BslScalingFactor RW F64 1 - 2.8
+116: CameraAttributes::ImageProcessingControl::BslStaticDefectPixelCorrection::BslStaticDefectPixelCorrectionMaxDefects R I64 -9223372036854775808 - 9223372036854775807
+117: CameraAttributes::ImageProcessingControl::BslStaticDefectPixelCorrection::BslStaticDefectPixelCorrectionMode RW En: 0=Factory,1=User,2=Off,
+118: CameraAttributes::ImageProcessingControl::BslStaticDefectPixelCorrection::BslStaticDefectPixelCorrectionFileStatus R En: 
+0=File Status Unknown,
+1=File Ok,
+2=File Not Found,
+3=File Empty,
+4=Invalid Header,
+5=Invalid Size,
+6=Invalid Sorting,
+7=Invalid Clustering,
+8=Invalid File Entry,
+119: CameraAttributes::ImageProcessingControl::BslStaticDefectPixelCorrection::BslStaticDefectPixelCorrectionReloadW COM
+120: CameraAttributes::BslLightControl::BslLightControlMode RW En: 0=Off,1=On,
+121: CameraAttributes::BslLightControl::BslLightControlEnumerateDevices COM
+122: CameraAttributes::BslLightControl::BslLightControlErrorSummary En: 
+0=No Device,
+1=No Error,
+2=Device 1,
+3=Device 2,
+4=Device 3,
+5=Device 4,
+6=Multiple Devices,
+123: CameraAttributes::BslLightControl::BslLightControlTriggerSource En: 
+0=Line 1,
+1=Line 2,
+2=Line 3,
+3=Acquisition Active,
+4=Exposure Active,
+5=Exposure Start,
+6=Exposure Trigger Wait,
+7=Flash Window,
+8=Frame Burst Active,
+9=Frame Burst Trigger Wait,
+10=Frame Trigger Wait,
+11=Software Signal 1,
+12=Software Signal 2,
+13=Software Signal 3,
+14=Counter 1 Active,
+15=Counter 1 End,
+16=Counter 1 Start,
+17=Counter 2 Active,
+18=Counter 2 End,
+19=Counter 2 Start,
+20=Timer 1 Active,
+21=Timer 1 End,
+22=Timer 2 Active,
+23=Timer 2 End,
+124: CameraAttributes::BslLightControl::BslLightControlTriggerActivation En: 0=Rising Edge,1=Falling Edge,2=Any Edge,
+125: CameraAttributes::BslLightControl::BslLightControlOvertriggerCount I64 -9223372036854775808 - 9223372036854775807
+126: CameraAttributes::BslLightControl::BslLightControlOvertriggerCountReset COM
+127: CameraAttributes::BslLightControl::BslLightDeviceSelector En: 
+0=Device 1,
+1=Device 2,
+2=Device 3,
+3=Device 4,
+128: CameraAttributes::BslLightControl::BslLightDeviceErrorStatus En: 
+0=No Error,
+1=Not Connected,
+2=Communication Error,
+3=Hardware Error,
+4=Light Device Error,
+5=Unsupported Device Version,
+6=Connection Lost,
+129: CameraAttributes::BslLightControl::BslLightDeviceModelName S
+130: CameraAttributes::BslLightControl::BslLightDeviceFirmwareVersion S
+131: CameraAttributes::BslLightControl::BslLightDeviceControlMode En: 0=Current,1=Voltage (12 V),2=Voltage (24 V),
+132: CameraAttributes::BslLightControl::BslLightDeviceCurrent F64 2.225E-308 - 1.798E308
+133: CameraAttributes::BslLightControl::BslLightDeviceOperationMode En: 0=Off,1=On,2=Strobe,
+134: CameraAttributes::BslLightControl::BslLightDeviceStrobeMode En: 0=Automatic,1=Manual,
+135: CameraAttributes::BslLightControl::BslLightDeviceStrobeDuration F64 2.225E-308 - 1.798E308
+136: CameraAttributes::BslLightControl::BslLightDeviceDutyCycle F64 2.225E-308 - 1.798E308
+137: CameraAttributes::BslLightControl::BslLightDeviceOverdriveLimit F64 2.225E-308 - 1.798E308
+138: CameraAttributes::BslLightControl::BslLightDeviceBrightness F64 2.225E-308 - 1.798E308
+139: CameraAttributes::BslLightControl::BslLightDeviceErrorCode I64 -9223372036854775808 - 9223372036854775807
+140: CameraAttributes::BslLightControl::BslLightDeviceErrorStatusReadAndClear COM
+141: CameraAttributes::BslLightControl::BslLightDeviceNewID En: 
+0=Device 1,
+1=Device 2,
+2=Device 3,
+3=Device 4,
+142: CameraAttributes::BslLightControl::BslLightDeviceNewIDSave COM
+143: CameraAttributes::DigitalIOControl::LineSelector RW En: 0=Line 1,1=Line 2,2=Line 3,
+144: CameraAttributes::DigitalIOControl::LineFormat R En: 
+0=Opto-coupled,
+1=Open Drain,
+2=LVTTL,
+3=RS-422,
+145: CameraAttributes::DigitalIOControl::LineInverter RW B
+146: CameraAttributes::DigitalIOControl::BslLineConnection En: 0=Connection Off,1=Light Control,
+147: CameraAttributes::DigitalIOControl::LineMode RW En: 0=Input,
+148: CameraAttributes::DigitalIOControl::BslInputFilterTime RW F64 0 - 1000
+149: CameraAttributes::DigitalIOControl::BslInputHoldOffTime RW F64 0 - 2E004
+150: CameraAttributes::DigitalIOControl::LineSource En: 
+0=Off,
+1=User Output 1,
+2=User Output 2,
+3=User Output 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Trigger Wait,
+7=Flash Window,
+8=Frame Burst Active,
+9=Frame Burst Trigger Wait,
+10=Frame Trigger Wait,
+11=Counter 1 Active,
+12=Counter 2 Active,
+13=Timer 1 Active,
+14=Timer 2 Active,
+15=Serial Tx,
+151: CameraAttributes::DigitalIOControl::LineStatus R B
+152: CameraAttributes::DigitalIOControl::BslLineOverloadStatus R B
+153: CameraAttributes::DigitalIOControl::LineStatusAll R I64      0 - 4294967295
+154: CameraAttributes::DigitalIOControl::UserOutputSelector RW En: 0=User Output 1,1=User Output 2,2=User Output 3,
+155: CameraAttributes::DigitalIOControl::UserOutputValue RW B
+156: CameraAttributes::DigitalIOControl::UserOutputValueAll RW I64      0 -      7
+157: CameraAttributes::SerialCommunicationControl::BslSerialRxSource RW En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Serial Tx,
+158: CameraAttributes::SerialCommunicationControl::BslSerialBaudRate RW En: 
+1200=1200 Baud,
+2400=2400 Baud,
+4800=4800 Baud,
+9600=9600 Baud,
+19200=19200 Baud,
+38400=38400 Baud,
+57600=57600 Baud,
+115200=115200 Baud,
+159: CameraAttributes::SerialCommunicationControl::BslSerialNumberOfDataBits RW En: 7=7 Bit,8=8 Bit,
+160: CameraAttributes::SerialCommunicationControl::BslSerialParity RW En: 0=None,1=Even,2=Odd,
+161: CameraAttributes::SerialCommunicationControl::BslSerialNumberOfStopBits RW En: 1=1 Bit,2=2 Bit,
+162: CameraAttributes::SerialCommunicationControl::BslSerialTransferLength RW I64      0 -     16
+163: CameraAttributes::SerialCommunicationControl::BslSerialTransmitW COM
+164: CameraAttributes::SerialCommunicationControl::BslSerialTxFifoEmpty R B
+165: CameraAttributes::SerialCommunicationControl::BslSerialTxFifoOverflow R B
+166: CameraAttributes::SerialCommunicationControl::BslSerialTxBreak RW B
+167: CameraAttributes::SerialCommunicationControl::BslSerialReceiveW COM
+168: CameraAttributes::SerialCommunicationControl::BslSerialRxFifoOverflow R B
+169: CameraAttributes::SerialCommunicationControl::BslSerialRxParityError R B
+170: CameraAttributes::SerialCommunicationControl::BslSerialRxStopBitError R B
+171: CameraAttributes::SerialCommunicationControl::BslSerialRxBreak R B
+172: CameraAttributes::SerialCommunicationControl::BslSerialRxBreakResetW COM
+173: CameraAttributes::CounterAndTimerControl::CounterControl::CounterSelector RW En: 0=Counter 1,1=Counter 2,
+174: CameraAttributes::CounterAndTimerControl::CounterControl::CounterEventSource RW En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Start,
+7=Exposure Trigger Wait,
+8=Flash Window,
+9=Frame Burst Active,
+10=Frame Burst Trigger Wait,
+11=Frame Trigger Wait,
+12=Software Signal 1,
+13=Software Signal 2,
+14=Software Signal 3,
+15=Counter 1 Active,
+16=Counter 1 End,
+17=Counter 1 Start,
+18=Counter 2 Active,
+19=Counter 2 End,
+20=Counter 2 Start,
+21=Timer 1 Active,
+22=Timer 1 End,
+23=Timer 2 Active,
+24=Timer 2 End,
+175: CameraAttributes::CounterAndTimerControl::CounterControl::CounterEventActivation En: 0=Rising Edge,1=Falling Edge,2=Any Edge,
+176: CameraAttributes::CounterAndTimerControl::CounterControl::CounterResetSource RW En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Start,
+7=Exposure Trigger Wait,
+8=Flash Window,
+9=Frame Burst Active,
+10=Frame Burst Trigger Wait,
+11=Frame Trigger Wait,
+12=Software Signal 1,
+13=Software Signal 2,
+14=Software Signal 3,
+15=Counter 1 Active,
+16=Counter 1 End,
+17=Counter 1 Start,
+18=Counter 2 Active,
+19=Counter 2 End,
+20=Counter 2 Start,
+21=Timer 1 Active,
+22=Timer 1 End,
+23=Timer 2 Active,
+24=Timer 2 End,
+177: CameraAttributes::CounterAndTimerControl::CounterControl::CounterResetActivation En: 0=Rising Edge,1=Falling Edge,2=Any Edge,
+178: CameraAttributes::CounterAndTimerControl::CounterControl::CounterTriggerSource RW En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Start,
+7=Exposure Trigger Wait,
+8=Flash Window,
+9=Frame Burst Active,
+10=Frame Burst Trigger Wait,
+11=Frame Trigger Wait,
+12=Software Signal 1,
+13=Software Signal 2,
+14=Software Signal 3,
+15=Counter 1 Active,
+16=Counter 1 End,
+17=Counter 1 Start,
+18=Counter 2 Active,
+19=Counter 2 End,
+20=Counter 2 Start,
+21=Timer 1 Active,
+22=Timer 1 End,
+23=Timer 2 Active,
+24=Timer 2 End,
+179: CameraAttributes::CounterAndTimerControl::CounterControl::CounterTriggerActivation En: 
+0=Rising Edge,
+1=Falling Edge,
+2=Any Edge,
+3=Level High,
+4=Level Low,
+180: CameraAttributes::CounterAndTimerControl::CounterControl::CounterValue R I64      0 - 4294967295
+181: CameraAttributes::CounterAndTimerControl::CounterControl::CounterDuration RW I64      0 - 4294967295
+182: CameraAttributes::CounterAndTimerControl::CounterControl::CounterStatus R En: 0=Counter Trigger Wait,1=Counter Active,2=Counter Completed,
+183: CameraAttributes::CounterAndTimerControl::CounterControl::CounterResetW COM
+184: CameraAttributes::CounterAndTimerControl::TimerControl::TimerSelector RW En: 0=Timer 1,1=Timer 2,
+185: CameraAttributes::CounterAndTimerControl::TimerControl::TimerTriggerSource RW En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Start,
+7=Exposure Trigger Wait,
+8=Flash Window,
+9=Frame Burst Active,
+10=Frame Burst Trigger Wait,
+11=Frame Trigger Wait,
+12=Software Signal 1,
+13=Software Signal 2,
+14=Software Signal 3,
+15=Counter 1 Active,
+16=Counter 1 End,
+17=Counter 1 Start,
+18=Counter 2 Active,
+19=Counter 2 End,
+20=Counter 2 Start,
+21=Timer 1 Active,
+22=Timer 1 End,
+23=Timer 2 Active,
+24=Timer 2 End,
+186: CameraAttributes::CounterAndTimerControl::TimerControl::TimerTriggerActivation En: 
+0=Rising Edge,
+1=Falling Edge,
+2=Any Edge,
+3=Level High,
+4=Level Low,
+187: CameraAttributes::CounterAndTimerControl::TimerControl::TimerDelay RW F64 0 - 2.147E007
+188: CameraAttributes::CounterAndTimerControl::TimerControl::TimerDuration RW F64 0 - 2.147E007
+189: CameraAttributes::CounterAndTimerControl::TimerControl::TimerTriggerArmDelay RW F64 0 - 2.147E007
+190: CameraAttributes::CounterAndTimerControl::TimerControl::TimerStatus R En: 0=Timer Idle,1=Timer Trigger Wait,2=Timer Active,
+191: CameraAttributes::CounterAndTimerControl::TimerControl::TimerResetW COM
+192: CameraAttributes::SoftwareSignalControl::SoftwareSignalSelector RW En: 0=Software Signal 1,1=Software Signal 2,2=Software Signal 3,
+193: CameraAttributes::SoftwareSignalControl::SoftwareSignalPulseW COM
+194: CameraAttributes::ChunkDataControl::ChunkModeActive RW B
+195: CameraAttributes::ChunkDataControl::ChunkSelector RW En: 
+0=Auto Brightness Status,
+1=Counter Value,
+2=Exposure Time,
+3=Frame ID,
+4=Gain,
+5=Line Status All,
+6=CRC Checksum,
+7=Sequencer Set Active,
+8=Timestamp,
+196: CameraAttributes::ChunkDataControl::ChunkEnable RW B
+197: CameraAttributes::ChunkDataControl::ChunkGainSelector RW En: 0=All,
+198: CameraAttributes::ChunkDataControl::ChunkGain F64 2.225E-308 - 1.798E308
+199: CameraAttributes::ChunkDataControl::ChunkLineStatusAll I64 -9223372036854775808 - 9223372036854775807
+200: CameraAttributes::ChunkDataControl::ChunkFrameID I64 -9223372036854775808 - 9223372036854775807
+201: CameraAttributes::ChunkDataControl::ChunkExposureTimeSelector RW En: 0=Common,
+202: CameraAttributes::ChunkDataControl::ChunkExposureTime F64 2.225E-308 - 1.798E308
+203: CameraAttributes::ChunkDataControl::BslChunkTimestampSelector RW En: 0=Frame Start,1=Exposure Start,2=Exposure End,
+204: CameraAttributes::ChunkDataControl::BslChunkTimestampValue I64 -9223372036854775808 - 9223372036854775807
+205: CameraAttributes::ChunkDataControl::ChunkCounterSelector RW En: 0=Counter 1,1=Counter 2,
+206: CameraAttributes::ChunkDataControl::ChunkCounterValue I64 -9223372036854775808 - 9223372036854775807
+207: CameraAttributes::ChunkDataControl::BslChunkAutoBrightnessStatus En: 0=Disabled,1=Target Not Reached,2=Target Reached,
+208: CameraAttributes::ChunkDataControl::ChunkPayloadCRC16 I64 -9223372036854775808 - 9223372036854775807
+209: CameraAttributes::ChunkDataControl::ChunkSequencerSetActive I64 -9223372036854775808 - 9223372036854775807
+210: CameraAttributes::ChunkDataControl::ChunkData::ChunkGainSelector RW En: 0=All,
+211: CameraAttributes::ChunkDataControl::ChunkData::ChunkGain F64 2.225E-308 - 1.798E308
+212: CameraAttributes::ChunkDataControl::ChunkData::ChunkLineStatusAll I64 -9223372036854775808 - 9223372036854775807
+213: CameraAttributes::ChunkDataControl::ChunkData::ChunkFrameID I64 -9223372036854775808 - 9223372036854775807
+214: CameraAttributes::ChunkDataControl::ChunkData::ChunkExposureTimeSelector RW En: 0=Common,
+215: CameraAttributes::ChunkDataControl::ChunkData::ChunkExposureTime F64 2.225E-308 - 1.798E308
+216: CameraAttributes::ChunkDataControl::ChunkData::BslChunkTimestampSelector RW En: 0=Frame Start,1=Exposure Start,2=Exposure End,
+217: CameraAttributes::ChunkDataControl::ChunkData::BslChunkTimestampValue I64 -9223372036854775808 - 9223372036854775807
+218: CameraAttributes::ChunkDataControl::ChunkData::ChunkCounterSelector RW En: 0=Counter 1,1=Counter 2,
+219: CameraAttributes::ChunkDataControl::ChunkData::ChunkCounterValue I64 -9223372036854775808 - 9223372036854775807
+220: CameraAttributes::ChunkDataControl::ChunkData::BslChunkAutoBrightnessStatus En: 0=Disabled,1=Target Not Reached,2=Target Reached,
+221: CameraAttributes::ChunkDataControl::ChunkData::ChunkPayloadCRC16 I64 -9223372036854775808 - 9223372036854775807
+222: CameraAttributes::ChunkDataControl::ChunkData::ChunkSequencerSetActive I64 -9223372036854775808 - 9223372036854775807
+223: CameraAttributes::EventControl::EventSelector RW En: 
+0=Exposure End,
+1=Frame Buffer Overrun,
+2=Frame Start,
+3=Frame Trigger Missed,
+4=Overrun,
+5=Temperature Status Changed,
+6=Test,
+224: CameraAttributes::EventControl::EventNotification RW En: 0=Off,1=On,
+225: CameraAttributes::EventControl::EventExposureEndData::EventExposureEnd I64 -9223372036854775808 - 9223372036854775807
+226: CameraAttributes::EventControl::EventExposureEndData::EventExposureEndTimestamp I64 -9223372036854775808 - 9223372036854775807
+227: CameraAttributes::EventControl::EventExposureEndData::EventExposureEndFrameID I64 -9223372036854775808 - 9223372036854775807
+228: CameraAttributes::EventControl::EventFrameStartData::EventFrameStart I64 -9223372036854775808 - 9223372036854775807
+229: CameraAttributes::EventControl::EventFrameStartData::EventFrameStartTimestamp I64 -9223372036854775808 - 9223372036854775807
+230: CameraAttributes::EventControl::EventFrameStartData::EventFrameStartFrameID I64 -9223372036854775808 - 9223372036854775807
+231: CameraAttributes::EventControl::EventFrameTriggerMissedData::EventFrameTriggerMissed I64 -9223372036854775808 - 9223372036854775807
+232: CameraAttributes::EventControl::EventFrameTriggerMissedData::EventFrameTriggerMissedTimestamp I64 -9223372036854775808 - 9223372036854775807
+233: CameraAttributes::EventControl::EventTemperatureStatusChangedData::EventTemperatureStatusChanged I64 -9223372036854775808 - 9223372036854775807
+234: CameraAttributes::EventControl::EventTemperatureStatusChangedData::EventTemperatureStatusChangedTimestamp I64 -9223372036854775808 - 9223372036854775807
+235: CameraAttributes::EventControl::EventTemperatureStatusChangedData::EventTemperatureStatusChangedStatus En: 0=Ok,1=Critical,2=Error,
+236: CameraAttributes::EventControl::EventFrameBufferOverrunData::EventFrameBufferOverrun I64 -9223372036854775808 - 9223372036854775807
+237: CameraAttributes::EventControl::EventFrameBufferOverrunData::EventFrameBufferOverrunTimestamp I64 -9223372036854775808 - 9223372036854775807
+238: CameraAttributes::EventControl::EventOverrunData::EventOverrun I64 -9223372036854775808 - 9223372036854775807
+239: CameraAttributes::EventControl::EventOverrunData::EventOverrunTimestamp I64 -9223372036854775808 - 9223372036854775807
+240: CameraAttributes::EventControl::EventTestData::EventTest I64 -9223372036854775808 - 9223372036854775807
+241: CameraAttributes::EventControl::EventTestData::EventTestTimestamp I64 -9223372036854775808 - 9223372036854775807
+242: CameraAttributes::UserSetControl::UserSetSelector RW En: 
+0=Default User Set,
+1=User Set 1,
+2=User Set 2,
+3=User Set 3,
+243: CameraAttributes::UserSetControl::UserSetLoadW COM
+244: CameraAttributes::UserSetControl::UserSetSaveW COM
+245: CameraAttributes::UserSetControl::UserSetDefault RW En: 
+0=Default User Set,
+1=User Set 1,
+2=User Set 2,
+3=User Set 3,
+246: CameraAttributes::UserDefinedValues::UserDefinedValueSelector RW En: 
+0=Value 1,
+1=Value 2,
+2=Value 3,
+3=Value 4,
+4=Value 5,
+247: CameraAttributes::UserDefinedValues::UserDefinedValue RW I64 -2147483648 - 2147483647
+248: CameraAttributes::SequencerControl::SequencerMode RW En: 0=Off,1=On,
+249: CameraAttributes::SequencerControl::SequencerSetActive I64 -9223372036854775808 - 9223372036854775807
+250: CameraAttributes::SequencerControl::SequencerConfigurationMode RW En: 0=Off,1=On,
+251: CameraAttributes::SequencerControl::SequencerSetSelector I64 -9223372036854775808 - 9223372036854775807
+252: CameraAttributes::SequencerControl::SequencerSetSave COM
+253: CameraAttributes::SequencerControl::SequencerSetLoad COM
+254: CameraAttributes::SequencerControl::SequencerSetStart I64 -9223372036854775808 - 9223372036854775807
+255: CameraAttributes::SequencerControl::SequencerPathSelector I64 -9223372036854775808 - 9223372036854775807
+256: CameraAttributes::SequencerControl::SequencerSetNext I64 -9223372036854775808 - 9223372036854775807
+257: CameraAttributes::SequencerControl::SequencerTriggerSource En: 
+0=Off,
+1=Line 1,
+2=Line 2,
+3=Line 3,
+4=Acquisition Active,
+5=Exposure Active,
+6=Exposure Start,
+7=Exposure Trigger Wait,
+8=Flash Window,
+9=Frame Burst Active,
+10=Frame Burst Trigger Wait,
+11=Frame Trigger Wait,
+12=Software Signal 1,
+13=Software Signal 2,
+14=Software Signal 3,
+15=Counter 1 Active,
+16=Counter 1 End,
+17=Counter 1 Start,
+18=Counter 2 Active,
+19=Counter 2 End,
+20=Counter 2 Start,
+21=Timer 1 Active,
+22=Timer 1 End,
+23=Timer 2 Active,
+24=Timer 2 End,
+258: CameraAttributes::SequencerControl::SequencerTriggerActivation En: 
+0=Rising Edge,
+1=Falling Edge,
+2=Any Edge,
+3=Level High,
+4=Level Low,
+259: CameraAttributes::DeviceControl::DeviceScanType R En: 0=Area Scan,1=Line Scan,
+260: CameraAttributes::DeviceControl::DeviceVendorName R S
+261: CameraAttributes::DeviceControl::DeviceModelName R S
+262: CameraAttributes::DeviceControl::DeviceFamilyName R S
+263: CameraAttributes::DeviceControl::DeviceManufacturerInfo R S
+264: CameraAttributes::DeviceControl::DeviceVersion R S
+265: CameraAttributes::DeviceControl::DeviceFirmwareVersion R S
+266: CameraAttributes::DeviceControl::DeviceSerialNumber R S
+267: CameraAttributes::DeviceControl::DeviceUserID RW S
+268: CameraAttributes::DeviceControl::DeviceIndicatorMode RW En: 0=Inactive,1=Active,2=Error Status,
+269: CameraAttributes::DeviceControl::DeviceLinkSpeed R I64 -9223372036854775808 - 9223372036854775807
+270: CameraAttributes::DeviceControl::DeviceLinkThroughputLimitMode RW En: 0=On,1=Off,
+271: CameraAttributes::DeviceControl::DeviceLinkThroughputLimit RW I64 524288 - 419430400
+272: CameraAttributes::DeviceControl::BslDeviceLinkCurrentThroughput R I64      0 - 4294967295
+273: CameraAttributes::DeviceControl::DeviceTemperatureSelector RW En: 0=Coreboard,1=Sensor,
+274: CameraAttributes::DeviceControl::DeviceTemperature R F64 -1.798E308 - 1.798E308
+275: CameraAttributes::DeviceControl::BslTemperatureStatus R En: 0=Ok,1=Critical,2=Error,
+276: CameraAttributes::DeviceControl::BslTemperatureStatusErrorCount R I64      0 - 4294967295
+277: CameraAttributes::DeviceControl::BslTemperatureMax R F64 -1.798E308 - 1.798E308
+278: CameraAttributes::DeviceControl::TimestampLatchW COM
+279: CameraAttributes::DeviceControl::TimestampLatchValue R I64 -9223372036854775808 - 9223372036854775807
+280: CameraAttributes::DeviceControl::DeviceSFNCVersionMajor R I64 -9223372036854775808 - 9223372036854775807
+281: CameraAttributes::DeviceControl::DeviceSFNCVersionMinor R I64 -9223372036854775808 - 9223372036854775807
+282: CameraAttributes::DeviceControl::DeviceSFNCVersionSubMinor R I64 -9223372036854775808 - 9223372036854775807
+283: CameraAttributes::DeviceControl::DeviceManifestXMLMajorVersion R I64 -9223372036854775808 - 9223372036854775807
+284: CameraAttributes::DeviceControl::DeviceManifestXMLMinorVersion R I64 -9223372036854775808 - 9223372036854775807
+285: CameraAttributes::DeviceControl::DeviceManifestXMLSubMinorVersion R I64 -9223372036854775808 - 9223372036854775807
+286: CameraAttributes::DeviceControl::DeviceManifestSchemaMajorVersion R I64 -9223372036854775808 - 9223372036854775807
+287: CameraAttributes::DeviceControl::DeviceManifestSchemaMinorVersion R I64 -9223372036854775808 - 9223372036854775807
+288: CameraAttributes::DeviceControl::DeviceTLType R En: 0=GigE Vision,1=CoaXPress,2=USB3 Vision,
+289: CameraAttributes::DeviceControl::DeviceTLVersionMajor R I64 -9223372036854775808 - 9223372036854775807
+290: CameraAttributes::DeviceControl::DeviceTLVersionMinor R I64 -9223372036854775808 - 9223372036854775807
+291: CameraAttributes::DeviceControl::DeviceTLVersionSubMinor R I64 -9223372036854775808 - 9223372036854775807
+292: CameraAttributes::DeviceControl::DeviceGenCPVersionMajor R I64 -9223372036854775808 - 9223372036854775807
+293: CameraAttributes::DeviceControl::DeviceGenCPVersionMinor R I64 -9223372036854775808 - 9223372036854775807
+294: CameraAttributes::DeviceControl::DeviceCharacterSet R En: 0=UTF 8,
+295: CameraAttributes::DeviceControl::DeviceRegistersEndianness R En: 0=Little,1=Big,
+296: CameraAttributes::TestControl::TestPendingAck RW I64      0 -  10000
+297: CameraAttributes::TestControl::TestEventGenerateW COM
+298: CameraAttributes::TransportLayerControl::PayloadSize R I64      0 - 4294967295
+299: CameraAttributes::TransportLayerControl::BslUSBSpeedMode R En: 
+0=Low Speed,
+1=Full Speed,
+2=High Speed,
+3=SuperSpeed,
+300: CameraAttributes::TransportLayerControl::BslUSBPowerSource R En: 0=Bus,1=AUX,
+301: CameraAttributes::TransportLayerControl::SIPayloadTransferSize R I64      0 - 4294967295
+302: CameraAttributes::TransportLayerControl::SIPayloadTransferCount R I64      0 - 4294967295
+303: CameraAttributes::TransportLayerControl::SIPayloadFinalTransfer1Size R I64      0 - 4294967295
+304: CameraAttributes::TransportLayerControl::SIPayloadFinalTransfer2Size R I64      0 - 4294967295
+305: CameraAttributes::FileAccessControl::FileSelector RW En: 
+0=None,
+1=Firmware Update,
+2=Firmware Update Package,
+3=Boot Firmware Update,
+4=Boot Firmware Update Package,
+5=User Data,
+8=Factory Defect Pixel Correction,
+9=User Defect Pixel Correction,
+306: CameraAttributes::FileAccessControl::FileOperationSelector RW En: 
+258=Open,
+259=Close,
+260=Write,
+261=Read,
+307: CameraAttributes::FileAccessControl::FileOperationExecuteW COM
+308: CameraAttributes::FileAccessControl::FileOpenMode RW En: 0=Read,1=Write,
+309: CameraAttributes::FileAccessControl::FileAccessOffset RW I64      0 - 4294967295
+310: CameraAttributes::FileAccessControl::FileAccessLength RW I64      0 - 4294967295
+311: CameraAttributes::FileAccessControl::FileOperationStatus R En: 0=Success,1=Failure,
+312: CameraAttributes::FileAccessControl::FileOperationResult R I64      0 -  65535
+313: CameraAttributes::ErrorReportControl::BslErrorReportValue R I64 -9223372036854775808 - 9223372036854775807
+314: CameraAttributes::ErrorReportControl::BslErrorReportNextW COM
+315: CameraAttributes::ErrorReportControl::BslErrorPresent R B
+316: AcquisitionAttributes::BitsPerPixel RW En: 
+0=Use hardware value,
+10=10-bit,
+12=12-bit,
+14=14-bit,
+16=16-bit,
+317: AcquisitionAttributes::HardwareMaximumQueuedBufferCount RW U32      1 -     -1
+318: AcquisitionAttributes::HardwareRequeueBufferListThreshold RW F64 2.225E-308 - 100
+319: AcquisitionAttributes::ImageDecoderCopyMode RW En: 0=Auto,1=Always,2=Never,
+320: AcquisitionAttributes::IncompleteBufferMode RW En: 0=Ignore,1=Fail,
+321: AcquisitionAttributes::OutputImageType RW En: 
+2147483647=Auto,
+0=Grayscale (U8),
+1=Grayscale (I16),
+7=Grayscale (U16),
+4=RGB (U32),
+6=RGB (U64),
+322: AcquisitionAttributes::OverwriteMode RW En: 0=Get Oldest,2=Fail,3=Get Newest,
+323: AcquisitionAttributes::ReceiveTimestampMode RW En: 0=None,1=Tick Count,2=System Time,
+324: AcquisitionAttributes::ShiftPixelBits RW B
+325: AcquisitionAttributes::SwapPixelBytes RW B
+326: AcquisitionAttributes::Timeout RW U32      0 -     -1
+327: CameraInformation::BaseAddress R U32      0 -     -1
+328: CameraInformation::BusType R En: 
+825440564=FireWire,
+1768977972=Ethernet,
+544434541=Simulator,
+1685284983=DirectShow,
+1230005101=IP,
+1396924722=SmartCamera2,
+1230193440=Industrial Smart Camera,
+1431519795=USB3 Vision,
+1431716640=UVC,
+1129074251=Camera Link,
+1129861152=CoaXPress,
+329: CameraInformation::ModelName R S
+330: CameraInformation::PrimaryURLString R S
+331: CameraInformation::SecondaryURLString R S
+332: CameraInformation::SerialNumberHigh R U32      0 -     -1
+333: CameraInformation::SerialNumberLow R U32      0 -     -1
+334: CameraInformation::USBConnectionSpeed R En: 
+1=Low-Speed (USB 2.0),
+2=Full-Speed (USB 2.0),
+4=Hi-Speed (USB 2.0),
+8=SuperSpeed (USB 3.0),
+335: CameraInformation::VendorName R S
+336: StatusInformation::AcqInProgress R B
+337: StatusInformation::HandledEventCount R I64 -9223372036854775808 - 9223372036854775807
+338: StatusInformation::IncompleteBufferCount R I64 -9223372036854775808 - 9223372036854775807
+339: StatusInformation::LastBufferCount R I64 -9223372036854775808 - 9223372036854775807
+340: StatusInformation::LastBufferNumber R U32      0 -     -1
+341: StatusInformation::LostBufferCount R I64 -9223372036854775808 - 9223372036854775807
+342: StatusInformation::LostEventCount R I64 -9223372036854775808 - 9223372036854775807

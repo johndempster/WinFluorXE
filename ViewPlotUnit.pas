@@ -41,6 +41,7 @@ unit ViewPlotUnit;
 // 22.03.21 .. JD Time course computations now carried out by thread rather than Timer component
 //                CSV data table containing ROI time courses automatically created
 // 10.10.22 .. JD NewFile now called when ROI time couse computation completed to reload timw course buffer
+// 14.06.25 .. JD Polygon ROI area now computed correctly using 1 bit bitmap preventing access violation
 
 interface
 
@@ -979,7 +980,8 @@ var
      XY : Array[0..ROIMaxPoints-1] of TPoint ;
      ROI : TROI ;
      PixelList : PROIPixelList ;
-
+     iXBit,BitValue : Byte ;
+     s : string ;
 begin
      Result := 0.0 ;
 
@@ -1117,7 +1119,8 @@ begin
               ROI.TopLeft.Y := MainFrm.IDRFile.FrameHeight ;
               ROI.BottomRight.X  := 0 ;
               ROI.BottomRight.Y  := 0 ;
-              for i := 0 to ROI.NumPoints-1 do begin
+              for i := 0 to ROI.NumPoints-1 do
+                  begin
                   ROI.TopLeft.X := Min(ROI.TopLeft.X,ROI.XY[i].X) ;
                   ROI.TopLeft.Y := Min(ROI.TopLeft.Y,ROI.XY[i].Y) ;
                   ROI.BottomRight.X  := Max(ROI.BottomRight.X,ROI.XY[i].X) ;
@@ -1133,7 +1136,8 @@ begin
               ROIBitMap.Height := Max(ROI.Height,2) ;
               ROIBitMap.Canvas.Brush.Color := clBlack ;
               ROIBitMap.Canvas.Pen.Color := clWhite ;
-              for i := 0 to ROI.NumPoints-1 do begin
+              for i := 0 to ROI.NumPoints-1 do
+                  begin
                   XY[i].X := ROI.XY[i].X - ROI.TopLeft.X ;
                   XY[i].Y := ROI.XY[i].Y - ROI.TopLeft.Y ;
                   end ;
@@ -1142,16 +1146,30 @@ begin
               // Create list of pixels enclosed by ROI
               NumPixels := 0 ;
               PixelList := AllocMem( 2*SizeOf(TPoint)*(ROIBitMap.Width*ROIBitMap.Height)) ;
-
-              for iY := 0 to ROI.Height-1 do begin
+              for iY := 0 to ROIBitMap.Height-1 do
+                  begin
                   P := ROIBitMap.ScanLine[iY] ;
-                  for iX := 0 to ROI.Width-1 do if P^[iX] =0 then begin
-                      PixelList^[NumPixels].X := ROI.TopLeft.X + iX ;
-                      PixelList^[NumPixels].Y := ROI.TopLeft.Y + iY ;
-                      Inc(NumPixels) ;
+                  iXBit := 1 ;
+                  for iX := 0 to ROIBitMap.Width-1 do
+                      begin
+                      // Extract pixel bit value from byte
+                      BitValue := P^[iX div 8] and iXBit ;
+                      iXBit := iXBit shl 1 ;
+                      if iXBit = 0 then iXBit := 1 ;
+
+                      // Add active pixel to list
+                      if BitValue = 0 then
+                         begin
+                         PixelList^[NumPixels].X := ROI.TopLeft.X + iX ;
+                         PixelList^[NumPixels].Y := ROI.TopLeft.Y + iY ;
+                         Inc(NumPixels) ;
+                         end ;
                       end ;
                   end ;
+
               ROIBitMap.Free ;
+
+//              outputdebugstring(pchar(format('ROI %d %d %d',[iROI,ROI.Width*ROI.height,NumPixels])));
 
               ROIPixelList[iROI] := PixelList;
               ROINumPixels[iROI] := NumPixels ;
@@ -1160,10 +1178,10 @@ begin
 
            nSum := 0 ;
            Sum := 0.0 ;
-           for i := 0 to NumPixels-1 do begin
+           for i := 0 to NumPixels-1 do
+               begin
                //if z >= zExclusionThreshold then begin
-               Sum := Sum + FrameBuf[PixelList[i].X +
-                            PixelList[i].Y*MainFrm.IDRFile.FrameWidth] ; ;
+               Sum := Sum + FrameBuf[PixelList[i].X + PixelList[i].Y*MainFrm.IDRFile.FrameWidth] ; ;
                Inc(nSum) ;
               //    end ;
                end ;
@@ -1174,8 +1192,7 @@ begin
 
          end ;
 
-     Result := MainFrm.IDRFile.IntensityScale*
-               (Result - MainFrm.IDRFile.IntensityOffset) ;
+     Result := MainFrm.IDRFile.IntensityScale*(Result - MainFrm.IDRFile.IntensityOffset) ;
 
      end ;
 
