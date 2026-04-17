@@ -67,7 +67,10 @@ uses
   Maths in '..\SESComponentsXE\Maths.pas',
   XYStageUnit in 'XYStageUnit.pas' {XYStageFrm},
   nidaqmxlib in 'nidaqmxlib.pas',
-  ViewPlotThread in 'ViewPlotThread.pas';
+  ViewPlotThread in 'ViewPlotThread.pas',
+  FindCellsUnit in 'FindCellsUnit.pas' {FindCellsFrm},
+  ParticleLocator in 'ParticleLocator.pas',
+  WatershedParticleLocator in 'WatershedParticleLocator.pas';
 
 {$R *.TLB}
 

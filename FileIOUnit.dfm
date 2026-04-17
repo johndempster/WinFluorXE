@@ -1,5 +1,4 @@
 object FileIO: TFileIO
-  OldCreateOrder = False
   OnCreate = DataModuleCreate
   Height = 480
   Width = 696

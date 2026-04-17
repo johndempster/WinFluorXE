@@ -124,11 +124,13 @@ begin
      bOK.Enabled := False ;
 
      // Select range of frames to be processed
-     if rbAllFrames.Checked then begin
+     if rbAllFrames.Checked then
+        begin
         StartAtFrame := Round(edRange.LoLimit) ;
         EndAtFrame := Round(edRange.HiLimit) ;
         end
-     else begin
+     else
+        begin
         StartAtFrame := Round(edRange.LoValue) ;
         EndAtFrame := Round(edRange.HiValue ) ;
         end ;

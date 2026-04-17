@@ -48,7 +48,8 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, StdCtrls, ValidatedEdit, ExtCtrls, ScopeDisplay, HTMLLabel,IDRFile,
-  math, strutils, mmsystem, excsetupunit, labiounit, ViewPlotThread ;
+  math, strutils, mmsystem, excsetupunit, labiounit, ViewPlotThread,
+  Vcl.ComCtrls ;
 
 Const
     GreyLevelLimit = $FFFF ;
@@ -91,6 +92,8 @@ type
     scADCDisplay: TScopeDisplay;
     ckDisplayFluorescence: TCheckBox;
     bUpdateFLTimeCourse: TButton;
+    bROIPrevious: TButton;
+    bROINext: TButton;
     procedure FormShow(Sender: TObject);
     procedure FormResize(Sender: TObject);
     procedure bTDisplayDoubleClick(Sender: TObject);
@@ -125,6 +128,8 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure bUpdateFLTimeCourseClick(Sender: TObject);
+    procedure bROIPreviousClick(Sender: TObject);
+    procedure bROINextClick(Sender: TObject);
   private
     { Private declarations }
     ADCBuf : PBig16BitArray ;
@@ -720,7 +725,8 @@ begin
 
     // Plot selected fluorescence ROI
 
-    if (cbROI.ItemIndex >= 0) and ckDisplayFluorescence.Checked then begin
+    if (cbROI.ItemIndex >= 0) and ckDisplayFluorescence.Checked then
+        begin
 
         iROI := Integer(cbROI.Items.Objects[cbROI.ItemIndex]) ;
         if cbSubROI.ItemIndex > 0 then
@@ -955,7 +961,7 @@ function TViewPlotFrm.MeanROIIntensity(
 // and exceeding exclusion limit
 // --------------------------------------------------------
 var
-     xPix,yPix,i,ix,iy,NumPixels : Integer ;
+     xPix,yPix,i,j,ix,iy,NumPixels : Integer ;
      //z : Integer ;
      z,Sum : Single ;
      nSum : Integer ;
@@ -1006,10 +1012,11 @@ begin
             Sum := 0.0 ;
             NumPixels := 0 ;
             for xPix := LeftEdge to RightEdge do
-                for yPix := TopEdge to BottomEdge do begin
+                for yPix := TopEdge to BottomEdge do
+                    begin
                     i := yPix*MainFrm.IDRFile.FrameWidth + xPix ;
                     //if z >= zExclusionThreshold then begin
-                    Sum := Sum + FrameBuf[i] ; ;
+                    Sum := Sum + FrameBuf[i] ;
                     Inc(NumPixels) ;
                     //   end ;
                     end ;
@@ -1026,10 +1033,12 @@ begin
             bSq := (TopEdge - ROI.Centre.y)*(TopEdge - ROI.Centre.y) ;
             NumPixels := 0 ;
             for xPix := LeftEdge to RightEdge do
-                for yPix := TopEdge to BottomEdge do begin
+                for yPix := TopEdge to BottomEdge do
+                    begin
                     r := ((xPix-ROI.Centre.x)*(xPix-ROI.Centre.x)/aSq) +
                          ((yPix-ROI.Centre.y)*(yPix-ROI.Centre.y)/bSq) ;
-                    if  r <= 1.0 then begin
+                    if  r <= 1.0 then
+                        begin
                         i := yPix*MainFrm.IDRFile.FrameWidth + xPix ;
                        //if z >= zExclusionThreshold then begin
                         Sum := Sum + FrameBuf[i] ; ;
@@ -1054,7 +1063,8 @@ begin
             DStart := 0.0 ;
             NumPixels := 0 ;
             Sum := 0.0 ;
-            for iLine := 0 to nLines-1 do begin
+            for iLine := 0 to nLines-1 do
+               begin
 
                // Get line segment
                case ROI.Shape of
@@ -1112,7 +1122,8 @@ begin
            PixelList := ROIPixelList[iROI] ;
            NumPixels := ROINumPixels[iROI] ;
 
-           if PixelList = Nil then begin
+           if PixelList = Nil then
+              begin
 
               // Determine rectangular region of ROI
               ROI.TopLeft.X := MainFrm.IDRFile.FrameWidth ;
@@ -1189,6 +1200,24 @@ begin
                        else Result := 0.0 ;
 
            end ;
+
+         // Area ROI
+         AreaROI : begin
+
+           Sum := 0.0 ;
+           NumPixels := 0 ;
+           for xPix := Max(LeftEdge,0) to Min(RightEdge,MainFrm.IDRFile.FrameWidth-1) do
+               for yPix := Max(TopEdge,0) to Min(BottomEdge,MainFrm.IDRFile.FrameHeight-1) do
+                   begin
+                   i := yPix*MainFrm.IDRFile.FrameWidth + xPix ;
+                   Sum := Sum + FrameBuf[i] ;
+                   Inc(NumPixels) ;
+                   end ;
+
+           if NumPixels > 0 then Result := Sum/NumPixels
+                            else Result := 0.0 ;
+
+           end;
 
          end ;
 
@@ -1329,6 +1358,25 @@ function TViewPlotFrm.GetDisplayGrid : Boolean ;
 begin
     Result := scFLDisplay.DisplayGrid ;
     end ;
+
+
+procedure TViewPlotFrm.bROINextClick(Sender: TObject);
+// ----------------------------
+// Display next ROI in list
+// ----------------------------
+begin
+    cbROI.ItemIndex := Min( cbROI.ItemIndex+1, cbROI.Items.Count-1 ) ;
+    DisplayTimeCourse( sbDisplay.Position ) ;
+end;
+
+procedure TViewPlotFrm.bROIPreviousClick(Sender: TObject);
+// ----------------------------
+// Display previous ROI in list
+// ----------------------------
+begin
+    cbROI.ItemIndex := Max( cbROI.ItemIndex-1, 0 ) ;
+    DisplayTimeCourse( sbDisplay.Position ) ;
+end;
 
 
 procedure TViewPlotFrm.bTDisplayDoubleClick(Sender: TObject);

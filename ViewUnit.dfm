@@ -3,7 +3,7 @@ object ViewFrm: TViewFrm
   Left = 361
   Top = 227
   Caption = 'Stored Images'
-  ClientHeight = 621
+  ClientHeight = 604
   ClientWidth = 714
   Color = clBtnFace
   Font.Charset = ANSI_CHARSET
@@ -23,9 +23,9 @@ object ViewFrm: TViewFrm
   TextHeight = 14
   object ControlsGrp: TGroupBox
     Left = 8
-    Top = 0
+    Top = 1
     Width = 185
-    Height = 617
+    Height = 592
     Font.Charset = ANSI_CHARSET
     Font.Color = clWindowText
     Font.Height = -12
@@ -63,7 +63,7 @@ object ViewFrm: TViewFrm
       end
       object sbFrameNum: TScrollBar
         Left = 8
-        Top = 38
+        Top = 35
         Width = 153
         Height = 18
         Hint = 'Select frame number to be displayed'
@@ -396,10 +396,10 @@ object ViewFrm: TViewFrm
       end
     end
     object ROIGrp: TGroupBox
-      Left = 8
-      Top = 360
+      Left = 13
+      Top = 363
       Width = 169
-      Height = 121
+      Height = 145
       Caption = ' Regions of Interest '
       Font.Charset = ANSI_CHARSET
       Font.Color = clWindowText
@@ -410,7 +410,7 @@ object ViewFrm: TViewFrm
       TabOrder = 2
       object bSaveROIs: TButton
         Left = 8
-        Top = 46
+        Top = 70
         Width = 153
         Height = 17
         Hint = 'Save Regions of Interest to file'
@@ -428,7 +428,7 @@ object ViewFrm: TViewFrm
       end
       object bLoadROis: TButton
         Left = 8
-        Top = 68
+        Top = 92
         Width = 153
         Height = 17
         Hint = 'Load Regions of Interest from file'
@@ -446,7 +446,7 @@ object ViewFrm: TViewFrm
       end
       object bEditROIs: TButton
         Left = 8
-        Top = 90
+        Top = 114
         Width = 153
         Height = 17
         Caption = 'Edit ROI Table'
@@ -461,7 +461,7 @@ object ViewFrm: TViewFrm
       end
       object bDeleteROI: TButton
         Left = 8
-        Top = 18
+        Top = 42
         Width = 65
         Height = 17
         Hint = 'Delete selected region of interest'
@@ -478,18 +478,36 @@ object ViewFrm: TViewFrm
         OnClick = bDeleteROIClick
       end
       object cbDeleteROI: TComboBox
-        Left = 80
-        Top = 18
+        Left = 79
+        Top = 42
         Width = 81
         Height = 23
         Hint = 'ROI no. to be deleted'
         Style = csDropDownList
         TabOrder = 4
       end
+      object bFindCells: TButton
+        Left = 8
+        Top = 19
+        Width = 153
+        Height = 17
+        Hint = 'Find and places ROIs on cells automatically'
+        Caption = ' Cell Finder'
+        Font.Charset = ANSI_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -12
+        Font.Name = 'Arial'
+        Font.Style = [fsBold]
+        ParentFont = False
+        ParentShowHint = False
+        ShowHint = True
+        TabOrder = 5
+        OnClick = bFindCellsClick
+      end
     end
     object MarkGrp: TGroupBox
-      Left = 8
-      Top = 543
+      Left = 13
+      Top = 514
       Width = 169
       Height = 66
       Caption = ' Markers '
@@ -923,8 +941,8 @@ object ViewFrm: TViewFrm
     Enabled = False
     Interval = 60
     OnTimer = TimerTimer
-    Left = 184
-    Top = 424
+    Left = 344
+    Top = 432
   end
   object SaveDialog: TSaveDialog
     Left = 208

@@ -76,8 +76,8 @@ begin
         iFrameType := MainFrm.IDRFile.TypeOfFrame(iFrame) ;
 
         // Compute mean intensity
-        for iROI := 1 to MainFrm.IDRFile.MaxROIInUse do
-            if MainFrm.IDRFile.ROI[iROI].InUse then begin
+        for iROI := 1 to MainFrm.IDRFile.MaxROIInUse do if MainFrm.IDRFile.ROI[iROI].InUse then
+            begin
 
             // Save in buffer
             j := (ROITCSpacing*(iROI-1)) + ((iFrame-1)*NumFrameTypes) + iFrameType ;

@@ -27,6 +27,7 @@ unit ExportImagesUnit;
 //              that time buffers are updated when files changed to
 //              avoid access violations.
 // 20.11.19 ... Export folder can now be selected by user
+// 17.04.26 ... Export folder now selected using TFileOpenDialog
 
 interface
 
@@ -454,14 +455,30 @@ var
     Options : TSelectDirOpts ;
 begin
 
-     ChosenDir := MainFrm.ExportDirectory ;
-     if FileCtrl.SelectDirectory( ChosenDir, Options, 0 ) then
-        begin
-        MainFrm.ExportDirectory := ChosenDir ;
-        lbExportDirectory.Caption := MainFrm.ExportDirectory ;
-        end;
+    if Win32MajorVersion >= 6 then
+       begin
+       with TFileOpenDialog.Create(nil) do
+          try
 
-     end;
+          Title := 'Select folder:';
+          Options := [fdoAllowMultiSelect, fdoPickFolders, fdoPathMustExist, fdoForceFileSystem];
+          OkButtonLabel := 'Select';
+          DefaultFolder := MainFrm.ExportDirectory ;
+          FileName := MainFrm.ExportDirectory ;
+          if Execute then MainFrm.ExportDirectory := Filename;
+
+          finally
+            Free;
+            end;
+       end
+    else
+       begin
+       ChosenDir := MainFrm.ExportDirectory ;
+       if FileCtrl.SelectDirectory( ChosenDir, Options, 0 ) then MainFrm.ExportDirectory := ChosenDir ;
+       end;
+
+  lbExportDirectory.Caption := MainFrm.ExportDirectory ;
+  end;
 
 
 procedure TExportImagesFrm.bSelectFilesToExportClick(Sender: TObject);

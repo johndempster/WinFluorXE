@@ -13,12 +13,10 @@ object AverageFrm: TAverageFrm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsMDIChild
-  OldCreateOrder = False
   Position = poMainFormCenter
   Visible = True
   OnClose = FormClose
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object GroupBox2: TGroupBox
     Left = 8

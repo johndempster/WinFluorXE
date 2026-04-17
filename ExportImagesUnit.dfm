@@ -12,10 +12,8 @@ object ExportImagesFrm: TExportImagesFrm
   Font.Height = -11
   Font.Name = 'Arial'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDesigned
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 14
   object GroupBox2: TGroupBox
     Left = 8
@@ -373,7 +371,7 @@ object ExportImagesFrm: TExportImagesFrm
     object lbExportDirectory: TLabel
       Left = 229
       Top = 98
-      Width = 276
+      Width = 30
       Height = 14
       Caption = 'xxxxx'
     end

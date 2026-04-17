@@ -14,13 +14,14 @@ unit ExportROITImeCourseUnit;
 // 07.11.17 Computed range of ratio and Ca time courses now prevented from being zero.
 // 09.07.18 ROIs now exported in episodic file format for ABF,WCP and CFS. EDR no longer supported
 // 20.11.19 ... Export folder can now be selected by user
+// 17.04.26 ... Export folder now selected using TFileOpenDialog
 
 interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ADCDataFile, StdCtrls, RangeEdit, ExtCtrls, math, labiounit,
-  ValidatedEdit, UITYpes, MATFileWRiterUnit ;
+  ValidatedEdit, UITYpes, MATFileWRiterUnit, CurveFitter ;
 
 type
   TExportROITimeCourseFrm = class(TForm)
@@ -62,6 +63,9 @@ type
     bClearList: TButton;
     bSelectDestination: TButton;
     lbExportDirectory: TLabel;
+    ckDFbyF0: TCheckBox;
+    ckRemoveBleach: TCheckBox;
+    CurveFitter: TCurveFitter;
     procedure FormShow(Sender: TObject);
     procedure bOKClick(Sender: TObject);
     procedure bSelectFilesToExportClick(Sender: TObject);
@@ -90,6 +94,13 @@ type
           ROIList : Array of Integer ;            // List of ROI numbers
           NumRecords : Integer                   // No. of records in file
           ) ;
+
+    procedure CalculateDFbyF0(
+          yBuf : PBigSingleArray ;                  // ROI fluorescence time course buffer
+          nPoints : Integer ;                       // No. of datav points i  yBuf
+          nROIs : Integer ) ;                       // No. of ROIs in yBuf
+
+
 
   public
     { Public declarations }
@@ -177,11 +188,13 @@ procedure TExportROITimeCourseFrm.ExportFiles ;
 // --------------------------------------------------------------------
 // Copy selected ROI time courses of data files in list to export file
 // --------------------------------------------------------------------
+const
+    F0NumAvg = 10 ;
 var
-   StartAt,EndAt,i : Integer ;
+   StartAt,EndAt,i,j : Integer ;
    iROI,SubROI,SelFrameType,NumFrameType,DenFrameType : Integer ;
    nPoints : Integer ;
-   iFrame : Integer ;
+   iFrame,nFrames : Integer ;
    iList : Integer ;
    yBuf : PBigSingleArray ;        // Y data array
    ExportType : TADCDataFileType ;
@@ -197,7 +210,8 @@ begin
 
      bOK.Enabled := False ;
 
-     for iFile := 0 to meFiles.Lines.Count-1 do begin
+     for iFile := 0 to meFiles.Lines.Count-1 do
+         begin
 
          // Close existing file
          MainFrm.IDRFile.CloseFile ;
@@ -328,6 +342,15 @@ begin
                  Inc(nPoints) ;
                  end ;
 
+         //
+         // Convert yBuf to dF/F0 if required)
+         //
+        if rbExportROI.Checked and ckdFbyF0.checked then
+            begin
+            CalculateDFbyF0( yBuf, nPoints, NumROIsExported ) ;
+            end;
+
+
          // If destination file already exists, allow user to abort
          AllowWrite := True ;
          if FileExists( FileName ) then
@@ -340,9 +363,7 @@ begin
             if rbMat.Checked then WriteToMatFile( FileName,yBuf, nPoints,NumROIsExported )
             else WriteToFile( FileName, ExportType, yBuf, NumFramesExported,NumROIsExported, ROIExportList,NumRecords) ;
             // Report progress
-            MainFrm.StatusBar.SimpleText := format(
-                                           ' EXPORT: %d points exported to %s ',
-                                          [EndAt-StartAt+1,FileName]) ;
+            MainFrm.StatusBar.SimpleText := format(' EXPORT: %d points exported to %s ',[EndAt-StartAt+1,FileName]) ;
             LogFrm.AddLine( MainFrm.StatusBar.SimpleText ) ;
             end;
 
@@ -358,6 +379,113 @@ begin
      if MainFrm.FormExists( 'ViewFrm' ) then ViewFrm.NewFile ;
 
      end ;
+
+
+procedure TExportROITimeCourseFrm.CalculateDFbyF0(
+          yBuf : PBigSingleArray ;                  // ROI fluorescence time course buffer
+          nPoints : Integer ;                       // No. of datav points i  yBuf
+          nROIs : Integer ) ;                       // No. of ROIs in yBuf
+// ----------------------
+// Remove bleaching trend
+// ----------------------
+const
+    F0NumAvg = 10 ;
+var
+    iROI,iFrame,nFrames,j,nAvg,iFMin : Integer ;
+    FStart,FEnd,F0,FSlope,FMin : single ;
+    yROI : PBigSingleArray ;
+begin
+
+    nFrames := nPoints div nROIs ;
+    yROI := AllocMem( nFrames*SizeOf(Single)) ;
+
+    for iROI := 0 to nROIs-1 do
+        begin
+
+        // Extract ROI time course
+        FMin := 32767 ;
+        for iFrame := 0 to nFrames - 1 do
+             begin
+             j := iFrame*nROIs + iROI ;
+             yROI[iFrame] := yBuf[j] ;
+             if FMin > yROI[iFrame] then
+                begin
+                iFMin := iFrame ;
+                FMin := yROI[iFrame] ;
+                end;
+             end;
+
+        // Calculate FStart (initial fluorescence in time course)
+        FStart := 0.0 ;
+        nAvg := 0 ;
+        for iFrame := 0 to Min(F0NumAvg - 1,nFrames-1) do
+            begin
+            FStart := FStart + yROI[iFrame] ;
+            Inc(nAvg) ;
+            end;
+        FStart := FStart / Max(nAvg,1) ;
+
+        // Calculate FEnd (final fluorescence in time course)
+        FEnd := 0.0 ;
+        nAvg := 0 ;
+        for iFrame := nFrames-1 downto Max(nFrames - F0NumAvg,0) do
+            begin
+            FEnd := FEnd + yROI[iFrame] ;
+            Inc(nAvg) ;
+            end;
+        FEnd := FEnd / Max(nAvg,1) ;
+
+        if ckRemoveBleach.Checked and (FMin/FStart < 0.99) then
+           begin
+
+           CurveFitter.Equation := Exponential ;
+           CurveFitter.ClearPoints ;
+           for iFrame := 0 to Max(iFMin,nFrames div 2) do
+               begin
+               CurveFitter.AddPoint(iFrame, YROI[iFrame] ) ;
+               end ;
+           CurveFitter.Parameters[2] := FMin ;              // Steady-state
+           CurveFitter.Parameters[0] := FStart - FMin ;     // Amplitude
+           CurveFitter.Parameters[1] := nFrames ;           // Time constant
+           CurveFitter.FitCurve ;
+
+//         if CurveFitter.GoodFit then
+//            begin
+//            outputdebugstring(pchar(format('%d %.4g %.4g %.4g',[iROI,CurveFitter.Parameters[0],CurveFitter.Parameters[1],CurveFitter.Parameters[2]]))) ;
+//            end
+//         else outputdebugstring(pchar(format('%d Bad',[iROI]))) ;
+
+           for iFrame := 0 to nFrames -1 do
+               begin
+               if CurveFitter.GoodFit then F0 := CurveFitter.EquationValue(iFrame)
+                                      else F0 := FStart ;
+               yROI[iFrame] := yROI[iFrame]/Max(F0,1.0) ;
+               end;
+           end
+        else
+           begin
+           // Don't remove bleaching
+           FEnd := FStart ;
+           for iFrame := 0 to nFrames -1 do
+               begin
+               F0 := FStart ;
+               yROI[iFrame] := yROI[iFrame]/Max(F0,1.0) ;
+               end;
+           end;
+
+        // Update ROI time course buffer
+        for iFrame := 0 to nFrames -1 do
+             begin
+             j := iFrame*nROIs + iROI ;
+             yBuf[j] := yROI[iFrame] ;
+             end;
+
+        end;
+
+    FreeMem( yROI ) ;
+
+end;
+
 
 procedure TExportROITimeCourseFrm.WriteToMATFile(
           FileName : string ;
@@ -450,6 +578,7 @@ begin
     ExportFile.ABFAcquisitionMode := ftEpisodic ;
     ExportFile.MaxADCValue := 32767 ;
     ExportFile.MinADCValue := -ExportFile.MaxADCValue ;
+//    ExportFile.WCPRecordAccepted := True ;
 
     // Allocate buffer
     GetMem( OutBuf, NumFramesExported*NumROIsExported*SizeOf(SmallInt)) ;
@@ -510,14 +639,31 @@ var
     Options : TSelectDirOpts ;
 begin
 
-     ChosenDir := MainFrm.ExportDirectory ;
-     if FileCtrl.SelectDirectory( ChosenDir, Options, 0 ) then
-        begin
-        MainFrm.ExportDirectory := ChosenDir ;
-        lbExportDirectory.Caption := MainFrm.ExportDirectory ;
-        end;
+    if Win32MajorVersion >= 6 then
+       begin
+       with TFileOpenDialog.Create(nil) do
+          try
 
-     end;
+          Title := 'Select folder:';
+          Options := [fdoAllowMultiSelect, fdoPickFolders, fdoPathMustExist, fdoForceFileSystem];
+          OkButtonLabel := 'Select';
+          DefaultFolder := MainFrm.ExportDirectory ;
+          FileName := MainFrm.ExportDirectory ;
+          if Execute then MainFrm.ExportDirectory := Filename;
+
+          finally
+            Free;
+            end;
+       end
+    else
+       begin
+       ChosenDir := MainFrm.ExportDirectory ;
+       if FileCtrl.SelectDirectory( ChosenDir, Options, 0 ) then MainFrm.ExportDirectory := ChosenDir ;
+       end;
+
+  lbExportDirectory.Caption := MainFrm.ExportDirectory ;
+  end;
+
 
 procedure TExportROITimeCourseFrm.bSelectFilesToExportClick(Sender: TObject);
 // ----------------------------

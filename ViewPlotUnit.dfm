@@ -3,8 +3,8 @@ object ViewPlotFrm: TViewPlotFrm
   Left = 641
   Top = 362
   Caption = 'Time Course Plots (File)'
-  ClientHeight = 453
-  ClientWidth = 598
+  ClientHeight = 451
+  ClientWidth = 594
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -23,8 +23,8 @@ object ViewPlotFrm: TViewPlotFrm
   OnShow = FormShow
   TextHeight = 13
   object scFLDisplay: TScopeDisplay
-    Left = 128
-    Top = 5
+    Left = 146
+    Top = 8
     Width = 273
     Height = 60
     OnMouseDown = scFLDisplayMouseDown
@@ -66,8 +66,8 @@ object ViewPlotFrm: TViewPlotFrm
     FontSize = 8
   end
   object scRDisplay: TScopeDisplay
-    Left = 128
-    Top = 72
+    Left = 146
+    Top = 74
     Width = 265
     Height = 49
     OnMouseDown = scRDisplayMouseDown
@@ -109,8 +109,8 @@ object ViewPlotFrm: TViewPlotFrm
     FontSize = 8
   end
   object scADCDisplay: TScopeDisplay
-    Left = 128
-    Top = 124
+    Left = 146
+    Top = 121
     Width = 273
     Height = 73
     OnMouseDown = scADCDisplayMouseDown
@@ -252,8 +252,8 @@ object ViewPlotFrm: TViewPlotFrm
     end
   end
   object sbDisplay: TScrollBar
-    Left = 128
-    Top = 200
+    Left = 146
+    Top = 199
     Width = 321
     Height = 17
     PageSize = 0
@@ -263,7 +263,7 @@ object ViewPlotFrm: TViewPlotFrm
   object FluorGrp: TGroupBox
     Left = 8
     Top = 5
-    Width = 113
+    Width = 132
     Height = 122
     Caption = ' Display '
     TabOrder = 3
@@ -331,9 +331,9 @@ object ViewPlotFrm: TViewPlotFrm
       OnClick = ckDisplayFluorescenceClick
     end
     object bUpdateFLTimeCourse: TButton
-      Left = 16
-      Top = 93
-      Width = 87
+      Left = 20
+      Top = 94
+      Width = 105
       Height = 17
       Hint = 
         'Re-compute all fluorescence time course data (may take several m' +
@@ -350,11 +350,41 @@ object ViewPlotFrm: TViewPlotFrm
       TabOrder = 3
       OnClick = bUpdateFLTimeCourseClick
     end
+    object bROIPrevious: TButton
+      Left = 107
+      Top = 40
+      Width = 18
+      Height = 22
+      Caption = '5'
+      Font.Charset = SYMBOL_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Webdings'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 4
+      OnClick = bROIPreviousClick
+    end
+    object bROINext: TButton
+      Left = 107
+      Top = 65
+      Width = 18
+      Height = 22
+      Caption = '6'
+      Font.Charset = SYMBOL_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'Webdings'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 5
+      OnClick = bROINextClick
+    end
   end
   object RatioGrp: TGroupBox
     Left = 8
     Top = 133
-    Width = 113
+    Width = 132
     Height = 153
     TabOrder = 4
     object Label3: TLabel
@@ -459,13 +489,13 @@ object ViewPlotFrm: TViewPlotFrm
   object ADCGrp: TGroupBox
     Left = 8
     Top = 292
-    Width = 113
+    Width = 132
     Height = 69
     TabOrder = 5
     object ckDisplayADC: TCheckBox
-      Left = 8
+      Left = 3
       Top = 12
-      Width = 100
+      Width = 122
       Height = 20
       Caption = 'A/D Channels'
       Checked = True
@@ -484,7 +514,7 @@ object ViewPlotFrm: TViewPlotFrm
   object Timer: TTimer
     Interval = 55
     OnTimer = TimerTimer
-    Left = 136
+    Left = 160
     Top = 232
   end
 end

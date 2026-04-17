@@ -4,7 +4,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   Top = 229
   BorderStyle = bsDialog
   Caption = 'Export ROI Time Course'
-  ClientHeight = 297
+  ClientHeight = 382
   ClientWidth = 544
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -12,16 +12,14 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   Font.Height = -11
   Font.Name = 'MS Sans Serif'
   Font.Style = []
-  OldCreateOrder = False
   Position = poDesigned
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object GroupBox8: TGroupBox
     Left = 8
     Top = 130
     Width = 129
-    Height = 90
+    Height = 199
     Caption = ' Frames '
     TabOrder = 0
     object rbAllRecords: TRadioButton
@@ -76,10 +74,10 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     end
   end
   object GroupBox2: TGroupBox
-    Left = 392
-    Top = 130
+    Left = 390
+    Top = 133
     Width = 97
-    Height = 149
+    Height = 196
     Caption = '  Format '
     TabOrder = 1
     object rbABF: TRadioButton
@@ -183,7 +181,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   end
   object bOK: TButton
     Left = 8
-    Top = 229
+    Top = 333
     Width = 50
     Height = 20
     Caption = 'OK'
@@ -199,7 +197,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
   end
   object bCancel: TButton
     Left = 64
-    Top = 229
+    Top = 333
     Width = 50
     Height = 17
     Caption = 'Cancel'
@@ -216,7 +214,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     Left = 144
     Top = 130
     Width = 113
-    Height = 149
+    Height = 199
     Caption = ' ROI '
     TabOrder = 4
     object ROIGrp: TGroupBox
@@ -301,21 +299,21 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     end
   end
   object RatioGrp: TGroupBox
-    Left = 264
-    Top = 130
+    Left = 263
+    Top = 133
     Width = 121
-    Height = 150
+    Height = 196
     Caption = ' Wavelength'
     TabOrder = 5
     object Shape2: TShape
-      Left = 30
-      Top = 87
+      Left = 29
+      Top = 135
       Width = 81
       Height = 2
     end
     object Label5: TLabel
-      Left = 8
-      Top = 114
+      Left = 13
+      Top = 165
       Width = 57
       Height = 28
       Alignment = taRightJustify
@@ -330,7 +328,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     end
     object cbDenominator: TComboBox
       Left = 28
-      Top = 92
+      Top = 140
       Width = 85
       Height = 21
       Hint = 'Wavelength channel in denominator of ratio'
@@ -341,7 +339,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     end
     object cbNumerator: TComboBox
       Left = 28
-      Top = 62
+      Top = 111
       Width = 85
       Height = 21
       Hint = 'Wavelength channel in numerator of ratio'
@@ -352,7 +350,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     end
     object rbExportROI: TRadioButton
       Left = 8
-      Top = 16
+      Top = 20
       Width = 17
       Height = 17
       Checked = True
@@ -367,7 +365,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     end
     object rbExportRatio: TRadioButton
       Left = 8
-      Top = 44
+      Top = 88
       Width = 73
       Height = 17
       Hint = 'Export wavelength channel ratio'
@@ -394,9 +392,9 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       Text = 'cbROI'
     end
     object edExclusionThreshold: TValidatedEdit
-      Left = 72
-      Top = 120
-      Width = 41
+      Left = 76
+      Top = 167
+      Width = 37
       Height = 21
       Hint = 
         'Exclusion Threshold: Ratio set to zero if fluorescence signal fa' +
@@ -407,6 +405,44 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       NumberFormat = '%.4g'
       LoLimit = 1.000000000000000000
       HiLimit = 1.000000015047466E30
+    end
+    object ckDFbyF0: TCheckBox
+      Left = 50
+      Top = 41
+      Width = 65
+      Height = 22
+      Hint = 
+        'Save as fractional change in cell fluorescence relative to initi' +
+        'al fluoresence'
+      Alignment = taLeftJustify
+      Caption = 'dF / F(0)'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 6
+    end
+    object ckRemoveBleach: TCheckBox
+      Left = 0
+      Top = 60
+      Width = 115
+      Height = 22
+      Hint = 'Remove fluorescent dye bleaching trends'
+      Alignment = taLeftJustify
+      Caption = 'Remove Bleach'
+      Font.Charset = ANSI_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -12
+      Font.Name = 'Arial'
+      Font.Style = [fsBold]
+      ParentFont = False
+      ParentShowHint = False
+      ShowHint = True
+      TabOrder = 7
     end
   end
   object FilesToExportGrp: TGroupBox
@@ -466,8 +502,8 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
       OnClick = bClearListClick
     end
     object bSelectDestination: TButton
-      Left = 229
-      Top = 76
+      Left = 228
+      Top = 75
       Width = 125
       Height = 17
       Hint = 'Select folder to hold exported files'
@@ -494,7 +530,7 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     RecordNum = 0
     NumFileHeaderBytes = 0
     WCPNumZeroAvg = 0
-    WCPRecordAccepted = False
+    WCPRecordAccepted = True
     ABFAcquisitionMode = ftGapFree
     EDREventDetectorChannel = 0
     EDREventDetectorRecordSize = 0
@@ -507,15 +543,22 @@ object ExportROITimeCourseFrm: TExportROITimeCourseFrm
     ASCIITitleLines = 2
     ASCIIFixedRecordSize = False
     ASCIISaveRecordsinColumns = False
-    Left = 16
-    Top = 240
+    Left = 168
+    Top = 336
   end
   object SaveDialog: TSaveDialog
-    Left = 88
-    Top = 240
+    Left = 264
+    Top = 448
   end
   object OpenDialog: TOpenDialog
-    Left = 104
-    Top = 240
+    Left = 208
+    Top = 336
+  end
+  object CurveFitter: TCurveFitter
+    Equation = Exponential
+    ParametersSet = False
+    UseBinWidths = False
+    Left = 272
+    Top = 336
   end
 end

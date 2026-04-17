@@ -76,6 +76,7 @@ unit ViewUnit;
 // 19.01.15 Frame time now has 3 fixed decimal places
 // 16.09.15 .. JD Form position/size saved by MainFrm.SaveFormPosition() when form closed
 // 06.10.22 .. JD ROI list now saved as comma delmited rather than tab delimited text
+// 16.04.26 .. JD drag whole ROI mode now enabled when cursor over centre of live ROI
 
 
 interface
@@ -164,6 +165,7 @@ type
     Label6: TLabel;
     cbDisplayZoom: TComboBox;
     IDRBackground: TIDRFile;
+    bFindCells: TButton;
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
@@ -221,6 +223,7 @@ type
     procedure ckAutoOptimiseClick(Sender: TObject);
     procedure ControlsGrpClick(Sender: TObject);
     procedure ckContrast6SDOnlyClick(Sender: TObject);
+    procedure bFindCellsClick(Sender: TObject);
   private
     { Private declarations }
 
@@ -327,6 +330,8 @@ type
                ) ;              // Scaling factor (IN)
     procedure LoadROIsFromFile( FileName : String ) ;
     procedure SaveROIsToFile( FileName : String ) ;
+    procedure RefreshROILists ;
+
     procedure CopyImageToClipboard ;
     procedure PrintImage ;
 
@@ -339,7 +344,7 @@ var
 implementation
 
 uses Main, maths, LabIOUnit, TimeCourseUnit, EventAnalysisUnit, PrintRec, LogUnit,
-  ViewPlotUnit, RecPlotUnit, EditROIUnit, SpectrumUnit;
+  ViewPlotUnit, RecPlotUnit, EditROIUnit, SpectrumUnit, FindCellsUnit ;
 
 {$R *.DFM}
 type
@@ -564,8 +569,7 @@ begin
 
      // Set intensity range and sliders
 
-     SetDisplayIntensityRange( MainFrm.GreyLo[SelectedFrameType],
-                               MainFrm.GreyHi[SelectedFrameType] ) ;
+     SetDisplayIntensityRange( MainFrm.GreyLo[SelectedFrameType], MainFrm.GreyHi[SelectedFrameType] ) ;
 
      for i := 0 to NumFrameTypes-1 do begin
          MainFrm.UpdateLUT( i, MainFrm.IDRFile.GreyMax ) ;
@@ -573,7 +577,8 @@ begin
 
      // Allocate storage for image raw data buffers
      for i := 0 to High(pImageBufs) do
-         if pImageBufs[i] <> Nil then begin
+         if pImageBufs[i] <> Nil then
+            begin
             FreeMem(pImageBufs[i]) ;
             pImageBufs[i] := Nil ;
             end ;
@@ -581,7 +586,8 @@ begin
          GetMem( pImageBufs[i], MainFrm.IDRFile.NumPixelsPerFrame*SizeOf(Integer) ) ;
 
      // Dispose of existing background buffers and create new ones
-     for i := 0 to High(PBackgroundBufs) do if PBackgroundBufs[i] <> Nil then begin
+     for i := 0 to High(PBackgroundBufs) do if PBackgroundBufs[i] <> Nil then
+         begin
          Try
             FreeMem(PBackgroundBufs[i]) ;
             PBackgroundBufs[i] := Nil ;
@@ -590,16 +596,19 @@ begin
             end ;
           end ;
 
-     for FT := 0 to NumFrameTypes-1 do begin
+     for FT := 0 to NumFrameTypes-1 do
+         begin
          GetMem( PBackgroundBufs[FT],NumPixelsPerFrame*SizeOf(Integer) ) ;
          for i := 0 to NumPixelsPerFrame-1 do PBackgroundBufs[FT]^[i] := 0 ;
          end ;
 
      // Load background file (if it exists)
      BackgroundFileName := ANSIReplaceText(MainFrm.IDRFile.FileName,'.idr','[BACKG].idr') ;
-     if FileExists(BackgroundFileName) then begin
+     if FileExists(BackgroundFileName) then
+        begin
         IDRBackground.OpenFile(BackgroundFileName) ;
-        for i := 0 to NumFrameTypes-1 do begin
+        for i := 0 to NumFrameTypes-1 do
+            begin
             IDRBackground.LoadFrame32( i+1, pBackGroundBufs[i] ) ;
             end ;
         IDRBackground.CloseFile ;
@@ -843,7 +852,8 @@ begin
      TimerBusy := True ;
 
      // Play frame forwards
-     if not bForwards.Enabled then begin
+     if not bForwards.Enabled then
+        begin
         if sbFrameNum.Position < sbFrameNum.Max then begin
            sbFrameNum.Position := sbFrameNum.Position + 1 ;
            end
@@ -851,7 +861,8 @@ begin
         end ;
 
      // Play frame forwards
-     if not bBackwards.Enabled then begin
+     if not bBackwards.Enabled then
+        begin
         if sbFrameNum.Position > 0 then
            sbFrameNum.Position := sbFrameNum.Position - 1
         else bBackwards.Enabled := True ;
@@ -859,7 +870,8 @@ begin
 
      if NewFileNeeded then NewFile ;
 
-     if CurrentPosition <> sbFrameNum.Position then begin
+     if CurrentPosition <> sbFrameNum.Position then
+        begin
 
         CurrentPosition := sbFrameNum.Position ;
 
@@ -867,22 +879,25 @@ begin
         FrameTime := (CurrentPosition + (NumFrameTypes-1) )*MainFrm.IDRFile.FrameInterval ;
         edFrameTime.Text := format( ' %.3f %s',[FrameTime*MainFrm.TScale,MainFrm.TUnits]) ;
 
-        for iFrameType := 0 to NumFrameTypes - 1 do begin
+        for iFrameType := 0 to NumFrameTypes - 1 do
+            begin
 
             if (pImageBufs[iFrameType] = Nil) then Break ;
 
             // Get frame from data file
-            OK := MainFrm.IDRFile.LoadFrame32( FrameList^[(CurrentPosition-1)*NumFrameTypes+iFrameType],
-                                               pImageBufs[iFrameType] ) ;
+            OK := MainFrm.IDRFile.LoadFrame32( FrameList^[(CurrentPosition-1)*NumFrameTypes+iFrameType],pImageBufs[iFrameType] ) ;
 
             // Subtract shading correction
-            if ckBackgroundSubtraction.Checked then begin
-               for i := 0 to NumPixelsPerFrame-1 do begin
+            if ckBackgroundSubtraction.Checked then
+               begin
+               for i := 0 to NumPixelsPerFrame-1 do
+                   begin
                    pImageBufs[iFrameType]^[i] := pImageBufs[iFrameType]^[i] - PBackgroundBufs[iFrameType]^[i] ;
                    end ;
                end ;
 
-            if OK then begin
+            if OK then
+               begin
 
                // Display frame in appropriate area
                if DisplayZoom < 1.0 then
@@ -1320,7 +1335,8 @@ begin
      // Scale active ROI into bitmap coordinates
      LiveROI := MainFrm.IDRFile.ROI[0] ;
 
-     if (not MouseDown) then begin
+     if (not MouseDown) then
+        begin
 
          // Not in move mode - determine whether mouse is over ROI
 
@@ -1417,8 +1433,8 @@ begin
 
               else begin
                   // Other ROI types
-                   if (TopEdge <= Y) and (Y <= BottomEdge) and
-                      (LeftEdge <= X) and (X <= RightEdge) then begin
+                   if (TopEdge <= Y) and (Y <= BottomEdge) and (LeftEdge <= X) and (X <= RightEdge) then
+                      begin
 
                       OverLeftEdge := False ;
                       OverRightEdge := False ;
@@ -1429,39 +1445,54 @@ begin
                       if Abs(Y-LiveROI.TopLeft.Y) <= Margin then OverTopEdge := True
                       else if Abs(Y-LiveROI.BottomRight.Y) <= Margin then OverBottomEdge := True ;
 
-                      if OverLeftEdge then begin
-                         if OverTopEdge then begin
+                      if (Abs(X - LiveROI.Centre.X) <= 1) and (Abs(Y - LiveROI.Centre.Y) <= 1) then
+                         begin
+                         NewCursor := crDrag ;
+                         MoveMode := mvAll ;
+                         end
+                      else if OverLeftEdge then
+                         begin
+                         if OverTopEdge then
+                            begin
                             NewCursor := crSizeNWSE ;
                             MoveMode := mvTopLeft ;
                             end
-                         else if OverBottomEdge then begin
+                         else if OverBottomEdge then
+                            begin
                             NewCursor := crSizeNESW ;
                             MoveMode := mvBottomLeft ;
                             end
-                         else begin
+                         else
+                            begin
                             NewCursor := crSizeWE ;
                             MoveMode := mvLeftEdge ;
                             end ;
                          end
-                      else if OverRightEdge then begin
-                         if OverTopEdge then begin
+                      else if OverRightEdge then
+                         begin
+                         if OverTopEdge then
+                            begin
                             NewCursor := crSizeNESW ;
                             MoveMode := mvTopRight ;
                             end
-                         else if OverBottomEdge then begin
+                         else if OverBottomEdge then
+                            begin
                             NewCursor := crSizeNWSE ;
                             MoveMode := mvBottomRight ;
                             end
-                         else begin
+                         else
+                            begin
                             NewCursor := crSizeWE ;
                             MoveMode := mvRightEdge ;
                             end ;
                          end
-                      else if OverBottomEdge then begin
+                      else if OverBottomEdge then
+                         begin
                          NewCursor := crSizeNS ;
                          MoveMode := mvBottomEdge ;
                          end
-                      else if OverTopEdge then begin
+                      else if OverTopEdge then
+                         begin
                          NewCursor := crSizeNS ;
                          MoveMode := mvTopEdge ;
                          end
@@ -1589,7 +1620,8 @@ var
     ROI : TROI ;
 begin
 
-    for iFrameType := 0 to NumFrameTypes-1 do if BitMaps[iFrameType] <> Nil then begin
+    for iFrameType := 0 to NumFrameTypes-1 do if BitMaps[iFrameType] <> Nil then
+        begin
 
         // Copy image from internal bitmap to image control
         Images[iFrameType].Picture.Assign(BitMaps[iFrameType]) ;
@@ -1603,8 +1635,10 @@ begin
         Images[iFrameType].Canvas.TextOut( 0,0, FrameTypes[iFrameType] ) ;
 
         // Draw ROI live cursor
-        if LiveROINum > 0 then begin
-           if MainFrm.IDRFile.ROI[LiveROINum].InUse then begin
+        if LiveROINum > 0 then
+           begin
+           if MainFrm.IDRFile.ROI[LiveROINum].InUse then
+              begin
               Images[iFrameType].Canvas.Pen.Width := 2 ;
               ScaleROI( MainFrm.IDRFile.ROI[0], ROI ) ;
               DrawROI(ROI,0,Images[iFrameType].Canvas) ;
@@ -1613,7 +1647,8 @@ begin
 
         // Display regions of interest
         Images[iFrameType].Canvas.Pen.Width := 1 ;
-        for i := 1 to MainFrm.IDRFile.MaxROI do if MainFrm.IDRFile.ROI[i].InUse then begin
+        for i := 1 to MainFrm.IDRFile.MaxROI do if MainFrm.IDRFile.ROI[i].InUse then
+            begin
             Images[iFrameType].Canvas.Pen.Width := 1 ;
             ScaleROI( MainFrm.IDRFile.ROI[i], ROI ) ;
             DrawROI(ROI,i,Images[iFrameType].Canvas) ;
@@ -1636,45 +1671,53 @@ procedure TViewFrm.DrawROI(
 // -----------------------------------
 const
     CrossHairSize = 6 ;
+var
+    OldColor : TColor ;
 begin
 
-//     OldColor := Canvas.Pen.Color ;
+//
 //     if ROINum = 0 then Canvas.Pen.Color := clWhite
 //                   else Canvas.Pen.Color := clWhite ;
+
+     // Set pen colour of ROIs to best contrast against image
+
+     OldColor := Canvas.Pen.Color ;
+  {   case Integer(cbPalette.Items.Objects[cbPalette.ItemIndex]) of
+        Integer(palGrey) :
+           begin
+           Canvas.Pen.Color := clRed ;
+           Canvas.Font.Color := clRed ;
+           end;
+        Integer(palGreen) :
+           begin
+           Canvas.Pen.Color := clRed ;
+           Canvas.Font.Color := clRed ;
+           end;
+     end;}
 
      Case ROI.Shape of
 
           PointROI : begin
              // Draw cross-hairs
-             Canvas.PolyLine( [Point(ROI.Centre.X, ROI.Centre.Y + CrossHairSize ),
-                               Point(ROI.Centre.X, ROI.Centre.Y - CrossHairSize) ] ) ;
-             Canvas.PolyLine( [Point(ROI.Centre.X + CrossHairSize, ROI.Centre.Y),
-                               Point(ROI.Centre.X - CrossHairSize, ROI.Centre.Y) ] ) ;
+             Canvas.PolyLine( [Point(ROI.Centre.X, ROI.Centre.Y + CrossHairSize ), Point(ROI.Centre.X, ROI.Centre.Y - CrossHairSize) ] ) ;
+             Canvas.PolyLine( [Point(ROI.Centre.X + CrossHairSize, ROI.Centre.Y), Point(ROI.Centre.X - CrossHairSize, ROI.Centre.Y) ] ) ;
              // Display index number
-             if ROINum > 0 then Canvas.TextOut( ROI.Centre.X,
-                                                 ROI.Centre.Y + CrossHairSize,
-                                                 format('%d',[ROINum])) ;
+             if ROINum > 0 then Canvas.TextOut( ROI.Centre.X,ROI.Centre.Y + CrossHairSize,format('%d',[ROINum])) ;
 
              end ;
 
           RectangleROI : begin
              // Draw rectangle
-             Canvas.Rectangle( ROI.TopLeft.X,     ROI.TopLeft.Y,
-                               ROI.BottomRight.X, ROI.BottomRight.Y ) ;
+             Canvas.Rectangle( ROI.TopLeft.X, ROI.TopLeft.Y, ROI.BottomRight.X, ROI.BottomRight.Y ) ;
              // Display index number
-             if ROINum > 0 then Canvas.TextOut( ROI.BottomRight.X,
-                                                 ROI.BottomRight.Y,
-                                                 format('%d',[ROINum])) ;
+             if ROINum > 0 then Canvas.TextOut( ROI.BottomRight.X, ROI.BottomRight.Y, format('%d',[ROINum])) ;
              end ;
 
           EllipseROI : begin
              // Draw ellipse
-             Canvas.Ellipse( ROI.TopLeft.X,     ROI.TopLeft.Y,
-                             ROI.BottomRight.X, ROI.BottomRight.Y ) ;
+             Canvas.Ellipse( ROI.TopLeft.X, ROI.TopLeft.Y, ROI.BottomRight.X, ROI.BottomRight.Y ) ;
              // Display index number
-             if ROINum > 0 then Canvas.TextOut( ROI.Centre.X,
-                                                 ROI.BottomRight.Y,
-                                                 format('%d',[ROINum])) ;
+             if ROINum > 0 then Canvas.TextOut( ROI.Centre.X,ROI.BottomRight.Y,format('%d',[ROINum])) ;
              end ;
 
           LineROI : begin
@@ -1682,22 +1725,25 @@ begin
              Canvas.Polyline( [ROI.TopLeft,ROI.BottomRight] ) ;
 
              // Display index number
-             if ROINum > 0 then Canvas.TextOut( ROI.BottomRight.X,
-                                                 ROI.BottomRight.Y,
-                                                 format('%d',[ROINum])) ;
+             if ROINum > 0 then Canvas.TextOut( ROI.BottomRight.X, ROI.BottomRight.Y, format('%d',[ROINum])) ;
              end ;
 
           PolylineROI,PolygonROI : begin
              Canvas.Polyline(Slice(ROI.XY, ROI.NumPoints));
-             if ROINum > 0 then Canvas.TextOut( ROI.XY[0].X,
-                                                ROI.XY[0].Y,
-                                                format('%d',[ROINum])) ;
+             if ROINum > 0 then Canvas.TextOut( ROI.XY[0].X,ROI.XY[0].Y,format('%d',[ROINum])) ;
              end ;
+
+          AreaROI : begin
+             Canvas.Rectangle( ROI.TopLeft.X, ROI.TopLeft.Y, ROI.BottomRight.X, ROI.BottomRight.Y ) ;
+//             Canvas.Rectangle( ROI.XY[0].X, ROI.XY[0].Y, ROI.XY[1].X, ROI.XY[1].Y ) ;
+             // Display index number
+             if ROINum > 0 then Canvas.TextOut( ROI.BottomRight.X, ROI.BottomRight.Y, format('%d',[ROINum])) ;
+             end;
 
           end ;
 
-//     Canvas.Pen.Color := OldColor ;
-     // Display ROI index number
+     Canvas.Pen.Color := OldColor ;
+     Canvas.Font.Color := OldColor ;
 
      end ;
 
@@ -1717,10 +1763,11 @@ begin
          DestROI.Shape := SrcROI.Shape ;
 
          DestROI.NumPoints := SrcROI.NumPoints ;
-         for i := 0 to SrcROI.NumPoints-1 do begin
+         for i := 0 to SrcROI.NumPoints-1 do
+             begin
              DestROI.XY[i].X := Round((SrcROI.XY[i].X- sbXScroll.Position)*DisplayZoom) ;
              DestROI.XY[i].Y := Round((SrcROI.XY[i].Y- sbYScroll.Position)*DisplayZoom) ;
-            end ;
+             end ;
 
          DestROI.TopLeft.x := Round((SrcROI.TopLeft.x - sbXScroll.Position)*DisplayZoom) ;
          DestROI.TopLeft.y := Round((SrcROI.TopLeft.y - sbYScroll.Position)*DisplayZoom) ;
@@ -1948,7 +1995,8 @@ begin
 
      // Get next free ROI array element
      iNewROI := -1 ;
-     for i :=  1 to MainFrm.IDRFile.MaxROI do if not MainFrm.IDRFile.ROI[i].InUse then begin
+     for i :=  1 to MainFrm.IDRFile.MaxROI do if not MainFrm.IDRFile.ROI[i].InUse then
+        begin
         iNewROI := i ;
         Break ;
         end ;
@@ -1961,9 +2009,11 @@ begin
      // Initial size of live region of interest
      ROI.Width :=  Round(Images[0].Width/(DisplayZoom*20.0)) ;
      ROI.Height := Round(Images[0].Width/(DisplayZoom*20.0)) ;
-      for i :=  1 to MainFrm.IDRFile.MaxROI do if MainFrm.IDRFile.ROI[i].InUse then begin
+      for i :=  1 to MainFrm.IDRFile.MaxROI do if MainFrm.IDRFile.ROI[i].InUse then
+          begin
           case MainFrm.IDRFile.ROI[i].Shape of
-              LineROI,RectangleROI,EllipseROI : begin
+              LineROI,RectangleROI,EllipseROI :
+                 begin
                  ROI.Width := MainFrm.IDRFile.ROI[i].Width ;
                  ROI.Height := MainFrm.IDRFile.ROI[i].Height ;
                  end ;
@@ -2002,7 +2052,8 @@ begin
      // Update regions of interest
      UpdateROIs ;
 
-     if CheckViewPlotFrmExists and (not roiaddPolyLineMode) then begin
+     if CheckViewPlotFrmExists and (not roiaddPolyLineMode) then
+        begin
         ViewPlotFrm.NewFLTimeCourseRequired ;
         ViewPlotFrm.UpdateROIList ;
         ViewPlotFrm.DisplayTimeCourse( CurrentPosition ) ;
@@ -2073,18 +2124,22 @@ var
      i : Integer ;
 begin
 
-     if cbDeleteROI.ItemIndex = 0 then begin
+     if cbDeleteROI.ItemIndex = 0 then
+        begin
         // Delete all ROIs
         if MessageDlg( 'Delete all ROI! Are you Sure? ', mtConfirmation,
-           [mbYes,mbNo], 0 ) = mrYes then begin
-           for i := 1 to MainFrm.IDRFile.MaxROI do begin
+           [mbYes,mbNo], 0 ) = mrYes then
+           begin
+           for i := 1 to MainFrm.IDRFile.MaxROI do
+               begin
                ROI := MainFrm.IDRFile.ROI[i] ;
                ROI.InUse := False ;
                MainFrm.IDRFile.ROI[i] := ROI ;
                end ;
            end ;
         end
-     else begin
+     else
+        begin
         // Delete selected ROI
         ROINum := Integer(cbDeleteROI.Items.Objects[cbDeleteROI.ItemIndex]) ;
         ROI := MainFrm.IDRFile.ROI[ROINum] ;
@@ -2092,19 +2147,7 @@ begin
         MainFrm.IDRFile.ROI[ROINum] := ROI ;
         end ;
 
-     // Update delete list
-     UpdateDeleteROIList ;
-
-     // Update regions of interest
-     UpdateROIs ;
-
-     if CheckViewPlotFrmExists then begin
-        ViewPlotFrm.NewFLTimeCourseRequired ;
-        ViewPlotFrm.UpdateROIList ;
-        ViewPlotFrm.DisplayTimeCourse( CurrentPosition ) ;
-        end ;
-
-     UpdateOtherForms ;
+     RefreshROILists ;
 
      end;
 
@@ -2118,11 +2161,24 @@ var
      ROI : TROI ;
 begin
 
-     for i := 1 to MainFrm.IDRFile.MaxROI do begin
+     for i := 1 to MainFrm.IDRFile.MaxROI do
+        begin
         ROI := MainFrm.IDRFile.ROI[i] ;
         ROI.InUse := False ;
         MainFrm.IDRFile.ROI[i] := ROI ;
         end ;
+
+     RefreshROILists ;
+
+     end ;
+
+
+procedure TViewFrm.RefreshROILists ;
+// -----------------------------------------------------------
+// Refresh ROI lists and request ROI time course recomputation
+// -----------------------------------------------------------
+
+begin
 
      // Update ROI delete list
      UpdateDeleteROIList ;
@@ -2130,7 +2186,8 @@ begin
      // Update regions of interest
      UpdateROIs ;
 
-     if CheckViewPlotFrmExists then begin
+     if CheckViewPlotFrmExists then
+        begin
         ViewPlotFrm.NewFLTimeCourseRequired ;
         ViewPlotFrm.UpdateROIList ;
         ViewPlotFrm.DisplayTimeCourse( CurrentPosition ) ;
@@ -2799,6 +2856,18 @@ begin
      bBackwards.Enabled := True ;
      end;
 
+procedure TViewFrm.bFindCellsClick(Sender: TObject);
+// ---------------------------
+// Open Find Cells windows
+// ---------------------------
+begin
+       FindCellsFrm := TFindCellsFrm.Create(Self) ;
+       FindCellsFrm.Top := ViewFrm.Top + 10 ;
+       FindCellsFrm.Left := ViewFrm.Left + 10 ;
+       bFindCells.Enabled := False ;
+end;
+
+
 procedure TViewFrm.bForwardsMouseDown(Sender: TObject;
   Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 // -------------------------------
@@ -2897,10 +2966,12 @@ begin
 
   // Double-clicking terminates addition of polyline and polygon ROIs
   // (If a polygon is being added, close bounding line
-  if ROIAddPolyLineMode and (MainFrm.IDRFile.ROI[0].Shape = PolygonROI) then begin
+  if ROIAddPolyLineMode and (MainFrm.IDRFile.ROI[0].Shape = PolygonROI) then
+     begin
      ROI := MainFrm.IDRFile.ROI[0] ;
      ROI.InUse := True ;
-     if ROI.NumPoints <= High(ROI.XY) then begin
+     if ROI.NumPoints <= High(ROI.XY) then
+        begin
         ROI.XY[ROI.NumPoints] := ROI.XY[0];
         ROI.NumPoints := ROI.NumPoints + 1 ;
         MainFrm.IDRFile.ROI[0] := ROI ;
@@ -2908,7 +2979,8 @@ begin
         end ;
 
      // Recalculate time course
-     if CheckViewPlotFrmExists then begin
+     if CheckViewPlotFrmExists then
+        begin
         ViewPlotFrm.NewFLTimeCourseRequired ;
         ViewPlotFrm.UpdateROIList ;
         ViewPlotFrm.DisplayTimeCourse( CurrentPosition ) ;
