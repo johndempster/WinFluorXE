@@ -455,6 +455,8 @@ var
     Options : TSelectDirOpts ;
 begin
 
+    if not System.SysUtils.DirectoryExists(MainFrm.ExportDirectory) then MainFrm.ExportDirectory := MainFrm.DataDirectory ;
+
     if Win32MajorVersion >= 6 then
        begin
        with TFileOpenDialog.Create(nil) do
