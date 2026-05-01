@@ -290,6 +290,8 @@ unit Main;
 // 23.09.24 V4.2.1 NimagDX support for USB3 Vision updated (support for mono12p,mono12paccked,mono10p,mono10packed
 //                 Tested with FLIR Blakfly camera
 // 14.06.25 V4.2.2 ViewPlotUnit: Polygon ROI area now computed correctly using 1 bit bitmap preventing access violations
+// 30.04.26 V4.2.4 Cell Finder: Area searched for cells now confined to region of image display in ViewFrm.
+//                 No. of ROIs increased to 2000. Reported no. of cells detected now matches no. of ROIs created
 //
 
 interface
@@ -903,7 +905,7 @@ var
      i,ch : Integer ;
 begin
 
-    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.2.2 16-06-25 ' ;
+    Caption := 'WinFluor : Fluorescence Image Capture & Analysis Program V4.2.4 01-05-26 ' ;
 {$IFDEF WIN64}
     Caption := Caption + '(64 bit) ';
 {$ELSE}

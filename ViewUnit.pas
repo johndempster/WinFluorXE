@@ -302,6 +302,11 @@ type
     FrameHeight : Integer ;
     CurrentPosition : Integer ;       // Current frame on display
     DisplayZoom : Single ;         // Display zoom factor (0.5,1.0,2.0)
+    DisplayLeft : Integer ;
+    DisplayTop : Integer ;
+    DisplayWidth : Integer ;
+    DisplayHeight : Integer ;
+
     BitMaps : Array[0..MaxFrameType] of TBitMap ;  // Image bitmaps
     pImageBufs : Array[0..MaxFrameType] of PIntArray ;  // Pointer to image buffers
     FrameTypes : Array[0..MaxFrameType] of string ;      // Frame labels
@@ -962,6 +967,12 @@ begin
 
     if (pImageBuf = Nil) or (BitMap = Nil) then Exit ;
 
+    DisplayLeft := sbXScroll.Position ;
+    DisplayWidth := Round( BitMap.Width / DisplayZoom ) ;
+    DisplayTop := sbYScroll.Position ;
+    DisplayHeight := Round( BitMap.Height / DisplayZoom ) ;
+
+
     Ybm := 0 ;
     Yim := sbYScroll.Position ;
     iStep := Round(1.0/DisplayZoom) ;
@@ -974,9 +985,7 @@ begin
       xBm := 0 ;
       XIm := sbXScroll.Position ;
       i := (Yim*MainFrm.IDRFile.FrameWidth) + XIm ;
-      while (Xbm < BitMap.Width) and
-            (XIm < MainFrm.IDRFile.FrameWidth) and
-            (i < NumPixelsPerFrame) do begin
+      while (Xbm < BitMap.Width) and (XIm < MainFrm.IDRFile.FrameWidth) and (i < NumPixelsPerFrame) do begin
           k := Max(Min(pImageBuf^[i],LUTSize-1),0) ;
           PScanLine[Xbm] := LUT[k] ;
           Inc(Xbm) ;
@@ -1034,10 +1043,14 @@ begin
 
     if (pImageBuf = Nil) or (BitMap = Nil) then Exit ;
 
+    DisplayLeft := sbXScroll.Position ;
+    DisplayWidth := Round( BitMap.Width / DisplayZoom ) ;
+    DisplayTop := sbYScroll.Position ;
+    DisplayHeight := Round( BitMap.Height / DisplayZoom ) ;
+
     // Index to start of image line in circular frame buffer
     Ybm := 0 ;
-    StartOfLine := (sbYScroll.Position*MainFrm.IDRFile.FrameWidth)
-                   + sbXScroll.Position ;
+    StartOfLine := (sbYScroll.Position*MainFrm.IDRFile.FrameWidth) + sbXScroll.Position ;
 
     for Yim := sbYScroll.Position to MainFrm.IDRFile.FrameHeight-1 do begin
 
@@ -2861,10 +2874,8 @@ procedure TViewFrm.bFindCellsClick(Sender: TObject);
 // Open Find Cells windows
 // ---------------------------
 begin
-       FindCellsFrm := TFindCellsFrm.Create(Self) ;
-       FindCellsFrm.Top := ViewFrm.Top + 10 ;
-       FindCellsFrm.Left := ViewFrm.Left + 10 ;
        bFindCells.Enabled := False ;
+       FindCellsFrm := TFindCellsFrm.Create( Self ) ;
 end;
 
 

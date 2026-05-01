@@ -28,8 +28,6 @@ object MainFrm: TMainFrm
     AutoHint = True
     Panels = <>
     SimplePanel = True
-    ExplicitTop = 647
-    ExplicitWidth = 984
   end
   object MainMenu1: TMainMenu
     Tag = 21

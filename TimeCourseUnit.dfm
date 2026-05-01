@@ -3,7 +3,7 @@ object TimeCourseFrm: TTimeCourseFrm
   Left = 548
   Top = 61
   Caption = 'Time Course Analysis'
-  ClientHeight = 652
+  ClientHeight = 688
   ClientWidth = 580
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
@@ -12,14 +12,12 @@ object TimeCourseFrm: TTimeCourseFrm
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   FormStyle = fsMDIChild
-  OldCreateOrder = False
   Position = poMainFormCenter
   Visible = True
   OnClose = FormClose
   OnCloseQuery = FormCloseQuery
   OnResize = FormResize
   OnShow = FormShow
-  PixelsPerInch = 96
   TextHeight = 13
   object plPlot: TXMultiYPlot
     Left = 202
@@ -67,11 +65,11 @@ object TimeCourseFrm: TTimeCourseFrm
     Left = 8
     Top = 4
     Width = 188
-    Height = 629
+    Height = 653
     TabOrder = 0
     object RangeGrp: TGroupBox
       Left = 8
-      Top = 512
+      Top = 532
       Width = 168
       Height = 65
       Caption = ' Plot Range '
@@ -129,7 +127,7 @@ object TimeCourseFrm: TTimeCourseFrm
       Left = 8
       Top = 8
       Width = 168
-      Height = 498
+      Height = 518
       Caption = ' ROI / Channel '
       TabOrder = 1
       object Label1: TLabel
@@ -175,13 +173,13 @@ object TimeCourseFrm: TTimeCourseFrm
       end
       object PlotGrp: TGroupBox
         Left = 8
-        Top = 316
+        Top = 321
         Width = 153
-        Height = 165
+        Height = 189
         TabOrder = 3
         object Shape1: TShape
           Left = 8
-          Top = 84
+          Top = 112
           Width = 137
           Height = 1
         end
@@ -218,8 +216,8 @@ object TimeCourseFrm: TTimeCourseFrm
           Top = 60
           Width = 136
           Height = 17
-          Hint = 'Add all available ROIs to plot'
-          Caption = 'Add all ROIs'
+          Hint = 'Add a series of ROIs to a new plot'
+          Caption = 'Add ROI Series'
           Font.Charset = ANSI_CHARSET
           Font.Color = clWindowText
           Font.Height = -12
@@ -251,7 +249,7 @@ object TimeCourseFrm: TTimeCourseFrm
         end
         object bClearPlots: TButton
           Left = 8
-          Top = 92
+          Top = 124
           Width = 89
           Height = 17
           Hint = 'Clear all lines from plot'
@@ -268,8 +266,8 @@ object TimeCourseFrm: TTimeCourseFrm
           OnClick = bClearPlotsClick
         end
         object cbClearPlot: TComboBox
-          Left = 104
-          Top = 92
+          Left = 101
+          Top = 123
           Width = 41
           Height = 21
           Hint = 'Y Axis number to be plotted on'
@@ -278,7 +276,7 @@ object TimeCourseFrm: TTimeCourseFrm
         end
         object bSetAxes: TButton
           Left = 8
-          Top = 118
+          Top = 150
           Width = 136
           Height = 17
           Hint = 'Set X & Y axis range and labels'
@@ -293,6 +291,27 @@ object TimeCourseFrm: TTimeCourseFrm
           ShowHint = True
           TabOrder = 6
           OnClick = bSetAxesClick
+        end
+        object edROIRange: TRangeEdit
+          Left = 8
+          Top = 83
+          Width = 136
+          Height = 20
+          Hint = 'Series of ROIs to add to plot'
+          AutoSize = False
+          Font.Charset = ANSI_CHARSET
+          Font.Color = clWindowText
+          Font.Height = -11
+          Font.Name = 'Arial'
+          Font.Style = []
+          ShowHint = True
+          Text = ' 1 - 1 '
+          LoValue = 1.000000000000000000
+          HiValue = 1.000000000000000000
+          LoLimit = 1.000000000000000000
+          HiLimit = 1.000000015047466E30
+          Scale = 1.000000000000000000
+          NumberFormat = '%.0f - %.0f'
         end
       end
       object FluorescenceDisplayGrp: TGroupBox
@@ -629,7 +648,7 @@ object TimeCourseFrm: TTimeCourseFrm
     end
     object TUnitsGrp: TGroupBox
       Left = 8
-      Top = 580
+      Top = 604
       Width = 168
       Height = 37
       Caption = ' Time Units '

@@ -36,6 +36,7 @@ unit TimeCourseUnit;
 //          ROI plots now much faster by limiting times that progress is reported
 //          Failure to initialise iBackg variable fixed
 //          Various uninitialised variable warnings fixed
+// 30.04.26 Defined series of ROIs can be added to plot instead of all ROIs.
 
 interface
 
@@ -110,6 +111,7 @@ type
     ckUseEquation: TCheckBox;
     ckDivideByRMax: TCheckBox;
     cbFluorescence: TComboBox;
+    edROIRange: TRangeEdit;
     procedure bNewPlotClick(Sender: TObject);
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
@@ -143,29 +145,25 @@ type
 
     procedure PlotLine ;
 
-
     procedure PlotROIIntensity(
               StartAtFrame : Integer ;
               EndAtFrame : Integer ;
-//              PlotNum : Integer ;
               LineNum : Integer
               ) ;
 
     procedure PlotLineScanIntensity(
               StartAtLine : Integer ;       // Start at frame #
               EndAtLine : Integer ;         // End at frame #
-//              PlotNum : Integer ;            // Plot on plot #
               LineNum : Integer              // Plot as line #
               ) ;
 
     procedure PlotADCChannel(
               StartAtFrame : Integer ;
               EndAtFrame : Integer ;
-//              PlotNum : Integer ;
               LineNum : Integer
               ) ;
 
-    procedure FillPlotLists ;              
+    procedure FillPlotLists ;
 
   public
     { Public declarations }
@@ -1095,30 +1093,38 @@ begin
     cbSource.Clear ;
 
     // Regions of interest
-    if MainFrm.IDRFile.LineScan then begin
+    if MainFrm.IDRFile.LineScan then
+       begin
        // Line scan data file
        cbSource.Items.AddObject( 'Fluor',TObject(1)) ;
-       rbF0FromFrames.Caption := 'F0 lines'
+       rbF0FromFrames.Caption := 'F0 lines' ;
        end
-    else begin
+    else
+       begin
        // Image data files : list regions of interest
        for i := 1 to MainFrm.IDRFile.MaxROI do if MainFrm.IDRFile.ROI[i].InUse then
            cbSource.Items.AddObject( format('ROI.%d',[i]),TObject(i)) ;
-       rbF0FromFrames.Caption := 'F0 frames'
+       rbF0FromFrames.Caption := 'F0 frames' ;
+       edROIRange.LoLimit := 1 ;
+       edROIRange.LoValue := 1 ;
+       edROIRange.HiLimit := cbSource.Items.Count ;
+       edROIRange.HiValue := cbSource.Items.Count ;
+
        end ;
 
     // A/D channels
     for i := 0 to MainFrm.IDRFile.ADCNumChannels-1 do
-        cbSource.Items.AddObject( MainFrm.IDRFile.ADCChannel[i].ADCName,
-                                  TObject(i+MainFrm.IDRFile.MaxROI+1)) ;
+        cbSource.Items.AddObject( MainFrm.IDRFile.ADCChannel[i].ADCName,TObject(i+MainFrm.IDRFile.MaxROI+1)) ;
     cbSource.ItemIndex := 0 ;
 
     // Create list of background subtraction sources
     cbBackground.Clear ;
     cbBackground.Items.AddObject( ' ',TObject(MainFrm.IDRFile.MaxROI+1)) ;
-    if MainFrm.IDRFile.LineScan then begin
+    if MainFrm.IDRFile.LineScan then
+       begin
        end
-    else begin
+    else
+       begin
        // Image series data file
        for i := 1 to MainFrm.IDRFile.MaxROI do if MainFrm.IDRFile.ROI[i].InUse then
            cbBackground.Items.AddObject( format('ROI.%d',[i]),TObject(i)) ;
@@ -1339,10 +1345,11 @@ begin
      iBackg := Integer(cbBackground.Items.Objects[cbBackground.ItemIndex]) ;
 
      // Add all ROIs (except background) to plot
-     for i := 0 to cbSource.Items.Count-1 do
+     for i := Round(edROIRange.LoValue)-1 to Round(edROIRange.HiValue)-1 do
          begin
          iROI := Integer(cbSource.Items.Objects[i]) ;
-         if (iROI <> iBackg) and (Pos('ROI',cbSource.Items.Strings[i]) > 0) then begin
+         if (iROI <> iBackg) and (Pos('ROI',cbSource.Items.Strings[i]) > 0) then
+            begin
             cbSource.ItemIndex := i ;
             PlotLine ;
             if StopPlot then Break ;

@@ -1,8 +1,10 @@
 unit FindCellsUnit;
 // ------------------------------------------------------------------------
-// Automatically find location cells within image using intensity threshold
+// Automatically find location of cells within image using intensity threshold
 // ------------------------------------------------------------------------
 // 16.04.26
+// 30.04.26 Cell search restricted to displayed area of frame shown in ViewFrm
+//          Number of cells detected field now shows number AFTER cell size limits applied
 
 interface
 
@@ -49,19 +51,26 @@ type
     procedure rbPixelsClick(Sender: TObject);
     procedure rbMicronsClick(Sender: TObject);
     procedure bSaveAsROIsClick(Sender: TObject);
-    procedure FormCreate(Sender: TObject);
+    procedure FormCreate( Sender: TObject );
     procedure FormDestroy(Sender: TObject);
+    procedure bCancelClick(Sender: TObject);
   private
     { Private declarations }
     pMaxIntensityImage : PIntArray ;               // Max. intensity projection image
     ThresholdedImage : TArray<TArray<UINT16>>;     // Thresholded image
     Particles: TParticleArray;                     // Particles found
+    XWidth : Integer ;                             // Width (pixels) of pMaxIntensityImage
+    YHeight : Integer ;                             // Height (pixels) of pMaxIntensityImage
 
    procedure GenerateMaxIntensityImage ;
    procedure DisplayMeanROIIntensities;
    procedure SaveCellsToROIList ;
   public
     { Public declarations }
+    XLeft : Integer ;      // Left edge of image area to be searched
+    XRight : Integer ;     // Right edge of image area to be searched
+    YTop : Integer ;       // Top edge of image area
+    YBottom : Integer ;    // Bottom edge of image area
   end;
 
 var
@@ -116,14 +125,14 @@ begin
 
     // Set initial value of thresholds
 
-    iMin := MainFrm.IDRFile.GreyMax ; ;
+{    iMin := MainFrm.IDRFile.GreyMax ; ;
     iMax := 0 ;
     for i := 0 to MainFrm.IDRFile.FrameWidth*MainFrm.IDRFile.FrameHeight-1 do
         begin
         If pMaxIntensityImage[i] < IMin then IMin := pMaxIntensityImage[i] ;
         If pMaxIntensityImage[i] > IMax then IMax := pMaxIntensityImage[i] ;
         end;
-     edThreshold.Value := (Imax + iMin) div 2 ;
+     edThreshold.Value := (Imax + iMin) div 2 ;}
 
 
 end;
@@ -134,7 +143,7 @@ procedure TFindCellsFrm.GenerateMaxIntensityImage ;
 // Compute max pixel intensity image for selected frame type
 // ---------------------------------------------------------
 var
-    i,iFrame : Integer ;
+    i,j,iFrame,iX,iY : Integer ;
     pImage : PIntArray ;
     OK : Boolean ;
 begin
@@ -142,12 +151,22 @@ begin
     // Create local image buffer
     pImage := AllocMem( MainFrm.IDRFile.NumPixelsPerFrame*SizeOf(Integer));
 
+    XLeft := Max(0,ViewFrm.DisplayLeft) ;
+    XWidth := ViewFrm.DisplayWidth ;
+    YTop := Max(0,ViewFrm.DisplayTop);
+    YHeight := ViewFrm.DisplayHeight ;
+
+    XRight := Min( XLeft + XWidth -1,  MainFrm.IDRFile.FrameWidth-1 ) ;
+    YBottom := Min( YTop + YHeight -1, MainFrm.IDRFile.FrameHeight-1 ) ;
+
+    XWidth := XRight - XLeft + 1 ;
+    YHeight := YBottom - YTop + 1 ;
+
     // Create max. intensity image buffer
     if pMaxIntensityImage <> Nil then FreeMem( pMaxIntensityImage ) ;
-    pMaxIntensityImage := AllocMem( MainFrm.IDRFile.NumPixelsPerFrame*SizeOf(Integer));
+    pMaxIntensityImage := AllocMem( XWidth*YHeight*SizeOf(Integer));
 
-
-    // Create a max. intensity image from all frames of selected type in file
+    // Create a max. intensity image from selected region of all frames of selected type in file
 
     for iFrame := 1 to MainFrm.IDRFile.NumFrames do
         begin
@@ -156,12 +175,19 @@ begin
            // Get frame from data file
            OK := MainFrm.IDRFile.LoadFrame32( iFrame, pImage ) ;
            if OK then
+              i := 0 ;
               begin
-              for i := 0 to MainFrm.IDRFile.NumPixelsPerFrame-1 do
-                  begin
-                  if pMaxIntensityImage[i] < pImage[i] then pMaxIntensityImage[i] := pImage[i] ;
-                  end ;
+              for iY := YTop to YBottom do
+                  for iX := XLeft to XRight do
+                      begin
+                      j := iX + MainFrm.IDRFile.FrameWidth*iY ;
+                      if pMaxIntensityImage[i] < pImage[j] then pMaxIntensityImage[i] := pImage[j] ;
+                      Inc(i) ;
+                      end;
               end ;
+
+           MainFrm.StatusBar.SimpleText := format('Find Cells: Creating. Max. Intensity Projection %d/%d',[iFrame,MainFrm.IDRFile.NumFrames]);
+
            end;
         end;
 
@@ -173,12 +199,21 @@ begin
 end;
 
 
+procedure TFindCellsFrm.bCancelClick(Sender: TObject);
+// ----------------------
+// Cancel and close form
+// ----------------------
+begin
+    Close ;
+end;
+
+
 procedure TFindCellsFrm.bFIndCellsClick(Sender: TObject);
 // --------------------------------------------
 // Find cells in selected image and assign ROIs
 // --------------------------------------------
 var
-    NumPixels,i,iX,iY,iStart,P,iROI,iStep : Integer ;
+    NumPixels,i,iX,iY,iStart,P,iROI,iStep,NumCells : Integer ;
     CellNum : Integer ;        // Cell counter
     Pixel: TPair<Integer, Integer>;
     CellsBitMap : TBitmap ;
@@ -190,18 +225,18 @@ begin
 
     // Create thresholded image
 
-    SetLength(  ThresholdedImage, MainFrm.IDRFile.FrameHeight, MainFrm.IDRFile.FrameWidth ) ;
-    for iX := 0 to MainFrm.IDRFile.FrameWidth-1 do
-        for iY := 0 to MainFrm.IDRFile.FrameHeight-1 do
+    SetLength(  ThresholdedImage, YHeight, XWidth ) ;
+    for iX := 0 to XWidth-1 do
+        for iY := 0 to YHeight-1 do
         begin
-        i := iX +  MainFrm.IDRFile.FrameWidth*iY ;
+        i := iX +  XWidth*iY ;
         if (pMaxIntensityImage[i] >= Round(edThreshold.Value)) then ThresholdedImage[iY,iX] := 1
                                                                else ThresholdedImage[iY,iX] := 0 ;
         end;
 
     // Locate cells in thresholded max. intensity image
 
-    Locator := TParticleLocator.Create( ThresholdedImage,  MainFrm.IDRFile.FrameWidth,  MainFrm.IDRFile.FrameHeight);
+    Locator := TParticleLocator.Create( ThresholdedImage, XWidth,  YHeight );
 
     try
       Locator.LocateParticles(Round(edErosionRadius.Value)); // Threshold = 1
@@ -212,8 +247,8 @@ begin
       // Create bitmap showing cells
       CellsBitMap := TBitmap.Create ;
       CellsBitMap.PixelFormat := pf8Bit ;
-      CellsBitMap.Width := MainFrm.IDRFile.FrameWidth ;
-      CellsBitMap.Height := MainFrm.IDRFile.FrameHeight ;
+      CellsBitMap.Width := XWidth ;
+      CellsBitMap.Height := YHeight ;
       CellsBitMap.Canvas.Brush.Color := clBlack ;
       CellsBitMap.Canvas.Pen.Color := clWhite ;
 
@@ -229,6 +264,7 @@ begin
 
       // Add cells within selected area limits to bitmap
 
+      NumCells := 0 ;
       for P := 0 to High(Particles) do
       begin
 
@@ -244,7 +280,8 @@ begin
                CellsBitMap.Canvas.Pixels[Pixel.Key,Pixel.Value] := clWhite ;
                end;
 
-           edStatus.Text := format( 'Cells Found: %d ',[Particle.ID] );
+           Inc(NumCells) ;
+           edStatus.Text := format( 'Cells Found: %d ',[NumCells] );
            Application.ProcessMessages ;
 
            end ;
@@ -294,8 +331,10 @@ begin
               ROI.InUse := True ;
               ROI.Width := Round(edROISize.Value) ;
               ROI.Height := Round(edROISize.Value) ;
-              ROI.Centre.X := Integer(Round(Particle.Centroid_X)) ;
-              ROI.Centre.Y := Integer(Round(Particle.Centroid_Y)) ;
+
+              // Note XLeft,YTop offset being added to match region with in imaae
+              ROI.Centre.X := Integer(Round(Particle.Centroid_X)) + XLeft ;
+              ROI.Centre.Y := Integer(Round(Particle.Centroid_Y)) + YTop ;
 
               ROI.TopLeft.X := ROI.Centre.X - ROI.Width div 2 ;
               ROI.TopLeft.Y := ROI.Centre.Y - ROI.Height div 2 ;
@@ -331,12 +370,12 @@ begin
 
 end;
 
-
-procedure TFindCellsFrm.FormCreate(Sender: TObject);
+procedure TFindCellsFrm.FormCreate( Sender: TObject );
 // ---------------------------------
 // Initialisations when form created
 // ---------------------------------
 begin
+
 
     pMaxIntensityImage := Nil ;
 end;
@@ -431,15 +470,17 @@ procedure TFindCellsFrm.DisplayMeanROIIntensities;
 var
     iROI,IThreshold : Integer ;
     CellAvg,BackgroundAvg : Single ;
+    pImage : PIntArray ;
 begin
 
-     if pMaxIntensityImage = Nil then Exit ;
+     // Pointer to currently dipplayed image frame in ViewFrm
+     pImage := ViewFrm.pImageBufs[cbFrameType.ItemIndex] ;
 
      // Cell
      if cbCellROI.ItemIndex > 0 then
         begin
         iROI := Integer(cbCellROI.Items.Objects[cbCellROI.ItemIndex]) ;
-        CellAVg := ViewPlotFrm.MeanROIIntensity( iROI, pMaxIntensityImage )/ MainFrm.IDRFile.IntensityScale ;
+        CellAVg := ViewPlotFrm.MeanROIIntensity( iROI, pImage )/ MainFrm.IDRFile.IntensityScale ;
         lbCellIntensity.Caption := format('Iavg := %.6g',[CellAvg]) ;
         end
      else
@@ -452,7 +493,7 @@ begin
      if cbBackgroundROI.ItemIndex > 0 then
         begin
         iROI := Integer(cbBackgroundROI.Items.Objects[cbBackgroundROI.ItemIndex]) ;
-        BackgroundAvg := ViewPlotFrm.MeanROIIntensity( iROI, pMaxIntensityImage )/ MainFrm.IDRFile.IntensityScale ;
+        BackgroundAvg := ViewPlotFrm.MeanROIIntensity( iROI, pImage )/ MainFrm.IDRFile.IntensityScale ;
         lbBackgroundIntensity.Caption := format('Iavg := %.6g',[BackgroundAvg]) ;
         end
      else

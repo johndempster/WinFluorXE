@@ -1,9 +1,9 @@
 object FindCellsFrm: TFindCellsFrm
   Left = 0
   Top = 0
-  Caption = 'FindCellsFrm'
-  ClientHeight = 621
-  ClientWidth = 913
+  Caption = 'Cell Finder'
+  ClientHeight = 472
+  ClientWidth = 778
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -17,16 +17,17 @@ object FindCellsFrm: TFindCellsFrm
   OnDestroy = FormDestroy
   OnShow = FormShow
   DesignSize = (
-    913
-    621)
+    778
+    472)
   TextHeight = 15
   object Image1: TImage
     Left = 217
     Top = 8
-    Width = 688
-    Height = 605
+    Width = 553
+    Height = 456
     Anchors = [akLeft, akTop, akRight, akBottom]
     AutoSize = True
+    ExplicitWidth = 979
   end
   object GroupBox1: TGroupBox
     Left = 8
@@ -232,6 +233,7 @@ object FindCellsFrm: TFindCellsFrm
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 2
+    OnClick = bCancelClick
   end
   object gpCellImits: TGroupBox
     Left = 8
